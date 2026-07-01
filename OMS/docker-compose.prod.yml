@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  oms_db:
+    image: postgres:15-alpine
+    container_name: oms_db
+    restart: always
+    environment:
+      POSTGRES_DB: oms_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - oms_db_data:/var/lib/postgresql/data
+
+  oms_backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: oms_backend
+    restart: always
+    ports:
+      - "8001:8001"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@oms_db:5432/oms_db
+    depends_on:
+      - oms_db
+    networks:
+      - default
+      - pmi_default
+      - wms_default
+
+  oms_frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: oms_frontend
+    restart: always
+    ports:
+      - "3001:3001"
+    environment:
+      - NEXT_PUBLIC_OMS_API_URL=http://localhost:8001
+    depends_on:
+      - oms_backend
+    networks:
+      - default
+      - pmi_default
+      - wms_default
+
+networks:
+  pmi_default:
+    external: true
+  wms_default:
+    external: true
+
+volumes:
+  oms_db_data:

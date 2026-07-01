@@ -1,0 +1,812 @@
+ps_category|1|0,ps_product_name|1|0,ps_product_description|1|0,ps_sku_parent_short|0|0,et_title_variation_integration_no|0|0,et_title_variation_1|0|0,et_title_option_for_variation_1|0|0,et_title_image_per_variation|0|3,et_title_variation_2|0|0,et_title_option_for_variation_2|0|0,ps_price|1|1,ps_stock|0|1,ps_sku_short|0|0,ps_new_size_chart|0|1,et_title_size_chart|0|3,ps_gtin_code|0|0,ps_item_cover_image|0|3,ps_item_image_1|0|3,ps_item_image_2|0|3,ps_item_image_3|0|3,ps_item_image_4|0|3,ps_item_image_5|0|3,ps_item_image_6|0|3,ps_item_image_7|0|3,ps_item_image_8|0|3,ps_weight|1|1,ps_length|0|1,ps_width|0|1,ps_height|0|1,channel_id.5000|0|0,channel_id.5001|0|0,channel_id.5004|0|0,channel_id.5012|0|0,channel_id.50039|0|0,channel_id.50052|0|0,channel_id.50053|0|0,ps_product_pre_order_dts|0|1,ps_brand|0|1,ps_product_global_attribute.100022|0|0,ps_product_global_attribute.100037|0|0,ps_product_global_attribute.100095|0|0,ps_product_global_attribute.100105|0|0,ps_product_global_attribute.100121|0|0,ps_product_global_attribute.100130|0|0,ps_product_global_attribute.100134|0|0,ps_product_global_attribute.100135|0|0,ps_product_global_attribute.100142|0|0,ps_product_global_attribute.100143|0|0,ps_product_global_attribute.100144|0|0,ps_product_global_attribute.100145|0|0,ps_product_global_attribute.100154|0|0,ps_product_global_attribute.100161|0|0,ps_product_global_attribute.100162|0|0,ps_product_global_attribute.100163|0|0,ps_product_global_attribute.100168|0|0,ps_product_global_attribute.100171|0|0,ps_product_global_attribute.100174|0|0,ps_product_global_attribute.100199|0|0,ps_product_global_attribute.100206|0|0,ps_product_global_attribute.100211|0|0,ps_product_global_attribute.100230|0|0,ps_product_global_attribute.100272|0|0,ps_product_global_attribute.100278|0|0,ps_product_global_attribute.100355|0|0,ps_product_global_attribute.100370|0|0,ps_product_global_attribute.100563|0|0,ps_product_global_attribute.100565|0|0,ps_product_global_attribute.100567|0|0,ps_product_global_attribute.100571|0|0,ps_product_global_attribute.100572|0|0,ps_product_global_attribute.100573|0|0,ps_product_global_attribute.100576|0|0,ps_product_global_attribute.100577|0|0,ps_product_global_attribute.100579|0|0,ps_product_global_attribute.100582|0|0,ps_product_global_attribute.100592|0|0,ps_product_global_attribute.100594|0|0,ps_product_global_attribute.100599|0|0,ps_product_global_attribute.100602|0|0,ps_product_global_attribute.100605|0|0,ps_product_global_attribute.100606|0|0,ps_product_global_attribute.100612|0|0,ps_product_global_attribute.100615|0|0,ps_product_global_attribute.100616|0|0,ps_product_global_attribute.100617|0|0,ps_product_global_attribute.100626|0|0,ps_product_global_attribute.100627|0|0,ps_product_global_attribute.100628|0|0,ps_product_global_attribute.100630|0|0,ps_product_global_attribute.100631|0|0,ps_product_global_attribute.100635|0|0,ps_product_global_attribute.100636|0|0,ps_product_global_attribute.100638|0|0,ps_product_global_attribute.100639|0|0,ps_product_global_attribute.100643|0|0,ps_product_global_attribute.100649|0|0,ps_product_global_attribute.100659|0|0,ps_product_global_attribute.100660|0|0,ps_product_global_attribute.100662|0|0,ps_product_global_attribute.100666|0|0,ps_product_global_attribute.100761|0|0,ps_product_global_attribute.100828|0|0,ps_product_global_attribute.100841|0|0,ps_product_global_attribute.100920|0|0,ps_product_global_attribute.100942|0|0,ps_product_global_attribute.100946|0|0,ps_product_global_attribute.100960|0|0,ps_product_global_attribute.101004|0|0,ps_product_global_attribute.101005|0|0,ps_product_global_attribute.101040|0|0,ps_product_global_attribute.101060|0|0,ps_product_global_attribute.101067|0|0,ps_product_global_attribute.101068|0|0,ps_product_global_attribute.101219|0|0,ps_product_global_attribute.101298|0|0,ps_product_global_attribute.101299|0|0,ps_product_global_attribute.101300|0|0,ps_product_global_attribute.101301|0|0,ps_product_global_attribute.101304|0|0,ps_product_global_attribute.101305|0|0,ps_product_global_attribute.101306|0|0,ps_product_global_attribute.101343|0|0,ps_product_global_attribute.101372|0|0,ps_product_global_attribute.101432|0|0,et_title_reason|0|0
+advanced,eeacc6cb1e80c81f9f8ed8f0e919f828,100637,1406345225,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Ngành hàng,Tên sản phẩm,Mô tả sản phẩm,SKU sản phẩm,Mã sản phẩm,Tên nhóm phân loại hàng 1,Tên phân loại hàng cho nhóm phân loại hàng 1,Hình ảnh mỗi phân loại,Tên nhóm phân loại hàng 2,Tên phân loại hàng cho nhóm phân loại hàng 2,Giá,Kho hàng,SKU phân loại,Size Chart Template,Size Chart Image,GTIN,Ảnh bìa,Hình ảnh sản phẩm 1,Hình ảnh sản phẩm 2,Hình ảnh sản phẩm 3,Hình ảnh sản phẩm 4,Hình ảnh sản phẩm 5,Hình ảnh sản phẩm 6,Hình ảnh sản phẩm 7,Hình ảnh sản phẩm 8,Cân nặng,Chiều dài,Chiều rộng,Chiều cao,Hỏa Tốc,Nhanh,Hàng Cồng Kềnh,Trong Ngày,Tủ nhận hàng - Viettel Smartbox,Tủ nhận hàng - SPX,Điểm nhận hàng,Ngày chuẩn bị hàng cho đặt trước (Pre-order DTS),Thương hiệu,Giới tính,Xuất xứ,Trọng lượng,Công suất,Hạn bảo hành,Tính năng,Chất liệu,Độ tuổi khuyến nghị,Kiểu dáng quần,Chiều dài quần,Kiểu quần,Kiểu Bra,Cổ áo,Petite,Mẫu,Mùa,Chiều dài tay áo,Bản eo,Kiểu cổ áo,Loại Khóa,Kiểu giày,Tính năng,Chất liệu dây đeo,Dung lượng pin,Dung tích,Tiêu thụ điện năng,Loại bảo hành,Đội bóng đá,Loại túi goft,Loại túi goft,Trọng lượng,Loại phụ tùng xe đạp,Tính năng mũ bảo hiểm,Loại câu cá,Nhóm tuổi,Đường kính quả bóng,Loại máy tập thể hình,Loại trang bị  bóng chày,Chiều dài,Trang phục nén,Loại body weights,Loại xe đạp,Tính năng trang phục,Kích cỡ mũ bảo hiểm,Chất liệu vợt,Loại thiết bị leo núi,Swimwear Type,Mức nhiệt độ,Mức chống nước,Chất liệu sào,Tên đội,Độ dày,Loại túi ngủ,Đường kính bánh xe,Loại hình thể thao,Loại ô/dù,Loại cân,Dây vợt,Tính năng thảm Yoga,Chiều rộng,Loại bóng chuyền,Đường kính,Loại hộp đựng thức ăn,Trọng lượng được hỗ trợ,Tính năng giấy dán tường,Tên người chơi,Kích thước (dài x rộng x cao),Độ căng,Tính năng đồng hồ,Rất lớn,Loại ván trượt,Model Name,Ngày sản xuất,Tên tổ chức chịu trách nhiệm sản xuất,Địa chỉ tổ chức chịu trách nhiệm sản xuất,Sản phẩm đặt theo yêu cầu,Care Instructions,Fit,Sleeve Type,Embellishment,Clothing Styles,Closure Type,Quantity per Pack,Stretch,Cartoon Characters,Waterproof Degree,Lý do thất bại
+Bắt buộc,Bắt buộc,Bắt buộc,Tùy chọn,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Bắt buộc,Điều kiện bắt buộc,Tùy chọn,Điều kiện bắt buộc,Điều kiện bắt buộc,Tùy chọn,Tùy chọn,Tùy chọn,Tùy chọn,Tùy chọn,Tùy chọn,Tùy chọn,Tùy chọn,Tùy chọn,Tùy chọn,Bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Tùy chọn,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,Điều kiện bắt buộc,
+Vui lòng chọn mã ngành hàng phù hợp với sản phẩm của bạn. Mã ngành hàng chính xác giúp tăng hiệu quả tìm kiếm,"Tên sản phẩm phải là tiếng việt có dấu. Cấu trúc tên nên bao gồm dòng sản phẩm, tên thương hiệu, đặc điểm nổi bật và kích thước.",Mô tả sản phẩm rõ ràng giúp nâng cao chất lượng sản phẩm đối với Người mua và tăng doanh số hiệu quả,SKU sản phẩm là thông tin giúp phân loại sản phẩm trên hệ thống một cách hiệu quả. Sản phẩm có nhiều phân loại sẽ có chung SKU sản phẩm. Số SKU sản phẩm không được trùng lặp.,Bắt buộc đối với sản phẩm có phân loại. bạn có thể sử dụng nó như 1 từ khóa cho SKU sản phẩm và các phân loại của nó,Thêm tên nhóm phân loại hàng 1 (nếu có),Thêm giá trị nhóm phân loại hàng 1,Tải lên 1 hình ảnh cho mỗi phân loại,Thêm tên nhóm phân loại hàng 2 (nếu có),Thêm giá trị nhóm phân loại hàng 2 (nếu có),Nhập giá của sản phẩm,Nhập số lượng tồn kho thực tế của sản phẩm,SKU sản phẩm giúp mã hóa để nhận diện sản phẩm nhanh hơn. Giá trị SKU sản phẩm không được trùng lặp,Please enter the size chart template ID; you can find the ID on the size chart template list.,"You only need to fill in either the size chart template or the size chart image. if you fill in both, only the template will be kept.","GTIN is an identifier for trade items, developed by the international organization GS1. They have 8 to 14 digits. The most common are UPC, EAN, JAN and ISBN.",Tải lên URL của hình ảnh sản phẩm chính của bạn. Hình ảnh không được sao chép với các danh sách khác trong cửa hàng của bạn. Lưu ý rằng trường hình ảnh này là bắt buộc trước khi danh sách có thể được xuất bản nhưng bạn có thể chọn tải hình ảnh lên sau trong công cụ thuộc tính,Nhập URL của hình ảnh sản phẩm này,Nhập URL của hình ảnh sản phẩm này,Nhập URL của hình ảnh sản phẩm này,Nhập URL của hình ảnh sản phẩm này,Nhập URL của hình ảnh sản phẩm này,Nhập URL của hình ảnh sản phẩm này,Nhập URL của hình ảnh sản phẩm này,Nhập URL của hình ảnh sản phẩm này,"Vui lòng nhập cân nặng của sản phẩm (giá trị cần nhập phải lớn hơn 0). 
+Lưu ý:
+1. Cân nặng không chính xác có thể gây sai sót khi tính phí giao hàng và có thể bị từ chối đơn bởi đối tác vận chuyển
+2. Có thể thiết lập mỗi phân loại với kích thước & cân nặng khác nhau","Vui lòng nhập kích thước của sản phẩm. Kích thước của sản phẩm sẽ được dùng để tính phí giao hàng cho các phương thức vận chuyển
+Lưu ý: Có thể thiết lập mỗi phân loại với kích thước & cân nặng khác nhau","Nhập chiều rộng sản phẩm vào đây (chiều rộng có thể bằng hoặc lớn hơn 0). 
+Lưu ý:
+1. Kích thước không chính xác có thể gây sai sót khi tính phí giao hàng và có thể bị từ chối đơn bởi đối tác vận chuyển.
+2. Có thể thiết lập mỗi phân loại với kích thước & cân nặng khác nhau","Nhập chiều cao sản phẩm vào đây (chiều cao có thể bằng hoặc lớn hơn 0). 
+Lưu ý:
+1. Kích thước không chính xác có thể gây sai sót khi tính phí giao hàng và có thể bị từ chối đơn bởi đối tác vận chuyển
+2. Có thể thiết lập mỗi phân loại với kích thước & cân nặng khác nhau",Vui lòng bật ít nhất 1 đơn vị vận chuyển cho sản phẩm này,Vui lòng bật ít nhất 1 đơn vị vận chuyển cho sản phẩm này,Vui lòng bật ít nhất 1 đơn vị vận chuyển cho sản phẩm này,Vui lòng bật ít nhất 1 đơn vị vận chuyển cho sản phẩm này,Vui lòng bật ít nhất 1 đơn vị vận chuyển cho sản phẩm này,Vui lòng bật ít nhất 1 đơn vị vận chuyển cho sản phẩm này,Vui lòng bật ít nhất 1 đơn vị vận chuyển cho sản phẩm này,"Thời gian chuẩn bị hàng cho Hàng đặt trước là số ngày dự kiến bạn cần để chuẩn bị hàng và giao cho đơn vị vận chuyển (Tối thiếu: 7 ngày - Tối đa: 30 ngày). Nếu bỏ trống thông tin, sản phẩm sẽ được mặc định là hàng có sẵn và thời gian chuẩn bị hàng mặc định là 2",Thương hiệu có thể giúp người mua hiểu nhanh sản phẩm của bạn. Bắt buộc phải điền thương hiệu hợp lệ hoặc không có thương hiệu trên shopee.,"1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo","1. Vui lòng chọn danh mục trước 
+2. Nếu ô nhập liệu bị tắt, không cần điền vào thuộc tính này 
+3. Nếu hộp nhập có màu xanh lam, thì thuộc tính này là tùy chọn để điền vào 
+4. nếu hộp nhập có màu đỏ, thuộc tính bắt buộc phải điền vào 
+5. Vui lòng tham khảo giải thích quy tắc nhập trong cuộn tiếp theo",
+"Chọn từ hộp thả xuống, vui lòng chọn đúng Tên / ID Ngành Hàng",Vui lòng nhập từ 10 đến 120 ký tự cho tên sản phẩm.,Vui lòng nhập từ 100 đến 3000 ký tự cho mô tả sản phẩm.,Vui lòng nhập 1-100 ký tự cho SKU sản phẩm,Vui lòng nhập 1-100 ký tự cho mã sản phẩm,Nhập các ký tự từ 1 đến 14 cho tên phân loại.,Nhập các ký tự từ 1 đến 20 cho tên tùy chọn.,Nhập URL của hình ảnh sản phẩm,Nhập các ký tự từ 1 đến 14 cho tên phân loại.,Nhập các ký tự từ 1 đến 20 cho tên tùy chọn.,Vui lòng nhập 1000 đến 120000000 để biết giá sản phẩm. Giá của sản phẩm đắt nhất chia cho giá của giới hạn sản phẩm rẻ nhất: 5,"Vui lòng nhập từ 0 đến 999,999 cho kho sản phẩm.",Vui lòng nhập ít hơn 100 ký tự để cho sku,Please enter the size chart template ID.,"Insert url here
+Size: Max 2Mb, resolution should not exceed  2048 x 2048px
+Format: PDF,JPG,PNG",Please input a number between 8 to 14 digits.,"""Kích thước tối đa: 2.0MB
+Định dạng: JPG, JPEG, PNG. 
+Kích thước được đề xuất: 1 x 1 px""","""Kích thước tối đa: 2.0MB
+Định dạng: JPG, JPEG, PNG. 
+Kích thước được đề xuất: 1 x 1 px""","""Kích thước tối đa: 2.0MB
+Định dạng: JPG, JPEG, PNG. 
+Kích thước được đề xuất: 1 x 1 px""","""Kích thước tối đa: 2.0MB
+Định dạng: JPG, JPEG, PNG. 
+Kích thước được đề xuất: 1 x 1 px""","""Kích thước tối đa: 2.0MB
+Định dạng: JPG, JPEG, PNG. 
+Kích thước được đề xuất: 1 x 1 px""","""Kích thước tối đa: 2.0MB
+Định dạng: JPG, JPEG, PNG. 
+Kích thước được đề xuất: 1 x 1 px""","""Kích thước tối đa: 2.0MB
+Định dạng: JPG, JPEG, PNG. 
+Kích thước được đề xuất: 1 x 1 px""","""Kích thước tối đa: 2.0MB
+Định dạng: JPG, JPEG, PNG. 
+Kích thước được đề xuất: 1 x 1 px""","""Kích thước tối đa: 2.0MB
+Định dạng: JPG, JPEG, PNG. 
+Kích thước được đề xuất: 1 x 1 px""",Vui lòng nhập từ 0 đến 100000000 cho cân nặng.,Vui lòng nhập từ 0 đến 10000000 cho chiều dài sản phẩm.,Vui lòng nhập từ 0 đến 10000000 đối với chiều rộng,Vui lòng nhập từ 0 đến 10000000 cho chiều cao sản phẩm.,"Kênh Hỏa Tốc có giới hạn giá tối đa, giá sản phẩm không được lớn hơn VND10000000.00.","Kênh Nhanh có giới hạn giá tối đa, giá sản phẩm không được lớn hơn VND100000000.00.","Kênh Hàng Cồng Kềnh có giới hạn giá tối đa, giá sản phẩm không được lớn hơn VND100000000.00.",Mở / Tắt,Mở / Tắt,Mở / Tắt,"Kênh Điểm nhận hàng có giới hạn giá tối đa, giá sản phẩm không được lớn hơn VND3000000.00.",Phạm vi ngày chuẩn bị hàng cho hàng đặt trước (Pre-order DTS range): Tối thiểu: 7 ngày - Tối đa 30 ngày,"[Kiểu nhập] Giá trị hợp lệ nhập 
+[Xác thực đầu vào] Mã thương hiệu 
+[Giá trị hợp lệ] Vui lòng tra cứu id thương hiệu hợp lệ trong trang tính {}. Hoặc bạn có thể để trống và nhập giá trị thuộc tính trong công cụ thuộc tính","[Kiểu nhập]Chọn các tùy chọn theo danh sách
+[Xác thực đầu vào]Tùy chọn theo danh sách
+[Giá trị hợp lệ]Sẽ hiển thị trong mục tùy chọn theo danh sách thả xuống sau khi chọn Ngành hàng
+
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc chuỗi ký tự
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc Số (thập phân) tùy chỉnh
+[Giá trị hợp lệ]đơn vị hợp lệ: ""g,kg"". Xin lưu ý rằng bạn phải nhập giá trị đơn vị chính xác sau số, không có khoảng trắng, nếu không hệ thống sẽ nhận ra nó là đơn vị không hợp lệ
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+[Nhập mẫu]8Kg
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Input suggest value or String.Up to 5 values can be input. Please separate each value with a semicolon without spacing
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+[Nhập mẫu]Đỏ; Xanh lá cây; Vàng
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc chuỗi ký tự
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Input suggest value or String.Up to 5 values can be input. Please separate each value with a semicolon without spacing
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+[Nhập mẫu]Đỏ; Xanh lá cây; Vàng
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Input suggest value or String.Up to 5 values can be input. Please separate each value with a semicolon without spacing
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+[Nhập mẫu]Đỏ; Xanh lá cây; Vàng
+","[Kiểu nhập]Chọn các tùy chọn theo danh sách
+[Xác thực đầu vào]Tùy chọn theo danh sách
+[Giá trị hợp lệ]Sẽ hiển thị trong mục tùy chọn theo danh sách thả xuống sau khi chọn Ngành hàng
+
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc chuỗi ký tự
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc chuỗi ký tự
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc chuỗi ký tự
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Input suggest value or String.Up to 5 values can be input. Please separate each value with a semicolon without spacing
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+[Nhập mẫu]Đỏ; Xanh lá cây; Vàng
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc chuỗi ký tự
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Chọn các tùy chọn theo danh sách
+[Xác thực đầu vào]Tùy chọn theo danh sách
+[Giá trị hợp lệ]Sẽ hiển thị trong mục tùy chọn theo danh sách thả xuống sau khi chọn Ngành hàng
+
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Input suggest value or String.Up to 5 values can be input. Please separate each value with a semicolon without spacing
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+[Nhập mẫu]Đỏ; Xanh lá cây; Vàng
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc chuỗi ký tự
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc chuỗi ký tự
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc chuỗi ký tự
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc chuỗi ký tự
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc chuỗi ký tự
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc chuỗi ký tự
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Input suggest value or String.Up to 5 values can be input. Please separate each value with a semicolon without spacing
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+[Nhập mẫu]Đỏ; Xanh lá cây; Vàng
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc chuỗi ký tự
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Input suggest value or customize Number(decimal). For customize value, please input valid unit , the format should be like ""3.5Kg"".Up to 5 values can be input, please separate each value with a comma, without spacing.
+[Giá trị hợp lệ]đơn vị hợp lệ: ""mAh,cell,Wh"". Xin lưu ý rằng bạn phải nhập giá trị đơn vị chính xác sau số, không có khoảng trắng, nếu không hệ thống sẽ nhận ra nó là đơn vị không hợp lệ
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+[Nhập mẫu]8Kg;9Kg;10Kg
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Input suggest value or customize Number(decimal). For customize value, please input valid unit , the format should be like ""3.5Kg"".Up to 5 values can be input, please separate each value with a comma, without spacing.
+[Giá trị hợp lệ]đơn vị hợp lệ: ""L,ml"". Xin lưu ý rằng bạn phải nhập giá trị đơn vị chính xác sau số, không có khoảng trắng, nếu không hệ thống sẽ nhận ra nó là đơn vị không hợp lệ
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+[Nhập mẫu]8Kg;9Kg;10Kg
+","[Kiểu nhập]Nhập giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập số tùy chỉnh (thập phân) và giá trị hợp lệ
+[Giá trị hợp lệ]đơn vị hợp lệ: ""W"". Xin lưu ý rằng bạn phải nhập giá trị đơn vị chính xác sau số, không có khoảng trắng, nếu không hệ thống sẽ nhận ra nó là đơn vị không hợp lệ
+
+[Nhập mẫu]8Kg
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc chuỗi ký tự
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc chuỗi ký tự
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Input suggest value or String.Up to 5 values can be input. Please separate each value with a semicolon without spacing
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+[Nhập mẫu]Đỏ; Xanh lá cây; Vàng
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Input suggest value or String.Up to 5 values can be input. Please separate each value with a semicolon without spacing
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+[Nhập mẫu]Đỏ; Xanh lá cây; Vàng
+","[Kiểu nhập]Nhập giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập số tùy chỉnh (thập phân) và giá trị hợp lệ
+[Giá trị hợp lệ]đơn vị hợp lệ: ""kg"". Xin lưu ý rằng bạn phải nhập giá trị đơn vị chính xác sau số, không có khoảng trắng, nếu không hệ thống sẽ nhận ra nó là đơn vị không hợp lệ
+
+[Nhập mẫu]8Kg
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Input suggest value or String.Up to 5 values can be input. Please separate each value with a semicolon without spacing
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+[Nhập mẫu]Đỏ; Xanh lá cây; Vàng
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Input suggest value or String.Up to 5 values can be input. Please separate each value with a semicolon without spacing
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+[Nhập mẫu]Đỏ; Xanh lá cây; Vàng
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc chuỗi ký tự
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Chọn các tùy chọn theo danh sách
+[Xác thực đầu vào]Tùy chọn theo danh sách
+[Giá trị hợp lệ]Sẽ hiển thị trong mục tùy chọn theo danh sách thả xuống sau khi chọn Ngành hàng
+
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc Số (thập phân) tùy chỉnh
+[Giá trị hợp lệ]đơn vị hợp lệ: ""inches"". Xin lưu ý rằng bạn phải nhập giá trị đơn vị chính xác sau số, không có khoảng trắng, nếu không hệ thống sẽ nhận ra nó là đơn vị không hợp lệ
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+[Nhập mẫu]8Kg
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc chuỗi ký tự
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Input suggest value or String.Up to 5 values can be input. Please separate each value with a semicolon without spacing
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+[Nhập mẫu]Đỏ; Xanh lá cây; Vàng
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Input suggest value or customize Number(decimal). For customize value, please input valid unit , the format should be like ""3.5Kg"".Up to 5 values can be input, please separate each value with a comma, without spacing.
+[Giá trị hợp lệ]đơn vị hợp lệ: ""m,cm,inches,feet"". Xin lưu ý rằng bạn phải nhập giá trị đơn vị chính xác sau số, không có khoảng trắng, nếu không hệ thống sẽ nhận ra nó là đơn vị không hợp lệ
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+[Nhập mẫu]8Kg;9Kg;10Kg
+","[Kiểu nhập]Chọn các tùy chọn theo danh sách
+[Xác thực đầu vào]Tùy chọn theo danh sách
+[Giá trị hợp lệ]Sẽ hiển thị trong mục tùy chọn theo danh sách thả xuống sau khi chọn Ngành hàng
+
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Input suggest value or String.Up to 5 values can be input. Please separate each value with a semicolon without spacing
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+[Nhập mẫu]Đỏ; Xanh lá cây; Vàng
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc chuỗi ký tự
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc chuỗi ký tự
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Input suggest value or String.Up to 5 values can be input. Please separate each value with a semicolon without spacing
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+[Nhập mẫu]Đỏ; Xanh lá cây; Vàng
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Input suggest value or String.Up to 5 values can be input. Please separate each value with a semicolon without spacing
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+[Nhập mẫu]Đỏ; Xanh lá cây; Vàng
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc chuỗi ký tự
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc chuỗi ký tự
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Chọn các tùy chọn theo danh sách
+[Xác thực đầu vào]Tùy chọn theo danh sách
+[Giá trị hợp lệ]Sẽ hiển thị trong mục tùy chọn theo danh sách thả xuống sau khi chọn Ngành hàng
+
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc số nguyên tùy chỉnh
+[Giá trị hợp lệ]đơn vị hợp lệ: ""mm"". Xin lưu ý rằng bạn phải nhập giá trị đơn vị chính xác sau số, không có khoảng trắng, nếu không hệ thống sẽ nhận ra nó là đơn vị không hợp lệ
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+[Nhập mẫu]8Kg
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Input suggest value or String.Up to 5 values can be input. Please separate each value with a semicolon without spacing
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+[Nhập mẫu]Đỏ; Xanh lá cây; Vàng
+","[Kiểu nhập]Nhập giá trị tùy chỉnh
+[Xác thực đầu vào]Chuỗi ký tự
+
+
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Input suggest value or customize Integer. For customize value, please input valid unit , the format should be like ""3Kg"". Up to 5 values can be input, please separate each value with a comma, without spacing.
+[Giá trị hợp lệ]đơn vị hợp lệ: ""mm"". Xin lưu ý rằng bạn phải nhập giá trị đơn vị chính xác sau số, không có khoảng trắng, nếu không hệ thống sẽ nhận ra nó là đơn vị không hợp lệ
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+[Nhập mẫu]8Kg;9Kg;10Kg
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc chuỗi ký tự
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc Số (thập phân) tùy chỉnh
+[Giá trị hợp lệ]đơn vị hợp lệ: ""inches"". Xin lưu ý rằng bạn phải nhập giá trị đơn vị chính xác sau số, không có khoảng trắng, nếu không hệ thống sẽ nhận ra nó là đơn vị không hợp lệ
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+[Nhập mẫu]8Kg
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc chuỗi ký tự
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc chuỗi ký tự
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc chuỗi ký tự
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Chọn các tùy chọn theo danh sách
+[Xác thực đầu vào]Tùy chọn theo danh sách
+[Giá trị hợp lệ]Sẽ hiển thị trong mục tùy chọn theo danh sách thả xuống sau khi chọn Ngành hàng
+
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Input suggest value or String.Up to 5 values can be input. Please separate each value with a semicolon without spacing
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+[Nhập mẫu]Đỏ; Xanh lá cây; Vàng
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Input suggest value or customize Number(decimal). For customize value, please input valid unit , the format should be like ""3.5Kg"".Up to 5 values can be input, please separate each value with a comma, without spacing.
+[Giá trị hợp lệ]đơn vị hợp lệ: ""m,cm,inches"". Xin lưu ý rằng bạn phải nhập giá trị đơn vị chính xác sau số, không có khoảng trắng, nếu không hệ thống sẽ nhận ra nó là đơn vị không hợp lệ
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+[Nhập mẫu]8Kg;9Kg;10Kg
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc chuỗi ký tự
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Input suggest value or customize Number(decimal). For customize value, please input valid unit , the format should be like ""3.5Kg"".Up to 5 values can be input, please separate each value with a comma, without spacing.
+[Giá trị hợp lệ]đơn vị hợp lệ: ""cm,inches"". Xin lưu ý rằng bạn phải nhập giá trị đơn vị chính xác sau số, không có khoảng trắng, nếu không hệ thống sẽ nhận ra nó là đơn vị không hợp lệ
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+[Nhập mẫu]8Kg;9Kg;10Kg
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc chuỗi ký tự
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Nhập giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập số tùy chỉnh (thập phân) và giá trị hợp lệ
+[Giá trị hợp lệ]đơn vị hợp lệ: ""kg"". Xin lưu ý rằng bạn phải nhập giá trị đơn vị chính xác sau số, không có khoảng trắng, nếu không hệ thống sẽ nhận ra nó là đơn vị không hợp lệ
+
+[Nhập mẫu]8Kg
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Input suggest value or String.Up to 5 values can be input. Please separate each value with a semicolon without spacing
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+[Nhập mẫu]Đỏ; Xanh lá cây; Vàng
+","[Kiểu nhập]Nhập giá trị tùy chỉnh
+[Xác thực đầu vào]Chuỗi ký tự
+
+
+
+","[Kiểu nhập]Nhập giá trị tùy chỉnh
+[Xác thực đầu vào]Chuỗi ký tự
+
+
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc chuỗi ký tự
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Input suggest value or String.Up to 5 values can be input. Please separate each value with a semicolon without spacing
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+[Nhập mẫu]Đỏ; Xanh lá cây; Vàng
+","[Kiểu nhập]Chọn các tùy chọn theo danh sách
+[Xác thực đầu vào]Tùy chọn theo danh sách
+[Giá trị hợp lệ]Sẽ hiển thị trong mục tùy chọn theo danh sách thả xuống sau khi chọn Ngành hàng
+
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Nhập giá trị đề xuất hoặc chuỗi ký tự
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Nhập giá trị tùy chỉnh
+[Xác thực đầu vào]Chuỗi ký tự
+
+
+
+","[Kiểu nhập]Nhập giá trị tùy chỉnh
+[Xác thực đầu vào]Ngày ở định dạng YYYY/MM/DD
+
+
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Input suggest value or String.Up to 5 values can be input. Please separate each value with a semicolon without spacing
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+[Nhập mẫu]Đỏ; Xanh lá cây; Vàng
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+[Xác thực đầu vào]Input suggest value or String.Up to 5 values can be input. Please separate each value with a semicolon without spacing
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+[Nhập mẫu]Đỏ; Xanh lá cây; Vàng
+","[Kiểu nhập]Chọn các tùy chọn theo danh sách
+[Xác thực đầu vào]Tùy chọn theo danh sách
+[Giá trị hợp lệ]Sẽ hiển thị trong mục tùy chọn theo danh sách thả xuống sau khi chọn Ngành hàng
+
+
+","[Kiểu nhập]Nhập giá trị hợp lệ
+[Xác thực đầu vào]Input valid value. Up to 5 values can be input. Please separate each value with a semicolon without spacing,hahha
+[Giá trị hợp lệ]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+[Nhập mẫu]Đỏ; Xanh lá cây; Vàng
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+[Nhập mẫu]Đỏ; Xanh lá cây; Vàng
+","[Kiểu nhập]Nhập giá trị đề xuất hoặc giá trị tùy chỉnh
+
+
+[Giá trị đề xuất]Vui lòng tra cứu giá trị hợp lệ trong trang tính ""Ánh xạ giá trị thuộc tính"". Vui lòng tra cứu Ngành hàng và thuộc tính để xác nhận giá trị hợp lệ
+
+",

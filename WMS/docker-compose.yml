@@ -1,0 +1,59 @@
+services:
+  wms-db:
+    image: postgres:15-alpine
+    container_name: wms-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=wms_db
+    ports:
+      - "5435:5432"
+    volumes:
+      - wms_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  wms-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: wms-api
+    ports:
+      - "8003:8002"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@wms-db:5432/wms_db
+    depends_on:
+      wms-db:
+        condition: service_healthy
+    networks:
+      - default
+      - oms_default
+
+  wms_frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: wms_frontend
+    restart: always
+    ports:
+      - "3002:3002"
+    environment:
+      - NEXT_PUBLIC_WMS_API_URL=http://localhost:8003
+    depends_on:
+      - wms-api
+    networks:
+      - default
+      - oms_default
+
+networks:
+  default:
+    name: wms_default
+    external: true
+  oms_default:
+    external: true
+
+volumes:
+  wms_pgdata:
