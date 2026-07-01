@@ -24,24 +24,24 @@ Thiết kế 3 hệ thống quản lý chuỗi cung ứng cho **TOP VN SPORT** (
 
 ```mermaid
 graph TB
-    subgraph "PMI - Port 3000/8000"
-        PMI_FE["Frontend :3000"]
-        PMI_API["API :8000"]
+    subgraph "PMI - Port 13100/18100"
+        PMI_FE["Frontend :13100"]
+        PMI_API["API :18100"]
         PMI_DB[("pim_db")]
         PMI_FE --> PMI_API --> PMI_DB
     end
 
-    subgraph "OMS - Port 3001/8001"
-        OMS_FE["Frontend :3001"]
-        OMS_API["API :8001"]
+    subgraph "OMS - Port 13101/18101"
+        OMS_FE["Frontend :13101"]
+        OMS_API["API :18101"]
         OMS_DB[("oms_db")]
         OMS_FE --> OMS_API --> OMS_DB
     end
 
-    subgraph "WMS - Port 3002/8002"
-        WMS_FE["Frontend :3002"]
+    subgraph "WMS - Port 13102/18102"
+        WMS_FE["Frontend :13102"]
         WMS_MOBILE["📱 Mobile Scanner /m/*"]
-        WMS_API["API :8002"]
+        WMS_API["API :18102"]
         WMS_DB[("wms_db")]
         WMS_FE --> WMS_API --> WMS_DB
         WMS_MOBILE --> WMS_API
@@ -57,9 +57,9 @@ graph TB
 
 | Service | Port |
 |---------|------|
-| PMI Frontend / API / DB / MinIO | 3000 / 8000 / 5433 / 9005 |
-| OMS Frontend / API / DB | 3001 / 8001 / 5434 |
-| WMS Frontend / API / DB | 3002 / 8002 / 5435 |
+| PMI Frontend / API / DB / MinIO | 13100 / 18100 / 15433 / 19005 |
+| OMS Frontend / API / DB | 13101 / 18101 / 15434 |
+| WMS Frontend / API / DB | 13102 / 18102 / 15435 |
 
 ---
 

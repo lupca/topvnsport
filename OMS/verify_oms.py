@@ -4,7 +4,7 @@ import json
 import sys
 import time
 
-API_URL = "http://localhost:8001"
+API_URL = "http://localhost:18101"
 
 def make_request(path, method="GET", data=None):
     url = f"{API_URL}{path}"

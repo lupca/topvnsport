@@ -1,8 +1,8 @@
 const getBaseUrl = () => {
   if (typeof window !== "undefined") {
-    return `http://${window.location.hostname}:8001`;
+    return `http://${window.location.hostname}:18101`;
   }
-  return process.env.NEXT_PUBLIC_OMS_API_URL || "http://localhost:8001";
+  return process.env.NEXT_PUBLIC_OMS_API_URL || "http://localhost:18101";
 };
 
 export const APP_SETTINGS = {

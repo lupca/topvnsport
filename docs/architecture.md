@@ -15,31 +15,31 @@ graph TD
     classDef actorClass fill:#FFF3E0,stroke:#EF6C00,stroke-width:2px;
     classDef extClass fill:#ECEFF1,stroke:#37474F,stroke-dasharray: 5 5;
     
-    subgraph PMI ["PMI (Product Information Management) - Port 3000/8000"]
-        PMI_FE["💻 PMI Frontend (:3000)<br/>Quản lý thông tin & media sản phẩm"]:::pmiClass
-        PMI_API["⚙️ PMI API (:8000)<br/>FastAPI Product Service"]:::pmiClass
-        PMI_DB[("🗄️ Database: pim_db<br/>(Postgres :5433)")]:::pmiClass
-        PMI_MinIO[("📦 MinIO Object Storage<br/>(Media :9005)")]:::pmiClass
+    subgraph PMI ["PMI (Product Information Management) - Port 13100/18100"]
+        PMI_FE["💻 PMI Frontend (:13100)<br/>Quản lý thông tin & media sản phẩm"]:::pmiClass
+        PMI_API["⚙️ PMI API (:18100)<br/>FastAPI Product Service"]:::pmiClass
+        PMI_DB[("🗄️ Database: pim_db<br/>(Postgres :15433)")]:::pmiClass
+        PMI_MinIO[("📦 MinIO Object Storage<br/>(Media :19005)")]:::pmiClass
         
         PMI_FE --> PMI_API
         PMI_API --> PMI_DB
         PMI_API --> PMI_MinIO
     end
 
-    subgraph OMS ["OMS (Order Management System) - Port 3001/8001"]
-        OMS_FE["💻 OMS Frontend (:3001)<br/>Dashboard, Order CRUD, Channels, Customer"]:::omsClass
-        OMS_API["⚙️ OMS API (:8001)<br/>FastAPI Order Service"]:::omsClass
-        OMS_DB[("🗄️ Database: oms_db<br/>(Postgres :5434)")]:::omsClass
+    subgraph OMS ["OMS (Order Management System) - Port 13101/18101"]
+        OMS_FE["💻 OMS Frontend (:13101)<br/>Dashboard, Order CRUD, Channels, Customer"]:::omsClass
+        OMS_API["⚙️ OMS API (:18101)<br/>FastAPI Order Service"]:::omsClass
+        OMS_DB[("🗄️ Database: oms_db<br/>(Postgres :15434)")]:::omsClass
         
         OMS_FE --> OMS_API
         OMS_API --> OMS_DB
     end
 
-    subgraph WMS ["WMS (Warehouse Management System) - Port 3002/8002"]
-        WMS_FE["💻 WMS Desktop (:3002)<br/>Quản lý vị trí, kiểm kho, inbound"]:::wmsClass
+    subgraph WMS ["WMS (Warehouse Management System) - Port 13102/18102"]
+        WMS_FE["💻 WMS Desktop (:13102)<br/>Quản lý vị trí, kiểm kho, inbound"]:::wmsClass
         WMS_MOB["📱 WMS Mobile Scanner (/m/*)<br/>PWA Quét barcode di động"]:::wmsClass
-        WMS_API["⚙️ WMS API (:8002)<br/>FastAPI Inventory Service"]:::wmsClass
-        WMS_DB[("🗄️ Database: wms_db<br/>(Postgres :5435)")]:::wmsClass
+        WMS_API["⚙️ WMS API (:18102)<br/>FastAPI Inventory Service"]:::wmsClass
+        WMS_DB[("🗄️ Database: wms_db<br/>(Postgres :15435)")]:::wmsClass
         
         WMS_FE --> WMS_API
         WMS_MOB --> WMS_API

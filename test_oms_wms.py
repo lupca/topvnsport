@@ -4,9 +4,9 @@ import urllib.error
 import json
 import time
 
-OMS_URL = "http://localhost:8001"
-WMS_URL = "http://localhost:8002"
-PMI_URL = "http://localhost:8000"
+OMS_URL = "http://localhost:18101"
+WMS_URL = "http://localhost:18102"
+PMI_URL = "http://localhost:18100"
 
 def request(url, method="GET", data=None):
     headers = {"Content-Type": "application/json"}

@@ -1,8 +1,8 @@
 const getBaseUrl = () => {
   if (typeof window !== "undefined") {
-    return `http://${window.location.hostname}:8002`;
+    return `http://${window.location.hostname}:18102`;
   }
-  return process.env.NEXT_PUBLIC_WMS_API_URL || "http://localhost:8002";
+  return process.env.NEXT_PUBLIC_WMS_API_URL || "http://localhost:18102";
 };
 
 export const APP_SETTINGS = {

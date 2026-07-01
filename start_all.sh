@@ -38,9 +38,9 @@ import time
 import sys
 
 ports = {
-    8000: "PMI API",
-    8001: "OMS API",
-    8002: "WMS API"
+    18100: "PMI API",
+    18101: "OMS API",
+    18102: "WMS API"
 }
 
 start_time = time.time()

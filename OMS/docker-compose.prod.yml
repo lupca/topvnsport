@@ -10,7 +10,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5434:5432"
+      - "15434:5432"
     volumes:
       - oms_db_data:/var/lib/postgresql/data
 
@@ -21,7 +21,7 @@ services:
     container_name: oms_backend
     restart: always
     ports:
-      - "8001:8001"
+      - "18101:8001"
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@oms_db:5432/oms_db
     depends_on:
@@ -38,9 +38,9 @@ services:
     container_name: oms_frontend
     restart: always
     ports:
-      - "3001:3001"
+      - "13101:3001"
     environment:
-      - NEXT_PUBLIC_OMS_API_URL=http://localhost:8001
+      - NEXT_PUBLIC_OMS_API_URL=http://localhost:18101
     depends_on:
       - oms_backend
     networks:

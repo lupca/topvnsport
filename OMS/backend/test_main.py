@@ -331,9 +331,9 @@ def test_auto_generated_order_number(client, db, monkeypatch):
 def test_cors_headers(client):
     # Preflight options request
     resp = client.options("/orders", headers={
-        "Origin": "http://localhost:3000",
+        "Origin": "http://localhost:13101",
         "Access-Control-Request-Method": "POST",
         "Access-Control-Request-Headers": "Content-Type"
     })
     assert resp.status_code == 200
-    assert resp.headers.get("access-control-allow-origin") == "http://localhost:3000"
+    assert resp.headers.get("access-control-allow-origin") == "http://localhost:13101"
