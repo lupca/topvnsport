@@ -1,0 +1,6 @@
+{
+  "name": "TopVNSport",
+  "description": "Nền tảng thương mại điện tử vợt cầu lông tiêu chuẩn quốc tế TopVNSport với bộ lọc thông số chuyên sâu, trợ lý đan lưới ảo và tìm kiếm theo vận động viên.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

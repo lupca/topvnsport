@@ -32,6 +32,7 @@ pnpm-debug.log*
 # IDE / OS
 .idea/
 .vscode/
+android-studio-quail1-patch2-linux/
 
 # Logs
 *.log
@@ -40,3 +41,6 @@ pnpm-debug.log*
 *.sqlite3
 *.db
 *.pid
+
+# Tooling artifacts
+web/assets/.aistudio/

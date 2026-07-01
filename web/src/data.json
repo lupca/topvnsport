@@ -1,0 +1,425 @@
+{
+  "products": [
+    {
+      "id": "lining-gforce-x5",
+      "name": "Vợt cầu lông Lining G-Force X5 chính hãng",
+      "brand": "Lining",
+      "image": "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=600&q=80",
+      "gallery": [
+        "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1613531415875-161a5622c5b7?auto=format&fit=crop&w=600&q=80"
+      ],
+      "category": "Vợt",
+      "price": 1100000,
+      "salePrice": 850000,
+      "specs": {
+        "weight": "5U (75-79g)",
+        "stiffness": "Trung bình (Medium)",
+        "balance": 292,
+        "maxTension": 28,
+        "swingWeight": 79.5
+      },
+      "series": "G-Force",
+      "characteristics": "Toàn Diện",
+      "description": "Vợt cầu lông Lining G-Force X5 được cấu tạo từ sợi carbon siêu nhẹ cường độ cao với công nghệ SuperLight của hãng Lining, mang lại khả năng trợ lực ưu việt và tốc độ vung vợt cực kỳ linh hoạt. Thích hợp cho người có lực cổ tay trung bình, người mới chơi hoặc các bạn nữ mong muốn sở hữu một cây vợt nhẹ nhàng nhưng vẫn có sức căng tốt.",
+      "features": [
+        "Khung vợt khí động học giảm thiểu tối đa sức cản gió",
+        "Sợi carbon cường độ cao chịu lực đập ổn định",
+        "Hỗ trợ đắc lực cho những cú phản tạt nhanh trên lưới"
+      ],
+      "technologies": [
+        { "name": "SuperLight Frame", "description": "Cấu trúc khung siêu nhẹ giúp giảm đáng kể trọng lượng nhưng vẫn duy trì độ bền vững cứng cáp." },
+        { "name": "High Tensile Slim Shaft", "description": "Đũa vợt mỏng 7.0mm tăng cường tính linh hoạt và phản hồi nhanh." },
+        { "name": "Dynamic-Optimum Frame", "description": "Tối ưu hóa diện tích điểm ngọt giúp những pha đánh lệch tâm vẫn đạt được độ nảy tốt." }
+      ],
+      "reviews": [
+        { "author": "Trần Minh Hoàng", "rating": 5, "comment": "Vợt siêu nhẹ, dễ vung, thủ cầu cực kỳ thoát. Căng cước Exbolt 63 gõ kêu cực đanh!", "date": "2026-06-15", "verified": true, "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" },
+        { "author": "Lê Thuỳ Linh", "rating": 4, "comment": "Con gái chơi vợt này quá hợp luôn, đánh không bị mỏi vai cổ tay. Shop đan 10kg vừa tay lắm.", "date": "2026-06-20", "verified": true, "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80" }
+      ],
+      "stock": 12,
+      "badge": "HOT",
+      "colors": ["Đen Cam", "Trắng Xanh"]
+    },
+    {
+      "id": "yonex-astrox-100zz",
+      "name": "Vợt cầu lông Yonex Astrox 100ZZ Kurenai (Mã JP)",
+      "brand": "Yonex",
+      "image": "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=600&q=80",
+      "gallery": [
+        "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1622279457486-62dcc4a4db13?auto=format&fit=crop&w=600&q=80"
+      ],
+      "category": "Vợt",
+      "price": 4890000,
+      "salePrice": 4390000,
+      "specs": {
+        "weight": "4U (80-84g)",
+        "stiffness": "Siêu cứng (Extra Stiff)",
+        "balance": 303,
+        "maxTension": 28,
+        "swingWeight": 84.8
+      },
+      "series": "ASTROX",
+      "characteristics": "Tấn Công",
+      "description": "Yonex Astrox 100ZZ Kurenai là cây vợt tấn công đỉnh cao của Yonex, được sử dụng bởi đương kim vô địch Viktor Axelsen. Với điểm cân bằng nặng đầu cực đại và đũa vợt Hyper Slim Shaft siêu cứng, Astrox 100ZZ mang lại sức mạnh đập cầu hủy diệt, độ chính xác hoàn hảo trong từng điểm cầu chạm.",
+      "features": [
+        "Vật liệu carbon cao cấp Namd nâng cao khả năng hồi phục lực vung",
+        "Đũa vợt Hyper Slim Shaft mỏng nhất lịch sử Yonex",
+        "Hệ thống Rotational Generator System phân bổ trọng lực tối ưu"
+      ],
+      "technologies": [
+        { "name": "Rotational Generator System", "description": "Phân bổ trọng lượng ở đầu vợt, khớp chữ T và đế cán để chuyển đổi trạng thái vung mượt mà." },
+        { "name": "2G-Namd Flex Force", "description": "Vật liệu carbon đột phá giúp giải phóng lực tức thì khi tiếp xúc cầu." },
+        { "name": "Isometric Frame Shape", "description": "Mở rộng vùng điểm ngọt lên tới 7% so với khung tròn truyền thống." }
+      ],
+      "reviews": [
+        { "author": "Nguyễn Tiến Minh", "rating": 5, "comment": "Đập cầu cực kỳ cắm và đầm tay. Yêu cầu thể lực khá và cổ tay khỏe mới thuần được.", "date": "2026-05-10", "verified": true, "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80" }
+      ],
+      "stock": 5,
+      "badge": "PRO",
+      "colors": ["Kurenai Đỏ", "Dark Navy"]
+    },
+    {
+      "id": "lining-axforce-90",
+      "name": "Vợt cầu lông Lining Axforce 90 Tiger Max",
+      "brand": "Lining",
+      "image": "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=600&q=80",
+      "gallery": [
+        "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=600&q=80"
+      ],
+      "category": "Vợt",
+      "price": 5200000,
+      "salePrice": 4800000,
+      "specs": {
+        "weight": "3U (85-89g)",
+        "stiffness": "Cứng (Stiff)",
+        "balance": 305,
+        "maxTension": 30,
+        "swingWeight": 85.5
+      },
+      "series": "Axforce",
+      "characteristics": "Tấn Công",
+      "description": "Lining Axforce 90 Tiger Max là siêu phẩm chuyên công bạo lực, kế thừa công nghệ tối tân của Lining. Điểm cân bằng 305mm siêu nặng đầu kết hợp với vật liệu carbon M50 mang lại những pha tấn công áp đảo từ cuối sân, đường cầu gắt và cắm sâu.",
+      "features": [
+        "Điểm cân bằng cực đoan chuyên đập cầu bạo lực",
+        "Vật liệu M50 Super Carbon siêu đàn hồi",
+        "Hộp gen thiết kế giảm chấn tối đa bảo vệ khung vợt"
+      ],
+      "technologies": [
+        { "name": "M50 Super Carbon", "description": "Sợi carbon mô-đun cao thế hệ mới giúp tăng cường mật độ liên kết và độ bền bỉ dẻo dai." },
+        { "name": "TB Nano + HDF Shock Absorption", "description": "Hệ thống hấp thụ chấn mật độ cao giúp cánh tay không bị rùng xóc khi đập cầu mạnh." }
+      ],
+      "reviews": [
+        { "author": "Lê Văn Đạt", "rating": 5, "comment": "Vợt tấn công phê nhất mình từng đánh, đập phát nào chết phát đấy, âm thanh nổ sướng tai.", "date": "2026-06-11", "verified": true, "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80" }
+      ],
+      "stock": 3,
+      "badge": "LIMITED",
+      "colors": ["Tiger Vàng Đen", "Dragon Đen Đỏ"]
+    },
+    {
+      "id": "kumpoo-k520-pro",
+      "name": "Vợt cầu lông Kumpoo K520 Pro (Toàn diện giá rẻ)",
+      "brand": "Kumpoo",
+      "image": "https://images.unsplash.com/photo-1613531415875-161a5622c5b7?auto=format&fit=crop&w=600&q=80",
+      "gallery": [
+        "https://images.unsplash.com/photo-1613531415875-161a5622c5b7?auto=format&fit=crop&w=600&q=80"
+      ],
+      "category": "Vợt",
+      "price": 850000,
+      "salePrice": 680000,
+      "specs": {
+        "weight": "4U (80-84g)",
+        "stiffness": "Dẻo (Flexible)",
+        "balance": 290,
+        "maxTension": 28,
+        "swingWeight": 78.5
+      },
+      "series": "K Series",
+      "characteristics": "Người Mới",
+      "description": "Vợt cầu lông quốc dân Kumpoo K520 Pro là sự lựa chọn hàng đầu cho học sinh, sinh viên và người mới bắt đầu. Thân vợt dẻo trợ lực cực tốt, điểm cân bằng vừa phải giúp người chơi dễ dàng thực hiện cả những pha phông cầu sâu lẫn phòng thủ linh hoạt.",
+      "features": [
+        "Thân dẻo đàn hồi cao trợ lực tối đa cho người tay yếu",
+        "Khung vợt bền bỉ dẻo dai, hạn chế gãy nứt khi va chạm nhẹ",
+        "Ngoại hình sơn nhám hiện đại cực kỳ thu hút"
+      ],
+      "technologies": [
+        { "name": "High Modulus Carbon", "description": "Sợi carbon đàn hồi tốt giúp phục hồi đũa vợt nhanh chóng." },
+        { "name": "Flexible Shaft Tech", "description": "Công nghệ tạo đũa dẻo tăng lực nảy tự nhiên mà không tốn sức tay." }
+      ],
+      "reviews": [
+        { "author": "Phạm Tuấn Anh", "rating": 5, "comment": "Đúng chuẩn vợt quốc dân, ngon bổ rẻ. Rất bền, mình lỡ va chạm nhẹ vài lần mà không sao.", "date": "2026-06-25", "verified": true, "avatar": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80" }
+      ],
+      "stock": 45,
+      "badge": "NEW",
+      "colors": ["Trắng Ngọc Trai", "Đen Huyền Bí"]
+    },
+    {
+      "id": "yonex-nanoflare-1000z",
+      "name": "Vợt cầu lông Yonex Nanoflare 1000Z chuyên phản tạt",
+      "brand": "Yonex",
+      "image": "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=600&q=80",
+      "category": "Vợt",
+      "price": 4600000,
+      "salePrice": 4250000,
+      "specs": {
+        "weight": "4U (80-84g)",
+        "stiffness": "Rất cứng (Stiff)",
+        "balance": 293,
+        "maxTension": 28,
+        "swingWeight": 81.2
+      },
+      "series": "NANOFLARE",
+      "characteristics": "Phòng Thủ",
+      "description": "Yonex Nanoflare 1000Z là mẫu vợt siêu tốc độ, nhẹ đầu được thiết kế để mang lại tốc độ vung vợt kỷ lục thế giới. Phù hợp tuyệt đối với lối đánh phản tạt, tì đè lưới và điều cầu nhanh, dứt khoát.",
+      "features": [
+        "Tốc độ vung vợt nhanh kỷ lục",
+        "Cải tiến Sonic Flare System tạo lực đẩy khủng khiếp",
+        "Mặt vợt thu gọn tối ưu hoá tính khí động học"
+      ],
+      "technologies": [
+        { "name": "Sonic Flare System", "description": "Sử dụng sợi carbon cao cấp M40X ở đầu vợt để tăng cường độ đàn hồi và tạo lực đẩy tối đa." },
+        { "name": "AERO Frame", "description": "Cạnh khung mượt mà giảm sức cản không khí, gia tăng tốc độ xoay trở." }
+      ],
+      "reviews": [],
+      "stock": 8,
+      "badge": "HOT",
+      "colors": ["Vàng Sét Lightning"]
+    },
+    {
+      "id": "yonex-shoes-65z3",
+      "name": "Giày cầu lông Yonex Power Cushion 65Z3 Wide chính hãng",
+      "brand": "Yonex",
+      "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80",
+      "category": "Giày",
+      "price": 3200000,
+      "salePrice": 2950000,
+      "specs": {
+        "weight": "Nhẹ (~300g/chiếc)",
+        "stiffness": "Đệm tối đa (Ultra Cushion)",
+        "balance": 0,
+        "maxTension": 0
+      },
+      "description": "Giày cầu lông Yonex 65Z3 Wide is dòng giày thi đấu huyền thoại được 80% vận động viên chuyên nghiệp tin dùng. Với công nghệ Power Cushion+ độc quyền, giày hấp thụ chấn động và chuyển đổi năng lượng tối đa, giúp từng bước di chuyển êm ái, bùng nổ.",
+      "features": [
+        "Form bè (Wide) cực kỳ thoải mái cho chân người Việt",
+        "Đế chống lật và bám thảm cầu lông tuyệt đối",
+        "Đệm gót Power Cushion+ giảm áp lực lên đầu gối và gót chân"
+      ],
+      "reviews": [
+        { "author": "Nguyễn Văn Nam", "rating": 5, "comment": "Đế êm vô địch, mình chân bè đi bản Wide này vừa như in, không bị kích ngón út nữa.", "date": "2026-06-18", "verified": true }
+      ],
+      "stock": 15,
+      "badge": "HOT",
+      "isWide": true,
+      "colors": ["Trắng Đỏ", "Đen Xanh"]
+    },
+    {
+      "id": "lining-ranger-6",
+      "name": "Giày cầu lông Lining Ranger 6 chuyên dụng",
+      "brand": "Lining",
+      "image": "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?auto=format&fit=crop&w=600&q=80",
+      "category": "Giày",
+      "price": 1750000,
+      "salePrice": 1450000,
+      "specs": {
+        "weight": "Bền bỉ (~320g)",
+        "stiffness": "Cực ôm chân (Supportive)",
+        "balance": 0,
+        "maxTension": 0
+      },
+      "description": "Lining Ranger 6 mang phong cách thiết kế hầm hố của chiến binh rừng xanh. Giày sở hữu lớp đế cao su chống mài mòn cao (Tuff Tip) cực bền, siêu bám sân, phù hợp cho cả sân thảm tiêu chuẩn lẫn sân bê tông phong trào.",
+      "features": [
+        "Lớp da tổng hợp cao cấp ôm khít bàn chân",
+        "Công nghệ chống lật cổ chân hạn chế tối đa chấn thương lật sơ mi",
+        "Độ bền cực cao phù hợp cày ải nhiều loại sân"
+      ],
+      "reviews": [],
+      "stock": 20,
+      "badge": "SALE",
+      "colors": ["Xanh Neon", "Đen Trắng"]
+    },
+    {
+      "id": "joola-perseus-16",
+      "name": "Vợt Pickleball Joola Ben Johns Perseus CFS 16mm",
+      "brand": "Pickleball",
+      "image": "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?auto=format&fit=crop&w=600&q=80",
+      "category": "Pickleball",
+      "price": 6200000,
+      "salePrice": 5800000,
+      "specs": {
+        "weight": "7.8 oz (221g)",
+        "stiffness": "Carbon Ma Sát Cao (CFS)",
+        "balance": 240,
+        "maxTension": 0
+      },
+      "description": "Vợt Pickleball Joola Ben Johns Perseus CFS 16mm là cây vợt cao cấp bán chạy hàng đầu thế giới dành cho bộ môn Pickleball đang lên ngôi. Thiết kế bề mặt Carbon ma sát cao độc quyền giúp tạo xoáy bóng cực đỉnh và kiểm soát cự ly bóng vô song.",
+      "features": [
+        "Bề mặt sợi carbon nhám ma sát cao tạo độ xoáy xoáy cực lớn",
+        "Lõi tổ ong Polypropylene 16mm hấp thụ chấn động hoàn hảo",
+        "Tay cầm chống trượt êm ái tiêu chuẩn thi đấu"
+      ],
+      "reviews": [
+        { "author": "Hoàng Lâm", "rating": 5, "comment": "Đánh Pickleball bằng cây này cảm giác kiểm soát bóng lưới cực kỳ phê, xoáy bóng khó chịu.", "date": "2026-06-22", "verified": true }
+      ],
+      "stock": 4,
+      "badge": "LIMITED"
+    },
+    {
+      "id": "yonex-exbolt-68",
+      "name": "Cước đan vợt cầu lông Yonex Exbolt 68 chính hãng",
+      "brand": "Yonex",
+      "image": "https://images.unsplash.com/photo-1613531415875-161a5622c5b7?auto=format&fit=crop&w=300&q=80",
+      "category": "Cước",
+      "price": 220000,
+      "specs": { "weight": "Đường kính 0.68mm", "stiffness": "Siêu bền / Nảy", "balance": 0, "maxTension": 0 },
+      "description": "Exbolt 68 là dòng dây cước đan vợt mới nhất của Yonex, kết hợp giữa sợi rèn đặc biệt Forged Fiber tăng độ bền bỉ lên 30% mà vẫn giữ được âm thanh nổ đanh vang dội và lực nảy bóng xuất sắc.",
+      "reviews": [],
+      "stock": 100,
+      "badge": "HOT"
+    },
+    {
+      "id": "yonex-active-bag",
+      "name": "Túi cầu lông Yonex Active Racket Bag 6 (BAG2532R)",
+      "brand": "Yonex",
+      "image": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=600&q=80",
+      "category": "Túi xách",
+      "price": 1850000,
+      "specs": { "weight": "6 Vợt", "stiffness": "Chống thấm nước", "balance": 0, "maxTension": 0 },
+      "description": "Túi đựng vợt Yonex Pro Active Series gồm 2 ngăn lớn đựng vợt có lót bạc cách nhiệt Thermo-guard, ngăn chứa giày riêng biệt chống mùi và các ngăn phụ kiện tiện lợi, đệm quai đeo chống mỏi êm ái.",
+      "reviews": [],
+      "stock": 15,
+      "badge": "NEW"
+    }
+  ],
+  "players": [
+    {
+      "id": "viktor-axelsen",
+      "name": "Viktor Axelsen",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
+      "country": "Đan Mạch",
+      "category": "Đơn Nam",
+      "racketId": "yonex-astrox-100zz",
+      "shoesId": "yonex-shoes-65z3",
+      "stringId": "yonex-exbolt-68",
+      "description": "Huyền thoại sống của cầu lông thế giới, tay vợt đơn nam vĩ đại nhất lịch sử Đan Mạch với lối đánh tấn công uy lực và khả năng bao sân tuyệt vời nhờ chiều cao 1m94.",
+      "setupProducts": {
+        "racketName": "Yonex Astrox 100ZZ Kurenai",
+        "shoesName": "Yonex Power Cushion 65Z3 Wide",
+        "stringName": "Cước Yonex Exbolt 68 (Căng 13.5kg)"
+      }
+    },
+    {
+      "id": "an-se-young",
+      "name": "An Se-young",
+      "avatar": "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80",
+      "country": "Hàn Quốc",
+      "category": "Đơn Nữ",
+      "racketId": "yonex-nanoflare-1000z",
+      "shoesId": "yonex-shoes-65z3",
+      "stringId": "yonex-exbolt-68",
+      "description": "Nữ hoàng phòng ngự phản công của cầu lông thế giới, sở hữu những bước chạy linh hoạt bền bỉ không biết mệt mỏi và những pha cứu cầu điên rồ.",
+      "setupProducts": {
+        "racketName": "Yonex Nanoflare 1000Z",
+        "shoesName": "Yonex Power Cushion 65Z3 White",
+        "stringName": "Cước Yonex BG80 Power (Căng 12.5kg)"
+      }
+    },
+    {
+      "id": "shiyuqi",
+      "name": "Shi Yuqi",
+      "avatar": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=150&q=80",
+      "country": "Trung Quốc",
+      "category": "Đơn Nam",
+      "racketId": "lining-axforce-90",
+      "shoesId": "lining-ranger-6",
+      "stringId": "yonex-exbolt-68",
+      "description": "Ngôi sao đơn nam hàng đầu Trung Quốc với lối chơi thông minh, những quả đập cầu dọc biên uy lực và khả năng chuyển đổi trạng thái cực nhanh.",
+      "setupProducts": {
+        "racketName": "Lining Axforce 90 Tiger Max",
+        "shoesName": "Giày Lining Ranger 6",
+        "stringName": "Cước Lining No.1 (Căng 13kg)"
+      }
+    },
+    {
+      "id": "lee-chong-wei",
+      "name": "Lee Chong Wei",
+      "avatar": "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=150&q=80",
+      "country": "Malaysia",
+      "category": "Huyền Thoại",
+      "racketId": "yonex-astrox-100zz",
+      "shoesId": "yonex-shoes-65z3",
+      "stringId": "yonex-exbolt-68",
+      "description": "Huyền thoại cầu lông Malaysia, người nắm giữ kỷ lục 349 tuần ngự trị trên đỉnh bảng xếp hạng thế giới với tốc độ di chuyển siêu phàm và cú đập nhảy chéo sân kinh điển.",
+      "setupProducts": {
+        "racketName": "Yonex Astrox 100ZZ (JP Edition)",
+        "shoesName": "Yonex SHB 65Z",
+        "stringName": "Cước Yonex BG66 Ultimax (Căng 13.5kg)"
+      }
+    }
+  ],
+  "blogs": [
+    {
+      "id": "review-axforce-70",
+      "title": "Đánh giá chi tiết Vợt Lining Axforce 70: Sự kế thừa tinh anh",
+      "category": "Đánh giá thiết bị",
+      "summary": "Liệu cây vợt tấn công phân khúc cận cao cấp Lining Axforce 70 có thực sự xuất sắc và xứng đáng số tiền bỏ ra? Hãy cùng TopVNSport mổ xẻ thông số thực tế.",
+      "content": "Cây vợt Lining Axforce 70 được Lining trình làng nhằm lấp đầy phân khúc tấn công tốc độ cao. Với trọng lượng 4U và điểm cân bằng 302mm, Axforce 70 mang lại trải nghiệm đập cầu rất thoát nhưng không quá kén người chơi như đàn anh Axforce 90.\n\nTrải nghiệm thực tế trên sân thảm:\n1. **Phông cầu**: Vợt hỗ trợ lực cực tốt nhờ thân dẻo trung bình, cầu đi sát cuối sân mà không cần tốn quá nhiều lực cổ tay.\n2. **Đập cầu (Smash)**: Đường cầu đi rất cắm, có độ đầm chắc nhất định, không xảy ra hiện tượng rung lắc đầu vợt nhờ công nghệ hấp thụ chấn HDF.\n3. **Tì đè phản tạt**: Dù nặng đầu nhưng do khung vợt thiết kế vát mỏng khí động học nên xoay trở cực kỳ thoát, phù hợp cả đánh đơn lẫn đánh đôi ở vị trí cầu sau.",
+      "date": "2026-06-25",
+      "image": "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=800&q=80",
+      "author": "Admin Hùng Cầu Lông",
+      "tags": ["Review Vợt", "Lining Axforce", "Cầu lông phong trào"]
+    },
+    {
+      "id": "review-san-loc-phat",
+      "title": "Review hệ thống Sân Cầu Lông Lộc Phát - Điểm hẹn lý tưởng của các tay vợt",
+      "category": "Đánh giá sân bãi",
+      "summary": "Trải nghiệm thực tế chất lượng thảm, hệ thống đèn chiếu sáng LED chống chói mắt tại tổ hợp sân cầu lông Lộc Phát nổi tiếng.",
+      "content": "Sân cầu lông Lộc Phát là một trong những cụm sân được đánh giá cao nhất tại khu vực nội thành. Gồm 6 sân thảm PVC tiêu chuẩn quốc tế với độ bám cực kỳ tốt, giảm bớt chấn thương đầu gối cho người chơi.\n\nĐiểm cộng tuyệt vời:\n- Trần nhà cao ráo trên 9 mét, không lo cầu chạm trần.\n- Hệ thống đèn LED được bố trí hai bên hông sân thay vì chiếu thẳng từ trên đỉnh đầu xuống, giúp người chơi không bị lóa mắt khi thực hiện những pha nhảy đập cầu (smash) hay đón cầu cao sâu.\n- Có khu vực tắm rửa vệ sinh sạch sẽ, quầy nước uống phục vụ chu đáo và chỗ đỗ xe rộng rãi.",
+      "date": "2026-06-22",
+      "image": "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=800&q=80",
+      "author": "Trọng Tài Nguyễn Vũ",
+      "tags": ["Sân Cầu Lông", "Hà Nội", "Sân Lộc Phát"]
+    },
+    {
+      "id": "ky-thuat-co-tay",
+      "title": "Kỹ thuật sử dụng và tập luyện cổ tay trong cầu lông tránh chấn thương",
+      "category": "Hướng dẫn kỹ thuật",
+      "summary": "Rất nhiều người chơi phong trào bị đau mỏi cổ tay do phát lực sai cách. Xem ngay hướng dẫn khởi động và gập cổ tay đúng chuẩn y khoa thể thao.",
+      "content": "Trong bộ môn cầu lông, lực đánh không đến từ cả cánh tay mà phần lớn được giải phóng ở thời điểm gập cổ tay sát quả cầu. Phát lực sai cách bằng việc gồng cứng cánh tay sẽ làm giảm tốc độ cầu và gây ra chấn thương viêm gân cổ tay, viêm khớp khuỷu tay (Tennis Elbow).\n\nCác bước tập luyện cổ tay hiệu quả tại nhà:\n1. **Tập luyện với chai nước hoặc tạ nhẹ 1kg**: Thực hiện các động tác gập cổ tay lên xuống đều đặn mỗi ngày 3 hiệp, mỗi hiệp 20 lần giúp cơ cổ tay bền bỉ dẻo dai.\n2. **Khởi động kỹ trước khi vào sân**: Xoay khớp cổ tay, căng cơ cánh tay tối thiểu 5 phút trước khi cầm vợt khởi động.\n3. **Lựa chọn độ cứng đũa vợt phù hợp**: Nếu cổ tay yếu, tuyệt đối tránh xa các dòng vợt siêu cứng như Astrox 100ZZ hay Axforce 90. Hãy bắt đầu bằng các dòng thân dẻo hoặc trung bình dẻo như Kumpoo K520 Pro hoặc Lining G-Force X5 để được trợ lực tốt nhất.",
+      "date": "2026-06-18",
+      "image": "https://images.unsplash.com/photo-1613531415875-161a5622c5b7?auto=format&fit=crop&w=800&q=80",
+      "author": "HLV Lê Quốc Anh",
+      "tags": ["Kỹ thuật cầu lông", "Tránh chấn thương", "Cổ tay"]
+    }
+  ],
+  "branches": [
+    {
+      "id": "branch-bac-tu-liem",
+      "name": "TopVNSport Bắc Từ Liêm (Premium Hub)",
+      "address": "Số 1, ngõ 141/3, phố Lê Văn Hiến, Phường Đức Thắng, Quận Bắc Từ Liêm, Hà Nội",
+      "phone": "0981.234.567",
+      "schedule": "08:00 - 22:00 (Cả tuần)",
+      "city": "Hà Nội",
+      "mapEmbedUrl": "https://maps.google.com/maps?q=S%E1%BB%91%201,%20ng%C3%B5%20141/3,%20ph%E1%BB%91%20L%C3%AA%20V%C4%83n%20Hi%E1%BA%BFn,%20Ph%C6%B0%E1%BB%9Dng%20%C4%90%E1%BB%A9c%20Th%E1%BA%AFng,%20Qu%E1%BA%ADn%20B%E1%BA%AFc%20T%E1%BB%AB%20Li%C3%AAm,%20H%C3%A0%20N%E1%BB%99i&t=&z=15&ie=UTF8&iwloc=&output=embed"
+    }
+  ],
+  "stringOptions": [
+    { "id": "yonex-exbolt-63", "name": "Yonex Exbolt 63", "brand": "Yonex", "type": "Trợ lực / Âm thanh", "thickness": "0.63mm", "price": 210000, "colors": ["Trắng", "Vàng Chanh", "Đen"] },
+    { "id": "yonex-exbolt-65", "name": "Yonex Exbolt 65", "brand": "Yonex", "type": "Trợ lực / Âm thanh", "thickness": "0.65mm", "price": 220000, "colors": ["Trắng", "Đỏ", "Xanh Dương"] },
+    { "id": "yonex-exbolt-68", "name": "Yonex Exbolt 68", "brand": "Yonex", "type": "Trợ lực / Âm thanh", "thickness": "0.68mm", "price": 220000, "colors": ["Vàng Sét", "Trắng", "Đen"] },
+    { "id": "yonex-bg65", "name": "Yonex BG65 (Siêu bền quốc dân)", "brand": "Yonex", "type": "Độ bền", "thickness": "0.70mm", "price": 150000, "colors": ["Vàng Chuối", "Trắng", "Đen", "Đỏ", "Xanh Lam"] },
+    { "id": "yonex-bg66-ultimax", "name": "Yonex BG66 Ultimax (Bán chạy nhất)", "brand": "Yonex", "type": "Trợ lực / Âm thanh", "thickness": "0.65mm", "price": 200000, "colors": ["Trắng", "Vàng", "Cam", "Hồng", "Đen"] },
+    { "id": "lining-no1", "name": "Lining No.1 (Đập cầu sướng tay)", "brand": "Lining", "type": "Trợ lực / Âm thanh", "thickness": "0.65mm", "price": 170000, "colors": ["Vàng Chanh", "Trắng", "Đen"] },
+    { "id": "victor-vbs66", "name": "Victor VBS-66 Nano", "brand": "Victor", "type": "Kiểm soát", "thickness": "0.66mm", "price": 180000, "colors": ["Trắng", "Xanh Chuối"] }
+  ],
+  "constants": {
+    "shipping": {
+      "standard": 30000,
+      "fast": 50000
+    },
+    "cities": ["Hà Nội"],
+    "defaultWeight": "4U/G5",
+    "defaultTension": 10.5,
+    "maxPrice": 6000000
+  }
+}
