@@ -25,6 +25,14 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Prepare web env file for CI
+        run: |
+          if [ -f web/.env.example ]; then
+            cp web/.env.example web/.env
+          else
+            touch web/.env
+          fi
+
       - name: Validate production compose files
         run: |
           docker compose -f PMI/docker-compose.prod.yml config >/tmp/pmi-config.out
