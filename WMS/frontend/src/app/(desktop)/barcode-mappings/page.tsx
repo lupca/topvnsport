@@ -1,13 +1,17 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { APP_SETTINGS } from "@/config/settings";
 import {
   Barcode,
   X,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Scan
 } from "lucide-react";
 import DataTable from "@/components/ui/DataTable";
+
+const MobileScanner = dynamic(() => import("@/components/MobileScanner"), { ssr: false });
 
 interface BarcodeMapping {
   id: number;
@@ -25,6 +29,7 @@ export default function BarcodeMappingsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isScanOpen, setIsScanOpen] = useState(false);
 
   // Modal States
   const [isOpen, setIsOpen] = useState(false);
@@ -35,6 +40,25 @@ export default function BarcodeMappingsPage() {
   const [productName, setProductName] = useState("");
   const [variantName, setVariantName] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+
+  const handleScanSuccess = (scannedBarcode: string) => {
+    const match = mappings.find((m) => m.barcode === scannedBarcode);
+    setIsScanOpen(false);
+    if (match) {
+      setSearchQuery(scannedBarcode);
+      alert(`Mã vạch ${scannedBarcode} đã liên kết với SKU: ${match.sku_code} (${match.product_name}). Hệ thống đã lọc danh sách.`);
+    } else {
+      setBarcode(scannedBarcode);
+      setBarcodeType("EAN-13");
+      setSkuCode("");
+      setProductName("");
+      setVariantName("");
+      setImageUrl("");
+      setEditingMapping(null);
+      setIsOpen(true);
+      alert(`Mã vạch ${scannedBarcode} chưa được liên kết. Hãy điền thông tin để tạo liên kết mới!`);
+    }
+  };
 
   useEffect(() => {
     fetchMappings();
@@ -207,6 +231,13 @@ export default function BarcodeMappingsPage() {
             Định nghĩa liên kết giữa mã vạch quét từ máy quét (EAN-13, Code 128, etc.) với mã SKU của sản phẩm
           </p>
         </div>
+        <button
+          onClick={() => setIsScanOpen(true)}
+          className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-650 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md transition-colors"
+        >
+          <Scan className="w-4 h-4" />
+          <span>Quét Barcode (Camera)</span>
+        </button>
       </div>
 
       {error && (
@@ -322,6 +353,27 @@ export default function BarcodeMappingsPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* --- Camera Scanner Modal --- */}
+      {isScanOpen && (
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 rounded-2xl w-full max-w-md p-6 shadow-xl border border-slate-800 space-y-4">
+            <div className="flex justify-between items-center border-b pb-3 border-slate-800">
+              <h3 className="text-sm font-extrabold text-slate-100 flex items-center gap-2">
+                <Scan className="w-5 h-5 text-indigo-500" />
+                <span>Quét Barcode Sản Phẩm</span>
+              </h3>
+              <button onClick={() => setIsScanOpen(false)} className="text-slate-400 hover:text-slate-200">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="text-slate-350 text-xs">
+              Sử dụng webcam của bạn hoặc dùng phần Giả lập nhập mã thủ công ở dưới để quét mã vạch (EAN-13).
+            </div>
+            <MobileScanner onScanSuccess={handleScanSuccess} placeholder="Nhập/quét mã EAN-13 sản phẩm..." scanType="product" />
           </div>
         </div>
       )}

@@ -2,6 +2,7 @@ from typing import List, Optional
 from datetime import datetime
 import urllib.request
 import json
+import os
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -21,9 +22,21 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="WMS Backend API", version="1.0.0")
 
+allowed_origins = [
+    origin.strip()
+    for origin in os.getenv(
+        "CORS_ALLOWED_ORIGINS",
+        "http://localhost:13100,http://localhost:13101,http://localhost:13102,http://localhost:13103"
+    ).split(",")
+    if origin.strip()
+]
+
+allowed_origin_regex = r"^https?://(localhost|127\.0\.0\.1|0\.0\.0\.0|10(?:\.\d{1,3}){3}|192\.168(?:\.\d{1,3}){2}|172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(:\d+)?$"
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
+    allow_origin_regex=allowed_origin_regex,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -44,7 +57,6 @@ def notify_oms_status(oms_order_id: int, new_status: str):
     if not oms_order_id:
         logger.info("notify_oms_status skipped: oms_order_id is null")
         return
-    import os
     oms_url = os.getenv("OMS_API_URL", "http://oms_backend:8001")
     target_url = f"{oms_url}/orders/{oms_order_id}/status"
     logger.info(f"Notifying OMS of status {new_status} for order {oms_order_id} at URL: {target_url}")

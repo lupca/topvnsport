@@ -48,7 +48,7 @@ class InventoryCreate(InventoryBase):
 
 class InventoryResponse(InventoryBase):
     id: int
-    updated_at: datetime
+    updated_at: Optional[datetime] = None
     qty_available: int = 0
     model_config = ConfigDict(from_attributes=True)
 

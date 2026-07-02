@@ -184,6 +184,18 @@ export default function InventoryPage() {
     return wh ? wh.name : "-";
   };
 
+  const formatDateTime = (value: string) => {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "-";
+    return date.toLocaleString("vi-VN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
   // Filter Inventory
   const filteredInventory = inventory.filter((item) => {
     const matchesSearch =
@@ -196,6 +208,16 @@ export default function InventoryPage() {
     const matchesWh = loc?.warehouse_id.toString() === selectedWarehouseId;
     return matchesSearch && matchesWh;
   });
+
+  const inventoryTotals = filteredInventory.reduce(
+    (totals, item) => {
+      totals.onHand += item.qty_on_hand;
+      totals.reserved += item.qty_reserved;
+      totals.available += item.qty_on_hand - item.qty_reserved;
+      return totals;
+    },
+    { onHand: 0, reserved: 0, available: 0 }
+  );
 
   const openAdjustModal = (item?: InventoryItem) => {
     if (item) {
@@ -230,61 +252,66 @@ export default function InventoryPage() {
       key: "sku_code",
       label: "SKU",
       render: (item: InventoryItem) => (
-        <span className="font-bold text-slate-200">{item.sku_code}</span>
+        <span className="block max-w-[140px] truncate font-bold text-slate-200">{item.sku_code}</span>
       )
     },
     {
       key: "product_name",
       label: "Tên Sản Phẩm",
       render: (item: InventoryItem) => (
-        <span className="font-semibold text-slate-300">{item.product_name}</span>
+        <span className="block max-w-[280px] truncate font-semibold text-slate-300">{item.product_name}</span>
       )
     },
     {
       key: "warehouse",
       label: "Kho Hàng",
       render: (item: InventoryItem) => (
-        <span className="text-slate-450 text-slate-400 font-medium">{getWarehouseName(item.location_id)}</span>
+        <span className="block max-w-[180px] truncate text-slate-400 font-medium">{getWarehouseName(item.location_id)}</span>
       )
     },
     {
       key: "location",
       label: "Vị trí (Location)",
       render: (item: InventoryItem) => (
-        <span className="bg-slate-850 text-slate-300 px-2 py-0.5 rounded font-bold border border-slate-850">
+        <span className="inline-block max-w-[220px] truncate bg-slate-850 text-slate-300 px-2 py-0.5 rounded font-bold border border-slate-850">
           {getLocationCode(item.location_id)}
         </span>
       )
     },
     {
-      key: "qty_on_hand",
-      label: "Tổng On-Hand",
+      key: "qty_summary",
+      label: "Số lượng",
       render: (item: InventoryItem) => (
-        <span className="font-extrabold text-slate-100">{item.qty_on_hand}</span>
+        <div className="space-y-1 min-w-[132px]">
+          <div className="flex items-center justify-between gap-2 text-[10px] uppercase tracking-wider text-slate-500">
+            <span>On-hand</span>
+            <span className="font-extrabold text-slate-100 text-sm normal-case tracking-normal">{item.qty_on_hand}</span>
+          </div>
+          <div className="flex items-center justify-between gap-2 text-[10px] uppercase tracking-wider text-slate-500">
+            <span>Reserved</span>
+            <span className="font-bold text-slate-300 text-sm normal-case tracking-normal">{item.qty_reserved}</span>
+          </div>
+          <div className="flex items-center justify-between gap-2 text-[10px] uppercase tracking-wider text-slate-500">
+            <span>Available</span>
+            <span className={`px-2 py-0.5 rounded font-bold text-sm normal-case tracking-normal ${
+              item.qty_on_hand - item.qty_reserved <= 0 ? "bg-rose-950/50 text-rose-400" :
+              item.qty_on_hand - item.qty_reserved < 10 ? "bg-amber-950/50 text-amber-400" :
+              "bg-emerald-950/50 text-emerald-400"
+            }`}>
+              {item.qty_on_hand - item.qty_reserved}
+            </span>
+          </div>
+        </div>
       )
     },
     {
-      key: "qty_reserved",
-      label: "Đã giữ (Reserved)",
+      key: "updated_at",
+      label: "Cập nhật",
       render: (item: InventoryItem) => (
-        <span className="font-bold text-slate-400">{item.qty_reserved}</span>
+        <span className="block max-w-[170px] truncate text-slate-400 font-medium">
+          {formatDateTime(item.updated_at)}
+        </span>
       )
-    },
-    {
-      key: "qty_available",
-      label: "Khả Dụng (Available)",
-      render: (item: InventoryItem) => {
-        const qtyAvailable = item.qty_on_hand - item.qty_reserved;
-        return (
-          <span className={`px-2 py-0.5 rounded font-bold ${
-            qtyAvailable <= 0 ? "bg-rose-955 bg-rose-950/50 text-rose-450 text-rose-400" :
-            qtyAvailable < 10 ? "bg-amber-955 bg-amber-950/50 text-amber-400" :
-            "bg-emerald-950/50 text-emerald-400"
-          }`}>
-            {qtyAvailable}
-          </span>
-        );
-      }
     },
     {
       key: "actions",
@@ -309,7 +336,7 @@ export default function InventoryPage() {
   ];
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8 text-slate-100">
+    <div className="w-full max-w-none px-4 md:px-6 py-8 space-y-8 text-slate-100">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -373,6 +400,21 @@ export default function InventoryPage() {
           >
             <RefreshCw className="w-4 h-4 text-slate-400" />
           </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900 px-4 py-3">
+          <div className="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-bold">Tồn thực tế</div>
+          <div className="mt-1 text-2xl font-extrabold text-slate-100">{inventoryTotals.onHand}</div>
+        </div>
+        <div className="rounded-2xl border border-slate-800 bg-slate-900 px-4 py-3">
+          <div className="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-bold">Đã giữ chỗ</div>
+          <div className="mt-1 text-2xl font-extrabold text-slate-100">{inventoryTotals.reserved}</div>
+        </div>
+        <div className="rounded-2xl border border-slate-800 bg-slate-900 px-4 py-3">
+          <div className="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-bold">Khả dụng</div>
+          <div className="mt-1 text-2xl font-extrabold text-slate-100">{inventoryTotals.available}</div>
         </div>
       </div>
 

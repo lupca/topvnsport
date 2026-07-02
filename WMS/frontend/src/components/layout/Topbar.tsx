@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
 import { Bell, Search, User, LogOut, ShieldAlert } from "lucide-react";
 
 export default function Topbar() {
@@ -36,7 +35,7 @@ export default function Topbar() {
         <div className="h-6 w-px bg-slate-800"></div>
 
         {/* User Info & Avatar */}
-        <Link href="/account" className="flex items-center gap-3 hover:opacity-85 transition-opacity cursor-pointer">
+        <div className="flex items-center gap-3 opacity-95 cursor-default" aria-label="Current user">
           <div className="flex flex-col text-right">
             <span className="text-xs font-bold text-slate-200">Administrator</span>
             <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-widest">Warehouse Manager</span>
@@ -44,7 +43,7 @@ export default function Topbar() {
           <div className="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-indigo-400 font-bold text-xs shadow-inner">
             AD
           </div>
-        </Link>
+        </div>
       </div>
     </header>
   );

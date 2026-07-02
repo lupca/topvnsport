@@ -59,6 +59,7 @@ export default function InboundPage() {
   const [selectedShipment, setSelectedShipment] = useState<InboundShipment | null>(null);
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
+  const [barcodeMappings, setBarcodeMappings] = useState<{ sku_code: string; product_name: string; variant_name: string | null }[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -69,8 +70,8 @@ export default function InboundPage() {
   const [supplierName, setSupplierName] = useState("");
   const [note, setNote] = useState("");
   const [expectedDate, setExpectedDate] = useState("");
-  const [itemsInput, setItemsInput] = useState<{ sku_code: string; product_name: string; expected_qty: number }[]>([
-    { sku_code: "", product_name: "", expected_qty: 1 }
+  const [itemsInput, setItemsInput] = useState<{ sku_code: string; product_name: string; expected_qty: number; isManual?: boolean }[]>([
+    { sku_code: "", product_name: "", expected_qty: 1, isManual: false }
   ]);
 
   // Scan Receive Form
@@ -90,23 +91,40 @@ export default function InboundPage() {
     try {
       setLoading(true);
       setError(null);
-      const [shipRes, whRes, locRes] = await Promise.all([
+      const [shipRes, whRes, locRes, mapRes] = await Promise.all([
         fetch(`${APP_SETTINGS.api.baseUrl}/inbound-shipments`),
         fetch(`${APP_SETTINGS.api.baseUrl}/warehouses`),
-        fetch(`${APP_SETTINGS.api.baseUrl}/locations`)
+        fetch(`${APP_SETTINGS.api.baseUrl}/locations`),
+        fetch(`${APP_SETTINGS.api.baseUrl}/barcode-mappings`)
       ]);
 
-      if (!shipRes.ok || !whRes.ok || !locRes.ok) {
+      if (!shipRes.ok || !whRes.ok || !locRes.ok || !mapRes.ok) {
         throw new Error("Không thể đồng bộ dữ liệu từ backend.");
       }
 
       const shipData = await shipRes.json();
       const whData = await whRes.json();
       const locData = await locRes.json();
+      const mapData = await mapRes.json();
+
+      // Filter unique products from barcode mappings
+      const uniqueProducts: any[] = [];
+      const seenSkus = new Set();
+      for (const m of mapData) {
+        if (!seenSkus.has(m.sku_code)) {
+          seenSkus.add(m.sku_code);
+          uniqueProducts.push({
+            sku_code: m.sku_code,
+            product_name: m.product_name,
+            variant_name: m.variant_name
+          });
+        }
+      }
 
       setShipments(shipData);
       setWarehouses(whData);
       setLocations(locData);
+      setBarcodeMappings(uniqueProducts);
     } catch (err: any) {
       setError(err.message || "Lỗi khi tải dữ liệu nhập kho.");
     } finally {
@@ -133,18 +151,19 @@ export default function InboundPage() {
   };
 
   const handleAddItemRow = () => {
-    setItemsInput([...itemsInput, { sku_code: "", product_name: "", expected_qty: 1 }]);
+    setItemsInput((current) => [...current, { sku_code: "", product_name: "", expected_qty: 1, isManual: false }]);
   };
 
   const handleRemoveItemRow = (idx: number) => {
-    const updated = itemsInput.filter((_, i) => i !== idx);
-    setItemsInput(updated);
+    setItemsInput((current) => current.filter((_, i) => i !== idx));
   };
 
   const handleItemInputChange = (idx: number, field: string, val: any) => {
-    const updated = [...itemsInput];
-    updated[idx] = { ...updated[idx], [field]: val };
-    setItemsInput(updated);
+    setItemsInput((current) => {
+      const updated = [...current];
+      updated[idx] = { ...updated[idx], [field]: val };
+      return updated;
+    });
   };
 
   const handleCreateShipment = async (e: React.FormEvent) => {
@@ -196,7 +215,7 @@ export default function InboundPage() {
       setSupplierName("");
       setNote("");
       setExpectedDate("");
-      setItemsInput([{ sku_code: "", product_name: "", expected_qty: 1 }]);
+      setItemsInput([{ sku_code: "", product_name: "", expected_qty: 1, isManual: false }]);
       fetchData();
       alert("Tạo lô hàng nhập kho thành công!");
     } catch (err: any) {
@@ -652,27 +671,85 @@ export default function InboundPage() {
                 <div className="space-y-2.5 max-h-[220px] overflow-y-auto pr-1">
                   {itemsInput.map((row, idx) => (
                     <div key={idx} className="flex gap-2.5 items-end">
-                      <div className="flex-1 space-y-1">
-                        {idx === 0 && <label className="font-semibold text-slate-300">Mã SKU *</label>}
-                        <input
-                          type="text"
-                          value={row.sku_code}
-                          onChange={(e) => handleItemInputChange(idx, "sku_code", e.target.value)}
-                          placeholder="VD: SKU-SPORTS-BLUE-M"
-                          className="w-full p-2 border border-slate-800 rounded-lg focus:outline-none bg-slate-950 text-slate-100"
-                          required
-                        />
-                      </div>
-                      <div className="flex-[1.5] space-y-1">
-                        {idx === 0 && <label className="font-semibold text-slate-300">Tên Sản phẩm</label>}
-                        <input
-                          type="text"
-                          value={row.product_name}
-                          onChange={(e) => handleItemInputChange(idx, "product_name", e.target.value)}
-                          placeholder="VD: Áo thun nam size M"
-                          className="w-full p-2 border border-slate-800 rounded-lg focus:outline-none bg-slate-950 text-slate-100"
-                        />
-                      </div>
+                      {!row.isManual ? (
+                        <div className="flex-1 flex gap-2">
+                          <div className="flex-1 space-y-1">
+                            {idx === 0 && <label className="font-semibold text-slate-300">Chọn sản phẩm (SKU) *</label>}
+                            <select
+                              value={row.sku_code}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                if (val === "MANUAL") {
+                                  handleItemInputChange(idx, "isManual", true);
+                                  handleItemInputChange(idx, "sku_code", "");
+                                  handleItemInputChange(idx, "product_name", "");
+                                } else {
+                                  const match = barcodeMappings.find(m => m.sku_code === val);
+                                  handleItemInputChange(idx, "sku_code", val);
+                                  handleItemInputChange(idx, "product_name", match ? match.product_name + (match.variant_name ? ` (${match.variant_name})` : "") : "");
+                                }
+                              }}
+                              className="w-full p-2.5 border border-slate-800 rounded-lg focus:outline-none bg-slate-950 text-slate-100"
+                              required
+                            >
+                              <option value="">-- Chọn sản phẩm --</option>
+                              {barcodeMappings.map((m, mIdx) => (
+                                <option key={mIdx} value={m.sku_code}>
+                                  [{m.sku_code}] {m.product_name} {m.variant_name ? `(${m.variant_name})` : ""}
+                                </option>
+                              ))}
+                              <option value="MANUAL">➕ -- Nhập tay SKU mới... --</option>
+                            </select>
+                          </div>
+                          {row.sku_code && (
+                            <div className="flex-[1.5] space-y-1">
+                              {idx === 0 && <label className="font-semibold text-slate-400">Tên Sản phẩm</label>}
+                              <input
+                                type="text"
+                                value={row.product_name}
+                                disabled
+                                className="w-full p-2.5 border border-slate-800 rounded-lg bg-slate-900 text-slate-400 font-semibold"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="flex-1 flex gap-2">
+                          <div className="flex-1 space-y-1">
+                            {idx === 0 && (
+                              <div className="flex justify-between items-center">
+                                <label className="font-semibold text-slate-300">Mã SKU *</label>
+                                <button
+                                  type="button"
+                                  onClick={() => handleItemInputChange(idx, "isManual", false)}
+                                  className="text-[9px] text-indigo-400 hover:underline"
+                                >
+                                  Chọn sẵn
+                                </button>
+                              </div>
+                            )}
+                            <input
+                              type="text"
+                              value={row.sku_code}
+                              onChange={(e) => handleItemInputChange(idx, "sku_code", e.target.value)}
+                              placeholder="VD: SKU-SPORTS-BLUE-M"
+                              className="w-full p-2 border border-slate-800 rounded-lg focus:outline-none bg-slate-950 text-slate-100 font-bold"
+                              required
+                            />
+                          </div>
+                          <div className="flex-[1.5] space-y-1">
+                            {idx === 0 && <label className="font-semibold text-slate-300">Tên Sản phẩm *</label>}
+                            <input
+                              type="text"
+                              value={row.product_name}
+                              onChange={(e) => handleItemInputChange(idx, "product_name", e.target.value)}
+                              placeholder="VD: Áo thun nam size M"
+                              className="w-full p-2 border border-slate-800 rounded-lg focus:outline-none bg-slate-950 text-slate-100"
+                              required
+                            />
+                          </div>
+                        </div>
+                      )}
                       <div className="w-24 space-y-1">
                         {idx === 0 && <label className="font-semibold text-slate-300 block text-right">SL dự kiến *</label>}
                         <input

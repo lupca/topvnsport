@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from "html5-qrcode";
-import { Scan, Keyboard } from "lucide-react";
+import { Html5Qrcode, Html5QrcodeScanner, Html5QrcodeSupportedFormats } from "html5-qrcode";
+import { Scan, Keyboard, Image as ImageIcon } from "lucide-react";
 
 interface MobileScannerProps {
   onScanSuccess: (decodedText: string) => void;
@@ -16,6 +16,7 @@ export default function MobileScanner({
   scanType,
 }: MobileScannerProps) {
   const [manualInput, setManualInput] = useState("");
+  const [fileScanError, setFileScanError] = useState<string | null>(null);
   const scannerRef = useRef<Html5QrcodeScanner | null>(null);
   const lastScanTimeRef = useRef<number>(0);
   const lastScanResultRef = useRef<string>("");
@@ -76,6 +77,65 @@ export default function MobileScanner({
     playBeep();
     vibrate();
     onScanSuccess(finalCode);
+  };
+
+  const createRotatedBlob = async (file: File, rotation: number) => {
+    const imageUrl = URL.createObjectURL(file);
+    try {
+      const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = imageUrl;
+      });
+
+      const canvas = document.createElement("canvas");
+      const shouldSwapDimensions = rotation === 90 || rotation === 270;
+      canvas.width = shouldSwapDimensions ? image.height : image.width;
+      canvas.height = shouldSwapDimensions ? image.width : image.height;
+
+      const context = canvas.getContext("2d");
+      if (!context) return null;
+
+      context.translate(canvas.width / 2, canvas.height / 2);
+      context.rotate((rotation * Math.PI) / 180);
+      context.drawImage(image, -image.width / 2, -image.height / 2);
+
+      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob((result) => resolve(result), file.type || "image/jpeg", 0.95));
+      return blob;
+    } finally {
+      URL.revokeObjectURL(imageUrl);
+    }
+  };
+
+  const tryScanImageFile = async (file: File) => {
+    setFileScanError(null);
+
+    const scanCandidates: Array<{ label: string; file: File | Blob }> = [{ label: "gốc", file }];
+    for (const rotation of [90, 180, 270]) {
+      const rotated = await createRotatedBlob(file, rotation);
+      if (rotated) {
+        scanCandidates.push({ label: `${rotation}deg`, file: rotated });
+      }
+    }
+
+    for (const candidate of scanCandidates) {
+      const scanner = new Html5Qrcode("qr-file-reader");
+      try {
+        const decodedText = await scanner.scanFile(candidate.file as File, true);
+        await scanner.clear();
+        handleScan(decodedText);
+        return;
+      } catch (err) {
+        try {
+          await scanner.clear();
+        } catch {
+          // ignore cleanup errors
+        }
+      }
+    }
+
+    setFileScanError("Không đọc được mã từ ảnh. Hãy thử chụp thẳng, rõ nét hơn hoặc nhập tay mã EAN-13.");
   };
 
   useEffect(() => {
@@ -167,6 +227,36 @@ export default function MobileScanner({
           <span className="text-[10px] bg-slate-800 text-indigo-400 px-2 py-0.5 rounded font-medium">Ready</span>
         </div>
         <div id="qr-reader" className="w-full bg-slate-950 rounded-xl overflow-hidden border border-slate-850" />
+        <div id="qr-file-reader" className="hidden" />
+      </div>
+
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400">
+            <ImageIcon className="w-4 h-4 text-indigo-400" />
+            <span>Scan from image</span>
+          </div>
+          <label className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white text-[10px] font-bold rounded-xl cursor-pointer transition-colors">
+            Chọn ảnh
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  void tryScanImageFile(file);
+                }
+                e.currentTarget.value = "";
+              }}
+            />
+          </label>
+        </div>
+        {fileScanError && (
+          <div className="text-[10px] text-amber-400 bg-amber-950/30 border border-amber-900/40 rounded-lg px-3 py-2">
+            {fileScanError}
+          </div>
+        )}
       </div>
 
       {/* Manual Input form */}

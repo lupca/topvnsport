@@ -89,6 +89,7 @@ export default function ProductList({
   const [previewProduct, setPreviewProduct] = useState<Product | null>(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [deletingProductId, setDeletingProductId] = useState<number | null>(null);
 
   const handlePreviewClick = (productId: number) => {
     setPreviewLoading(true);
@@ -105,20 +106,48 @@ export default function ProductList({
       });
   };
 
-  const handleDeleteClick = (productId: number) => {
-    if (confirm("Bạn có chắc chắn muốn xóa sản phẩm này không?")) {
-      fetch(`${API_BASE_URL}/products/${productId}`, {
+  const handleDeleteClick = async (productId: number) => {
+    if (deletingProductId !== null) return;
+
+    const product = products.find(p => p.id === productId);
+    const productLabel = product ? `${product.name} (${product.product_code})` : `ID ${productId}`;
+
+    if (!confirm(`Bạn có chắc chắn muốn xóa sản phẩm "${productLabel}" không?`)) {
+      return;
+    }
+
+    setDeletingProductId(productId);
+    try {
+      const res = await fetch(`${API_BASE_URL}/products/${productId}`, {
         method: "DELETE"
-      })
-      .then(res => {
-        if (res.ok) {
-          setProducts(prev => prev.filter(p => p.id !== productId));
-          setTotalItems(prev => Math.max(0, prev - 1));
-        } else {
-          alert("Xóa sản phẩm thất bại.");
+      });
+
+      if (!res.ok) {
+        let detail = "Xóa sản phẩm thất bại.";
+        try {
+          const data = await res.json();
+          if (data?.detail) {
+            detail = String(data.detail);
+          }
+        } catch {
+          // Keep generic detail if API did not return JSON payload
         }
-      })
-      .catch(err => console.error("Error deleting product:", err));
+        alert(detail);
+        return;
+      }
+
+      setProducts(prev => prev.filter(p => p.id !== productId));
+      setTotalItems(prev => Math.max(0, prev - 1));
+
+      if (showPreviewModal && previewProduct?.id === productId) {
+        setShowPreviewModal(false);
+        setPreviewProduct(null);
+      }
+    } catch (err) {
+      console.error("Error deleting product:", err);
+      alert("Không thể kết nối tới máy chủ để xóa sản phẩm.");
+    } finally {
+      setDeletingProductId(null);
     }
   };
 
@@ -169,6 +198,12 @@ export default function ProductList({
   useEffect(() => {
     setCurrentPage(1);
   }, [appliedSearch, appliedCategory, activeTab, sortBy, sortOrder, pageSize]);
+
+  useEffect(() => {
+    if (!loading && products.length === 0 && currentPage > 1 && totalItems > 0) {
+      setCurrentPage(prev => Math.max(1, prev - 1));
+    }
+  }, [loading, products.length, currentPage, totalItems]);
 
   const handleApplyFilters = () => {
     setAppliedSearch(searchQuery);
@@ -564,9 +599,10 @@ export default function ProductList({
                           </button>
                           <button 
                             onClick={() => handleDeleteClick(product.id)} 
-                            className="text-rose-500 hover:text-rose-700 block ml-auto flex items-center justify-end gap-1"
+                            disabled={deletingProductId !== null}
+                            className="text-rose-500 hover:text-rose-700 disabled:text-slate-300 disabled:cursor-not-allowed block ml-auto flex items-center justify-end gap-1"
                           >
-                            Xóa
+                            {deletingProductId === product.id ? "Đang xóa..." : "Xóa"}
                           </button>
                         </td>
                       </tr>
