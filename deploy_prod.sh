@@ -54,6 +54,13 @@ echo "[3/5] Build and start production stacks"
 ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "
   set -euo pipefail
   cd $DEPLOY_PATH
+  if [[ ! -f web/.env ]]; then
+    if [[ -f web/.env.example ]]; then
+      cp web/.env.example web/.env
+    else
+      touch web/.env
+    fi
+  fi
   sudo docker network create pmi_default >/dev/null 2>&1 || true
   sudo docker network create oms_default >/dev/null 2>&1 || true
   sudo docker network create wms_default >/dev/null 2>&1 || true
