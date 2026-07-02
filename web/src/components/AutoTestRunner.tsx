@@ -50,7 +50,7 @@ export default function AutoTestRunner({
     const updatedSteps = steps.map(s => ({ ...s, status: 'idle' as const, error: undefined }));
     setSteps(updatedSteps);
 
-    addLog('🚀 BẮT ĐẦU CHẠY KIỂM THỬ TỰ ĐỘNG TOÀN BỘ HỆ THỐNG');
+    addLog('🚀 BẮT ĐẦU CHẠY TEST WEB TOÀN BỘ HỆ THỐNG');
 
     // STEP 1
     setCurrentStepIndex(0);
@@ -138,22 +138,22 @@ export default function AutoTestRunner({
         <button
           onClick={() => setIsOpen(true)}
           className="bg-gray-900 hover:bg-gray-800 text-orange-400 hover:text-orange-300 border border-orange-500/30 font-display font-bold text-xs uppercase tracking-wider px-4 py-3 rounded-full flex items-center gap-2 shadow-2xl transition-all hover:scale-105 active:scale-95 glow-effect"
-          id="toggle-autotest-widget"
+          id="toggle-webtest-widget"
         >
           <Terminal className="w-4 h-4 animate-pulse text-orange-500" />
-          <span>Chạy Auto-Test</span>
+          <span>Chạy Test Web</span>
         </button>
       </div>
 
       <AnimatePresence>
         {isOpen && (
-          <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" id="autotest-runner-overlay">
+          <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" id="webtest-runner-overlay">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               className="bg-gray-950 text-white rounded-2xl w-full max-w-2xl overflow-hidden border border-gray-800 shadow-2xl flex flex-col max-h-[90vh]"
-              id="autotest-runner-modal"
+              id="webtest-runner-modal"
             >
               {/* Header */}
               <div className="p-5 border-b border-gray-800 flex items-center justify-between bg-gray-900">
@@ -167,7 +167,7 @@ export default function AutoTestRunner({
                 <button
                   onClick={() => setIsOpen(false)}
                   className="p-1 text-gray-400 hover:text-white hover:bg-gray-800 rounded-full transition"
-                  id="close-autotest-btn"
+                  id="close-webtest-btn"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -239,7 +239,7 @@ export default function AutoTestRunner({
                   }}
                   disabled={isRunning}
                   className="px-4 py-2 border border-gray-700 hover:border-gray-600 disabled:opacity-40 rounded-full text-xs font-semibold text-gray-300 hover:text-white transition"
-                  id="reset-autotest-btn"
+                  id="reset-webtest-btn"
                 >
                   Làm mới
                 </button>
@@ -248,17 +248,17 @@ export default function AutoTestRunner({
                   onClick={runTestFlow}
                   disabled={isRunning}
                   className="bg-orange-500 hover:bg-orange-600 disabled:bg-orange-500/50 text-white text-xs font-bold uppercase tracking-wider px-6 py-2.5 rounded-full flex items-center gap-1.5 shadow-lg transition glow-btn"
-                  id="run-autotest-btn"
+                  id="run-webtest-btn"
                 >
                   {isRunning ? (
                     <>
                       <RefreshCw className="w-4 h-4 animate-spin" />
-                      Đang kiểm thử...
+                      Đang chạy test web...
                     </>
                   ) : (
                     <>
                       <Play className="w-4 h-4 fill-current" />
-                      Bắt đầu Chạy Thử Nghiệm
+                      Bắt đầu Chạy Test Web
                     </>
                   )}
                 </button>

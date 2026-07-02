@@ -21,6 +21,15 @@ import QuickViewModal from './components/QuickViewModal';
 import TrustBadges from './components/TrustBadges';
 import AutoTestRunner from './components/AutoTestRunner';
 
+function isWebTestModeFromQuery(): boolean {
+  if (typeof window === 'undefined') return false;
+  const testParam = new URLSearchParams(window.location.search).get('test');
+  if (testParam === null) return false;
+
+  const normalized = testParam.trim().toLowerCase();
+  return !['', '0', 'false', 'off', 'no'].includes(normalized);
+}
+
 export default function App() {
   // API Dynamic States
   const [products, setProducts] = useState<Product[]>([]);
@@ -53,6 +62,7 @@ export default function App() {
 
   // Flash Sale Countdown timer
   const [timeLeft, setTimeLeft] = useState({ hours: 12, minutes: 45, seconds: 30 });
+  const [isWebTestMode, setIsWebTestMode] = useState<boolean>(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -64,6 +74,10 @@ export default function App() {
       });
     }, 1000);
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    setIsWebTestMode(isWebTestModeFromQuery());
   }, []);
 
   // Hydrate application state with async sportApi calls
@@ -717,14 +731,16 @@ export default function App() {
         onAddToCart={handleAddToCart}
       />
 
-      {/* AUTOMATED TEST RUNNER (Visually verifies all flows & scenarios) */}
-      <AutoTestRunner
-        onSetView={setView}
-        onAddToCartWithSpecs={handleAddToCartWithSpecs}
-        onClearCart={handleClearCart}
-        productsList={products}
-        stringOptionsList={stringOptions}
-      />
+      {/* WEB TEST RUNNER (Only visible when URL has ?test=1) */}
+      {isWebTestMode && (
+        <AutoTestRunner
+          onSetView={setView}
+          onAddToCartWithSpecs={handleAddToCartWithSpecs}
+          onClearCart={handleClearCart}
+          productsList={products}
+          stringOptionsList={stringOptions}
+        />
+      )}
 
       {/* MOBILE APP-LIKE BOTTOM TAB NAVIGATION BAR */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-100 flex justify-around items-center py-2 px-2 shadow-lg rounded-t-2xl">
