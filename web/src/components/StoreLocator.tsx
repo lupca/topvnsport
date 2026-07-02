@@ -152,7 +152,7 @@ export default function StoreLocator({ branches, products, initialBranchId, onCl
                 <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-orange-50/30">
                   <MapPin className="w-12 h-12 text-orange-400 mb-2 animate-bounce" />
                   <p className="font-bold text-gray-800 text-sm">Bản đồ số đang đồng bộ định vị...</p>
-                  <p className="text-xs text-gray-500 mt-1">Đường dây nóng hỗ trợ khách hàng: 1900 88 99 22</p>
+                  <p className="text-xs text-gray-500 mt-1">Đường dây nóng hỗ trợ khách hàng: 097 6007006</p>
                 </div>
               )}
             </div>

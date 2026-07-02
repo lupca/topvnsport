@@ -40,13 +40,13 @@ const slides: Slide[] = [
   },
   {
     id: 3,
-    title: 'Kỷ Nguyên Pickleball - Joola Ben Johns Perseus',
-    subtitle: 'Bộ môn thể thao thời thượng bùng nổ. Sợi carbon ma sát cao CFS 16mm tạo xoáy cực đỉnh và kiểm soát cự ly bóng vô song.',
-    badge: 'PICKLEBALL CAO CẤP',
-    image: 'https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?auto=format&fit=crop&w=1200&q=80',
-    ctaText: 'Trải Nghiệm Pickleball',
-    category: 'Pickleball',
-    productId: 'joola-perseus-16'
+    title: 'Siêu Sale Cước Đan & Phụ Kiện',
+    subtitle: 'Ưu đãi mạnh cho dây cước, túi vợt và phụ kiện chính hãng để hoàn thiện bộ sưu tập cầu lông của bạn.',
+    badge: 'KHUYẾN MÃI HOT',
+    image: 'https://images.unsplash.com/photo-1613531415875-161a5622c5b7?auto=format&fit=crop&w=1200&q=80',
+    ctaText: 'Xem Ngay Ưu Đãi',
+    category: 'Cước',
+    productId: 'yonex-exbolt-68'
   }
 ];
 

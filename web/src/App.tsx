@@ -142,6 +142,16 @@ export default function App() {
   };
 
   // Cart operations
+  const resolveSkuCode = (product: Product, color: string, weight: string) => {
+    const colorSku = product.skuByColor?.[color];
+    if (colorSku) return colorSku;
+
+    const byVariant = product.skuByVariant?.[`${color}||${weight}`];
+    if (byVariant) return byVariant;
+
+    return product.defaultSku || `SKU-${product.id}-${weight.replace(/\//g, '-')}-${color.replace(/\//g, '-')}`;
+  };
+
   const handleAddToCart = (product: Product, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     
@@ -149,6 +159,11 @@ export default function App() {
     const newItem: CartItem = {
       id: `${product.id}-${Date.now()}`,
       productId: product.id,
+      skuCode: resolveSkuCode(
+        product,
+        product.colors && product.colors.length > 0 ? product.colors[0] : 'Tiêu chuẩn',
+        product.category === 'Vợt' ? '4U/G5' : 'Tiêu chuẩn'
+      ),
       name: product.name,
       brand: product.brand,
       image: product.image,
@@ -168,6 +183,7 @@ export default function App() {
     const newItem: CartItem = {
       id: `${product.id}-${weight}-${color}-${stringChoice?.id || 'none'}-${Date.now()}`,
       productId: product.id,
+      skuCode: resolveSkuCode(product, color, weight),
       name: product.name,
       brand: product.brand,
       image: product.image,
@@ -298,8 +314,7 @@ export default function App() {
                   { id: 'Giày', name: 'Giày Chống Lật', count: '8 mẫu', img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80' },
                   { id: 'Túi xách', name: 'Túi & Balo', count: '5 mẫu', img: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=300&q=80' },
                   { id: 'Cước', name: 'Cước Đan Vợt', count: '7 loại', img: 'https://images.unsplash.com/photo-1613531415875-161a5622c5b7?auto=format&fit=crop&w=300&q=80' },
-                  { id: 'Quả cầu', name: 'Hộp Quả Cầu', count: '3 loại', img: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=300&q=80' },
-                  { id: 'Pickleball', name: 'Pickleball Hot', count: '2 mẫu', img: 'https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?auto=format&fit=crop&w=300&q=80' }
+                  { id: 'Quả cầu', name: 'Hộp Quả Cầu', count: '3 loại', img: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=300&q=80' }
                 ].map(cat => (
                   <div
                     key={cat.id}
@@ -499,7 +514,7 @@ export default function App() {
                   <div className="space-y-2">
                     <h4 className="font-bold text-[11px] uppercase tracking-wider text-gray-500">Thương hiệu quốc tế</h4>
                     <div className="space-y-1.5">
-                      {['Yonex', 'Lining', 'Victor', 'Kumpoo', 'Pickleball'].map(brand => (
+                      {['Yonex', 'Lining', 'Victor', 'Kumpoo'].map(brand => (
                         <label key={brand} className="flex items-center gap-2 text-xs font-semibold text-gray-700 cursor-pointer">
                           <input
                             type="checkbox"
@@ -523,7 +538,7 @@ export default function App() {
                   <div className="space-y-2">
                     <h4 className="font-bold text-[11px] uppercase tracking-wider text-gray-500">Phân loại sản phẩm</h4>
                     <div className="space-y-1.5 flex flex-col">
-                      {['Tất cả', 'Vợt', 'Giày', 'Túi xách', 'Cước', 'Quả cầu', 'Pickleball'].map(cat => (
+                      {['Tất cả', 'Vợt', 'Giày', 'Túi xách', 'Cước', 'Quả cầu'].map(cat => (
                         <button
                           key={cat}
                           onClick={() => setSelectedCategory(cat)}

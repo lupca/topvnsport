@@ -24,10 +24,10 @@ export interface ProductReview {
 export interface Product {
   id: string;
   name: string;
-  brand: 'Yonex' | 'Lining' | 'Victor' | 'Kumpoo' | 'Pickleball' | 'Other';
+  brand: 'Yonex' | 'Lining' | 'Victor' | 'Kumpoo' | 'Other';
   image: string;
   gallery?: string[];
-  category: 'Vợt' | 'Giày' | 'Túi xách' | 'Cước' | 'Quả cầu' | 'Phụ kiện' | 'Pickleball';
+  category: 'Vợt' | 'Giày' | 'Túi xách' | 'Cước' | 'Quả cầu' | 'Phụ kiện';
   price: number;
   salePrice?: number;
   specs: ProductSpecs;
@@ -38,6 +38,9 @@ export interface Product {
   technologies?: ProductTechnology[];
   reviews: ProductReview[];
   stock: number;
+  defaultSku?: string;
+  skuByColor?: Record<string, string>;
+  skuByVariant?: Record<string, string>;
   badge?: 'NEW' | 'HOT' | 'SALE' | 'LIMITED' | 'PRO' | 'TOUR' | 'GAME' | 'PLAY';
   isWide?: boolean; // Specially for Shoes wide form
   colors?: string[];

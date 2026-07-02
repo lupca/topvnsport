@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { X, Trash2, ShoppingBag, ShieldCheck, CheckCircle2, Phone, MapPin, Truck } from 'lucide-react';
 import { StringOption } from '../types';
+import { sportApi } from '../services/sportApi';
 
 export interface CartItem {
   id: string; // Unique instance id
   productId: string;
+  skuCode?: string;
   name: string;
   brand: string;
   image: string;
@@ -33,6 +35,7 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
   const [address, setAddress] = useState('');
   const [shippingMethod, setShippingMethod] = useState<'standard' | 'fast'>('standard');
   const [city, setCity] = useState('Hà Nội');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
@@ -45,13 +48,40 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
   const shippingCost = shippingMethod === 'standard' ? 30000 : 50000;
   const orderTotal = itemsTotal + shippingCost;
 
-  const handleCheckoutSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCheckoutSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!fullName || !phone || !address) {
       alert('Vui lòng cung cấp đầy đủ họ tên, số điện thoại và địa chỉ nhận hàng.');
       return;
     }
-    setStep(3); // Success Screen
+
+    setIsSubmitting(true);
+    try {
+      const items = cartItems.map(item => {
+        const safeWeight = item.selectedWeight?.replace(/\//g, '-') || 'STD';
+        const safeColor = item.selectedColor?.replace(/\//g, '-') || 'STD';
+        return {
+          sku_code: item.skuCode || `SKU-${item.productId}-${safeWeight}-${safeColor}`,
+          quantity: item.quantity
+        };
+      });
+
+      await sportApi.createOrder({
+        customer_id: 1,
+        channel_id: 1,
+        items,
+        shipping_fee: shippingCost,
+        shipping_address: `${address}, ${city}`,
+        note: `Khách hàng: ${fullName}, SĐT: ${phone}`
+      });
+
+      setStep(3);
+    } catch (err) {
+      console.error(err);
+      alert('Có lỗi xảy ra khi tạo đơn hàng trên OMS. Vui lòng thử lại!');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleFinish = () => {
@@ -292,10 +322,13 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
                   Quay lại
                 </button>
                 <button
-                  onClick={handleCheckoutSubmit}
-                  className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs uppercase tracking-wider py-3 rounded-full flex items-center justify-center gap-1.5 transition glow-btn"
+                  onClick={() => {
+                    void handleCheckoutSubmit();
+                  }}
+                  disabled={isSubmitting}
+                  className={`flex-1 text-white font-bold text-xs uppercase tracking-wider py-3 rounded-full flex items-center justify-center gap-1.5 transition glow-btn ${isSubmitting ? 'bg-orange-300 cursor-not-allowed' : 'bg-orange-500 hover:bg-orange-600'}`}
                 >
-                  Xác nhận đặt hàng ✓
+                  {isSubmitting ? 'Đang xử lý...' : 'Xác nhận đặt hàng ✓'}
                 </button>
               </div>
             )}

@@ -51,7 +51,7 @@ export default function Header({ currentView, setView, cartCount, openCart, prod
     setShowSearchDropdown(false);
   };
 
-  const trendKeywords = ['Yonex Astrox', 'Giày Lining', 'Balo cầu lông', 'Pickleball'];
+  const trendKeywords = ['Yonex Astrox', 'Giày Lining', 'Balo cầu lông', 'Cước đan vợt'];
 
   return (
     <header className="w-full bg-white border-b border-gray-100 sticky top-0 z-50 shadow-xs" id="topvnsport-header">
@@ -60,7 +60,7 @@ export default function Header({ currentView, setView, cartCount, openCart, prod
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-1">
             <Phone className="w-3 h-3 text-orange-500" />
-            Hotline: <strong className="text-white">1900 88 99 22</strong> (08:00 - 22:00)
+            Hotline: <strong className="text-white">097 6007006</strong> (08:00 - 22:00)
           </span>
           <span className="hidden md:inline text-gray-500">|</span>
           <span className="hidden md:flex items-center gap-1 text-orange-400">
@@ -109,7 +109,7 @@ export default function Header({ currentView, setView, cartCount, openCart, prod
                 <span className="font-display font-extrabold text-lg md:text-2xl tracking-tight text-gray-900 block leading-none">
                   TOPVN<span className="text-orange-500">SPORT</span>
                 </span>
-                <p className="text-[8px] md:text-[9px] text-gray-400 tracking-widest uppercase font-semibold mt-0.5">Badminton & Pickleball</p>
+                <p className="text-[8px] md:text-[9px] text-gray-400 tracking-widest uppercase font-semibold mt-0.5">Badminton Speciality Store</p>
               </div>
             </div>
           </div>
@@ -320,13 +320,6 @@ export default function Header({ currentView, setView, cartCount, openCart, prod
                         <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
                         Quả Cầu Lông Chất Lượng
                       </button>
-                      <button 
-                        onClick={() => { setView('catalog', { category: 'Pickleball' }); setIsMobileMenuOpen(false); }}
-                        className="w-full text-left py-2 px-3 rounded-lg text-xs font-bold flex items-center gap-2 text-purple-600 bg-purple-50"
-                      >
-                        <Sparkles className="w-4 h-4 text-purple-500" />
-                        Pickleball (Thời Thượng)
-                      </button>
                     </div>
                   </div>
 
@@ -399,7 +392,7 @@ export default function Header({ currentView, setView, cartCount, openCart, prod
 
               {/* Drawer Footer info */}
               <div className="p-4 border-t border-gray-100 bg-gray-50 text-[10px] text-gray-400 font-medium space-y-1">
-                <p>Hotline: 1900 88 99 22</p>
+                <p>Hotline: 097 6007006</p>
                 <p>© TopVNSport • O2O Badminton Hub</p>
               </div>
             </motion.div>
@@ -468,23 +461,6 @@ export default function Header({ currentView, setView, cartCount, openCart, prod
             <button onClick={() => setView('catalog', { category: 'Cước' })} className="text-gray-800 hover:text-orange-500 transition shrink-0 py-1">Cước Đan Vợt</button>
             <button onClick={() => setView('catalog', { category: 'Quả cầu' })} className="text-gray-800 hover:text-orange-500 transition shrink-0 py-1">Quả Cầu Lông</button>
             
-            {/* Pickleball Section */}
-            <div className="relative group cursor-pointer py-1 text-gray-800 hover:text-orange-500 transition flex items-center gap-1 shrink-0">
-              <span onClick={() => setView('catalog', { category: 'Pickleball' })} className="text-purple-600 font-bold flex items-center gap-1">
-                <Sparkles className="w-3.5 h-3.5 text-purple-500" /> Pickleball
-              </span>
-              <ChevronDown className="w-3.5 h-3.5 text-purple-500" />
-              {/* Dropdown */}
-              <div className="absolute top-full left-0 mt-3 w-[240px] bg-white border border-gray-100 rounded-lg shadow-xl p-4 hidden group-hover:block z-50 text-xs">
-                <h5 className="font-bold text-purple-700 mb-2 uppercase tracking-wide text-[10px]">Cấu trúc vợt Pickleball</h5>
-                <ul className="space-y-2 text-gray-600">
-                  <li onClick={() => setView('catalog', { category: 'Pickleball' })} className="hover:text-purple-600">Vợt Joola (Ben Johns Series)</li>
-                  <li onClick={() => setView('catalog', { category: 'Pickleball' })} className="hover:text-purple-600">Lõi tổ ong 14mm / 16mm</li>
-                  <li onClick={() => setView('catalog', { category: 'Pickleball' })} className="hover:text-purple-600">Bóng Pickleball & Phụ kiện</li>
-                </ul>
-              </div>
-            </div>
-
             <button onClick={() => setView('blog-list')} className="text-gray-800 hover:text-orange-500 transition shrink-0 py-1">Đánh Giá Sân Bãi</button>
           </div>
 

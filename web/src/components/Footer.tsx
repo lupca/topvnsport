@@ -88,7 +88,6 @@ export default function Footer({ setView }: FooterProps) {
             <li><button onClick={() => setView('catalog', { category: 'Vợt' })} className="hover:text-white transition">Vợt Cầu Lông Lining Chuyên Công</button></li>
             <li><button onClick={() => setView('catalog', { category: 'Giày' })} className="hover:text-white transition">Giày Cầu Lông Chống Lật Cổ Chân</button></li>
             <li><button onClick={() => setView('catalog', { category: 'Cước' })} className="hover:text-white transition">Dây Cước Đan Exbolt Đanh Tiếng</button></li>
-            <li><button onClick={() => setView('catalog', { category: 'Pickleball' })} className="hover:text-purple-400 text-purple-300 font-bold transition">Vợt Pickleball Joola Hot Trend</button></li>
           </ul>
         </div>
 
@@ -114,7 +113,7 @@ export default function Footer({ setView }: FooterProps) {
             </li>
             <li className="flex items-center gap-2">
               <Phone className="w-4 h-4 text-orange-500 shrink-0" />
-              <span>1900 88 99 22 (08:00 - 22:00)</span>
+              <span>097 6007006 (08:00 - 22:00)</span>
             </li>
             <li className="flex items-center gap-2">
               <Mail className="w-4 h-4 text-orange-500 shrink-0" />

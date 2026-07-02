@@ -239,32 +239,6 @@
       "colors": ["Xanh Neon", "Đen Trắng"]
     },
     {
-      "id": "joola-perseus-16",
-      "name": "Vợt Pickleball Joola Ben Johns Perseus CFS 16mm",
-      "brand": "Pickleball",
-      "image": "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?auto=format&fit=crop&w=600&q=80",
-      "category": "Pickleball",
-      "price": 6200000,
-      "salePrice": 5800000,
-      "specs": {
-        "weight": "7.8 oz (221g)",
-        "stiffness": "Carbon Ma Sát Cao (CFS)",
-        "balance": 240,
-        "maxTension": 0
-      },
-      "description": "Vợt Pickleball Joola Ben Johns Perseus CFS 16mm là cây vợt cao cấp bán chạy hàng đầu thế giới dành cho bộ môn Pickleball đang lên ngôi. Thiết kế bề mặt Carbon ma sát cao độc quyền giúp tạo xoáy bóng cực đỉnh và kiểm soát cự ly bóng vô song.",
-      "features": [
-        "Bề mặt sợi carbon nhám ma sát cao tạo độ xoáy xoáy cực lớn",
-        "Lõi tổ ong Polypropylene 16mm hấp thụ chấn động hoàn hảo",
-        "Tay cầm chống trượt êm ái tiêu chuẩn thi đấu"
-      ],
-      "reviews": [
-        { "author": "Hoàng Lâm", "rating": 5, "comment": "Đánh Pickleball bằng cây này cảm giác kiểm soát bóng lưới cực kỳ phê, xoáy bóng khó chịu.", "date": "2026-06-22", "verified": true }
-      ],
-      "stock": 4,
-      "badge": "LIMITED"
-    },
-    {
       "id": "yonex-exbolt-68",
       "name": "Cước đan vợt cầu lông Yonex Exbolt 68 chính hãng",
       "brand": "Yonex",
