@@ -1,4 +1,11 @@
-export const WMS_API_URL = process.env.NEXT_PUBLIC_WMS_API_URL || "http://localhost:18102";
+const getWmsApiUrl = () => {
+  if (typeof window !== "undefined") {
+    return `http://${window.location.hostname}:18102`;
+  }
+  return process.env.NEXT_PUBLIC_WMS_API_URL || "http://localhost:18102";
+};
+
+export const WMS_API_URL = getWmsApiUrl();
 
 export async function wmsFetch(path: string, options?: RequestInit) {
   const url = `${WMS_API_URL}${path}`;

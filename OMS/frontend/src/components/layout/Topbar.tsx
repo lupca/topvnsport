@@ -36,7 +36,7 @@ export default function Topbar() {
         <div className="h-6 w-px bg-slate-200"></div>
 
         {/* User Info & Avatar */}
-        <Link href="/account" className="flex items-center gap-3 hover:opacity-85 transition-opacity cursor-pointer">
+        <Link href="/orders" className="flex items-center gap-3 hover:opacity-85 transition-opacity cursor-pointer">
           <div className="flex flex-col text-right">
             <span className="text-xs font-bold text-slate-800">Administrator</span>
             <span className="text-[10px] text-slate-400 font-semibold uppercase">PIM Owner</span>
