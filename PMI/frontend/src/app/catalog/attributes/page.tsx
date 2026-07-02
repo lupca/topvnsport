@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import DataTable from "@/components/ui/DataTable";
 import { Sliders, X, Check, AlertCircle } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
+import { showConfirm } from "@/components/ui/popupService";
 
 interface Attribute {
   id: number;
@@ -86,7 +87,7 @@ export default function AttributesPage() {
   };
 
   const handleDelete = async (attr: Attribute) => {
-    if (!confirm(`Bạn có chắc chắn muốn xóa thuộc tính "${attr.name}" (${attr.code}) không?`)) {
+    if (!(await showConfirm(`Bạn có chắc chắn muốn xóa thuộc tính "${attr.name}" (${attr.code}) không?`))) {
       return;
     }
     try {

@@ -18,6 +18,7 @@ import {
   ArrowRight,
   ClipboardList
 } from "lucide-react";
+import { showConfirm } from "@/components/ui/popupService";
 
 interface PickListItem {
   id: number;
@@ -246,7 +247,7 @@ export default function FulfillmentPage() {
   };
 
   const handleCancelOrder = async (orderId: number) => {
-    if (!confirm("Bạn có chắc muốn hủy yêu cầu xuất kho này? Tồn kho dự phòng sẽ được trả lại.")) return;
+    if (!(await showConfirm("Bạn có chắc muốn hủy yêu cầu xuất kho này? Tồn kho dự phòng sẽ được trả lại."))) return;
     try {
       const res = await fetch(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${orderId}/cancel`, {
         method: "POST"

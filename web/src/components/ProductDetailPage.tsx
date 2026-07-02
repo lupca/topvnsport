@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Product, StringOption } from '../types';
+import { showConfirm } from './ui/popupService';
 import { motion } from 'motion/react';
 import { Star, ShoppingCart, ShieldCheck, Heart, Sparkles, AlertTriangle, Check, Phone, ArrowLeft, Trophy, Calendar, MapPin, Gauge } from 'lucide-react';
 
@@ -309,9 +310,9 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
           {/* Action buttons (Add to cart & Book at store) */}
           <div className="flex flex-col sm:flex-row gap-3 pt-4">
             <button
-              onClick={() => {
+              onClick={async () => {
                 if (isExceedingTensionLimit) {
-                  const confirmForce = confirm('Lực căng vượt quá giới hạn khung vợt, bạn vẫn muốn tiếp tục đan mức này?');
+                  const confirmForce = await showConfirm('Lực căng vượt quá giới hạn khung vợt, bạn vẫn muốn tiếp tục đan mức này?');
                   if (!confirmForce) return;
                 }
                 onAddToCartWithSpecs(product, selectedWeight, selectedColor, withStringing ? selectedString : null, tension);
@@ -544,9 +545,9 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
           </div>
         </div>
         <button
-          onClick={() => {
+          onClick={async () => {
             if (isExceedingTensionLimit) {
-              const confirmForce = confirm('Lực căng vượt quá giới hạn khung vợt, bạn vẫn muốn tiếp tục đan mức này?');
+              const confirmForce = await showConfirm('Lực căng vượt quá giới hạn khung vợt, bạn vẫn muốn tiếp tục đan mức này?');
               if (!confirmForce) return;
             }
             onAddToCartWithSpecs(product, selectedWeight, selectedColor, withStringing ? selectedString : null, tension);

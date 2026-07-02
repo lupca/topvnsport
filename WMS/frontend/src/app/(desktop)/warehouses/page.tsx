@@ -13,6 +13,7 @@ import {
   AlertCircle,
   X
 } from "lucide-react";
+import { showConfirm } from "@/components/ui/popupService";
 
 interface Warehouse {
   id: number;
@@ -137,7 +138,7 @@ export default function WarehousesPage() {
 
   // Delete Warehouse
   const handleWhDelete = async (id: number) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa kho này?")) return;
+    if (!(await showConfirm("Bạn có chắc chắn muốn xóa kho này?"))) return;
     try {
       const res = await fetch(`${APP_SETTINGS.api.baseUrl}/warehouses/${id}`, {
         method: "DELETE"
@@ -199,7 +200,7 @@ export default function WarehousesPage() {
 
   // Delete Location
   const handleLocDelete = async (id: number) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa vị trí này?")) return;
+    if (!(await showConfirm("Bạn có chắc chắn muốn xóa vị trí này?"))) return;
     try {
       const res = await fetch(`${APP_SETTINGS.api.baseUrl}/locations/${id}`, {
         method: "DELETE"

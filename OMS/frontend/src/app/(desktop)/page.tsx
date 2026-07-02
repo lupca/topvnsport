@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { APP_SETTINGS } from "@/config/settings";
 import { api, Order } from "@/utils/api";
+import { showConfirm } from "@/components/ui/popupService";
 import {
   ShoppingCart,
   Users as UsersIcon,
@@ -81,7 +82,7 @@ export default function DashboardPage() {
   };
 
   const handleConfirmOrder = async (id: number) => {
-    if (confirm("Xác nhận duyệt đơn hàng này chuyển sang trạng thái PROCESSING?")) {
+    if (await showConfirm("Xác nhận duyệt đơn hàng này chuyển sang trạng thái PROCESSING?")) {
       try {
         await api.post(`/orders/${id}/confirm`, {});
         fetchData();
@@ -92,7 +93,7 @@ export default function DashboardPage() {
   };
 
   const handleCancelOrder = async (id: number) => {
-    if (confirm("Bạn có chắc chắn muốn hủy đơn hàng này?")) {
+    if (await showConfirm("Bạn có chắc chắn muốn hủy đơn hàng này?")) {
       try {
         await api.post(`/orders/${id}/cancel`, {});
         fetchData();

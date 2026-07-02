@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import DataTable from "@/components/ui/DataTable";
 import { FolderTree, X, AlertCircle } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
+import { showConfirm } from "@/components/ui/popupService";
 
 interface Category {
   id: number;
@@ -71,7 +72,7 @@ export default function CategoriesPage() {
   };
 
   const handleDelete = async (cat: Category) => {
-    if (!confirm(`Bạn có chắc chắn muốn xóa danh mục "${cat.name}" (${cat.code}) cùng tất cả danh mục con của nó không?`)) {
+    if (!(await showConfirm(`Bạn có chắc chắn muốn xóa danh mục "${cat.name}" (${cat.code}) cùng tất cả danh mục con của nó không?`))) {
       return;
     }
     try {

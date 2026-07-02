@@ -6,6 +6,7 @@ import { Plus, Search, Edit2, Trash2, X, AlertCircle, ChevronLeft, ChevronRight 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { showConfirm } from "@/components/ui/popupService";
 
 const customerSchema = z.object({
   name: z.string().min(1, "Tên khách hàng là bắt buộc"),
@@ -127,7 +128,7 @@ export default function CustomersPage() {
   };
 
   const handleDeleteCustomer = async (id: number) => {
-    if (confirm("Bạn có chắc chắn muốn xóa khách hàng này?")) {
+    if (await showConfirm("Bạn có chắc chắn muốn xóa khách hàng này?")) {
       try {
         await api.delete(`/customers/${id}`);
         fetchCustomers();

@@ -13,6 +13,7 @@ import {
   ProductSearchResult,
   OrderItemInput
 } from "@/utils/api";
+import { showConfirm } from "@/components/ui/popupService";
 
 const orderSchema = z.object({
   customer_id: z.number().min(1, "Vui lòng chọn khách hàng"),
@@ -425,7 +426,7 @@ function OrdersPageContent() {
 
   // --- TRANSITIONS ACTIONS ---
   const handleConfirmOrder = async (id: number) => {
-    if (confirm("Xác nhận duyệt đơn hàng này? Hệ thống sẽ tạo yêu cầu fulfillment sang WMS.")) {
+    if (await showConfirm("Xác nhận duyệt đơn hàng này? Hệ thống sẽ tạo yêu cầu fulfillment sang WMS.")) {
       try {
         await api.post(`/orders/${id}/confirm`, {});
         loadOrderDetails(id);
@@ -436,7 +437,7 @@ function OrdersPageContent() {
   };
 
   const handleCancelOrder = async (id: number) => {
-    if (confirm("Xác nhận hủy đơn hàng này?")) {
+    if (await showConfirm("Xác nhận hủy đơn hàng này?")) {
       try {
         await api.post(`/orders/${id}/cancel`, {});
         loadOrderDetails(id);
@@ -447,7 +448,7 @@ function OrdersPageContent() {
   };
 
   const handleDeleteOrder = async (id: number) => {
-    if (confirm("Xác nhận xóa vĩnh viễn đơn hàng Nháp này?")) {
+    if (await showConfirm("Xác nhận xóa vĩnh viễn đơn hàng Nháp này?")) {
       try {
         await api.delete(`/orders/${id}`);
         updateURL("list");

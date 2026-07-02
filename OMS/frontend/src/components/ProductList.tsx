@@ -8,6 +8,7 @@ import {
   Eye, Copy, Trash2, X, ExternalLink
 } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
+import { showConfirm } from "@/components/ui/popupService";
 
 const API_BASE_URL = APP_SETTINGS.api.baseUrl;
 
@@ -105,8 +106,8 @@ export default function ProductList({
       });
   };
 
-  const handleDeleteClick = (productId: number) => {
-    if (confirm("Bạn có chắc chắn muốn xóa sản phẩm này không?")) {
+  const handleDeleteClick = async (productId: number) => {
+    if (await showConfirm("Bạn có chắc chắn muốn xóa sản phẩm này không?")) {
       fetch(`${API_BASE_URL}/products/${productId}`, {
         method: "DELETE"
       })
@@ -563,7 +564,7 @@ export default function ProductList({
                             Xem trước
                           </button>
                           <button 
-                            onClick={() => handleDeleteClick(product.id)} 
+                            onClick={() => void handleDeleteClick(product.id)} 
                             className="text-rose-500 hover:text-rose-700 block ml-auto flex items-center justify-end gap-1"
                           >
                             Xóa

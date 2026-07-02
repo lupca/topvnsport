@@ -10,6 +10,7 @@ import {
   Scan
 } from "lucide-react";
 import DataTable from "@/components/ui/DataTable";
+import { showConfirm } from "@/components/ui/popupService";
 
 const MobileScanner = dynamic(() => import("@/components/MobileScanner"), { ssr: false });
 
@@ -121,7 +122,7 @@ export default function BarcodeMappingsPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa liên kết mã vạch này?")) return;
+    if (!(await showConfirm("Bạn có chắc chắn muốn xóa liên kết mã vạch này?"))) return;
     try {
       const res = await fetch(`${APP_SETTINGS.api.baseUrl}/barcode-mappings/${id}`, {
         method: "DELETE"

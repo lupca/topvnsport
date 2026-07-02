@@ -6,6 +6,7 @@ import { Plus, Search, Edit2, Trash2, X, AlertCircle, Globe, ChevronLeft, Chevro
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { showConfirm } from "@/components/ui/popupService";
 
 const channelSchema = z.object({
   code: z.string().min(1, "Mã kênh là bắt buộc").transform(val => val.toUpperCase()),
@@ -114,7 +115,7 @@ export default function ChannelsPage() {
   };
 
   const handleDeleteChannel = async (id: number) => {
-    if (confirm("Bạn có chắc chắn muốn xóa kênh bán hàng này?")) {
+    if (await showConfirm("Bạn có chắc chắn muốn xóa kênh bán hàng này?")) {
       try {
         await api.delete(`/channels/${id}`);
         fetchChannels();

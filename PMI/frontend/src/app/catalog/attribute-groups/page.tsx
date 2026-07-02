@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import DataTable from "@/components/ui/DataTable";
 import { Layers, X, AlertCircle } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
+import { showConfirm } from "@/components/ui/popupService";
 
 interface AttributeGroup {
   id: number;
@@ -66,7 +67,7 @@ export default function AttributeGroupsPage() {
   };
 
   const handleDelete = async (group: AttributeGroup) => {
-    if (!confirm(`Bạn có chắc chắn muốn xóa nhóm thuộc tính "${group.name}" (${group.code}) không?`)) {
+    if (!(await showConfirm(`Bạn có chắc chắn muốn xóa nhóm thuộc tính "${group.name}" (${group.code}) không?`))) {
       return;
     }
     try {

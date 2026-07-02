@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import DataTable from "@/components/ui/DataTable";
 import { FolderTree, X, AlertCircle } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
+import { showConfirm } from "@/components/ui/popupService";
 
 interface AttributeFamily {
   id: number;
@@ -66,7 +67,7 @@ export default function AttributeFamiliesPage() {
   };
 
   const handleDelete = async (family: AttributeFamily) => {
-    if (!confirm(`Bạn có chắc chắn muốn xóa họ thuộc tính "${family.name}" (${family.code}) không?`)) {
+    if (!(await showConfirm(`Bạn có chắc chắn muốn xóa họ thuộc tính "${family.name}" (${family.code}) không?`))) {
       return;
     }
     try {

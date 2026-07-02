@@ -16,6 +16,7 @@ import {
   Calendar,
   Layers
 } from "lucide-react";
+import { showConfirm } from "@/components/ui/popupService";
 
 interface InboundItem {
   id: number;
@@ -290,7 +291,7 @@ export default function InboundPage() {
 
   const handleCompleteShipment = async () => {
     if (!selectedShipment) return;
-    if (!confirm("Bạn có chắc chắn muốn hoàn thành lô hàng này? Tồn kho thực tế sẽ được cập nhật.")) return;
+    if (!(await showConfirm("Bạn có chắc chắn muốn hoàn thành lô hàng này? Tồn kho thực tế sẽ được cập nhật."))) return;
 
     try {
       const res = await fetch(`${APP_SETTINGS.api.baseUrl}/inbound/${selectedShipment.id}/complete`, {

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Search, SlidersHorizontal, ChevronLeft, ChevronRight, Edit2, Trash2, UserPlus } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
+import { showConfirm } from "@/components/ui/popupService";
 
 interface User {
   id: number;
@@ -29,8 +30,8 @@ export default function UsersPage() {
   const totalResults = filteredUsers.length;
   const totalPages = Math.ceil(totalResults / perPage) || 1;
 
-  const handleDelete = (id: number) => {
-    if (confirm("Are you sure you want to delete this user?")) {
+  const handleDelete = async (id: number) => {
+    if (await showConfirm("Are you sure you want to delete this user?")) {
       setUsers(users.filter(user => user.id !== id));
     }
   };
@@ -174,7 +175,7 @@ export default function UsersPage() {
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
                         <button
-                          onClick={() => handleDelete(user.id)}
+                          onClick={() => void handleDelete(user.id)}
                           className="p-1.5 rounded-md hover:bg-slate-100 text-slate-400 hover:text-rose-600 transition-all cursor-pointer"
                           title="Delete"
                         >
