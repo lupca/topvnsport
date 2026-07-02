@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import DataTable from "@/components/ui/DataTable";
 import { Sliders, X, Check, AlertCircle } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
-import { showConfirm } from "@/components/ui/popupService";
+import { popupService, showConfirm } from "@/components/ui/popupService";
 
 interface Attribute {
   id: number;
@@ -97,7 +97,7 @@ export default function AttributesPage() {
       if (res.ok) {
         fetchAttributes();
       } else {
-        alert("Không thể xóa thuộc tính này.");
+        void popupService.alert("Không thể xóa thuộc tính này.");
       }
     } catch (err) {
       console.error(err);

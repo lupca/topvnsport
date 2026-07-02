@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Search, SlidersHorizontal, ChevronLeft, ChevronRight, Edit2, Trash2, UserPlus } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
-import { showConfirm } from "@/components/ui/popupService";
+import { popupService, showConfirm } from "@/components/ui/popupService";
 
 interface User {
   id: number;
@@ -31,7 +31,7 @@ export default function UsersPage() {
   const totalPages = Math.ceil(totalResults / perPage) || 1;
 
   const handleDelete = async (id: number) => {
-    if (await showConfirm("Are you sure you want to delete this user?")) {
+    if (await showConfirm("Bạn có chắc chắn muốn xóa người dùng này không?")) {
       setUsers(users.filter(user => user.id !== id));
     }
   };
@@ -45,7 +45,7 @@ export default function UsersPage() {
           <p className="text-xs text-slate-400 mt-1">Manage platform users and access levels</p>
         </div>
         <button
-          onClick={() => alert("Create User feature is under development.")}
+          onClick={() => void popupService.alert("Tính năng tạo người dùng đang được phát triển.")}
           className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-750 text-white text-xs font-semibold rounded-lg shadow-md shadow-indigo-600/10 hover:shadow-indigo-500/20 transition-all duration-200 active:scale-95 cursor-pointer"
         >
           <UserPlus className="w-3.5 h-3.5" />
@@ -168,7 +168,7 @@ export default function UsersPage() {
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button
-                          onClick={() => alert(`Edit User (ID: ${user.id}) feature is under development.`)}
+                          onClick={() => void popupService.alert(`Tính năng sửa người dùng (ID: ${user.id}) đang được phát triển.`)}
                           className="p-1.5 rounded-md hover:bg-slate-100 text-slate-400 hover:text-indigo-600 transition-all cursor-pointer"
                           title="Edit"
                         >

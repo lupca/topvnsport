@@ -16,6 +16,7 @@ import {
   Shield,
   HelpCircle
 } from "lucide-react";
+import { popupService } from "@/components/ui/popupService";
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -57,7 +58,7 @@ export default function Sidebar() {
   const handleUnderDev = (e: React.MouseEvent, name: string) => {
     if (e.currentTarget.getAttribute("href")?.startsWith("#")) {
       e.preventDefault();
-      alert(`Tính năng "${name}" là một phần của cấu trúc dữ liệu OMS (đã chuẩn chỉnh dưới Database). Giao diện quản lý chi tiết sẽ được phát triển trong phiên bản tiếp theo!`);
+      void popupService.alert(`Tính năng "${name}" là một phần của cấu trúc dữ liệu OMS (đã chuẩn chỉnh dưới Database). Giao diện quản lý chi tiết sẽ được phát triển trong phiên bản tiếp theo!`);
     }
   };
 

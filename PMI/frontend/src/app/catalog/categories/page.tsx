@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import DataTable from "@/components/ui/DataTable";
 import { FolderTree, X, AlertCircle } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
-import { showConfirm } from "@/components/ui/popupService";
+import { popupService, showConfirm } from "@/components/ui/popupService";
 
 interface Category {
   id: number;
@@ -82,7 +82,7 @@ export default function CategoriesPage() {
       if (res.ok) {
         fetchCategories();
       } else {
-        alert("Không thể xóa danh mục này.");
+        void popupService.alert("Không thể xóa danh mục này.");
       }
     } catch (err) {
       console.error(err);

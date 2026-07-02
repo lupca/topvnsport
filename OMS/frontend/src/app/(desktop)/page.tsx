@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { APP_SETTINGS } from "@/config/settings";
 import { api, Order } from "@/utils/api";
-import { showConfirm } from "@/components/ui/popupService";
+import { popupService, showConfirm } from "@/components/ui/popupService";
 import {
   ShoppingCart,
   Users as UsersIcon,
@@ -87,7 +87,7 @@ export default function DashboardPage() {
         await api.post(`/orders/${id}/confirm`, {});
         fetchData();
       } catch (err: any) {
-        alert("Duyệt đơn thất bại: " + err.message);
+        void popupService.alert("Duyệt đơn thất bại: " + err.message);
       }
     }
   };
@@ -98,7 +98,7 @@ export default function DashboardPage() {
         await api.post(`/orders/${id}/cancel`, {});
         fetchData();
       } catch (err: any) {
-        alert("Hủy đơn thất bại: " + err.message);
+        void popupService.alert("Hủy đơn thất bại: " + err.message);
       }
     }
   };

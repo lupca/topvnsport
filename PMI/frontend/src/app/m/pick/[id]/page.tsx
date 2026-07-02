@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import ScannerComponent from "@/components/ScannerComponent";
 import { wmsFetch, WMS_API_URL } from "@/config/wmsApi";
 import { CheckSquare, CheckCircle, ArrowLeft, AlertCircle, MapPin } from "lucide-react";
+import { popupService } from "@/components/ui/popupService";
 
 interface PickListItem {
   id: number;
@@ -76,7 +77,7 @@ export default function PickFlow() {
       });
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.detail || "Failed to start picking");
+        throw new Error(data.detail || "Không thể bắt đầu phiên nhặt hàng");
       }
       setSuccessMessage("Picking started!");
       fetchOrder();
@@ -121,7 +122,7 @@ export default function PickFlow() {
         const data = await response.json();
         throw new Error(data.detail || "Failed to complete picking");
       }
-      alert("Order picking completed!");
+      void popupService.alert("Nhặt hàng cho đơn đã hoàn tất!");
       router.push("/m/pick/select");
     } catch (err: any) {
       console.error(err);

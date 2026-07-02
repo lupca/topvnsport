@@ -6,7 +6,7 @@ import { Plus, Search, Edit2, Trash2, X, AlertCircle, ChevronLeft, ChevronRight 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { showConfirm } from "@/components/ui/popupService";
+import { popupService, showConfirm } from "@/components/ui/popupService";
 
 const customerSchema = z.object({
   name: z.string().min(1, "Tên khách hàng là bắt buộc"),
@@ -133,7 +133,7 @@ export default function CustomersPage() {
         await api.delete(`/customers/${id}`);
         fetchCustomers();
       } catch (err: any) {
-        alert("Xóa khách hàng thất bại: " + err.message);
+        void popupService.alert("Xóa khách hàng thất bại: " + err.message);
       }
     }
   };

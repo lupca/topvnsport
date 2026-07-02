@@ -10,7 +10,7 @@ import {
   Scan
 } from "lucide-react";
 import DataTable from "@/components/ui/DataTable";
-import { showConfirm } from "@/components/ui/popupService";
+import { popupService, showConfirm } from "@/components/ui/popupService";
 
 const MobileScanner = dynamic(() => import("@/components/MobileScanner"), { ssr: false });
 
@@ -47,7 +47,7 @@ export default function BarcodeMappingsPage() {
     setIsScanOpen(false);
     if (match) {
       setSearchQuery(scannedBarcode);
-      alert(`Mã vạch ${scannedBarcode} đã liên kết với SKU: ${match.sku_code} (${match.product_name}). Hệ thống đã lọc danh sách.`);
+      void popupService.alert(`Mã vạch ${scannedBarcode} đã liên kết với SKU: ${match.sku_code} (${match.product_name}). Hệ thống đã lọc danh sách.`);
     } else {
       setBarcode(scannedBarcode);
       setBarcodeType("EAN-13");
@@ -57,7 +57,7 @@ export default function BarcodeMappingsPage() {
       setImageUrl("");
       setEditingMapping(null);
       setIsOpen(true);
-      alert(`Mã vạch ${scannedBarcode} chưa được liên kết. Hãy điền thông tin để tạo liên kết mới!`);
+      void popupService.alert(`Mã vạch ${scannedBarcode} chưa được liên kết. Hãy điền thông tin để tạo liên kết mới!`);
     }
   };
 
@@ -83,7 +83,7 @@ export default function BarcodeMappingsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!barcode || !skuCode || !productName) {
-      alert("Mã vạch, SKU và Tên sản phẩm là bắt buộc!");
+      void popupService.alert("Mã vạch, SKU và Tên sản phẩm là bắt buộc!");
       return;
     }
 
@@ -115,9 +115,9 @@ export default function BarcodeMappingsPage() {
 
       setIsOpen(false);
       fetchMappings();
-      alert("Đã lưu liên kết mã vạch thành công!");
+      void popupService.alert("Đã lưu liên kết mã vạch thành công!");
     } catch (err: any) {
-      alert(err.message);
+      void popupService.alert(err.message);
     }
   };
 
@@ -130,7 +130,7 @@ export default function BarcodeMappingsPage() {
       if (!res.ok) throw new Error("Không thể xóa liên kết mã vạch.");
       fetchMappings();
     } catch (err: any) {
-      alert(err.message);
+      void popupService.alert(err.message);
     }
   };
 

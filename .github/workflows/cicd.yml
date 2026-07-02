@@ -1,0 +1,89 @@
+name: TOPVNSPORT CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    name: Continuous Integration
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate production compose files
+        run: |
+          docker compose -f PMI/docker-compose.prod.yml config >/tmp/pmi-config.out
+          docker compose -f OMS/docker-compose.prod.yml config >/tmp/oms-config.out
+          docker compose -f WMS/docker-compose.prod.yml config >/tmp/wms-config.out
+          docker compose -f web/docker-compose.prod.yml config >/tmp/web-config.out
+
+      - name: Build PMI frontend
+        run: |
+          cd PMI/frontend
+          npm ci
+          npm run build
+
+      - name: Build OMS frontend
+        run: |
+          cd OMS/frontend
+          npm ci
+          npm run build
+
+      - name: Build WMS frontend
+        run: |
+          cd WMS/frontend
+          npm ci
+          npm run build
+
+      - name: Build web frontend
+        run: |
+          cd web
+          npm ci
+          npm run build
+
+      - name: Python syntax check
+        run: |
+          python -m py_compile PMI/backend/main.py OMS/backend/main.py WMS/backend/main.py test_oms_wms.py
+
+  cd:
+    name: Continuous Deployment
+    needs: ci
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup SSH key and known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
+
+      - name: Run production deploy
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          PUBLIC_HOST: ${{ secrets.PUBLIC_HOST }}
+          SSH_KEY_PATH: ~/.ssh/id_ed25519
+        run: |
+          chmod +x deploy_prod.sh
+          ./deploy_prod.sh

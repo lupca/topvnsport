@@ -58,6 +58,14 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
 
     setIsSubmitting(true);
     try {
+      const shippingAddress = `${address}, ${city}`;
+      const customerId = await sportApi.findOrCreateCustomer({
+        name: fullName.trim(),
+        phone: phone.trim(),
+        address: shippingAddress
+      });
+      const channelId = await sportApi.getOrCreateManualChannelId();
+
       const items = cartItems.map(item => {
         const safeWeight = item.selectedWeight?.replace(/\//g, '-') || 'STD';
         const safeColor = item.selectedColor?.replace(/\//g, '-') || 'STD';
@@ -68,12 +76,12 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
       });
 
       await sportApi.createOrder({
-        customer_id: 1,
-        channel_id: 1,
+        customer_id: customerId,
+        channel_id: channelId,
         items,
         shipping_fee: shippingCost,
-        shipping_address: `${address}, ${city}`,
-        note: `Khách hàng: ${fullName}, SĐT: ${phone}`
+        shipping_address: shippingAddress,
+        note: shippingMethod === 'fast' ? 'Đơn web - Giao hỏa tốc' : 'Đơn web - Giao tiêu chuẩn'
       });
 
       setStep(3);

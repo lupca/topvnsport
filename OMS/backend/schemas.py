@@ -105,6 +105,8 @@ class OrderOut(OrderBase):
     id: int
     created_at: datetime
     updated_at: datetime
+    customer: Optional[CustomerOut] = None
+    channel: Optional[ChannelOut] = None
     items: List[OrderItemOut] = []
     fulfillment_orders: List[FulfillmentOrderOut] = []
 

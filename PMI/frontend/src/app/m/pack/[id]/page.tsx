@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import ScannerComponent from "@/components/ScannerComponent";
 import { wmsFetch, WMS_API_URL } from "@/config/wmsApi";
 import { Package, CheckCircle, ArrowLeft, AlertCircle, Truck } from "lucide-react";
+import { popupService } from "@/components/ui/popupService";
 
 interface PackListItem {
   id: number;
@@ -109,7 +110,7 @@ export default function PackFlow() {
         const data = await response.json();
         throw new Error(data.detail || "Failed to complete packing");
       }
-      alert("Order packing completed!");
+      void popupService.alert("Đóng gói đơn hàng thành công!");
       router.push("/m/pack/select");
     } catch (err: any) {
       console.error(err);

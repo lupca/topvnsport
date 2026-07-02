@@ -82,7 +82,7 @@ export default function SystemPopupProvider({ children }: SystemPopupProviderPro
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-5 shadow-2xl">
             <h3 className="text-sm font-bold uppercase tracking-wider text-indigo-300">
-              {request.kind === "confirm" ? "Xac nhan" : request.kind === "prompt" ? "Nhap thong tin" : "Thong bao"}
+              {request.kind === "confirm" ? "Xac nhan" : request.kind === "prompt" ? "Nhap thong tin" : "Thông báo"}
             </h3>
             <p className="mt-3 whitespace-pre-wrap text-sm text-slate-100">{request.message}</p>
 

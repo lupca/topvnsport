@@ -1,3 +1,10 @@
+const getBaseUrl = () => {
+  if (typeof window !== "undefined") {
+    return `http://${window.location.hostname}:18100`;
+  }
+  return process.env.NEXT_PUBLIC_API_URL || "http://localhost:18100";
+};
+
 export const APP_SETTINGS = {
   appName: "TOP VN SPORT",
   appVersion: "1.2.0",
@@ -5,7 +12,7 @@ export const APP_SETTINGS = {
   appSubtitle: "PIM System",
   
   api: {
-    baseUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:18100",
+    baseUrl: getBaseUrl(),
   },
   
   pagination: {

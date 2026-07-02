@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import DataTable from "@/components/ui/DataTable";
 import { FolderTree, X, AlertCircle } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
-import { showConfirm } from "@/components/ui/popupService";
+import { popupService, showConfirm } from "@/components/ui/popupService";
 
 interface AttributeFamily {
   id: number;
@@ -77,7 +77,7 @@ export default function AttributeFamiliesPage() {
       if (res.ok) {
         fetchFamilies();
       } else {
-        alert("Không thể xóa họ thuộc tính này.");
+        void popupService.alert("Không thể xóa họ thuộc tính này.");
       }
     } catch (err) {
       console.error(err);

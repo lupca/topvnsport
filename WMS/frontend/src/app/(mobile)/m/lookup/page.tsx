@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { Search, Loader2, CheckCircle, AlertCircle, MapPin, Tag, Box, Archive, X } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
+import { popupService } from "@/components/ui/popupService";
 
 const MobileScanner = dynamic(() => import("@/components/MobileScanner"), { ssr: false });
 
@@ -88,7 +89,7 @@ export default function LookupPage() {
   const handleCreateMapping = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!unmappedBarcode || !mappingSku || !mappingProductName) {
-      alert("Vui lòng nhập đầy đủ thông tin bắt buộc!");
+      void popupService.alert("Vui lòng nhập đầy đủ thông tin bắt buộc!");
       return;
     }
     try {
@@ -112,11 +113,11 @@ export default function LookupPage() {
       setMappingSku("");
       setMappingProductName("");
       setMappingVariantName("");
-      alert("Đã liên kết mã vạch thành công!");
+      void popupService.alert("Đã liên kết mã vạch thành công!");
       // Automatically query again to show the newly linked product!
       handleScanSuccess(unmappedBarcode);
     } catch (err: any) {
-      alert(err.message);
+      void popupService.alert(err.message);
     }
   };
 

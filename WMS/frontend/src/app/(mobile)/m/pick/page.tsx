@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { PackageOpen, ArrowRight, Loader2, Search } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
+import { popupService } from "@/components/ui/popupService";
 
 interface PickListItem {
   id: number;
@@ -52,7 +53,7 @@ export default function PickListPage() {
       if (!res.ok) throw new Error("Failed to start pick");
       await fetchOrders();
     } catch (err: any) {
-      alert(err.message || "Failed to start picking");
+      void popupService.alert(err.message || "Không thể bắt đầu phiên nhặt hàng");
     }
   };
 

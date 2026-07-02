@@ -12,6 +12,7 @@ import {
   X
 } from "lucide-react";
 import DataTable from "@/components/ui/DataTable";
+import { popupService } from "@/components/ui/popupService";
 
 interface InventoryItem {
   id: number;
@@ -100,7 +101,7 @@ export default function InventoryPage() {
   const handleAdjustSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!adjustSku || !adjustLocId || adjustQty === 0) {
-      alert("Vui lòng nhập đầy đủ SKU, Vị trí và số lượng khác 0.");
+      void popupService.alert("Vui lòng nhập đầy đủ SKU, Vị trí và số lượng khác 0.");
       return;
     }
 
@@ -125,20 +126,20 @@ export default function InventoryPage() {
 
       setIsAdjustOpen(false);
       fetchData();
-      alert("Điều chỉnh tồn kho thành công!");
+      void popupService.alert("Điều chỉnh tồn kho thành công!");
     } catch (err: any) {
-      alert(err.message);
+      void popupService.alert(err.message);
     }
   };
 
   const handleTransferSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!transferSku || !transferFromLocId || !transferToLocId || transferQty <= 0) {
-      alert("Vui lòng điền đầy đủ thông tin giao dịch chuyển kho.");
+      void popupService.alert("Vui lòng điền đầy đủ thông tin giao dịch chuyển kho.");
       return;
     }
     if (transferFromLocId === transferToLocId) {
-      alert("Vị trí nguồn và vị trí đích không được trùng nhau.");
+      void popupService.alert("Vị trí nguồn và vị trí đích không được trùng nhau.");
       return;
     }
 
@@ -164,9 +165,9 @@ export default function InventoryPage() {
 
       setIsTransferOpen(false);
       fetchData();
-      alert("Chuyển vị trí tồn kho thành công!");
+      void popupService.alert("Chuyển vị trí tồn kho thành công!");
     } catch (err: any) {
-      alert(err.message);
+      void popupService.alert(err.message);
     }
   };
 

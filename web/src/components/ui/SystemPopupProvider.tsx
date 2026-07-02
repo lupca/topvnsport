@@ -80,7 +80,7 @@ export default function SystemPopupProvider({ children }: SystemPopupProviderPro
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 p-4">
           <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-5 shadow-2xl">
             <h3 className="text-sm font-black uppercase tracking-wider text-orange-600">
-              {request.kind === 'confirm' ? 'Xac nhan' : request.kind === 'prompt' ? 'Nhap thong tin' : 'Thong bao'}
+              {request.kind === 'confirm' ? 'Xac nhan' : request.kind === 'prompt' ? 'Nhap thong tin' : 'Thông báo'}
             </h3>
             <p className="mt-3 whitespace-pre-wrap text-sm text-gray-700">{request.message}</p>
 
@@ -100,7 +100,7 @@ export default function SystemPopupProvider({ children }: SystemPopupProviderPro
                   onClick={handleCancel}
                   className="rounded-lg border border-gray-300 px-3 py-2 text-xs font-semibold text-gray-600 transition hover:bg-gray-100"
                 >
-                  Huy
+                  Hủy
                 </button>
               )}
               <button
@@ -108,7 +108,7 @@ export default function SystemPopupProvider({ children }: SystemPopupProviderPro
                 onClick={handleConfirm}
                 className="rounded-lg bg-orange-500 px-3 py-2 text-xs font-semibold text-white transition hover:bg-orange-600"
               >
-                Dong y
+                Đồng ý
               </button>
             </div>
           </div>

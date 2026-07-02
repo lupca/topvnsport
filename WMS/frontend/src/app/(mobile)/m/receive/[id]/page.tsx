@@ -6,6 +6,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { ArrowLeft, Loader2, CheckCircle, AlertCircle, MapPin, Tag } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
+import { popupService } from "@/components/ui/popupService";
 
 const MobileScanner = dynamic(() => import("@/components/MobileScanner"), { ssr: false });
 
@@ -164,10 +165,10 @@ export default function ReceiveDetailPage() {
         const errData = await res.json();
         throw new Error(errData.detail || "Không thể hoàn tất nhập kho. Đảm bảo mọi SKU đã gán vị trí.");
       }
-      alert("Lô hàng đã được nhập kho thành công!");
+      void popupService.alert("Lô hàng đã được nhập kho thành công!");
       router.push("/m/receive");
     } catch (err: any) {
-      alert(err.message);
+      void popupService.alert(err.message);
     }
   };
 

@@ -18,7 +18,7 @@ import {
   ArrowRight,
   ClipboardList
 } from "lucide-react";
-import { showConfirm } from "@/components/ui/popupService";
+import { popupService, showConfirm } from "@/components/ui/popupService";
 
 interface PickListItem {
   id: number;
@@ -104,7 +104,7 @@ export default function FulfillmentPage() {
       setPickQty(1);
       setTrackingNumber("");
     } catch (err: any) {
-      alert(err.message || "Lỗi tải chi tiết đơn xuất.");
+      void popupService.alert(err.message || "Lỗi tải chi tiết đơn xuất.");
     } finally {
       setLoading(false);
     }
@@ -120,9 +120,9 @@ export default function FulfillmentPage() {
       if (selectedOrder?.id === orderId) {
         handleSelectOrder(selectedOrder);
       }
-      alert("Đã bắt đầu nhặt hàng!");
+      void popupService.alert("Đã bắt đầu nhặt hàng!");
     } catch (err: any) {
-      alert(err.message);
+      void popupService.alert(err.message);
     }
   };
 
@@ -171,16 +171,16 @@ export default function FulfillmentPage() {
       if (selectedOrder?.id === orderId) {
         handleSelectOrder(selectedOrder);
       }
-      alert("Đã nhặt xong toàn bộ hàng!");
+      void popupService.alert("Đã nhặt xong toàn bộ hàng!");
     } catch (err: any) {
-      alert(err.message);
+      void popupService.alert(err.message);
     }
   };
 
   const handleScanPack = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedOrder || !trackingNumber) {
-      alert("Vui lòng điền mã vận đơn!");
+      void popupService.alert("Vui lòng điền mã vận đơn!");
       return;
     }
 
@@ -205,9 +205,9 @@ export default function FulfillmentPage() {
 
       handleSelectOrder(selectedOrder);
       fetchData();
-      alert("Đã ghi nhận thông tin đóng gói!");
+      void popupService.alert("Đã ghi nhận thông tin đóng gói!");
     } catch (err: any) {
-      alert(err.message);
+      void popupService.alert(err.message);
     }
   };
 
@@ -221,9 +221,9 @@ export default function FulfillmentPage() {
       if (selectedOrder?.id === orderId) {
         handleSelectOrder(selectedOrder);
       }
-      alert("Đã hoàn tất đóng gói đơn hàng!");
+      void popupService.alert("Đã hoàn tất đóng gói đơn hàng!");
     } catch (err: any) {
-      alert(err.message);
+      void popupService.alert(err.message);
     }
   };
 
@@ -240,9 +240,9 @@ export default function FulfillmentPage() {
       if (selectedOrder?.id === orderId) {
         handleSelectOrder(selectedOrder);
       }
-      alert("Đơn hàng đã được xuất kho thành công!");
+      void popupService.alert("Đơn hàng đã được xuất kho thành công!");
     } catch (err: any) {
-      alert(err.message);
+      void popupService.alert(err.message);
     }
   };
 
@@ -257,9 +257,9 @@ export default function FulfillmentPage() {
       if (selectedOrder?.id === orderId) {
         setSelectedOrder(null);
       }
-      alert("Đã hủy đơn thành công.");
+      void popupService.alert("Đã hủy đơn thành công.");
     } catch (err: any) {
-      alert(err.message);
+      void popupService.alert(err.message);
     }
   };
 

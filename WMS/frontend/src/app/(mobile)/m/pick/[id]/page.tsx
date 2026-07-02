@@ -6,6 +6,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { ArrowLeft, Loader2, CheckCircle, MapPin, AlertCircle } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
+import { popupService } from "@/components/ui/popupService";
 
 const MobileScanner = dynamic(() => import("@/components/MobileScanner"), { ssr: false });
 
@@ -105,10 +106,10 @@ export default function PickDetailPage() {
         method: "POST",
       });
       if (!res.ok) throw new Error("Không thể hoàn tất nhặt hàng.");
-      alert("Đã nhặt xong toàn bộ hàng!");
+      void popupService.alert("Đã nhặt xong toàn bộ hàng!");
       router.push("/m/pick");
     } catch (err: any) {
-      alert(err.message);
+      void popupService.alert(err.message);
     }
   };
 

@@ -6,7 +6,7 @@ import { Plus, Search, Edit2, Trash2, X, AlertCircle, Globe, ChevronLeft, Chevro
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { showConfirm } from "@/components/ui/popupService";
+import { popupService, showConfirm } from "@/components/ui/popupService";
 
 const channelSchema = z.object({
   code: z.string().min(1, "Mã kênh là bắt buộc").transform(val => val.toUpperCase()),
@@ -120,7 +120,7 @@ export default function ChannelsPage() {
         await api.delete(`/channels/${id}`);
         fetchChannels();
       } catch (err: any) {
-        alert("Xóa kênh thất bại: " + err.message);
+        void popupService.alert("Xóa kênh thất bại: " + err.message);
       }
     }
   };

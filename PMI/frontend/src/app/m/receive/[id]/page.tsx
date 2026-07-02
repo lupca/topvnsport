@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import ScannerComponent from "@/components/ScannerComponent";
 import { wmsFetch, WMS_API_URL } from "@/config/wmsApi";
 import { Download, CheckCircle, ArrowLeft, AlertCircle, MapPin, Layers } from "lucide-react";
+import { popupService } from "@/components/ui/popupService";
 
 interface InboundItem {
   id: number;
@@ -120,7 +121,7 @@ export default function ReceiveFlow() {
         const data = await response.json();
         throw new Error(data.detail || "Failed to complete shipment");
       }
-      alert("Shipment completed successfully!");
+      void popupService.alert("Hoàn tất lô hàng thành công!");
       router.push("/m/receive/select");
     } catch (err: any) {
       console.error(err);

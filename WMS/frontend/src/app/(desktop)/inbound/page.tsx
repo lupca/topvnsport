@@ -16,7 +16,7 @@ import {
   Calendar,
   Layers
 } from "lucide-react";
-import { showConfirm } from "@/components/ui/popupService";
+import { popupService, showConfirm } from "@/components/ui/popupService";
 
 interface InboundItem {
   id: number;
@@ -145,7 +145,7 @@ export default function InboundPage() {
       setScanBarcode("");
       setScanQty(1);
     } catch (err: any) {
-      alert(err.message || "Lỗi tải chi tiết lô hàng.");
+      void popupService.alert(err.message || "Lỗi tải chi tiết lô hàng.");
     } finally {
       setLoading(false);
     }
@@ -170,13 +170,13 @@ export default function InboundPage() {
   const handleCreateShipment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inboundNumber || !selectedWhId || !supplierName) {
-      alert("Vui lòng nhập đầy đủ thông tin bắt buộc!");
+      void popupService.alert("Vui lòng nhập đầy đủ thông tin bắt buộc!");
       return;
     }
 
     const filteredItems = itemsInput.filter(item => item.sku_code !== "");
     if (filteredItems.length === 0) {
-      alert("Shipment phải có ít nhất một sản phẩm!");
+      void popupService.alert("Lô hàng phải có ít nhất một sản phẩm!");
       return;
     }
 
@@ -218,9 +218,9 @@ export default function InboundPage() {
       setExpectedDate("");
       setItemsInput([{ sku_code: "", product_name: "", expected_qty: 1, isManual: false }]);
       fetchData();
-      alert("Tạo lô hàng nhập kho thành công!");
+      void popupService.alert("Tạo lô hàng nhập kho thành công!");
     } catch (err: any) {
-      alert(err.message);
+      void popupService.alert(err.message);
     }
   };
 
@@ -261,7 +261,7 @@ export default function InboundPage() {
   const handlePutAway = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedShipment || !putAwaySku || !putAwayLocId) {
-      alert("Vui lòng chọn SKU và Vị trí cất hàng!");
+      void popupService.alert("Vui lòng chọn SKU và Vị trí cất hàng!");
       return;
     }
 
@@ -283,9 +283,9 @@ export default function InboundPage() {
       setPutAwaySku("");
       setPutAwayLocId("");
       handleSelectShipment(selectedShipment);
-      alert("Cất hàng vào vị trí thành công!");
+      void popupService.alert("Cất hàng vào vị trí thành công!");
     } catch (err: any) {
-      alert(err.message);
+      void popupService.alert(err.message);
     }
   };
 
@@ -303,11 +303,11 @@ export default function InboundPage() {
         throw new Error(errData.detail || "Không thể hoàn thành lô hàng.");
       }
 
-      alert("Lô hàng đã hoàn thành và nhập kho thành công!");
+      void popupService.alert("Lô hàng đã hoàn thành và nhập kho thành công!");
       handleSelectShipment(selectedShipment);
       fetchData();
     } catch (err: any) {
-      alert(err.message);
+      void popupService.alert(err.message);
     }
   };
 

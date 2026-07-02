@@ -9,6 +9,7 @@ import {
   HelpCircle, AlertCircle, Sparkles, Image as ImageIcon, ChevronRight 
 } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
+import { popupService } from "@/components/ui/popupService";
 
 const API_BASE_URL = APP_SETTINGS.api.baseUrl;
 
@@ -277,7 +278,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
       setCoverImage(data.image_url);
     } catch (err) {
       console.error(err);
-      alert("Không thể tải lên ảnh bìa");
+      void popupService.alert("Không thể tải lên ảnh bìa");
     } finally {
       setUploadingCover(false);
     }
@@ -298,7 +299,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
       setTier1Images(prev => ({ ...prev, [optionName]: data.image_url }));
     } catch (err) {
       console.error(err);
-      alert(`Không thể tải lên ảnh cho phân loại ${optionName}`);
+      void popupService.alert(`Không thể tải lên ảnh cho phân loại ${optionName}`);
     } finally {
       setUploadingTier1(prev => ({ ...prev, [optionName]: false }));
     }

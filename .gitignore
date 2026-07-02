@@ -41,6 +41,7 @@ android-studio-quail1-patch2-linux/
 *.sqlite3
 *.db
 *.pid
+*.pem
 
 # Tooling artifacts
 web/assets/.aistudio/

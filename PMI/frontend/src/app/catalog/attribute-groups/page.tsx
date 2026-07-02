@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import DataTable from "@/components/ui/DataTable";
 import { Layers, X, AlertCircle } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
-import { showConfirm } from "@/components/ui/popupService";
+import { popupService, showConfirm } from "@/components/ui/popupService";
 
 interface AttributeGroup {
   id: number;
@@ -77,7 +77,7 @@ export default function AttributeGroupsPage() {
       if (res.ok) {
         fetchGroups();
       } else {
-        alert("Không thể xóa nhóm thuộc tính này.");
+        void popupService.alert("Không thể xóa nhóm thuộc tính này.");
       }
     } catch (err) {
       console.error(err);

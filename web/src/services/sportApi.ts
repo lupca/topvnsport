@@ -48,6 +48,36 @@ type CreateOrderPayload = {
   items: CreateOrderItem[];
 };
 
+type OmsCustomer = {
+  id: number;
+  name: string;
+  phone: string;
+  email?: string | null;
+  address?: string | null;
+};
+
+type OmsPaginatedCustomers = {
+  items?: OmsCustomer[];
+};
+
+type OmsCustomerInput = {
+  name: string;
+  phone: string;
+  address: string;
+  email?: string;
+};
+
+type OmsChannel = {
+  id: number;
+  code: string;
+  name: string;
+  is_active: boolean;
+};
+
+type OmsPaginatedChannels = {
+  items?: OmsChannel[];
+};
+
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 function mapPmiProduct(pmiProduct: PmiProduct): Product {
@@ -117,6 +147,14 @@ function mapPmiProduct(pmiProduct: PmiProduct): Product {
     skuByVariant,
     colors: colors.length > 0 ? colors : ['Tiêu chuẩn']
   };
+}
+
+function normalizePhone(value: string): string {
+  return value.replace(/\D/g, '');
+}
+
+function findManualChannel(channels: OmsChannel[]): OmsChannel | undefined {
+  return channels.find(c => c.is_active && c.code?.toUpperCase() === 'MANUAL');
 }
 
 /**
@@ -233,5 +271,95 @@ export const sportApi = {
       throw new Error(`Failed to create order: ${text}`);
     }
     return res.json();
+  },
+
+  async findOrCreateCustomer(customer: OmsCustomerInput): Promise<number> {
+    const normalizedPhone = normalizePhone(customer.phone);
+    const searchRes = await fetch(
+      `${OMS_API_URL}/customers?search=${encodeURIComponent(customer.phone)}&limit=100`
+    );
+
+    if (searchRes.ok) {
+      const data = (await searchRes.json()) as OmsPaginatedCustomers;
+      const existing = (data.items || []).find(
+        c => normalizePhone(c.phone || '') === normalizedPhone
+      );
+      if (existing) {
+        return existing.id;
+      }
+    }
+
+    const createRes = await fetch(`${OMS_API_URL}/customers`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(customer)
+    });
+
+    if (createRes.ok) {
+      const created = (await createRes.json()) as OmsCustomer;
+      return created.id;
+    }
+
+    // If another request already created this customer, fetch again and reuse it.
+    const fallbackSearchRes = await fetch(
+      `${OMS_API_URL}/customers?search=${encodeURIComponent(customer.phone)}&limit=100`
+    );
+    if (fallbackSearchRes.ok) {
+      const data = (await fallbackSearchRes.json()) as OmsPaginatedCustomers;
+      const existing = (data.items || []).find(
+        c => normalizePhone(c.phone || '') === normalizedPhone
+      );
+      if (existing) {
+        return existing.id;
+      }
+    }
+
+    const errorText = await createRes.text();
+    throw new Error(`Failed to create customer: ${errorText}`);
+  },
+
+  async getOrCreateManualChannelId(): Promise<number> {
+    const searchRes = await fetch(
+      `${OMS_API_URL}/channels?search=${encodeURIComponent('MANUAL')}&limit=100`
+    );
+    if (searchRes.ok) {
+      const data = (await searchRes.json()) as OmsPaginatedChannels;
+      const manual = findManualChannel(data.items || []);
+      if (manual) {
+        return manual.id;
+      }
+    }
+
+    const listRes = await fetch(`${OMS_API_URL}/channels?limit=100`);
+    if (listRes.ok) {
+      const data = (await listRes.json()) as OmsPaginatedChannels;
+      const manual = findManualChannel(data.items || []);
+      if (manual) {
+        return manual.id;
+      }
+
+      const activeChannel = (data.items || []).find(c => c.is_active);
+      if (activeChannel) {
+        return activeChannel.id;
+      }
+    }
+
+    const createRes = await fetch(`${OMS_API_URL}/channels`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        code: 'MANUAL',
+        name: 'Manual',
+        is_active: true
+      })
+    });
+
+    if (createRes.ok) {
+      const created = (await createRes.json()) as OmsChannel;
+      return created.id;
+    }
+
+    const errorText = await createRes.text();
+    throw new Error(`Failed to resolve channel: ${errorText}`);
   }
 };

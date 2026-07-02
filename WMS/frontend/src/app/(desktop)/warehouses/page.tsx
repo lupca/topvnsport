@@ -13,7 +13,7 @@ import {
   AlertCircle,
   X
 } from "lucide-react";
-import { showConfirm } from "@/components/ui/popupService";
+import { popupService, showConfirm } from "@/components/ui/popupService";
 
 interface Warehouse {
   id: number;
@@ -91,7 +91,7 @@ export default function WarehousesPage() {
       const data = await res.json();
       setLocations(data);
     } catch (err: any) {
-      alert(err.message || "Lỗi khi tải vị trí ô kệ.");
+      void popupService.alert(err.message || "Lỗi khi tải vị trí ô kệ.");
     } finally {
       setLoadingLoc(false);
     }
@@ -101,7 +101,7 @@ export default function WarehousesPage() {
   const handleWhSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!whCode || !whName) {
-      alert("Mã kho và tên kho là bắt buộc!");
+      void popupService.alert("Mã kho và tên kho là bắt buộc!");
       return;
     }
 
@@ -132,7 +132,7 @@ export default function WarehousesPage() {
       setIsWhModalOpen(false);
       fetchWarehouses();
     } catch (err: any) {
-      alert(err.message);
+      void popupService.alert(err.message);
     }
   };
 
@@ -150,7 +150,7 @@ export default function WarehousesPage() {
       }
       fetchWarehouses();
     } catch (err: any) {
-      alert(err.message);
+      void popupService.alert(err.message);
     }
   };
 
@@ -159,7 +159,7 @@ export default function WarehousesPage() {
     e.preventDefault();
     if (!selectedWarehouse) return;
     if (!locCode) {
-      alert("Mã vị trí là bắt buộc!");
+      void popupService.alert("Mã vị trí là bắt buộc!");
       return;
     }
 
@@ -194,7 +194,7 @@ export default function WarehousesPage() {
       setIsLocModalOpen(false);
       handleSelectWarehouse(selectedWarehouse);
     } catch (err: any) {
-      alert(err.message);
+      void popupService.alert(err.message);
     }
   };
 
@@ -213,7 +213,7 @@ export default function WarehousesPage() {
         handleSelectWarehouse(selectedWarehouse);
       }
     } catch (err: any) {
-      alert(err.message);
+      void popupService.alert(err.message);
     }
   };
 

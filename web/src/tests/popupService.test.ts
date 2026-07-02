@@ -18,8 +18,8 @@ describe('popupService', () => {
   });
 
   test('handles queued dialogs in order', async () => {
-    const first = popupService.alert('Thong bao thu nhat');
-    const second = popupService.confirm('Thong bao thu hai');
+    const first = popupService.alert('Thông báo thu nhat');
+    const second = popupService.confirm('Thông báo thu hai');
 
     popupService.resolveCurrent(undefined);
     popupService.resolveCurrent(false);

@@ -8,7 +8,7 @@ import {
   Eye, Copy, Trash2, X, ExternalLink
 } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
-import { showConfirm } from "@/components/ui/popupService";
+import { popupService, showConfirm } from "@/components/ui/popupService";
 
 const API_BASE_URL = APP_SETTINGS.api.baseUrl;
 
@@ -116,7 +116,7 @@ export default function ProductList({
           setProducts(prev => prev.filter(p => p.id !== productId));
           setTotalItems(prev => Math.max(0, prev - 1));
         } else {
-          alert("Xóa sản phẩm thất bại.");
+          void popupService.alert("Xóa sản phẩm thất bại.");
         }
       })
       .catch(err => console.error("Error deleting product:", err));

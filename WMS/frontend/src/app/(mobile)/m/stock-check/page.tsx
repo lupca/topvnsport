@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { ArrowLeft, Loader2, CheckCircle, AlertCircle, MapPin, Tag, Box, Sliders } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
+import { popupService } from "@/components/ui/popupService";
 
 const MobileScanner = dynamic(() => import("@/components/MobileScanner"), { ssr: false });
 
@@ -72,7 +73,7 @@ export default function StockCheckPage() {
   const handleAdjustSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!skuInfo || !selectedLocId || adjustQty === 0) {
-      alert("Vui lòng chọn vị trí, quét sản phẩm và nhập số lượng khác 0.");
+      void popupService.alert("Vui lòng chọn vị trí, quét sản phẩm và nhập số lượng khác 0.");
       return;
     }
 

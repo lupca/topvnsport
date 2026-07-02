@@ -6,6 +6,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { ArrowLeft, Loader2, CheckCircle, PackageOpen, AlertCircle, Truck } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
+import { popupService } from "@/components/ui/popupService";
 
 const MobileScanner = dynamic(() => import("@/components/MobileScanner"), { ssr: false });
 
@@ -102,10 +103,10 @@ export default function PackDetailPage() {
         const errData = await res.json();
         throw new Error(errData.detail || "Không thể bàn giao vận chuyển.");
       }
-      alert("Đơn hàng đã được xuất kho thành công!");
+      void popupService.alert("Đơn hàng đã được xuất kho thành công!");
       router.push("/m/pack");
     } catch (err: any) {
-      alert(err.message);
+      void popupService.alert(err.message);
     }
   };
 

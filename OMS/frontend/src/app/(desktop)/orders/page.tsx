@@ -13,7 +13,7 @@ import {
   ProductSearchResult,
   OrderItemInput
 } from "@/utils/api";
-import { showConfirm } from "@/components/ui/popupService";
+import { popupService, showConfirm } from "@/components/ui/popupService";
 
 const orderSchema = z.object({
   customer_id: z.number().min(1, "Vui lòng chọn khách hàng"),
@@ -228,10 +228,32 @@ function OrdersPageContent() {
       setDetailLoading(true);
       setFormError(null);
       const data = await api.get<Order>(`/orders/${id}`);
-      setCurrentOrder(data);
+      let resolvedCustomer = data.customer || null;
+      if (!resolvedCustomer && data.customer_id) {
+        try {
+          resolvedCustomer = await api.get<Customer>(`/customers/${data.customer_id}`);
+        } catch {
+          resolvedCustomer = null;
+        }
+      }
+
+      let resolvedChannel = data.channel || null;
+      if (!resolvedChannel && data.channel_id) {
+        try {
+          resolvedChannel = await api.get<Channel>(`/channels/${data.channel_id}`);
+        } catch {
+          resolvedChannel = null;
+        }
+      }
+
+      setCurrentOrder({
+        ...data,
+        customer: resolvedCustomer || undefined,
+        channel: resolvedChannel || undefined
+      });
       
       if (view === "edit") {
-        setFormCustomer(data.customer || null);
+        setFormCustomer(resolvedCustomer || null);
         setFormChannelId(data.channel_id);
         setFormShippingAddress(data.shipping_address);
         setFormShippingFee(Number(data.shipping_fee));
@@ -289,7 +311,7 @@ function OrdersPageContent() {
   const handleCreateCustomerQuick = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCustomerName || !newCustomerPhone) {
-      alert("Vui lòng điền tên và số điện thoại.");
+      void popupService.alert("Vui lòng điền tên và số điện thoại.");
       return;
     }
     try {
@@ -312,7 +334,7 @@ function OrdersPageContent() {
       setIsNewCustomerModalOpen(false);
       setIsCustomerModalOpen(false);
     } catch (err: any) {
-      alert("Tạo nhanh khách hàng thất bại: " + err.message);
+      void popupService.alert("Tạo nhanh khách hàng thất bại: " + err.message);
     }
   };
 
@@ -431,7 +453,7 @@ function OrdersPageContent() {
         await api.post(`/orders/${id}/confirm`, {});
         loadOrderDetails(id);
       } catch (err: any) {
-        alert("Duyệt đơn thất bại: " + err.message);
+        void popupService.alert("Duyệt đơn thất bại: " + err.message);
       }
     }
   };
@@ -442,7 +464,7 @@ function OrdersPageContent() {
         await api.post(`/orders/${id}/cancel`, {});
         loadOrderDetails(id);
       } catch (err: any) {
-        alert("Hủy đơn thất bại: " + err.message);
+        void popupService.alert("Hủy đơn thất bại: " + err.message);
       }
     }
   };
@@ -453,7 +475,7 @@ function OrdersPageContent() {
         await api.delete(`/orders/${id}`);
         updateURL("list");
       } catch (err: any) {
-        alert("Xóa đơn thất bại: " + err.message);
+        void popupService.alert("Xóa đơn thất bại: " + err.message);
       }
     }
   };
