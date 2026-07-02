@@ -8,6 +8,8 @@ EC2_USER="${EC2_USER:-ec2-user}"
 DEPLOY_PATH="${DEPLOY_PATH:-~/topvnsport}"
 PUBLIC_HOST="${PUBLIC_HOST:-$EC2_HOST}"
 SSH_KEY_PATH="${SSH_KEY_PATH:-$HOME/.ssh/id_ed25519}"
+SSH_KEY_PATH="${SSH_KEY_PATH/#\~/$HOME}"
+SSH_KEY_PATH="${SSH_KEY_PATH//\$HOME/$HOME}"
 
 if [[ ! -f "$SSH_KEY_PATH" ]]; then
   echo "SSH key not found at $SSH_KEY_PATH"

@@ -91,7 +91,6 @@ jobs:
           EC2_USER: ${{ secrets.EC2_USER }}
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
           PUBLIC_HOST: ${{ secrets.PUBLIC_HOST }}
-          SSH_KEY_PATH: ~/.ssh/id_ed25519
         run: |
           chmod +x deploy_prod.sh
           ./deploy_prod.sh
