@@ -43,19 +43,19 @@ jobs:
       - name: Build PMI frontend
         run: |
           cd PMI/frontend
-          npm ci
+          npm install
           npm run build
 
       - name: Build OMS frontend
         run: |
           cd OMS/frontend
-          npm ci
+          npm install
           npm run build
 
       - name: Build WMS frontend
         run: |
           cd WMS/frontend
-          npm ci
+          npm install
           npm run build
 
       - name: Build web frontend
