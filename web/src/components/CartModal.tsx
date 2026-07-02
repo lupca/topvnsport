@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Trash2, ShoppingBag, ShieldCheck, CheckCircle2, Phone, MapPin, Truck } from 'lucide-react';
 import { StringOption } from '../types';
 import { sportApi } from '../services/sportApi';
+import { popupService } from './ui/popupService';
 
 export interface CartItem {
   id: string; // Unique instance id
@@ -51,7 +52,7 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
   const handleCheckoutSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!fullName || !phone || !address) {
-      alert('Vui lòng cung cấp đầy đủ họ tên, số điện thoại và địa chỉ nhận hàng.');
+      await popupService.alert('Vui lòng cung cấp đầy đủ họ tên, số điện thoại và địa chỉ nhận hàng.');
       return;
     }
 
@@ -78,7 +79,7 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
       setStep(3);
     } catch (err) {
       console.error(err);
-      alert('Có lỗi xảy ra khi tạo đơn hàng trên OMS. Vui lòng thử lại!');
+      await popupService.alert('Có lỗi xảy ra khi tạo đơn hàng trên OMS. Vui lòng thử lại!');
     } finally {
       setIsSubmitting(false);
     }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MapPin, Phone, Clock, Calendar, ShieldCheck, CheckCircle2, User, ChevronRight, MessageSquare } from 'lucide-react';
 import { Branch, Product } from '../types';
+import { popupService } from './ui/popupService';
 
 interface StoreLocatorProps {
   branches: Branch[];
@@ -34,10 +35,10 @@ export default function StoreLocator({ branches, products, initialBranchId, onCl
     ? branches 
     : branches.filter(b => b.city === selectedCity);
 
-  const handleBookDemo = (e: React.FormEvent) => {
+  const handleBookDemo = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!bookingName || !bookingPhone || !bookingDate) {
-      alert('Vui lòng điền đầy đủ họ tên, số điện thoại và ngày trải nghiệm.');
+      await popupService.alert('Vui lòng điền đầy đủ họ tên, số điện thoại và ngày trải nghiệm.');
       return;
     }
     setIsBooked(true);
