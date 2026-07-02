@@ -22,7 +22,8 @@ Trước khi bán hàng, hệ thống cần có sản phẩm và hàng tồn kho
 2. Vào **Barcode Mappings**, quét mã vạch (EAN-13) trên vỏ hộp cây vợt Astrox 99 Pro.
 3. Hệ thống sẽ báo mã chưa được cấu hình. Chọn SKU **AX99PRO-RED-4U** để map với mã vạch vừa quét.
 4. Vào **Phiếu Nhập Kho (Inbound)** -> Tạo mới phiếu nhập cho SKU **AX99PRO-RED-4U**, số lượng 100 chiếc.
-5. Thủ kho dùng điện thoại vào **WMS Mobile** (`http://localhost:13102/m/receive`), quét barcode trên hộp sản phẩm để ghi nhận số lượng thực tế nhận.
+5. Thủ kho dùng điện thoại vào **WMS Mobile** trên IP LAN của máy chạy server, ví dụ `http://192.168.1.10:13102/m/receive`.
+   Lưu ý: không dùng `localhost` trên điện thoại, vì `localhost` lúc đó là chính điện thoại.
 6. Xác nhận vị trí cất hàng (Ví dụ: `Kệ A01`).
 7. Hệ thống cập nhật: Tồn kho khả dụng = 100.
 
@@ -106,5 +107,7 @@ Bộ phận kho nhận được lệnh và tiến hành xuất hàng.
 - WMS Frontend: `http://localhost:13102`
 - WMS API: `http://localhost:18102`
 - WMS Postgres: `localhost:15435`
+
+Trên điện thoại, thay `localhost` bằng IP LAN của máy đang chạy server, ví dụ `http://192.168.1.10:13102/m/receive`, `http://192.168.1.10:13102/m/pick`, `http://192.168.1.10:13102/m/pack`.
 
 **🎉 Chúc mừng! Bạn đã hoàn thành một chu trình bán hàng khép kín (End-to-End) hoàn hảo từ lúc tạo sản phẩm cho đến khi khách nhận hàng.**

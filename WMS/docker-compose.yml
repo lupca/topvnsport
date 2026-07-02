@@ -31,6 +31,16 @@ services:
     networks:
       - default
       - oms_default
+    develop:
+      watch:
+        - action: sync
+          path: ./backend
+          target: /app
+          ignore:
+            - __pycache__/
+            - "*.pyc"
+        - action: rebuild
+          path: ./backend/requirements.txt
 
   wms_frontend:
     build:
@@ -47,6 +57,16 @@ services:
     networks:
       - default
       - oms_default
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend
+          target: /app
+          ignore:
+            - node_modules/
+            - .next/
+        - action: rebuild
+          path: ./frontend/package.json
 
 networks:
   default:

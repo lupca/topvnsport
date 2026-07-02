@@ -1,6 +1,52 @@
 #!/bin/bash
 set -e
 
+BUILD_IMAGES=0
+RUN_TESTS=0
+WATCH_MODE=0
+
+print_usage() {
+    echo "Usage: ./start_all.sh [--build] [--test] [--watch]"
+    echo "  --build   Rebuild Docker images before starting services"
+    echo "  --test    Run WMS seed + OMS-WMS E2E test after startup"
+    echo "  --watch   Enable hot reload via Docker Compose watch"
+}
+
+for arg in "$@"; do
+    case "$arg" in
+        --build)
+            BUILD_IMAGES=1
+            ;;
+        --test)
+            RUN_TESTS=1
+            ;;
+        --watch)
+            WATCH_MODE=1
+            ;;
+        -h|--help)
+            print_usage
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $arg"
+            print_usage
+            exit 1
+            ;;
+    esac
+done
+
+UP_ARGS=(-d)
+if [[ $BUILD_IMAGES -eq 1 ]]; then
+    UP_ARGS+=(--build)
+fi
+
+cleanup_watchers() {
+    echo -e "\n${YELLOW}Stopping watch processes...${NC}"
+    for pid in "${WATCH_PIDS[@]}"; do
+        kill "$pid" 2>/dev/null || true
+    done
+}
+
 # Define color codes for pretty output
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -22,13 +68,16 @@ docker network create wms_default || true
 echo -e "\n${YELLOW}Step 2: Starting services via Docker Compose...${NC}"
 
 echo -e "${BLUE}Starting PMI...${NC}"
-docker compose -f PMI/docker-compose.yml up -d --build
+docker compose -f PMI/docker-compose.yml up "${UP_ARGS[@]}"
 
-echo -e "${BLUE}Starting OMS (Production/No-Volume mode)...${NC}"
-docker compose -f OMS/docker-compose.prod.yml up -d --build
+echo -e "${BLUE}Starting OMS (Development mode)...${NC}"
+docker compose -f OMS/docker-compose.yml up "${UP_ARGS[@]}"
 
-echo -e "${BLUE}Starting WMS (Production/No-Volume mode)...${NC}"
-docker compose -f WMS/docker-compose.prod.yml up -d --build
+echo -e "${BLUE}Starting WMS (Development mode)...${NC}"
+docker compose -f WMS/docker-compose.yml up "${UP_ARGS[@]}"
+
+echo -e "${BLUE}Starting WEB (Development mode)...${NC}"
+docker compose -f web/docker-compose.yml up "${UP_ARGS[@]}"
 
 # Step 3: Wait for services to be ready
 echo -e "\n${YELLOW}Step 3: Waiting for APIs to respond...${NC}"
@@ -63,20 +112,49 @@ print("All API ports are open! Giving FastAPI services 3 seconds to complete ini
 time.sleep(3)
 '
 
-# Step 4: Seed WMS inventory data
-echo -e "\n${YELLOW}Step 4: Seeding WMS inventory data...${NC}"
-docker exec wms-api python seed.py
+# Step 4/5: Optional Seed + E2E tests
+if [[ $RUN_TESTS -eq 1 ]]; then
+    echo -e "\n${YELLOW}Step 4: Seeding WMS inventory data...${NC}"
+    docker exec wms-api python seed.py
 
-# Step 5: Run integration tests
-echo -e "\n${YELLOW}Step 5: Running OMS-WMS E2E Integration Test...${NC}"
-if python3 test_oms_wms.py; then
-    echo -e "\n${GREEN}===============================================${NC}"
-    echo -e "${GREEN}   SUCCESS: All services started & E2E passed  ${NC}"
-    echo -e "${GREEN}===============================================${NC}"
-    exit 0
+    echo -e "\n${YELLOW}Step 5: Running OMS-WMS E2E Integration Test...${NC}"
+    if python3 test_oms_wms.py; then
+        echo -e "\n${GREEN}===============================================${NC}"
+        echo -e "${GREEN}   SUCCESS: All services started & E2E passed  ${NC}"
+        echo -e "${GREEN}===============================================${NC}"
+        exit 0
+    else
+        echo -e "\n${RED}===============================================${NC}"
+        echo -e "${RED}   FAILURE: E2E Integration Test Failed        ${NC}"
+        echo -e "${RED}===============================================${NC}"
+        exit 1
+    fi
 else
-    echo -e "\n${RED}===============================================${NC}"
-    echo -e "${RED}   FAILURE: E2E Integration Test Failed        ${NC}"
-    echo -e "${RED}===============================================${NC}"
-    exit 1
+    echo -e "\n${GREEN}===============================================${NC}"
+    echo -e "${GREEN}   SUCCESS: Services started in DEV quick mode ${NC}"
+    echo -e "${GREEN}===============================================${NC}"
+    if [[ $WATCH_MODE -eq 1 ]]; then
+        echo -e "\n${YELLOW}Step 6: Enabling hot reload watchers...${NC}"
+        WATCH_PIDS=()
+
+        docker compose -f PMI/docker-compose.yml watch --no-up api frontend &
+        WATCH_PIDS+=("$!")
+
+        docker compose -f OMS/docker-compose.yml watch --no-up oms_backend oms_frontend &
+        WATCH_PIDS+=("$!")
+
+        docker compose -f WMS/docker-compose.yml watch --no-up wms-api wms_frontend &
+        WATCH_PIDS+=("$!")
+
+        docker compose -f web/docker-compose.yml watch --no-up web_frontend &
+        WATCH_PIDS+=("$!")
+
+        trap cleanup_watchers EXIT INT TERM
+        echo -e "${GREEN}Hot reload is active.${NC} Keep this terminal open while coding."
+        wait
+    else
+        echo -e "${YELLOW}Tip:${NC} Use --build when code changes need image rebuild."
+        echo -e "${YELLOW}Tip:${NC} Use --test when you want seed + E2E validation."
+        echo -e "${YELLOW}Tip:${NC} Use --watch to enable hot reload without rerunning this script."
+    fi
 fi

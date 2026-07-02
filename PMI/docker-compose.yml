@@ -53,6 +53,16 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
+    develop:
+      watch:
+        - action: sync
+          path: ./backend
+          target: /app
+          ignore:
+            - __pycache__/
+            - "*.pyc"
+        - action: rebuild
+          path: ./backend/requirements.txt
 
   frontend:
     build:
@@ -65,6 +75,16 @@ services:
       - NEXT_PUBLIC_API_URL=http://localhost:18100
     depends_on:
       - api
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend
+          target: /app
+          ignore:
+            - node_modules/
+            - .next/
+        - action: rebuild
+          path: ./frontend/package.json
 
 volumes:
   pgdata:

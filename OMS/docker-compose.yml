@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   oms_db:
     image: postgres:15-alpine
@@ -24,14 +22,22 @@ services:
       - "18101:8001"
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@oms_db:5432/oms_db
-    volumes:
-      - ./backend:/app
     depends_on:
       - oms_db
     networks:
       - default
       - pmi_default
       - wms_default
+    develop:
+      watch:
+        - action: sync
+          path: ./backend
+          target: /app
+          ignore:
+            - __pycache__/
+            - "*.pyc"
+        - action: rebuild
+          path: ./backend/requirements.txt
 
   oms_frontend:
     build:
@@ -43,15 +49,22 @@ services:
       - "13101:3001"
     environment:
       - NEXT_PUBLIC_OMS_API_URL=http://localhost:18101
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
     depends_on:
       - oms_backend
     networks:
       - default
       - pmi_default
       - wms_default
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend
+          target: /app
+          ignore:
+            - node_modules/
+            - .next/
+        - action: rebuild
+          path: ./frontend/package.json
 
 networks:
   pmi_default:
