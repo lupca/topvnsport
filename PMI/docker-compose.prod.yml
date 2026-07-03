@@ -67,8 +67,12 @@ services:
       - "13100:3000"
     environment:
       - NEXT_PUBLIC_API_URL=http://${PUBLIC_HOST:-localhost}:18100
+      - NEXT_PUBLIC_WMS_API_URL=http://${PUBLIC_HOST:-localhost}:18102
     depends_on:
       - api
+    networks:
+      - default
+      - wms_default
 
 volumes:
   pgdata:
@@ -77,4 +81,6 @@ volumes:
 networks:
   default:
     name: pmi_default
+    external: true
+  wms_default:
     external: true

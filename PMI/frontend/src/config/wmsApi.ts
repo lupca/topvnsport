@@ -1,6 +1,6 @@
 const getWmsApiUrl = () => {
   if (typeof window !== "undefined") {
-    return `http://${window.location.hostname}:18102`;
+    return "/wms-api";
   }
   return process.env.NEXT_PUBLIC_WMS_API_URL || "http://localhost:18102";
 };
