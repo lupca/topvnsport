@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Product, StringOption } from '../types';
-import { showConfirm } from './ui/popupService';
 import { motion } from 'motion/react';
-import { Star, ShoppingCart, ShieldCheck, Heart, Sparkles, AlertTriangle, Check, Phone, ArrowLeft, Trophy, Calendar, MapPin, Gauge } from 'lucide-react';
+import { Star, ShoppingCart, ShieldCheck, Heart, Sparkles, Check, Phone, ArrowLeft, Trophy, Calendar, MapPin, Gauge } from 'lucide-react';
 
 interface ProductDetailPageProps {
   product: Product;
@@ -50,10 +49,6 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
     if (kg >= 10 && kg <= 11) return 'Mức căng trung bình (10 - 11 kg): Khuyên dùng cho người chơi phong trào lâu năm, kỹ thuật khá, cân bằng trợ lực và kiểm soát.';
     return 'Mức căng cao chuyên nghiệp (11.5 - 13 kg+): Dành riêng cho tay vợt bán chuyên/chuyên nghiệp, lực cổ tay cực khỏe, kiểm soát cầu chính xác 100% nhưng hoàn toàn không trợ lực.';
   };
-
-  // Convert kg to lbs for matching product max tension limits
-  const tensionInLbs = Math.round(tension * 2.20462);
-  const isExceedingTensionLimit = isRacket && tensionInLbs > product.specs.maxTension;
 
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 animate-in fade-in duration-300" id="product-detail-page">
@@ -264,7 +259,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
                     <div className="flex justify-between items-center">
                       <label className="text-xs font-bold uppercase text-gray-500">Bước 2: Chọn lực căng (Số Kg/Lbs)</label>
                       <span className="text-base font-extrabold text-orange-600 font-mono">
-                        {tension.toFixed(1)} kg <span className="text-xs text-gray-400">({tensionInLbs} lbs)</span>
+                        {tension.toFixed(1)} kg
                       </span>
                     </div>
 
@@ -291,18 +286,6 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
                       <span>{getTensionTooltip(tension)}</span>
                     </div>
 
-                    {/* RED ALERTS IF EXCEEDING RACKET MAX LIMIT */}
-                    {isExceedingTensionLimit && (
-                      <div className="bg-red-50 text-red-700 p-3 rounded-lg border border-red-200 text-xs flex items-start gap-2 animate-bounce">
-                        <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
-                        <div>
-                          <p className="font-bold">CẢNH BÁO SỨC CĂNG QUÁ TẢI!</p>
-                          <p className="mt-0.5 leading-normal">
-                            Lực căng {tensionInLbs} Lbs vượt quá sức chịu đựng tối đa ({product.specs.maxTension} Lbs) của khung carbon {product.name}. Việc tiếp tục đan ở mức này có nguy cơ gây gãy, sập hoặc méo mó khung vợt.
-                          </p>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
               )}
@@ -312,11 +295,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
           {/* Action buttons (Add to cart & Book at store) */}
           <div className="flex flex-col sm:flex-row gap-3 pt-4">
             <button
-              onClick={async () => {
-                if (isExceedingTensionLimit) {
-                  const confirmForce = await showConfirm('Lực căng vượt quá giới hạn khung vợt, bạn vẫn muốn tiếp tục đan mức này?');
-                  if (!confirmForce) return;
-                }
+              onClick={() => {
                 onAddToCartWithSpecs(product, selectedWeight, selectedColor, withStringing ? selectedString : null, tension);
               }}
               className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs uppercase tracking-wider py-4 rounded-full flex items-center justify-center gap-2 shadow-lg transition duration-300 glow-btn"
@@ -589,10 +568,6 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
         </div>
         <button
           onClick={async () => {
-            if (isExceedingTensionLimit) {
-              const confirmForce = await showConfirm('Lực căng vượt quá giới hạn khung vợt, bạn vẫn muốn tiếp tục đan mức này?');
-              if (!confirmForce) return;
-            }
             onAddToCartWithSpecs(product, selectedWeight, selectedColor, withStringing ? selectedString : null, tension);
           }}
           className="bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs px-4 py-2.5 rounded-full flex items-center gap-1.5 shrink-0 shadow-md transition duration-200"
@@ -600,7 +575,3 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
           <ShoppingCart className="w-4 h-4" /> Mua ngay
         </button>
       </div>
-
-    </div>
-  );
-}
