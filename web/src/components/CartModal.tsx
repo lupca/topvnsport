@@ -29,6 +29,7 @@ interface CartModalProps {
 
 export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, onClearCart }: CartModalProps) {
   const [step, setStep] = useState(1); // 1 = Cart list, 2 = Checkout Form, 3 = Success Screen
+  const [createdOrderNumber, setCreatedOrderNumber] = useState('');
   
   // Checkout Fields
   const [fullName, setFullName] = useState('');
@@ -75,7 +76,7 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
         };
       });
 
-      await sportApi.createOrder({
+      const order = await sportApi.createOrder({
         customer_id: customerId,
         channel_id: channelId,
         items,
@@ -83,6 +84,8 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
         shipping_address: shippingAddress,
         note: shippingMethod === 'fast' ? 'Đơn web - Giao hỏa tốc' : 'Đơn web - Giao tiêu chuẩn'
       });
+
+      setCreatedOrderNumber(order?.order_number || '');
 
       setStep(3);
     } catch (err) {
@@ -96,6 +99,7 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
   const handleFinish = () => {
     onClearCart();
     setStep(1);
+    setCreatedOrderNumber('');
     onClose();
   };
 
@@ -278,6 +282,7 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
               </p>
               
               <div className="bg-gray-50 p-4 rounded-xl text-left border border-gray-100 text-xs text-gray-700 space-y-2 font-mono">
+                {createdOrderNumber && <p>• <strong>Mã đơn hàng:</strong> {createdOrderNumber}</p>}
                 <p>• <strong>Người nhận:</strong> {fullName}</p>
                 <p>• <strong>Số điện thoại:</strong> {phone}</p>
                 <p>• <strong>Địa chỉ giao:</strong> {address}, {city}</p>

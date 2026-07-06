@@ -47,6 +47,7 @@ finally:
 # Service URLs from env variables with compose defaults
 PIM_API_URL = os.getenv("PIM_API_URL", os.getenv("PMI_URL", "http://pim-api:8000"))
 WMS_API_URL = os.getenv("WMS_API_URL", os.getenv("WMS_URL", "http://wms-api:8002"))
+DEFAULT_FULFILLMENT_WAREHOUSE_CODE = os.getenv("FULFILLMENT_WAREHOUSE_CODE", "WH-001")
 
 app = FastAPI(title="OMS Backend API", version="1.0.0")
 
@@ -105,6 +106,72 @@ def call_api(url: str, method: str = "GET", data: dict = None):
     except Exception as e:
         logger.error(f"Unexpected error during inter-service call to {url}: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
+def resolve_fulfillment_warehouse_code(order_items: List[models.OrderItem]) -> str:
+    warehouse_url = f"{WMS_API_URL}/warehouses"
+    inventory_url = f"{WMS_API_URL}/inventory"
+    locations_url = f"{WMS_API_URL}/locations"
+    try:
+        with httpx.Client(timeout=5.0) as client:
+            warehouses_resp = client.get(warehouse_url)
+            inventory_resp = client.get(inventory_url)
+            locations_resp = client.get(locations_url)
+
+            if not warehouses_resp.is_error and not inventory_resp.is_error and not locations_resp.is_error:
+                warehouses = warehouses_resp.json()
+                inventories = inventory_resp.json()
+                locations = locations_resp.json()
+
+                if isinstance(warehouses, list) and isinstance(inventories, list) and isinstance(locations, list):
+                    warehouse_by_id = {
+                        item.get("id"): item.get("code")
+                        for item in warehouses
+                        if isinstance(item, dict)
+                    }
+                    location_to_warehouse = {
+                        item.get("id"): item.get("warehouse_id")
+                        for item in locations
+                        if isinstance(item, dict)
+                    }
+
+                    available_by_warehouse: dict[str, dict[str, int]] = {}
+                    for record in inventories:
+                        if not isinstance(record, dict):
+                            continue
+                        location_id = record.get("location_id")
+                        warehouse_id = location_to_warehouse.get(location_id)
+                        warehouse_code = warehouse_by_id.get(warehouse_id)
+                        sku_code = record.get("sku_code")
+                        if not warehouse_code or not sku_code:
+                            continue
+
+                        qty_on_hand = int(record.get("qty_on_hand") or 0)
+                        qty_reserved = int(record.get("qty_reserved") or 0)
+                        qty_available = int(record.get("qty_available") or (qty_on_hand - qty_reserved))
+                        if qty_available < 0:
+                            qty_available = 0
+
+                        available_by_warehouse.setdefault(warehouse_code, {})[sku_code] = max(
+                            available_by_warehouse.setdefault(warehouse_code, {}).get(sku_code, 0),
+                            qty_available,
+                        )
+
+                    for warehouse_code, sku_map in available_by_warehouse.items():
+                        can_fulfill = True
+                        for item in order_items:
+                            if sku_map.get(item.sku_code, 0) < int(item.quantity):
+                                can_fulfill = False
+                                break
+                        if can_fulfill:
+                            return warehouse_code
+    except Exception as e:
+        logger.warning(
+            "Unable to resolve fulfillment warehouse from WMS: %s. Using fallback %s",
+            e,
+            DEFAULT_FULFILLMENT_WAREHOUSE_CODE,
+        )
+
+    return DEFAULT_FULFILLMENT_WAREHOUSE_CODE
 
 @app.get("/")
 def read_root():
@@ -596,7 +663,7 @@ def confirm_order(id: int, db: Session = Depends(get_db)):
     db.flush()
     
     fulfillment_number = f"FM-{order.order_number}"
-    warehouse_code = "WH-001"
+    warehouse_code = resolve_fulfillment_warehouse_code(order.items)
     
     wms_payload = {
         "fulfillment_number": fulfillment_number,

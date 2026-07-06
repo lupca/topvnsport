@@ -110,4 +110,15 @@ Bộ phận kho nhận được lệnh và tiến hành xuất hàng.
 
 Trên điện thoại, thay `localhost` bằng IP LAN của máy đang chạy server, ví dụ `http://192.168.1.10:13102/m/receive`, `http://192.168.1.10:13102/m/pick`, `http://192.168.1.10:13102/m/pack`.
 
+## Kiểm Thử E2E Full Flow ở Local
+
+Khi muốn chạy bộ test end-to-end ngay trên máy dev:
+
+1. Khởi động toàn bộ stack bằng `./start_all.sh --no-watch`.
+2. Cài dependencies E2E với `python -m pip install -r e2e_tests/requirements.txt`.
+3. Cài Playwright Chromium với `python -m playwright install chromium`.
+4. Chạy test full flow bằng `pytest e2e_tests/tests/test_full_flow.py -v -s --headed`.
+
+Workflow CI riêng cho E2E được đặt tại `.github/workflows/e2e_test.yml`.
+
 **🎉 Chúc mừng! Bạn đã hoàn thành một chu trình bán hàng khép kín (End-to-End) hoàn hảo từ lúc tạo sản phẩm cho đến khi khách nhận hàng.**
