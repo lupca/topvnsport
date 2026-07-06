@@ -19,6 +19,11 @@ test("create product with image upload flow", async ({ page }) => {
   const productName = `Ao test e2e ${suffix}`;
   const parentSku = `E2E-${suffix}`;
 
+  const familyResponse = await page.request.get("http://localhost:18100/attribute-families");
+  expect(familyResponse.ok()).toBeTruthy();
+  const families = await familyResponse.json();
+  expect(families.length).toBeGreaterThan(0);
+
   await page.goto("/catalog");
   await page.getByRole("button", { name: "Thêm 1 sản phẩm mới" }).click();
 
@@ -27,6 +32,7 @@ test("create product with image upload flow", async ({ page }) => {
   await page.getByPlaceholder("Nhập tên sản phẩm (Ví dụ: Áo thun nam Cotton 100% cổ tròn)").fill(productName);
   await page.getByPlaceholder("Ví dụ: TSHIRT-PARENT").fill(parentSku);
   await page.locator('select[name="category_id"]').selectOption({ index: 1 });
+  await page.locator('select[name="family_id"]').selectOption(String(families[0].id));
   await page
     .getByPlaceholder("Mô tả thông tin chi tiết về sản phẩm của bạn (chất liệu, công dụng, thông số kỹ thuật...)")
     .fill("Mo ta san pham e2e dai hon 10 ky tu");
@@ -54,12 +60,19 @@ test("edit existing product", async ({ page }) => {
   expect(categories.length).toBeGreaterThan(0);
   const categoryId = categories[0].id;
 
+  const familyResponse = await page.request.get("http://localhost:18100/attribute-families");
+  expect(familyResponse.ok()).toBeTruthy();
+  const families = await familyResponse.json();
+  expect(families.length).toBeGreaterThan(0);
+  const familyId = families[0].id;
+
   const createResponse = await page.request.post("http://localhost:18100/products", {
     data: {
       product_code: parentSku,
       name: originalName,
       description: "Mo ta du do dai toi thieu cho test edit",
       category_id: categoryId,
+      family_id: familyId,
       weight: 250,
       length: 30,
       width: 20,
