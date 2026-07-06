@@ -101,7 +101,7 @@ test("edit existing product", async ({ page }) => {
 
   const row = page.locator("tr", { hasText: parentSku }).first();
   await expect(row).toBeVisible();
-  await row.locator('button[title="Chỉnh sửa"]').click();
+  await row.getByRole("button", { name: "Cập nhật" }).click();
 
   await page.getByPlaceholder("Nhập tên sản phẩm (Ví dụ: Áo thun nam Cotton 100% cổ tròn)").fill(updatedName);
   await page.getByRole("button", { name: "Lưu thay đổi" }).click();
