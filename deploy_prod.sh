@@ -110,7 +110,11 @@ print('WMS->PMI connectivity OK')
 PY
 
   # Mark deployed revision for observability.
-  echo "Deployed revision: $(cat .deploy_revision)"
+  if [[ -f .deploy_revision ]]; then
+    echo \"Deployed revision: \$(cat .deploy_revision)\"
+  else
+    echo \"Deployed revision: missing\"
+  fi
 "
 
 echo "[5/5] Running containers"
