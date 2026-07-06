@@ -1,0 +1,108 @@
+name: E2E Test Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    name: Full Flow E2E
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Prepare web env file for CI
+        run: |
+          if [ -f web/.env.example ]; then
+            cp web/.env.example web/.env
+          else
+            touch web/.env
+          fi
+
+      - name: Start integrated services
+        run: |
+          chmod +x start_all.sh
+          ./start_all.sh --no-watch
+
+      - name: Wait for HTTP readiness
+        run: |
+          python - <<'PY'
+          import sys
+          import time
+          from urllib.request import urlopen
+
+          checks = {
+              "PMI API": "http://localhost:18100/docs",
+              "OMS API": "http://localhost:18101/",
+              "WMS API": "http://localhost:18102/status",
+              "WEB Frontend": "http://localhost:13103/",
+          }
+
+          deadline = time.time() + 300
+          while True:
+              failed = []
+              for name, url in checks.items():
+                  try:
+                    with urlopen(url, timeout=5.0) as response:
+                      if response.status != 200:
+                        failed.append(f"{name}: {response.status}")
+                  except Exception as exc:
+                      failed.append(f"{name}: {exc}")
+
+              if not failed:
+                  break
+
+              if time.time() > deadline:
+                  print("Readiness check failed:")
+                  for item in failed:
+                      print(f"- {item}")
+                  sys.exit(1)
+
+              time.sleep(5)
+          PY
+
+      - name: Install E2E dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r e2e_tests/requirements.txt
+
+      - name: Install Playwright browsers
+        run: |
+          python -m playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: |
+          pytest e2e_tests/ -v --tracing retain-on-failure --video retain-on-failure
+
+      - name: Upload E2E artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-artifacts
+          path: |
+            test-results/
+            playwright-report/
+          if-no-files-found: ignore
+
+      - name: Tear down services
+        if: always()
+        run: |
+          docker compose -f web/docker-compose.yml down -v
+          docker compose -f WMS/docker-compose.yml down -v
+          docker compose -f OMS/docker-compose.yml down -v
+          docker compose -f PMI/docker-compose.yml down -v

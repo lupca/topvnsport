@@ -43,7 +43,7 @@ export default function Header({ currentView, setView, cartCount, openCart, prod
       setSearchResults([]);
       setShowSearchDropdown(false);
     }
-  }, [searchQuery]);
+  }, [searchQuery, products]);
 
   const handleSearchSelect = (productId: string) => {
     setView('product-detail', { productId });
