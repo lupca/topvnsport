@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, Float, ForeignKey, JSON, Text, Index, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, Float, ForeignKey, JSON, Text, DateTime, UniqueConstraint
 from sqlalchemy.orm import relationship
 from database import Base
 import datetime
@@ -24,6 +24,7 @@ class Product(Base):
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     category_id = Column(Integer, ForeignKey("categories.id", ondelete="SET NULL"), nullable=True, index=True)
+    family_id = Column(Integer, ForeignKey("attribute_families.id", ondelete="SET NULL"), nullable=True, index=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
 
     
@@ -41,9 +42,11 @@ class Product(Base):
     status = Column(String(50), default="Draft", nullable=False)
 
     category = relationship("Category", back_populates="products")
+    family = relationship("AttributeFamily", back_populates="products")
     tier_variations = relationship("TierVariation", back_populates="product", cascade="all, delete-orphan")
     variants = relationship("ProductVariant", back_populates="product", cascade="all, delete-orphan")
     media = relationship("ProductMedia", back_populates="product", cascade="all, delete-orphan")
+    attribute_values = relationship("ProductAttributeValue", back_populates="product", cascade="all, delete-orphan")
 
 class TierVariation(Base):
     __tablename__ = "tier_variations"
@@ -96,6 +99,9 @@ class Attribute(Base):
     is_channel_based = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
 
+    family_links = relationship("AttributeFamilyAttribute", back_populates="attribute", cascade="all, delete-orphan")
+    product_values = relationship("ProductAttributeValue", back_populates="attribute", cascade="all, delete-orphan")
+
 class AttributeGroup(Base):
     __tablename__ = "attribute_groups"
 
@@ -111,6 +117,40 @@ class AttributeFamily(Base):
     code = Column(String(100), unique=True, nullable=False, index=True)
     name = Column(String(255), nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+
+    products = relationship("Product", back_populates="family")
+    family_attributes = relationship("AttributeFamilyAttribute", back_populates="family", cascade="all, delete-orphan")
+
+
+class AttributeFamilyAttribute(Base):
+    __tablename__ = "attribute_family_attributes"
+    __table_args__ = (
+        UniqueConstraint("family_id", "attribute_id", name="uq_family_attribute"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    family_id = Column(Integer, ForeignKey("attribute_families.id", ondelete="CASCADE"), nullable=False, index=True)
+    attribute_id = Column(Integer, ForeignKey("attributes.id", ondelete="CASCADE"), nullable=False, index=True)
+    display_order = Column(Integer, default=1, nullable=False)
+
+    family = relationship("AttributeFamily", back_populates="family_attributes")
+    attribute = relationship("Attribute", back_populates="family_links")
+
+
+class ProductAttributeValue(Base):
+    __tablename__ = "product_attribute_values"
+    __table_args__ = (
+        UniqueConstraint("product_id", "attribute_id", name="uq_product_attribute_value"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    product_id = Column(Integer, ForeignKey("products.id", ondelete="CASCADE"), nullable=False, index=True)
+    attribute_id = Column(Integer, ForeignKey("attributes.id", ondelete="CASCADE"), nullable=False, index=True)
+    value_string = Column(String(255), nullable=True)
+    value_decimal = Column(Float, nullable=True)
+
+    product = relationship("Product", back_populates="attribute_values")
+    attribute = relationship("Attribute", back_populates="product_values")
 
 class Channel(Base):
     __tablename__ = "channels"

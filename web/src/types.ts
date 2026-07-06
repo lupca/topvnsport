@@ -6,6 +6,13 @@ export interface ProductSpecs {
   swingWeight?: number;  // Swing weight in kg/cm2, e.g., 85.5
 }
 
+export interface ProductAttribute {
+  id: string;
+  code: string;
+  name: string;
+  value: string;
+}
+
 export interface ProductTechnology {
   name: string;
   description: string;
@@ -34,6 +41,7 @@ export interface Product {
   series?: string; // e.g., "ASTROX", "Axforce", "Exbolt"
   characteristics?: 'Tấn Công' | 'Phòng Thủ' | 'Toàn Diện' | 'Người Mới'; // For rackets/paddles
   description: string;
+  attributes?: ProductAttribute[];
   features?: string[];
   technologies?: ProductTechnology[];
   reviews: ProductReview[];
@@ -44,23 +52,6 @@ export interface Product {
   badge?: 'NEW' | 'HOT' | 'SALE' | 'LIMITED' | 'PRO' | 'TOUR' | 'GAME' | 'PLAY';
   isWide?: boolean; // Specially for Shoes wide form
   colors?: string[];
-}
-
-export interface Player {
-  id: string;
-  name: string;
-  avatar: string;
-  country: string;
-  category: 'Đơn Nam' | 'Đơn Nữ' | 'Đôi Nam' | 'Đôi Nữ' | 'Huyền Thoại';
-  racketId: string;
-  shoesId: string;
-  stringId: string;
-  description: string;
-  setupProducts: {
-    racketName: string;
-    shoesName: string;
-    stringName: string;
-  };
 }
 
 export interface Blog {

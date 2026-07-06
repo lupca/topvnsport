@@ -69,12 +69,40 @@ class ProductMediaResponse(ProductMediaBase):
     class Config:
         from_attributes = True
 
+
+class ProductAttributeInput(BaseModel):
+    id: int
+    value: str
+
+
+class ProductAttributeMeta(BaseModel):
+    id: int
+    code: str
+    name: str
+    type: str
+
+    class Config:
+        from_attributes = True
+
+
+class ProductAttributeValueResponse(BaseModel):
+    id: int
+    product_id: int
+    attribute_id: int
+    value_string: Optional[str] = None
+    value_decimal: Optional[float] = None
+    attribute: Optional[ProductAttributeMeta] = None
+
+    class Config:
+        from_attributes = True
+
 # Product Schemas
 class ProductBase(BaseModel):
     product_code: str = Field(..., max_length=100)
     name: str = Field(..., max_length=255)
     description: Optional[str] = None
     category_id: Optional[int] = None
+    family_id: Optional[int] = None
     
     # Logistics
     weight: float = Field(..., ge=0, description="Weight in grams")
@@ -89,12 +117,15 @@ class ProductBase(BaseModel):
     status: str = Field("Draft", pattern="^(Draft|Published|Banned|Out of Stock)$")
 
 class ProductCreate(ProductBase):
+    family_id: int = Field(..., ge=1)
     # Support up to 2 tier variations
     tier_variations: List[TierVariationCreate] = Field(default=[], max_items=2)
     # The actual combinations of variants
     variants: List[ProductVariantCreate] = Field(..., min_items=1)
     # Media list
     media: List[ProductMediaCreate] = Field(default=[])
+    # Dynamic technical attributes based on selected family
+    attributes: List[ProductAttributeInput] = Field(default=[])
 
     @validator('tier_variations')
     def validate_tier_indices(cls, v):
@@ -153,6 +184,7 @@ class ProductResponse(ProductBase):
     tier_variations: List[TierVariationResponse] = []
     variants: List[ProductVariantResponse] = []
     media: List[ProductMediaResponse] = []
+    attribute_values: List[ProductAttributeValueResponse] = []
 
     class Config:
         from_attributes = True

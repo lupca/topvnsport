@@ -28,6 +28,8 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
   const [withStringing, setWithStringing] = useState(false);
   const [selectedString, setSelectedString] = useState<StringOption | null>(null);
   const [tension, setTension] = useState(10.5); // Default tension in kg (approx 23 lbs)
+  const isRacket = product.category === 'Vợt';
+  const technicalAttributes = product.attributes || [];
 
   useEffect(() => {
     setSelectedImage(product.image);
@@ -51,7 +53,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
 
   // Convert kg to lbs for matching product max tension limits
   const tensionInLbs = Math.round(tension * 2.20462);
-  const isExceedingTensionLimit = product.category === 'Vợt' && tensionInLbs > product.specs.maxTension;
+  const isExceedingTensionLimit = isRacket && tensionInLbs > product.specs.maxTension;
 
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 animate-in fade-in duration-300" id="product-detail-page">
@@ -172,7 +174,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
           {/* Racket Attributes Selection (Weight/Color) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Weight select */}
-            {product.category === 'Vợt' && (
+            {isRacket && (
               <div>
                 <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">Trọng lượng / Cán cầm</label>
                 <div className="flex gap-2">
@@ -209,7 +211,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
           </div>
 
           {/* VIRTUAL STRINGING ASSISTANT (Add-on UI Logic) */}
-          {product.category === 'Vợt' && (
+          {isRacket && (
             <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-xs space-y-4">
               <div className="flex items-center justify-between border-b border-gray-100 pb-3">
                 <div className="flex items-center gap-2">
@@ -335,9 +337,9 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
       {/* Tabs Layout for Technical Dashboard & Reviews */}
       <div className="mt-14 border-t border-gray-100 pt-10">
         <div className="flex border-b border-gray-200">
-          {[
+            {[
             { id: 'details', label: 'Mô tả thực tế & Cảm nhận' },
-            { id: 'tech', label: 'Bảng Điều Khiển Kỹ Thuật (Dashboard)' },
+            { id: 'tech', label: isRacket ? 'Bảng Điều Khiển Kỹ Thuật (Dashboard)' : 'Thông số kỹ thuật' },
             { id: 'reviews', label: `Đánh giá tay vợt (${product.reviews.length || 2})` }
           ].map(tab => (
             <button
@@ -371,30 +373,43 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
               
               <div className="lg:col-span-4 bg-gray-50 rounded-xl p-5 border border-gray-100">
                 <h4 className="font-bold text-gray-900 text-xs uppercase tracking-wider mb-4 text-orange-500">Thông số cơ bản:</h4>
-                <div className="space-y-2.5 text-xs text-gray-600 font-mono">
-                  <div className="flex justify-between border-b border-gray-100 pb-1.5">
-                    <span>Trọng lượng:</span>
-                    <strong className="text-gray-900">{product.specs.weight}</strong>
-                  </div>
-                  <div className="flex justify-between border-b border-gray-100 pb-1.5">
-                    <span>Độ cứng đũa:</span>
-                    <strong className="text-gray-900">{product.specs.stiffness}</strong>
-                  </div>
-                  <div className="flex justify-between border-b border-gray-100 pb-1.5">
-                    <span>Điểm cân bằng:</span>
-                    <strong className="text-gray-900">{product.specs.balance} mm</strong>
-                  </div>
-                  <div className="flex justify-between border-b border-gray-100 pb-1.5">
-                    <span>Sức căng tối đa:</span>
-                    <strong className="text-gray-900">{product.specs.maxTension} Lbs ({Math.round(product.specs.maxTension / 2.20462 * 10) / 10} Kg)</strong>
-                  </div>
-                  {product.specs.swingWeight && (
+                {isRacket ? (
+                  <div className="space-y-2.5 text-xs text-gray-600 font-mono">
                     <div className="flex justify-between border-b border-gray-100 pb-1.5">
-                      <span>Swing Weight:</span>
-                      <strong className="text-gray-900">{product.specs.swingWeight} kg/cm²</strong>
+                      <span>Trọng lượng:</span>
+                      <strong className="text-gray-900">{product.specs.weight}</strong>
                     </div>
-                  )}
-                </div>
+                    <div className="flex justify-between border-b border-gray-100 pb-1.5">
+                      <span>Độ cứng đũa:</span>
+                      <strong className="text-gray-900">{product.specs.stiffness}</strong>
+                    </div>
+                    <div className="flex justify-between border-b border-gray-100 pb-1.5">
+                      <span>Điểm cân bằng:</span>
+                      <strong className="text-gray-900">{product.specs.balance} mm</strong>
+                    </div>
+                    <div className="flex justify-between border-b border-gray-100 pb-1.5">
+                      <span>Sức căng tối đa:</span>
+                      <strong className="text-gray-900">{product.specs.maxTension} Lbs ({Math.round(product.specs.maxTension / 2.20462 * 10) / 10} Kg)</strong>
+                    </div>
+                    {product.specs.swingWeight && (
+                      <div className="flex justify-between border-b border-gray-100 pb-1.5">
+                        <span>Swing Weight:</span>
+                        <strong className="text-gray-900">{product.specs.swingWeight} kg/cm²</strong>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-2.5 text-xs text-gray-600">
+                    {technicalAttributes.length > 0 ? technicalAttributes.map(attr => (
+                      <div key={attr.id} className="flex justify-between border-b border-gray-100 pb-1.5 gap-3">
+                        <span>{attr.name}:</span>
+                        <strong className="text-gray-900 text-right">{attr.value}</strong>
+                      </div>
+                    )) : (
+                      <p className="text-gray-500">Sản phẩm chưa có thông số kỹ thuật chi tiết.</p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -402,6 +417,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
           {/* TAB 2: TECHNICAL DASHBOARD (Gauges/Meters visualization) */}
           {activeTab === 'tech' && (
             <div className="space-y-8 animate-in fade-in-30">
+              {isRacket ? (
               <div className="bg-gray-950 text-white rounded-2xl p-6 md:p-8 grid grid-cols-1 md:grid-cols-4 gap-6 relative overflow-hidden">
                 <div className="absolute right-0 top-0 w-32 h-32 bg-orange-500/5 rounded-full blur-3xl" />
                 
@@ -459,6 +475,33 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
                   <p className="text-xs text-gray-400">{product.specs.maxTension === 0 ? 'Tiêu chuẩn' : `Lên tới ~ ${Math.round(product.specs.maxTension / 2.20462 * 10) / 10} Kg`}</p>
                 </div>
               </div>
+              ) : (
+              <div className="bg-white rounded-2xl border border-gray-100 p-6">
+                <h4 className="font-display font-extrabold text-sm uppercase text-gray-900 mb-4">Thông số cơ bản</h4>
+                {technicalAttributes.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                      <thead>
+                        <tr className="border-b border-gray-100 text-gray-500 text-xs uppercase">
+                          <th className="py-2 pr-3">Thuộc tính</th>
+                          <th className="py-2">Giá trị</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {technicalAttributes.map(attr => (
+                          <tr key={attr.id} className="border-b border-gray-50">
+                            <td className="py-2 pr-3 text-gray-600">{attr.name}</td>
+                            <td className="py-2 font-semibold text-gray-900">{attr.value}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500">Sản phẩm chưa có thông số kỹ thuật chi tiết.</p>
+                )}
+              </div>
+              )}
 
               {/* Technologies logos list with explanations */}
               {product.technologies && product.technologies.length > 0 && (

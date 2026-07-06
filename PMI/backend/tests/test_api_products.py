@@ -6,12 +6,29 @@ def _first_category_id(client) -> int:
     return data[0]["id"]
 
 
-def _product_payload(category_id: int, parent_code: str = "PARENT-001"):
+def _first_family_id(client) -> int:
+    families = client.get("/attribute-families")
+    assert families.status_code == 200
+    data = families.json()
+    assert data
+    return data[0]["id"]
+
+
+def _first_attribute_id(client) -> int:
+    attrs = client.get("/attributes")
+    assert attrs.status_code == 200
+    data = attrs.json()
+    assert data
+    return data[0]["id"]
+
+
+def _product_payload(category_id: int, family_id: int, attribute_id: int, parent_code: str = "PARENT-001"):
     return {
         "product_code": parent_code,
         "name": "Ao thun the thao cao cap",
         "description": "San pham danh cho tap luyen the thao hang ngay",
         "category_id": category_id,
+        "family_id": family_id,
         "weight": 250,
         "length": 30,
         "width": 20,
@@ -50,12 +67,17 @@ def _product_payload(category_id: int, parent_code: str = "PARENT-001"):
                 "variant_tier_1_option": None,
             }
         ],
+        "attributes": [
+            {"id": attribute_id, "value": "Yonex"}
+        ],
     }
 
 
 def test_create_product_and_get_by_id(client):
     category_id = _first_category_id(client)
-    payload = _product_payload(category_id)
+    family_id = _first_family_id(client)
+    attribute_id = _first_attribute_id(client)
+    payload = _product_payload(category_id, family_id, attribute_id)
 
     create_resp = client.post("/products", json=payload)
 
@@ -73,8 +95,10 @@ def test_create_product_and_get_by_id(client):
 
 def test_list_products_with_search(client):
     category_id = _first_category_id(client)
+    family_id = _first_family_id(client)
+    attribute_id = _first_attribute_id(client)
 
-    create_resp = client.post("/products", json=_product_payload(category_id, parent_code="SEARCH-001"))
+    create_resp = client.post("/products", json=_product_payload(category_id, family_id, attribute_id, parent_code="SEARCH-001"))
     assert create_resp.status_code == 201
 
     list_resp = client.get("/products", params={"q": "SEARCH-001", "page": 1, "limit": 10})
@@ -87,7 +111,9 @@ def test_list_products_with_search(client):
 
 def test_update_product_replaces_variants(client):
     category_id = _first_category_id(client)
-    create_resp = client.post("/products", json=_product_payload(category_id, parent_code="UPD-001"))
+    family_id = _first_family_id(client)
+    attribute_id = _first_attribute_id(client)
+    create_resp = client.post("/products", json=_product_payload(category_id, family_id, attribute_id, parent_code="UPD-001"))
     assert create_resp.status_code == 201
     product_id = create_resp.json()["id"]
 
@@ -96,6 +122,7 @@ def test_update_product_replaces_variants(client):
         "name": "Ao tap cap nhat",
         "description": "Thong tin sau khi cap nhat",
         "category_id": category_id,
+        "family_id": family_id,
         "weight": 280,
         "length": 31,
         "width": 21,
@@ -114,6 +141,7 @@ def test_update_product_replaces_variants(client):
             }
         ],
         "media": [],
+        "attributes": [],
     }
 
     update_resp = client.put(f"/products/{product_id}", json=update_payload)
@@ -128,7 +156,9 @@ def test_update_product_replaces_variants(client):
 
 def test_create_product_duplicate_parent_code_fails(client):
     category_id = _first_category_id(client)
-    payload = _product_payload(category_id, parent_code="DUP-001")
+    family_id = _first_family_id(client)
+    attribute_id = _first_attribute_id(client)
+    payload = _product_payload(category_id, family_id, attribute_id, parent_code="DUP-001")
 
     first = client.post("/products", json=payload)
     second = client.post("/products", json=payload)
@@ -139,7 +169,9 @@ def test_create_product_duplicate_parent_code_fails(client):
 
 def test_get_product_by_sku_returns_variant_info(client):
     category_id = _first_category_id(client)
-    payload = _product_payload(category_id, parent_code="SKU-LOOKUP")
+    family_id = _first_family_id(client)
+    attribute_id = _first_attribute_id(client)
+    payload = _product_payload(category_id, family_id, attribute_id, parent_code="SKU-LOOKUP")
 
     create_resp = client.post("/products", json=payload)
     assert create_resp.status_code == 201

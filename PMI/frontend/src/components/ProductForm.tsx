@@ -22,6 +22,20 @@ interface Category {
   code: string;
 }
 
+interface AttributeFamily {
+  id: number;
+  code: string;
+  name: string;
+}
+
+interface Attribute {
+  id: number;
+  code: string;
+  name: string;
+  type: string;
+  is_required: boolean;
+}
+
 // Zod schemas
 const tierVariationSchema = z.object({
   tier_index: z.number().min(1).max(2),
@@ -49,6 +63,7 @@ const productFormSchema = z.object({
   name: z.string().min(5, "Tên sản phẩm phải từ 5 ký tự trở lên"),
   description: z.string().min(10, "Mô tả sản phẩm phải từ 10 ký tự trở lên"),
   category_id: z.coerce.number().min(1, "Vui lòng chọn ngành hàng"),
+  family_id: z.coerce.number().min(1, "Vui lòng chọn bộ thuộc tính"),
   weight: z.coerce.number().min(1, "Cân nặng phải > 0"),
   length: z.coerce.number().optional().nullable(),
   width: z.coerce.number().optional().nullable(),
@@ -71,6 +86,9 @@ interface ProductFormProps {
 
 export default function ProductForm({ productId, duplicateProductId, onSaveSuccess }: ProductFormProps = {}) {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [families, setFamilies] = useState<AttributeFamily[]>([]);
+  const [familyAttributes, setFamilyAttributes] = useState<Attribute[]>([]);
+  const [attributeValues, setAttributeValues] = useState<Record<number, string>>({});
   const [uploadingCover, setUploadingCover] = useState(false);
   const [coverImage, setCoverImage] = useState<string | null>(null);
   const [productImages, setProductImages] = useState<string[]>([]);
@@ -100,6 +118,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
       name: "",
       description: "",
       category_id: 0,
+      family_id: 0,
       weight: 0,
       length: null,
       width: null,
@@ -119,17 +138,51 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
   });
 
   const watchTiers = watch("tier_variations");
+  const watchFamilyId = watch("family_id");
   const watchParentSku = watch("product_code");
   const watchIsPreOrder = watch("is_pre_order");
   const watchVariants = watch("variants");
 
   // Fetch categories
   useEffect(() => {
-    fetch(`${API_BASE_URL}/categories`)
-      .then(res => res.json())
-      .then(data => setCategories(data))
-      .catch(err => console.error("Error fetching categories:", err));
+    Promise.all([
+      fetch(`${API_BASE_URL}/categories`).then(res => res.json()),
+      fetch(`${API_BASE_URL}/attribute-families`).then(res => res.json())
+    ])
+      .then(([categoryData, familyData]) => {
+        setCategories(categoryData);
+        setFamilies(familyData);
+      })
+      .catch(err => console.error("Error fetching lookup data:", err));
   }, []);
+
+  useEffect(() => {
+    if (!watchFamilyId || Number(watchFamilyId) <= 0) {
+      setFamilyAttributes([]);
+      return;
+    }
+
+    fetch(`${API_BASE_URL}/attribute-families/${watchFamilyId}/attributes`)
+      .then(res => res.json())
+      .then((data: Attribute[]) => {
+        setFamilyAttributes(data);
+        setAttributeValues(prev => {
+          const allowedIds = new Set(data.map(attr => attr.id));
+          const next: Record<number, string> = {};
+          Object.entries(prev).forEach(([key, value]) => {
+            const id = Number(key);
+            if (allowedIds.has(id)) {
+              next[id] = value;
+            }
+          });
+          return next;
+        });
+      })
+      .catch(err => {
+        console.error("Error fetching family attributes:", err);
+        setFamilyAttributes([]);
+      });
+  }, [watchFamilyId]);
 
   // Fetch product data if editing or copying
   const targetId = productId || duplicateProductId;
@@ -160,6 +213,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
           name: data.name,
           description: data.description || "",
           category_id: data.category_id || 0,
+          family_id: data.family_id || 0,
           weight: data.weight,
           length: data.length,
           width: data.width,
@@ -171,6 +225,15 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
           variants: variants,
           media: []
         });
+
+        const dynamicAttributeValues: Record<number, string> = {};
+        (data.attribute_values || []).forEach((entry: any) => {
+          const raw = entry.value_string ?? entry.value_decimal;
+          if (raw !== null && raw !== undefined) {
+            dynamicAttributeValues[entry.attribute_id] = String(raw);
+          }
+        });
+        setAttributeValues(dynamicAttributeValues);
 
         // Map Media State
         const cover = data.media.find((m: any) => m.is_cover);
@@ -421,7 +484,13 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
 
     const finalPayload = {
       ...values,
-      media: mediaPayload
+      media: mediaPayload,
+      attributes: familyAttributes
+        .map(attr => ({
+          id: attr.id,
+          value: (attributeValues[attr.id] || "").trim()
+        }))
+        .filter(attr => attr.value !== "")
     };
 
     try {
@@ -620,6 +689,22 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                 </select>
                 {errors.category_id && <p className="text-xs text-rose-500 font-medium">{errors.category_id.message}</p>}
               </div>
+
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold text-slate-700">Attribute Family *</label>
+                <select
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white transition-all"
+                  {...register("family_id")}
+                >
+                  <option value={0}>Chọn bộ thuộc tính</option>
+                  {families.map(fam => (
+                    <option key={fam.id} value={fam.id}>
+                      {fam.name} ({fam.code})
+                    </option>
+                  ))}
+                </select>
+                {errors.family_id && <p className="text-xs text-rose-500 font-medium">{errors.family_id.message}</p>}
+              </div>
             </div>
           </div>
 
@@ -635,7 +720,40 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
           </div>
         </div>
 
-        {/* SECTION 2: SALES INFORMATION (VARIATIONS) */}
+        {/* SECTION 2: TECHNICAL SPECS (DYNAMIC BY FAMILY) */}
+        <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6">
+          <h2 className="text-lg font-bold text-slate-900 border-b pb-3 border-slate-100">Thuộc tính kỹ thuật</h2>
+
+          {!watchFamilyId || Number(watchFamilyId) <= 0 ? (
+            <p className="text-sm text-slate-500">Chọn Attribute Family để tải danh sách thông số kỹ thuật phù hợp.</p>
+          ) : familyAttributes.length === 0 ? (
+            <p className="text-sm text-slate-500">Family hiện tại chưa có thuộc tính nào được gán.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {familyAttributes.map(attr => (
+                <div key={attr.id} className="space-y-1.5">
+                  <label className="text-sm font-semibold text-slate-700">
+                    {attr.name}{attr.is_required ? " *" : ""}
+                  </label>
+                  <input
+                    type={attr.type === "decimal" || attr.type === "number" || attr.type === "float" ? "number" : "text"}
+                    step={attr.type === "decimal" || attr.type === "number" || attr.type === "float" ? "any" : undefined}
+                    placeholder={`Nhập ${attr.name.toLowerCase()}`}
+                    value={attributeValues[attr.id] || ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setAttributeValues(prev => ({ ...prev, [attr.id]: value }));
+                    }}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                  />
+                  <p className="text-[11px] text-slate-400">Code: {attr.code}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* SECTION 3: SALES INFORMATION (VARIATIONS) */}
         <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6">
           <div className="flex items-center justify-between border-b pb-3 border-slate-100">
             <h2 className="text-lg font-bold text-slate-900">Thông tin bán hàng</h2>
@@ -851,7 +969,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
           </div>
         </div>
 
-        {/* SECTION 3: LOGISTICS & SHIPPING */}
+        {/* SECTION 4: LOGISTICS & SHIPPING */}
         <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6">
           <h2 className="text-lg font-bold text-slate-900 border-b pb-3 border-slate-100">Vận chuyển & Logistics</h2>
           
@@ -911,7 +1029,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
           </div>
         </div>
 
-        {/* SECTION 4: PRE-ORDER & STATUS */}
+        {/* SECTION 5: PRE-ORDER & STATUS */}
         <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6">
           <h2 className="text-lg font-bold text-slate-900 border-b pb-3 border-slate-100">Thông tin khác</h2>
 

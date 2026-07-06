@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Product, Player, Blog, Branch, StringOption } from '../types';
+import { Product, Blog, Branch, StringOption, ProductAttribute } from '../types';
 import rawData from '../data.json';
 
 // Simulated latency to mimic a real-world server roundtrip (e.g. 300ms)
@@ -24,12 +24,28 @@ type PmiMedia = {
   image_url?: string;
 };
 
+type PmiAttribute = {
+  code?: string;
+  name?: string;
+  type?: string;
+};
+
+type PmiAttributeValue = {
+  id?: number;
+  attribute_id?: number;
+  value_string?: string | null;
+  value_decimal?: number | null;
+  attribute?: PmiAttribute | null;
+};
+
 type PmiProduct = {
   id: string | number;
   name?: string;
   description?: string;
   weight?: string | number;
   category_id?: number;
+  family_id?: number;
+  attribute_values?: PmiAttributeValue[];
   variants?: PmiVariant[];
   media?: PmiMedia[];
 };
@@ -94,6 +110,29 @@ function mapPmiProduct(pmiProduct: PmiProduct): Product {
   const name = (pmiProduct.name || 'Sản phẩm').trim();
   const nameLower = name.toLowerCase();
 
+  const attributes: ProductAttribute[] = (pmiProduct.attribute_values || [])
+    .map((item): ProductAttribute | null => {
+      if (!item.attribute || !item.attribute.code || !item.attribute.name) {
+        return null;
+      }
+      const rawValue = item.value_string ?? item.value_decimal;
+      if (rawValue === null || rawValue === undefined) {
+        return null;
+      }
+      return {
+        id: String(item.id || `${item.attribute_id || item.attribute.code}`),
+        code: item.attribute.code,
+        name: item.attribute.name,
+        value: String(rawValue)
+      };
+    })
+    .filter((item): item is ProductAttribute => Boolean(item));
+
+  const attrByCode = attributes.reduce<Record<string, string>>((acc, attr) => {
+    acc[attr.code] = attr.value;
+    return acc;
+  }, {});
+
   let brand: Product['brand'] = 'Other';
   if (nameLower.includes('yonex')) brand = 'Yonex';
   else if (nameLower.includes('lining') || nameLower.includes('li-ning')) brand = 'Lining';
@@ -105,7 +144,16 @@ function mapPmiProduct(pmiProduct: PmiProduct): Product {
     category = 'Vợt';
   } else if (nameLower.includes('giày') || nameLower.includes('shoes')) {
     category = 'Giày';
+  } else if (nameLower.includes('cước') || nameLower.includes('string')) {
+    category = 'Cước';
   }
+
+  if (attrByCode.thickness) {
+    category = 'Cước';
+  }
+
+  const parsedBalance = Number(attrByCode.balance);
+  const parsedMaxTension = Number(attrByCode.maxTension);
 
   const resolvedPrice = minPrice > 0 ? minPrice : 100000;
   const defaultSku = variants.find(v => Boolean(v.sku_code))?.sku_code;
@@ -134,12 +182,13 @@ function mapPmiProduct(pmiProduct: PmiProduct): Product {
     price: resolvedPrice,
     salePrice: minPrice > 0 ? minPrice : undefined,
     specs: {
-      weight: pmiProduct.weight ? String(pmiProduct.weight) : '4U/83g',
-      stiffness: 'Medium',
-      balance: 295,
-      maxTension: 28
+      weight: attrByCode.weightClass || (pmiProduct.weight ? String(pmiProduct.weight) : 'Tiêu chuẩn'),
+      stiffness: attrByCode.stiffness || 'Tiêu chuẩn',
+      balance: Number.isFinite(parsedBalance) ? parsedBalance : 0,
+      maxTension: Number.isFinite(parsedMaxTension) ? parsedMaxTension : 0
     },
     description: pmiProduct.description || 'Sản phẩm chính hãng.',
+    attributes,
     reviews: [],
     stock: stock > 0 ? stock : 100,
     defaultSku,
@@ -209,14 +258,6 @@ export const sportApi = {
       const product = rawData.products.find(p => p.id === id);
       return product ? (JSON.parse(JSON.stringify(product)) as Product) : null;
     }
-  },
-
-  /**
-   * Fetch superstar player recommendations & combopacks
-   */
-  async getPlayers(): Promise<Player[]> {
-    await delay(SIMULATED_LATENCY);
-    return JSON.parse(JSON.stringify(rawData.players)) as Player[];
   },
 
   /**

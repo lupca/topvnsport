@@ -14,7 +14,7 @@ import StoreLocator from './components/StoreLocator';
 import CartModal, { CartItem } from './components/CartModal';
 import Footer from './components/Footer';
 import { sportApi } from './services/sportApi';
-import { Product, StringOption, Player, Blog, Branch } from './types';
+import { Product, StringOption, Blog, Branch } from './types';
 import { ShieldCheck, Trophy, Sparkles, MapPin, Phone, Star, ShoppingBag, Eye, X, Filter, SlidersHorizontal, RefreshCw, Calendar, Clock, ChevronRight, Home, BookOpen } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import QuickViewModal from './components/QuickViewModal';
@@ -23,7 +23,6 @@ import TrustBadges from './components/TrustBadges';
 export default function App() {
   // API Dynamic States
   const [products, setProducts] = useState<Product[]>([]);
-  const [players, setPlayers] = useState<Player[]>([]);
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [stringOptions, setStringOptions] = useState<StringOption[]>([]);
@@ -70,16 +69,14 @@ export default function App() {
     let isMounted = true;
     async function loadData() {
       try {
-        const [prodList, playerList, blogList, branchList, stringList] = await Promise.all([
+        const [prodList, blogList, branchList, stringList] = await Promise.all([
           sportApi.getProducts(),
-          sportApi.getPlayers(),
           sportApi.getBlogs(),
           sportApi.getBranches(),
           sportApi.getStringOptions()
         ]);
         if (isMounted) {
           setProducts(prodList);
-          setPlayers(playerList);
           setBlogs(blogList);
           setBranches(branchList);
           setStringOptions(stringList);
@@ -380,59 +377,6 @@ export default function App() {
             {/* Racket Finder Wizard element */}
             <section className="max-w-7xl mx-auto px-4 md:px-8">
               <RacketFinder products={products} onProductClick={(id) => setView('product-detail', { productId: id })} />
-            </section>
-
-            {/* Shop by Professional Players (Sự lựa chọn của Thần Tượng) */}
-            <section className="max-w-7xl mx-auto px-4 md:px-8 space-y-6">
-              <div className="text-center md:text-left">
-                <span className="text-xs bg-orange-50 text-orange-600 font-bold px-3 py-1 rounded-full border border-orange-100 uppercase tracking-widest">UX Social Proof</span>
-                <h2 className="font-display font-black text-xl md:text-2xl text-gray-900 tracking-tight uppercase mt-2">
-                  SỰ LỰA CHỌN CỦA THẦN TƯỢNG (SHOP BY PLAYER)
-                </h2>
-                <p className="text-xs text-gray-500 mt-1">Trải nghiệm set- đồ thi đấu đỉnh cao chuẩn quốc tế từ các tuyển thủ vô địch hàng đầu thế giới.</p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                {players.map(player => (
-                  <div
-                    key={player.id}
-                    className="bg-white rounded-xl border border-gray-100 p-5 shadow-xs hover:shadow-lg transition flex flex-col justify-between"
-                  >
-                    <div className="space-y-4">
-                      {/* Avatar & Info */}
-                      <div className="flex items-center gap-3">
-                        <img src={player.avatar} alt={player.name} className="w-12 h-12 object-cover rounded-full bg-gray-50 border border-gray-100" referrerPolicy="no-referrer" />
-                        <div>
-                          <h4 className="font-bold text-sm text-gray-900">{player.name}</h4>
-                          <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-gray-400 font-mono">
-                            <span className="bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded-sm font-bold uppercase">{player.category}</span>
-                            <span>•</span>
-                            <span>{player.country}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <p className="text-xs text-gray-500 leading-normal font-light italic">
-                        "{player.description}"
-                      </p>
-
-                      {/* Equipment List */}
-                      <div className="space-y-1.5 pt-3 border-t border-gray-50 text-[11px] text-gray-600 font-mono">
-                        <p>• Vợt: <strong className="text-gray-900">{player.setupProducts.racketName}</strong></p>
-                        <p>• Giày: <strong className="text-gray-900">{player.setupProducts.shoesName}</strong></p>
-                        <p>• Cước: <strong className="text-orange-600 font-bold">{player.setupProducts.stringName}</strong></p>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => setView('product-detail', { productId: player.racketId })}
-                      className="w-full mt-4 bg-gray-50 hover:bg-orange-500 hover:text-white text-gray-700 text-xs font-bold py-2 rounded-full transition duration-300 text-center uppercase"
-                    >
-                      Sử dụng combo này &rarr;
-                    </button>
-                  </div>
-                ))}
-              </div>
             </section>
 
             {/* Knowledge Base Blog previews */}

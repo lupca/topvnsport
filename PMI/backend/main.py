@@ -39,6 +39,54 @@ with engine.begin() as conn:
         conn.execute(text("ALTER TABLE categories ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"))
     except Exception as e:
         print(f"Migration error (categories columns): {e}")
+    try:
+        conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS family_id INTEGER"))
+        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_products_family_id ON products (family_id)"))
+        conn.execute(text("""
+            DO $$
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1
+                    FROM pg_constraint
+                    WHERE conname = 'fk_products_family_id'
+                ) THEN
+                    ALTER TABLE products
+                    ADD CONSTRAINT fk_products_family_id
+                    FOREIGN KEY (family_id) REFERENCES attribute_families(id) ON DELETE SET NULL;
+                END IF;
+            END $$;
+        """))
+    except Exception as e:
+        print(f"Migration error (products family_id): {e}")
+    try:
+        conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS attribute_family_attributes (
+                id SERIAL PRIMARY KEY,
+                family_id INTEGER NOT NULL REFERENCES attribute_families(id) ON DELETE CASCADE,
+                attribute_id INTEGER NOT NULL REFERENCES attributes(id) ON DELETE CASCADE,
+                display_order INTEGER NOT NULL DEFAULT 1,
+                CONSTRAINT uq_family_attribute UNIQUE (family_id, attribute_id)
+            )
+        """))
+        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_attribute_family_attributes_family_id ON attribute_family_attributes (family_id)"))
+        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_attribute_family_attributes_attribute_id ON attribute_family_attributes (attribute_id)"))
+    except Exception as e:
+        print(f"Migration error (attribute_family_attributes): {e}")
+    try:
+        conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS product_attribute_values (
+                id SERIAL PRIMARY KEY,
+                product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+                attribute_id INTEGER NOT NULL REFERENCES attributes(id) ON DELETE CASCADE,
+                value_string VARCHAR(255),
+                value_decimal FLOAT,
+                CONSTRAINT uq_product_attribute_value UNIQUE (product_id, attribute_id)
+            )
+        """))
+        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_product_attribute_values_product_id ON product_attribute_values (product_id)"))
+        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_product_attribute_values_attribute_id ON product_attribute_values (attribute_id)"))
+    except Exception as e:
+        print(f"Migration error (product_attribute_values): {e}")
 
 app = FastAPI(title="PIM API Microservice")
 
@@ -52,6 +100,50 @@ app.add_middleware(
 )
 
 
+def _parse_attribute_storage_value(raw_value: str, attr_type: str):
+    text_value = (raw_value or "").strip()
+    if text_value == "":
+        return None, None
+
+    if attr_type in {"decimal", "number", "float", "integer"}:
+        try:
+            return None, float(text_value)
+        except ValueError:
+            # Keep non-normalized values (e.g. "0.68mm") as text.
+            return text_value, None
+
+    return text_value, None
+
+
+def _upsert_product_attribute_values(db: Session, product_id: int, incoming_attributes: List[schemas.ProductAttributeInput]):
+    db.query(models.ProductAttributeValue).filter(
+        models.ProductAttributeValue.product_id == product_id
+    ).delete(synchronize_session=False)
+
+    if not incoming_attributes:
+        return
+
+    attribute_ids = [a.id for a in incoming_attributes]
+    attribute_map = {
+        a.id: a
+        for a in db.query(models.Attribute).filter(models.Attribute.id.in_(attribute_ids)).all()
+    }
+
+    for item in incoming_attributes:
+        attribute = attribute_map.get(item.id)
+        if not attribute:
+            continue
+        value_string, value_decimal = _parse_attribute_storage_value(item.value, attribute.type)
+        if value_string is None and value_decimal is None:
+            continue
+        db.add(models.ProductAttributeValue(
+            product_id=product_id,
+            attribute_id=attribute.id,
+            value_string=value_string,
+            value_decimal=value_decimal,
+        ))
+
+
 # Startup hook to initialize MinIO bucket and seed Categories & PIM metadata
 @app.on_event("startup")
 def startup_populate():
@@ -62,19 +154,18 @@ def startup_populate():
         # Seed categories if database is empty
         if db.query(models.Category).count() == 0:
             print("Seeding category hierarchy...")
-            fashion = models.Category(name="Thời Trang", code="fashion")
-            electronics = models.Category(name="Thiết Bị Điện Tử", code="electronics")
-            home = models.Category(name="Nhà Cửa & Đời Sống", code="home")
-            db.add_all([fashion, electronics, home])
+            equipment = models.Category(name="Thiết bị cầu lông", code="badminton_equipment")
+            accessories = models.Category(name="Phụ kiện cầu lông", code="badminton_accessories")
+            db.add_all([equipment, accessories])
             db.flush()
 
-            mens_clothing = models.Category(name="Thời Trang Nam", code="mens_clothing", parent_id=fashion.id)
-            womens_clothing = models.Category(name="Thời Trang Nữ", code="womens_clothing", parent_id=fashion.id)
-            phones = models.Category(name="Điện Thoại & Phụ Kiện", code="phones", parent_id=electronics.id)
-            laptops = models.Category(name="Máy Tính & Laptop", code="laptops", parent_id=electronics.id)
-            kitchen = models.Category(name="Dụng cụ nhà bếp", code="kitchen", parent_id=home.id)
-            
-            db.add_all([mens_clothing, womens_clothing, phones, laptops, kitchen])
+            db.add_all([
+                models.Category(name="Vợt", code="rackets", parent_id=equipment.id),
+                models.Category(name="Giày", code="shoes", parent_id=equipment.id),
+                models.Category(name="Cước", code="strings", parent_id=accessories.id),
+                models.Category(name="Túi xách", code="bags", parent_id=accessories.id),
+                models.Category(name="Quả cầu", code="shuttlecocks", parent_id=accessories.id),
+            ])
             db.flush()
 
         # Seed Locales
@@ -116,29 +207,77 @@ def startup_populate():
             db.flush()
 
         # Seed Attribute Families
-        if db.query(models.AttributeFamily).count() == 0:
+        existing_families = {f.code: f for f in db.query(models.AttributeFamily).all()}
+        family_seed = [
+            ("family_racket", "Bộ Vợt"),
+            ("family_shoes", "Bộ Giày"),
+            ("family_string", "Bộ Cước"),
+        ]
+        new_families = [
+            models.AttributeFamily(code=code, name=name)
+            for code, name in family_seed
+            if code not in existing_families
+        ]
+        if new_families:
             print("Seeding attribute families...")
-            db.add_all([
-                models.AttributeFamily(code="default", name="Default Family"),
-                models.AttributeFamily(code="clothing", name="Clothing & Apparel"),
-                models.AttributeFamily(code="electronics", name="Electronics")
-            ])
+            db.add_all(new_families)
             db.flush()
+            existing_families = {f.code: f for f in db.query(models.AttributeFamily).all()}
 
         # Seed Attributes
-        if db.query(models.Attribute).count() == 0:
+        existing_attrs = {a.code: a for a in db.query(models.Attribute).all()}
+        attribute_seed = [
+            ("brand", "Thương hiệu", "text", True),
+            ("balance", "Điểm cân bằng", "decimal", False),
+            ("stiffness", "Độ cứng", "text", False),
+            ("maxTension", "Sức căng", "decimal", False),
+            ("weightClass", "Trọng lượng", "text", False),
+            ("thickness", "Đường kính cước", "text", False),
+            ("material", "Chất liệu", "text", False),
+            ("size", "Kích cỡ", "text", False),
+        ]
+        new_attrs = [
+            models.Attribute(
+                code=code,
+                name=name,
+                type=attr_type,
+                is_required=is_required,
+                is_unique=False,
+                is_locale_based=False,
+                is_channel_based=False,
+            )
+            for code, name, attr_type, is_required in attribute_seed
+            if code not in existing_attrs
+        ]
+        if new_attrs:
             print("Seeding attributes...")
-            db.add_all([
-                models.Attribute(code="name", name="Product Name", type="text", is_required=True, is_unique=False, is_locale_based=True, is_channel_based=True),
-                models.Attribute(code="sku", name="SKU", type="text", is_required=True, is_unique=True, is_locale_based=False, is_channel_based=False),
-                models.Attribute(code="price", name="Price", type="decimal", is_required=True, is_unique=False, is_locale_based=False, is_channel_based=True),
-                models.Attribute(code="description", name="Description", type="textarea", is_required=False, is_unique=False, is_locale_based=True, is_channel_based=False),
-                models.Attribute(code="brand", name="Brand", type="select", is_required=False, is_unique=False, is_locale_based=False, is_channel_based=True),
-                models.Attribute(code="color", name="Color", type="select", is_required=False, is_unique=False, is_locale_based=False, is_channel_based=False),
-                models.Attribute(code="size", name="Size", type="select", is_required=False, is_unique=False, is_locale_based=False, is_channel_based=False),
-                models.Attribute(code="weight", name="Weight", type="decimal", is_required=True, is_unique=False, is_locale_based=False, is_channel_based=False)
-            ])
+            db.add_all(new_attrs)
             db.flush()
+            existing_attrs = {a.code: a for a in db.query(models.Attribute).all()}
+
+        family_attribute_seed = {
+            "family_racket": ["brand", "balance", "stiffness", "maxTension", "weightClass"],
+            "family_shoes": ["brand", "size", "material"],
+            "family_string": ["brand", "thickness"],
+        }
+        for fam_code, attr_codes in family_attribute_seed.items():
+            family = existing_families.get(fam_code)
+            if not family:
+                continue
+            for order, attr_code in enumerate(attr_codes, start=1):
+                attribute = existing_attrs.get(attr_code)
+                if not attribute:
+                    continue
+                exists = db.query(models.AttributeFamilyAttribute).filter(
+                    models.AttributeFamilyAttribute.family_id == family.id,
+                    models.AttributeFamilyAttribute.attribute_id == attribute.id,
+                ).first()
+                if not exists:
+                    db.add(models.AttributeFamilyAttribute(
+                        family_id=family.id,
+                        attribute_id=attribute.id,
+                        display_order=order,
+                    ))
 
         db.commit()
         print("PIM database seeding completed successfully.")
@@ -370,6 +509,7 @@ def create_product(product_in: schemas.ProductCreate, db: Session = Depends(get_
             name=product_in.name,
             description=product_in.description,
             category_id=product_in.category_id,
+            family_id=product_in.family_id,
             weight=product_in.weight,
             length=product_in.length,
             width=product_in.width,
@@ -425,6 +565,8 @@ def create_product(product_in: schemas.ProductCreate, db: Session = Depends(get_
                 display_order=m.display_order
             )
             db.add(db_media)
+
+        _upsert_product_attribute_values(db, db_product.id, product_in.attributes)
 
         db.commit()
         db.refresh(db_product)
@@ -533,6 +675,7 @@ def update_product(product_id: int, product_in: schemas.ProductUpdate, db: Sessi
         db_product.name = product_in.name
         db_product.description = product_in.description
         db_product.category_id = product_in.category_id
+        db_product.family_id = product_in.family_id
         db_product.weight = product_in.weight
         db_product.length = product_in.length
         db_product.width = product_in.width
@@ -588,6 +731,8 @@ def update_product(product_id: int, product_in: schemas.ProductUpdate, db: Sessi
                 display_order=m.display_order
             )
             db_product.media.append(db_media)
+
+        _upsert_product_attribute_values(db, product_id, product_in.attributes)
             
         db.commit()
         db.refresh(db_product)
@@ -844,6 +989,22 @@ def get_attribute_family(family_id: int, db: Session = Depends(get_db)):
     if not fam:
         raise HTTPException(status_code=404, detail="Attribute Family not found")
     return fam
+
+
+@app.get("/attribute-families/{family_id}/attributes", response_model=List[schemas.AttributeResponse])
+def get_attributes_by_family(family_id: int, db: Session = Depends(get_db)):
+    fam = db.query(models.AttributeFamily).filter(models.AttributeFamily.id == family_id).first()
+    if not fam:
+        raise HTTPException(status_code=404, detail="Attribute Family not found")
+
+    family_attrs = (
+        db.query(models.Attribute)
+        .join(models.AttributeFamilyAttribute, models.AttributeFamilyAttribute.attribute_id == models.Attribute.id)
+        .filter(models.AttributeFamilyAttribute.family_id == family_id)
+        .order_by(models.AttributeFamilyAttribute.display_order.asc(), models.Attribute.id.asc())
+        .all()
+    )
+    return family_attrs
 
 @app.post("/attribute-families", response_model=schemas.AttributeFamilyResponse, status_code=status.HTTP_201_CREATED)
 def create_attribute_family(family: schemas.AttributeFamilyCreate, db: Session = Depends(get_db)):
