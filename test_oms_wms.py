@@ -30,8 +30,53 @@ def run_e2e_test():
     
     # 1. Verify PMI SKU exists
     print("\n1. Verifying SKU TSHIRT-RED-M exists in PMI...")
-    pmi_product = request(f"{PMI_URL}/api/products/by-sku/TSHIRT-RED-M")
-    print(f"Found PMI variant: {pmi_product['variant_name']} with price {pmi_product['price']}")
+    try:
+        pmi_product = request(f"{PMI_URL}/api/products/by-sku/TSHIRT-RED-M")
+    except urllib.error.HTTPError as e:
+        if e.code == 404:
+            print("SKU TSHIRT-RED-M not found in PMI. Creating it dynamically...")
+            categories = request(f"{PMI_URL}/categories")
+            cat_id = categories[0]["id"] if categories else None
+            families = request(f"{PMI_URL}/attribute-families")
+            fam_id = families[0]["id"] if families else None
+            
+            if not cat_id:
+                cat = request(f"{PMI_URL}/categories", "POST", {"name": "Sports Category", "code": "sports_e2e"})
+                cat_id = cat["id"]
+            if not fam_id:
+                fam = request(f"{PMI_URL}/attribute-families", "POST", {"name": "Default Family", "code": "default_e2e"})
+                fam_id = fam["id"]
+                
+            request(f"{PMI_URL}/products", "POST", {
+                "product_code": "PROD-TSHIRT-RED-M",
+                "name": "Áo thun phong cách Unisex",
+                "description": "Seeded Unisex T-shirt for E2E tests",
+                "category_id": cat_id,
+                "family_id": fam_id,
+                "weight": 100.0,
+                "length": 10.0,
+                "width": 10.0,
+                "height": 10.0,
+                "is_pre_order": False,
+                "dts_days": 7,
+                "status": "Published",
+                "tier_variations": [],
+                "variants": [
+                    {
+                        "tier_1_option": None,
+                        "tier_2_option": None,
+                        "sku_code": "TSHIRT-RED-M",
+                        "price": 120000,
+                        "stock": 100
+                    }
+                ],
+                "media": [],
+                "attributes": []
+            })
+            pmi_product = request(f"{PMI_URL}/api/products/by-sku/TSHIRT-RED-M")
+        else:
+            raise e
+    print(f"Found/Created PMI variant: {pmi_product['variant_name']} with price {pmi_product['price']}")
     
     # 2. Seed Customer and Channel in OMS
     print("\n2. Creating Customer and Channel in OMS...")

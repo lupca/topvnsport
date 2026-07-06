@@ -20,6 +20,24 @@ logger = logging.getLogger("wms_backend")
 # Initialize database tables
 Base.metadata.create_all(bind=engine)
 
+# Idempotent migration: create_all does not alter existing tables, so ensure
+# the (sku_code, location_id) unique constraint exists on legacy databases.
+with engine.begin() as conn:
+    try:
+        conn.execute(text("""
+            DO $$
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM pg_constraint WHERE conname = 'uq_inventory_sku_location'
+                ) THEN
+                    ALTER TABLE inventories
+                    ADD CONSTRAINT uq_inventory_sku_location UNIQUE (sku_code, location_id);
+                END IF;
+            END $$;
+        """))
+    except Exception as e:
+        logging.getLogger("wms_backend").error(f"Migration error (uq_inventory_sku_location): {e}")
+
 app = FastAPI(title="WMS Backend API", version="1.0.0")
 
 allowed_origins = [
@@ -53,13 +71,13 @@ def log_stock_transaction(db: Session, sku_code: str, location_id: int, transact
     db.add(tx)
     db.flush()
 
-def notify_oms_status(oms_order_id: int, new_status: str):
-    if not oms_order_id:
-        logger.info("notify_oms_status skipped: oms_order_id is null")
+def notify_oms_status(oms_order_id: int, fulfillment_number: str, new_status: str):
+    if not oms_order_id or not fulfillment_number:
+        logger.info("notify_oms_status skipped: oms_order_id or fulfillment_number is null")
         return
     oms_url = os.getenv("OMS_API_URL", "http://oms_backend:8001")
-    target_url = f"{oms_url}/orders/{oms_order_id}/status"
-    logger.info(f"Notifying OMS of status {new_status} for order {oms_order_id} at URL: {target_url}")
+    target_url = f"{oms_url}/orders/{oms_order_id}/fulfillments/{fulfillment_number}/status"
+    logger.info(f"Notifying OMS of status {new_status} for fulfillment {fulfillment_number} at URL: {target_url}")
     try:
         req = urllib.request.Request(
             target_url,
@@ -68,11 +86,13 @@ def notify_oms_status(oms_order_id: int, new_status: str):
             method="PATCH"
         )
         with urllib.request.urlopen(req, timeout=5) as resp:
+            if resp.status >= 400:
+                raise RuntimeError(f"OMS returned status {resp.status}")
             resp_data = resp.read()
             logger.info(f"Successfully notified OMS of status {new_status}: {resp_data}")
     except Exception as e:
-        logger.error(f"Failed to notify OMS of status {new_status} for order {oms_order_id}: {e}")
-
+        logger.error(f"Failed to notify OMS of status {new_status} for fulfillment {fulfillment_number}: {e}")
+        raise RuntimeError(f"OMS sync failed: {e}")
 @app.get("/status")
 def get_status(db: Session = Depends(get_db)):
     try:
@@ -353,7 +373,7 @@ def adjust_inventory(payload: InventoryAdjustInput, db: Session = Depends(get_db
     inv = db.query(models.Inventory).filter(
         models.Inventory.sku_code == payload.sku_code,
         models.Inventory.location_id == payload.location_id
-    ).first()
+    ).with_for_update().first()
     if not inv:
         # Create new record if positive adjust
         if payload.quantity < 0:
@@ -395,14 +415,14 @@ def transfer_inventory(payload: InventoryTransferInput, db: Session = Depends(ge
     src = db.query(models.Inventory).filter(
         models.Inventory.sku_code == payload.sku_code,
         models.Inventory.location_id == payload.from_location_id
-    ).first()
+    ).with_for_update().first()
     if not src or (src.qty_on_hand - src.qty_reserved) < payload.quantity:
         raise HTTPException(status_code=400, detail="Insufficient stock available for transfer")
         
     dest = db.query(models.Inventory).filter(
         models.Inventory.sku_code == payload.sku_code,
         models.Inventory.location_id == payload.to_location_id
-    ).first()
+    ).with_for_update().first()
     if not dest:
         dest = models.Inventory(
             sku_code=payload.sku_code,
@@ -564,13 +584,15 @@ def complete_inbound_shipment(id: int, db: Session = Depends(get_db)):
     shipment = db.query(models.InboundShipment).filter(models.InboundShipment.id == id).first()
     if not shipment:
         raise HTTPException(status_code=404, detail="Inbound shipment not found")
+    if shipment.status == "COMPLETED":
+        raise HTTPException(status_code=400, detail="Already completed")
     for item in shipment.items:
         if not item.location_id:
             raise HTTPException(status_code=400, detail=f"Location not assigned for SKU {item.sku_code}")
         inv = db.query(models.Inventory).filter(
             models.Inventory.sku_code == item.sku_code,
             models.Inventory.location_id == item.location_id
-        ).first()
+        ).with_for_update().first()
         if not inv:
             inv = models.Inventory(
                 sku_code=item.sku_code,
@@ -614,35 +636,47 @@ def create_fulfillment_order(payload: schemas.FulfillmentOrderCreateInput, db: S
     
     # 2. Process items
     for item in payload.items:
-        # Find location with enough qty_on_hand
-        inv = db.query(models.Inventory).join(models.Location).join(models.Warehouse)\
+        required_qty = item.quantity
+        
+        # Lock all available inventory for this SKU in this warehouse
+        inventories = db.query(models.Inventory).join(models.Location).join(models.Warehouse)\
             .filter(
                 models.Warehouse.code == payload.warehouse_code,
                 models.Inventory.sku_code == item.sku_code,
-                (models.Inventory.qty_on_hand - models.Inventory.qty_reserved) >= item.quantity
-            ).first()
-        
-        if not inv:
+                (models.Inventory.qty_on_hand - models.Inventory.qty_reserved) > 0
+            ).with_for_update().all()
+            
+        total_available = sum((inv.qty_on_hand - inv.qty_reserved) for inv in inventories)
+        if total_available < required_qty:
             db.rollback()
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"No location in warehouse {payload.warehouse_code} has enough available stock for SKU {item.sku_code}. Required: {item.quantity}."
+                detail=f"Not enough available stock for SKU {item.sku_code} in warehouse {payload.warehouse_code}. Required: {required_qty}, Available: {total_available}."
             )
-        
-        # Reserve quantity
-        inv.qty_reserved += item.quantity
-        log_stock_transaction(db, item.sku_code, inv.location_id, "RESERVE", item.quantity, f"Reserve for {new_fo.fulfillment_number}")
-        
-        # Create PickListItem
-        pick_item = models.PickListItem(
-            fulfillment_order_id=new_fo.id,
-            sku_code=item.sku_code,
-            product_name=item.product_name,
-            location_id=inv.location_id,
-            quantity=item.quantity,
-            status="pending"
-        )
-        db.add(pick_item)
+            
+        remaining_to_reserve = required_qty
+        for inv in inventories:
+            if remaining_to_reserve <= 0:
+                break
+                
+            available_here = inv.qty_on_hand - inv.qty_reserved
+            qty_to_reserve = min(available_here, remaining_to_reserve)
+            
+            inv.qty_reserved += qty_to_reserve
+            remaining_to_reserve -= qty_to_reserve
+            
+            log_stock_transaction(db, item.sku_code, inv.location_id, "RESERVE", qty_to_reserve, f"Reserve for {new_fo.fulfillment_number}")
+            
+            # Create PickListItem
+            pick_item = models.PickListItem(
+                fulfillment_order_id=new_fo.id,
+                sku_code=item.sku_code,
+                product_name=item.product_name,
+                location_id=inv.location_id,
+                quantity=qty_to_reserve,
+                status="pending"
+            )
+            db.add(pick_item)
         
     db.commit()
     db.refresh(new_fo)
@@ -664,6 +698,9 @@ def cancel_fulfillment_order(id: str, db: Session = Depends(get_db)):
             detail="Fulfillment order not found"
         )
         
+    if fo.status == "SHIPPED":
+        raise HTTPException(status_code=400, detail="Cannot cancel a shipped order")
+        
     if fo.status == "CANCELLED":
         return {"status": "already_cancelled", "fulfillment_number": fo.fulfillment_number}
         
@@ -672,7 +709,7 @@ def cancel_fulfillment_order(id: str, db: Session = Depends(get_db)):
         inv = db.query(models.Inventory).filter(
             models.Inventory.sku_code == item.sku_code,
             models.Inventory.location_id == item.location_id
-        ).first()
+        ).with_for_update().first()
         if inv:
             inv.qty_reserved = max(0, inv.qty_reserved - item.quantity)
             log_stock_transaction(db, item.sku_code, item.location_id, "UNRESERVE", -item.quantity, f"Cancel {fo.fulfillment_number}")
@@ -703,8 +740,12 @@ def start_pick_fulfillment_order(id: str, db: Session = Depends(get_db)):
     for item in fo.pick_list_items:
         if item.status == "pending":
             item.status = "picking"
-    db.commit()
-    notify_oms_status(fo.oms_order_id, "PICKING")
+    try:
+        notify_oms_status(fo.oms_order_id, fo.fulfillment_number, "PICKING")
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Lỗi đồng bộ với OMS, thao tác bị hủy.")
     return {"status": "success", "fulfillment_number": fo.fulfillment_number, "status_code": fo.status}
 
 @app.post("/fulfillment-orders/{id}/scan-pick")
@@ -762,8 +803,12 @@ def complete_pick_fulfillment_order(id: str, db: Session = Depends(get_db)):
             item.picked_qty = item.quantity
         item.status = "picked"
         
-    db.commit()
-    notify_oms_status(fo.oms_order_id, "PICKING")
+    try:
+        notify_oms_status(fo.oms_order_id, fo.fulfillment_number, "PICKING")
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Lỗi đồng bộ với OMS, thao tác bị hủy.")
     return {"status": "success", "fulfillment_number": fo.fulfillment_number, "status_code": fo.status}
 
 @app.post("/fulfillment-orders/{id}/pick")
@@ -780,8 +825,12 @@ def pick_fulfillment_order(id: str, db: Session = Depends(get_db)):
     for item in fo.pick_list_items:
         item.picked_qty = item.quantity
         item.status = "picked"
-    db.commit()
-    notify_oms_status(fo.oms_order_id, "PICKING")
+    try:
+        notify_oms_status(fo.oms_order_id, fo.fulfillment_number, "PICKING")
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Lỗi đồng bộ với OMS, thao tác bị hủy.")
     return {"status": "success", "fulfillment_number": fo.fulfillment_number}
 
 @app.post("/fulfillment-orders/{id}/scan-pack")
@@ -838,8 +887,12 @@ def complete_pack_fulfillment_order(id: str, db: Session = Depends(get_db)):
         session.status = "completed"
         session.completed_at = datetime.utcnow()
         
-    db.commit()
-    notify_oms_status(fo.oms_order_id, "PACKED")
+    try:
+        notify_oms_status(fo.oms_order_id, fo.fulfillment_number, "PACKED")
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Lỗi đồng bộ với OMS, thao tác bị hủy.")
     return {"status": "success", "fulfillment_number": fo.fulfillment_number, "status_code": fo.status}
 
 @app.post("/fulfillment-orders/{id}/pack")
@@ -861,8 +914,12 @@ def pack_fulfillment_order(id: str, tracking_number: str = "TRK123", db: Session
         completed_at=datetime.utcnow()
     )
     db.add(session)
-    db.commit()
-    notify_oms_status(fo.oms_order_id, "PACKED")
+    try:
+        notify_oms_status(fo.oms_order_id, fo.fulfillment_number, "PACKED")
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Lỗi đồng bộ với OMS, thao tác bị hủy.")
     return {"status": "success", "fulfillment_number": fo.fulfillment_number}
 
 @app.post("/fulfillment-orders/{id}/ship")
@@ -885,7 +942,7 @@ def ship_fulfillment_order(id: str, db: Session = Depends(get_db)):
         inv = db.query(models.Inventory).filter(
             models.Inventory.sku_code == item.sku_code,
             models.Inventory.location_id == item.location_id
-        ).first()
+        ).with_for_update().first()
         if not inv or inv.qty_on_hand < item.quantity:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -897,8 +954,12 @@ def ship_fulfillment_order(id: str, db: Session = Depends(get_db)):
         
     fo.status = "SHIPPED"
     fo.completed_at = datetime.utcnow()
-    db.commit()
-    notify_oms_status(fo.oms_order_id, "SHIPPED")
+    try:
+        notify_oms_status(fo.oms_order_id, fo.fulfillment_number, "SHIPPED")
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Lỗi đồng bộ với OMS, thao tác bị hủy.")
     return {"status": "success", "fulfillment_number": fo.fulfillment_number}
 
 

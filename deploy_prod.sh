@@ -27,6 +27,8 @@ RSYNC_RSH="ssh ${SSH_OPTS[*]}"
 echo "[1/5] Sync source to $EC2_USER@$EC2_HOST:$DEPLOY_PATH"
 rsync -az --delete \
   --exclude '.git' \
+  --exclude '.env' \
+  --exclude '*.env' \
   --exclude 'node_modules' \
   --exclude '.next' \
   --exclude 'dist' \

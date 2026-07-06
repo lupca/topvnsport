@@ -1,7 +1,13 @@
 from database import SessionLocal, Base, engine
 import models
 
+import os
+
 def seed_data():
+    if os.environ.get("ENV") == "production":
+        print("Skipping seed data in production environment.")
+        return
+
     db = SessionLocal()
     # Ensure tables are created
     Base.metadata.create_all(bind=engine)

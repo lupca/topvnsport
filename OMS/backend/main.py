@@ -745,6 +745,7 @@ def confirm_order(id: int, db: Session = Depends(get_db)):
     is_split = len(allocations) > 1
 
     try:
+        successful_fulfillments = []
         for idx, allocation in enumerate(allocations, start=1):
             fulfillment_number = (
                 f"FM-{order.order_number}-{idx}"
@@ -761,6 +762,7 @@ def confirm_order(id: int, db: Session = Depends(get_db)):
             }
 
             wms_resp = call_api(wms_url, "POST", wms_payload)
+            successful_fulfillments.append(fulfillment_number)
             fo_status = wms_resp.get("status", "PENDING")
 
             db.add(
@@ -773,6 +775,12 @@ def confirm_order(id: int, db: Session = Depends(get_db)):
             )
     except HTTPException as e:
         db.rollback()
+        # Rollback ghost reservations in WMS
+        for fn in successful_fulfillments:
+            try:
+                call_api(f"{WMS_API_URL}/fulfillment-orders/{fn}/cancel", "POST")
+            except Exception as rollback_err:
+                logger.error(f"Failed to rollback WMS fulfillment {fn}: {rollback_err}")
         raise HTTPException(status_code=e.status_code, detail=f"WMS integration failed: {e.detail}")
     
     order.status = "PROCESSING"
@@ -866,6 +874,40 @@ def update_order_status(id: int, payload: schemas.OrderStatusUpdate, db: Session
         if new_status == "SHIPPED":
             fo.shipped_at = utcnow()
             
+    db.commit()
+    db.refresh(order)
+    return order
+
+
+@app.patch("/orders/{id}/fulfillments/{fulfillment_number}/status", response_model=schemas.OrderOut)
+def update_fulfillment_status(id: int, fulfillment_number: str, payload: schemas.FulfillmentStatusUpdate, db: Session = Depends(get_db)):
+    order = db.query(models.Order).filter(models.Order.id == id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+        
+    target_fo = next((fo for fo in order.fulfillment_orders if fo.fulfillment_number == fulfillment_number), None)
+    if not target_fo:
+        raise HTTPException(status_code=404, detail="Fulfillment order not found")
+
+    new_status = payload.status
+    if new_status not in ALLOWED_TRANSITIONS:
+        raise HTTPException(status_code=400, detail=f"Invalid status: {new_status}")
+        
+    target_fo.status = new_status
+    if new_status == "SHIPPED":
+        target_fo.shipped_at = utcnow()
+        
+    # Recalculate parent order status
+    all_statuses = [fo.status for fo in order.fulfillment_orders]
+    active_statuses = [s for s in all_statuses if s != "CANCELLED"]
+    if not active_statuses:
+        order.status = "CANCELLED"
+    else:
+        precedence = {"DRAFT": 0, "CONFIRMED": 1, "PROCESSING": 2, "PICKING": 3, "PACKED": 4, "SHIPPED": 5, "COMPLETED": 6}
+        min_status = min(active_statuses, key=lambda s: precedence.get(s, 2))
+        # Only update if it's a valid transition or same status
+        order.status = min_status
+        
     db.commit()
     db.refresh(order)
     return order

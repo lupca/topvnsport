@@ -67,11 +67,17 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
       });
       const channelId = await sportApi.getOrCreateManualChannelId();
 
+      for (const item of cartItems) {
+        if (!item.skuCode) {
+          await popupService.alert(`Sản phẩm "${item.name}" bị lỗi thiếu mã SKU từ hệ thống, không thể đặt hàng!`);
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       const items = cartItems.map(item => {
-        const safeWeight = item.selectedWeight?.replace(/\//g, '-') || 'STD';
-        const safeColor = item.selectedColor?.replace(/\//g, '-') || 'STD';
         return {
-          sku_code: item.skuCode || `SKU-${item.productId}-${safeWeight}-${safeColor}`,
+          sku_code: item.skuCode!,
           quantity: item.quantity
         };
       });

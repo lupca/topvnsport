@@ -142,6 +142,10 @@ class OrderStatusUpdate(BaseModel):
     status: str
 
 
+class FulfillmentStatusUpdate(BaseModel):
+    status: str
+
+
 class PaginatedCustomers(BaseModel):
     items: List[CustomerOut]
     total: int

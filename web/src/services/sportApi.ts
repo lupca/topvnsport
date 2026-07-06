@@ -216,55 +216,41 @@ export const sportApi = {
    * Fetch all equipment products
    */
   async getProducts(): Promise<Product[]> {
-    await delay(SIMULATED_LATENCY);
-    try {
-      const res = await fetch(`${PMI_API_URL}/products`);
-      if (!res.ok) {
-        throw new Error(`PMI getProducts failed with status ${res.status}`);
-      }
-      const data: unknown = await res.json();
-      const pmiProducts = Array.isArray(data)
-        ? data
-        : (typeof data === 'object' && data !== null && Array.isArray((data as { items?: unknown[] }).items)
-          ? (data as { items: unknown[] }).items
-          : []);
-
-      return pmiProducts.map(product => mapPmiProduct(product as PmiProduct));
-    } catch (error) {
-      console.warn('Falling back to local mock products due to PMI error:', error);
-      return JSON.parse(JSON.stringify(rawData.products)) as Product[];
+    const res = await fetch(`${PMI_API_URL}/products`);
+    if (!res.ok) {
+      throw new Error(`PMI getProducts failed with status ${res.status}`);
     }
+    const data: unknown = await res.json();
+    const pmiProducts = Array.isArray(data)
+      ? data
+      : (typeof data === 'object' && data !== null && Array.isArray((data as { items?: unknown[] }).items)
+        ? (data as { items: unknown[] }).items
+        : []);
+
+    return pmiProducts.map(product => mapPmiProduct(product as PmiProduct));
   },
 
   /**
    * Fetch a single product by ID
    */
   async getProductById(id: string): Promise<Product | null> {
-    await delay(SIMULATED_LATENCY);
-    try {
-      const res = await fetch(`${PMI_API_URL}/products/${id}`);
-      if (res.ok) {
-        const pmiProduct = (await res.json()) as PmiProduct;
-        return mapPmiProduct(pmiProduct);
-      }
-      if (res.status !== 404) {
-        throw new Error(`PMI getProductById failed with status ${res.status}`);
-      }
-
-      const products = await this.getProducts();
-      return products.find(product => product.id === id) || null;
-    } catch (error) {
-      console.warn(`Falling back to local mock product for id ${id}:`, error);
-      const product = rawData.products.find(p => p.id === id);
-      return product ? (JSON.parse(JSON.stringify(product)) as Product) : null;
+    const res = await fetch(`${PMI_API_URL}/products/${id}`);
+    if (res.ok) {
+      const pmiProduct = (await res.json()) as PmiProduct;
+      return mapPmiProduct(pmiProduct);
     }
+    if (res.status !== 404) {
+      throw new Error(`PMI getProductById failed with status ${res.status}`);
+    }
+
+    const products = await this.getProducts();
+    return products.find(product => product.id === id) || null;
   },
 
   /**
    * Fetch knowledge base blogs and reviews
    */
   async getBlogs(): Promise<Blog[]> {
-    await delay(SIMULATED_LATENCY);
     return JSON.parse(JSON.stringify(rawData.blogs)) as Blog[];
   },
 
@@ -272,7 +258,6 @@ export const sportApi = {
    * Fetch a single blog by ID
    */
   async getBlogById(id: string): Promise<Blog | null> {
-    await delay(SIMULATED_LATENCY);
     const blog = rawData.blogs.find(b => b.id === id);
     return blog ? (JSON.parse(JSON.stringify(blog)) as Blog) : null;
   },
@@ -281,7 +266,6 @@ export const sportApi = {
    * Fetch store branch locations for O2O stringing & test racket pickup
    */
   async getBranches(): Promise<Branch[]> {
-    await delay(SIMULATED_LATENCY);
     return JSON.parse(JSON.stringify(rawData.branches)) as Branch[];
   },
 
@@ -289,7 +273,6 @@ export const sportApi = {
    * Fetch premium badminton string options & specs
    */
   async getStringOptions(): Promise<StringOption[]> {
-    await delay(SIMULATED_LATENCY);
     return JSON.parse(JSON.stringify(rawData.stringOptions)) as StringOption[];
   },
 
@@ -297,7 +280,6 @@ export const sportApi = {
    * Fetch global constants (shipping, default config, regions)
    */
   async getConstants() {
-    await delay(SIMULATED_LATENCY);
     return JSON.parse(JSON.stringify(rawData.constants));
   },
 
