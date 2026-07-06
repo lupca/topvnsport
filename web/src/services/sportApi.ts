@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Product, Blog, Branch, StringOption, ProductAttribute } from '../types';
+import { Product, Blog, Branch, StringOption, ProductAttribute, Category } from '../types';
 import rawData from '../data.json';
 
 // Simulated latency to mimic a real-world server roundtrip (e.g. 300ms)
@@ -96,7 +96,7 @@ type OmsPaginatedChannels = {
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-function mapPmiProduct(pmiProduct: PmiProduct): Product {
+function mapPmiProduct(pmiProduct: PmiProduct, categories: Category[]): Product {
   const variants = pmiProduct.variants || [];
   const prices = variants.map(v => Number(v.price || 0)).filter(price => price > 0);
   const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
@@ -139,17 +139,26 @@ function mapPmiProduct(pmiProduct: PmiProduct): Product {
   else if (nameLower.includes('victor')) brand = 'Victor';
   else if (nameLower.includes('kumpoo')) brand = 'Kumpoo';
 
-  let category: Product['category'] = 'Phụ kiện';
-  if (nameLower.includes('vợt') || nameLower.includes('racket') || pmiProduct.category_id === 1) {
-    category = 'Vợt';
-  } else if (nameLower.includes('giày') || nameLower.includes('shoes')) {
-    category = 'Giày';
-  } else if (nameLower.includes('cước') || nameLower.includes('string')) {
-    category = 'Cước';
-  }
+  let category: string = 'Phụ kiện';
+  const categoryMatch = categories.find(c => c.id === pmiProduct.category_id);
+  if (categoryMatch) {
+    category = categoryMatch.name;
+  } else {
+    if (nameLower.includes('vợt') || nameLower.includes('racket')) {
+      category = 'Vợt';
+    } else if (nameLower.includes('giày') || nameLower.includes('shoes')) {
+      category = 'Giày';
+    } else if (nameLower.includes('cước') || nameLower.includes('string')) {
+      category = 'Cước';
+    } else if (nameLower.includes('túi') || nameLower.includes('balo')) {
+      category = 'Túi xách';
+    } else if (nameLower.includes('cầu') || nameLower.includes('shuttlecock')) {
+      category = 'Quả cầu';
+    }
 
-  if (attrByCode.thickness) {
-    category = 'Cước';
+    if (attrByCode.thickness) {
+      category = 'Cước';
+    }
   }
 
   const parsedBalance = Number(attrByCode.balance);
@@ -216,31 +225,47 @@ export const sportApi = {
    * Fetch all equipment products
    */
   async getProducts(): Promise<Product[]> {
-    const res = await fetch(`${PMI_API_URL}/products`);
-    if (!res.ok) {
-      throw new Error(`PMI getProducts failed with status ${res.status}`);
-    }
-    const data: unknown = await res.json();
-    const pmiProducts = Array.isArray(data)
-      ? data
-      : (typeof data === 'object' && data !== null && Array.isArray((data as { items?: unknown[] }).items)
-        ? (data as { items: unknown[] }).items
-        : []);
+    await delay(SIMULATED_LATENCY);
+    try {
+      const [res, categories] = await Promise.all([
+        fetch(`${PMI_API_URL}/products?limit=100`),
+        this.getCategories()
+      ]);
+      if (!res.ok) {
+        throw new Error(`PMI getProducts failed with status ${res.status}`);
+      }
+      const data: unknown = await res.json();
+      const pmiProducts = Array.isArray(data)
+        ? data
+        : (typeof data === 'object' && data !== null && Array.isArray((data as { items?: unknown[] }).items)
+          ? (data as { items: unknown[] }).items
+          : []);
 
-    return pmiProducts.map(product => mapPmiProduct(product as PmiProduct));
+      return pmiProducts.map(product => mapPmiProduct(product as PmiProduct, categories));
+    } catch (e) {
+      return [];
+    }
   },
 
   /**
    * Fetch a single product by ID
    */
   async getProductById(id: string): Promise<Product | null> {
-    const res = await fetch(`${PMI_API_URL}/products/${id}`);
-    if (res.ok) {
-      const pmiProduct = (await res.json()) as PmiProduct;
-      return mapPmiProduct(pmiProduct);
-    }
-    if (res.status !== 404) {
-      throw new Error(`PMI getProductById failed with status ${res.status}`);
+    await delay(SIMULATED_LATENCY);
+    try {
+      const [res, categories] = await Promise.all([
+        fetch(`${PMI_API_URL}/products/${id}`),
+        this.getCategories()
+      ]);
+      if (res.ok) {
+        const pmiProduct = (await res.json()) as PmiProduct;
+        return mapPmiProduct(pmiProduct, categories);
+      }
+      if (res.status !== 404) {
+        throw new Error(`PMI getProductById failed with status ${res.status}`);
+      }
+    } catch (e) {
+      console.error(e);
     }
 
     const products = await this.getProducts();
@@ -251,7 +276,24 @@ export const sportApi = {
    * Fetch knowledge base blogs and reviews
    */
   async getBlogs(): Promise<Blog[]> {
+    await delay(SIMULATED_LATENCY);
     return JSON.parse(JSON.stringify(rawData.blogs)) as Blog[];
+  },
+
+  /**
+   * Fetch categories from PMI
+   */
+  async getCategories(): Promise<Category[]> {
+    try {
+      const res = await fetch(`${PMI_API_URL}/categories`);
+      if (res.ok) {
+        return await res.json();
+      }
+      return [];
+    } catch (error) {
+      console.warn('Failed to fetch categories:', error);
+      return [];
+    }
   },
 
   /**

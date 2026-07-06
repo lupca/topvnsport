@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
+DEPLOY_REVISION="$(git -C "$ROOT_DIR" rev-parse --short=12 HEAD 2>/dev/null || echo unknown)"
 
 : "${EC2_HOST:?EC2_HOST is required (example: ec2-xx-xx-xx-xx.compute-1.amazonaws.com)}"
 EC2_USER="${EC2_USER:-ec2-user}"
@@ -35,6 +36,7 @@ rsync -az --delete \
   --exclude '__pycache__' \
   -e "$RSYNC_RSH" \
   "$ROOT_DIR/" "$EC2_USER@$EC2_HOST:$DEPLOY_PATH/"
+ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "printf '%s\n' '$DEPLOY_REVISION' > $DEPLOY_PATH/.deploy_revision"
 
 echo "[2/5] Ensure Docker + Compose plugin are available on server"
 ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "
@@ -88,6 +90,27 @@ ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "
     echo \"\$code \$u\"
     [[ \"\$code\" == \"200\" ]] || exit 1
   done
+"
+
+echo "[4.1/5] Post-deploy smoke checks"
+ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "
+  set -euo pipefail
+  cd $DEPLOY_PATH
+
+  # Ensure storefront bundle does not carry localhost API URLs.
+  sudo docker exec web_frontend sh -lc 'if grep -R "localhost:18100\\|localhost:18101" -n /usr/share/nginx/html >/tmp/web_localhost_hits 2>/dev/null; then if [ -s /tmp/web_localhost_hits ]; then cat /tmp/web_localhost_hits; exit 1; fi; fi'
+
+  # Verify WMS can resolve and call PMI over Docker network.
+  sudo docker exec -i wms-api python - <<'PY'
+import urllib.request
+with urllib.request.urlopen('http://pim-api:8000/docs', timeout=5) as resp:
+    if resp.status != 200:
+        raise SystemExit(f'Unexpected PMI status: {resp.status}')
+print('WMS->PMI connectivity OK')
+PY
+
+  # Mark deployed revision for observability.
+  echo "Deployed revision: $(cat .deploy_revision)"
 "
 
 echo "[5/5] Running containers"

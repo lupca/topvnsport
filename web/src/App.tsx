@@ -481,7 +481,7 @@ export default function App() {
                   <div className="space-y-2">
                     <h4 className="font-bold text-[11px] uppercase tracking-wider text-gray-500">Phân loại sản phẩm</h4>
                     <div className="space-y-1.5 flex flex-col">
-                      {['Tất cả', 'Vợt', 'Giày', 'Túi xách', 'Cước', 'Quả cầu'].map(cat => (
+                      {['Tất cả', ...Array.from(new Set(products.map(p => p.category)))].map(cat => (
                         <button
                           key={cat}
                           onClick={() => setSelectedCategory(cat)}

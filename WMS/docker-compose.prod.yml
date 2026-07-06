@@ -35,6 +35,7 @@ services:
     networks:
       - default
       - oms_default
+      - pmi_default
 
   wms_frontend:
     build:
@@ -51,12 +52,15 @@ services:
     networks:
       - default
       - oms_default
+      - pmi_default
 
 networks:
   default:
     name: wms_default
     external: true
   oms_default:
+    external: true
+  pmi_default:
     external: true
 
 volumes:

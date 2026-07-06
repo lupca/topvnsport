@@ -6,6 +6,14 @@ export interface ProductSpecs {
   swingWeight?: number;  // Swing weight in kg/cm2, e.g., 85.5
 }
 
+export interface Category {
+  id: number;
+  name: string;
+  code: string;
+  parent_id: number | null;
+  display_name: string;
+}
+
 export interface ProductAttribute {
   id: string;
   code: string;
@@ -34,7 +42,7 @@ export interface Product {
   brand: 'Yonex' | 'Lining' | 'Victor' | 'Kumpoo' | 'Other';
   image: string;
   gallery?: string[];
-  category: 'Vợt' | 'Giày' | 'Túi xách' | 'Cước' | 'Quả cầu' | 'Phụ kiện';
+  category: string;
   price: number;
   salePrice?: number;
   specs: ProductSpecs;
