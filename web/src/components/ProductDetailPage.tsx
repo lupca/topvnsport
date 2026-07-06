@@ -575,3 +575,5 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
           <ShoppingCart className="w-4 h-4" /> Mua ngay
         </button>
       </div>
+    </div>
+      </div>

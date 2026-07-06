@@ -79,6 +79,9 @@ export default function InboundPage() {
   const [scanBarcode, setScanBarcode] = useState("");
   const [scanQty, setScanQty] = useState(1);
   const [scanMessage, setScanMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+  const scanInputRef = React.useRef<HTMLInputElement | null>(null);
+  const successAudioRef = React.useRef<HTMLAudioElement | null>(null);
+  const errorAudioRef = React.useRef<HTMLAudioElement | null>(null);
 
   // Put-away Form
   const [putAwaySku, setPutAwaySku] = useState("");
@@ -87,6 +90,23 @@ export default function InboundPage() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (selectedShipment) {
+      scanInputRef.current?.focus();
+    }
+  }, [selectedShipment]);
+
+  const playScanBeep = (type: "success" | "error") => {
+    const player = type === "success" ? successAudioRef.current : errorAudioRef.current;
+    if (!player) {
+      return;
+    }
+    player.currentTime = 0;
+    void player.play().catch(() => {
+      // Ignore autoplay restrictions when browser blocks audio.
+    });
+  };
 
   const fetchData = async () => {
     try {
@@ -248,13 +268,17 @@ export default function InboundPage() {
         text: `Đã nhận thành công: SKU ${data.sku_code} (${data.product_name}) - Qty: ${scanQty}`,
         type: "success"
       });
+      playScanBeep("success");
       setScanBarcode("");
+      scanInputRef.current?.focus();
       handleSelectShipment(selectedShipment);
     } catch (err: any) {
       setScanMessage({
         text: err.message || "Lỗi khi quét nhận hàng.",
         type: "error"
       });
+      playScanBeep("error");
+      scanInputRef.current?.focus();
     }
   };
 
@@ -328,7 +352,9 @@ export default function InboundPage() {
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8 text-slate-100">
+    <div className="p-8 max-w-7xl mx-auto space-y-8 bg-gray-50 text-gray-900">
+      <audio ref={successAudioRef} preload="auto" src="data:audio/wav;base64,UklGRlQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YTAAAAAAAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8=" />
+      <audio ref={errorAudioRef} preload="auto" src="data:audio/wav;base64,UklGRmQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YUAAAAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////" />
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -351,7 +377,7 @@ export default function InboundPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left List */}
-        <div className="lg:col-span-5 space-y-4">
+        <div className="lg:col-span-12 space-y-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-sm">
             <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-widest mb-4">
               Danh sách Đơn Nhập ({shipments.length})
@@ -401,29 +427,38 @@ export default function InboundPage() {
           </div>
         </div>
 
-        {/* Right Details & Scanner */}
-        <div className="lg:col-span-7 space-y-4">
-          {selectedShipment ? (
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm space-y-6">
+        {/* Right Details & Scanner Drawer */}
+        {selectedShipment && (
+          <div className="fixed inset-0 z-40 bg-gray-900/30 backdrop-blur-[1px]">
+            <div className="absolute inset-y-0 right-0 w-full max-w-6xl bg-white border-l border-gray-200 rounded-l-2xl p-6 shadow-2xl overflow-y-auto space-y-6">
               <div className="flex justify-between items-start border-b pb-4 border-slate-800">
                 <div>
                   <div className="flex items-center gap-2">
                     <Truck className="w-5 h-5 text-indigo-500" />
-                    <h3 className="text-sm font-extrabold text-slate-100">{selectedShipment.inbound_number}</h3>
+                    <h3 className="text-sm font-extrabold text-gray-900">{selectedShipment.inbound_number}</h3>
                   </div>
-                  <p className="text-[10px] text-slate-400 mt-1">
-                    Trạng thái: <span className="font-bold uppercase text-slate-200">{selectedShipment.status}</span> • Kho: {getWarehouseName(selectedShipment.warehouse_id)}
+                  <p className="text-sm text-gray-600 mt-1">
+                    Trạng thái: <span className="font-bold uppercase text-gray-900">{selectedShipment.status}</span> • Kho: {getWarehouseName(selectedShipment.warehouse_id)}
                   </p>
                 </div>
-                {selectedShipment.status !== "COMPLETED" && (
+                <div className="flex items-center gap-2">
+                  {selectedShipment.status !== "COMPLETED" && (
+                    <button
+                      onClick={handleCompleteShipment}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-lg shadow-sm"
+                    >
+                      <CheckCircle className="w-3.5 h-3.5" />
+                      <span>Hoàn thành Nhập</span>
+                    </button>
+                  )}
                   <button
-                    onClick={handleCompleteShipment}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-lg shadow-sm"
+                    onClick={() => setSelectedShipment(null)}
+                    className="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100"
+                    aria-label="Đóng drawer"
                   >
-                    <CheckCircle className="w-3.5 h-3.5" />
-                    <span>Hoàn thành Nhập</span>
+                    <X className="w-4 h-4" />
                   </button>
-                )}
+                </div>
               </div>
 
               {/* Items List */}
@@ -486,12 +521,13 @@ export default function InboundPage() {
                         <div className="relative">
                           <Barcode className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
                           <input
+                            ref={scanInputRef}
                             type="text"
                             data-testid="barcode-manual-input"
                             placeholder="Nhập mã barcode (VD: BAR-SKU-SPORTS-BLUE-M)"
                             value={scanBarcode}
                             onChange={(e) => setScanBarcode(e.target.value)}
-                            className="w-full pl-9 pr-3 py-2 bg-slate-900 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 text-slate-100"
+                            className="w-full pl-10 pr-3 py-3 bg-white border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 text-lg font-semibold"
                             required
                           />
                         </div>
@@ -515,8 +551,8 @@ export default function InboundPage() {
                       </button>
 
                       {scanMessage && (
-                        <div className={`p-2.5 rounded-lg text-[10px] font-bold ${
-                          scanMessage.type === "success" ? "bg-emerald-950/50 text-emerald-400 border border-emerald-900/50" : "bg-rose-950/50 text-rose-400 border border-rose-900/50"
+                        <div className={`p-4 rounded-lg text-sm font-extrabold ${
+                          scanMessage.type === "success" ? "bg-emerald-50 text-emerald-700 border-2 border-emerald-300" : "bg-rose-50 text-rose-700 border-2 border-rose-300"
                         }`}>
                           {scanMessage.text}
                         </div>
@@ -576,12 +612,8 @@ export default function InboundPage() {
                 </div>
               )}
             </div>
-          ) : (
-            <div className="h-full flex items-center justify-center p-8 border border-dashed border-slate-800 rounded-2xl bg-slate-900 text-slate-400 text-xs text-center py-24">
-              Vui lòng chọn một lô hàng nhập kho bên trái để bắt đầu nhận hàng / cất hàng.
-            </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Create Inbound Shipment Modal */}

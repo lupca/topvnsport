@@ -47,20 +47,20 @@ import {
 const getStatusBadgeClass = (status: string) => {
   switch (status) {
     case "DRAFT":
-      return "bg-slate-800 text-slate-300 border-slate-700";
+      return "bg-gray-100 text-gray-700 border-gray-300";
     case "CONFIRMED":
     case "PROCESSING":
     case "PICKING":
     case "PACKED":
-      return "bg-indigo-950/50 text-indigo-400 border-indigo-900/50";
+      return "bg-indigo-50 text-indigo-700 border-indigo-200";
     case "SHIPPED":
-      return "bg-amber-950/50 text-amber-400 border-amber-900/50";
+      return "bg-amber-50 text-amber-700 border-amber-200";
     case "COMPLETED":
-      return "bg-emerald-950/50 text-emerald-400 border-emerald-900/50";
+      return "bg-emerald-50 text-emerald-700 border-emerald-200";
     case "CANCELLED":
-      return "bg-rose-950/50 text-rose-400 border-rose-900/50";
+      return "bg-rose-50 text-rose-700 border-rose-200";
     default:
-      return "bg-slate-900 text-slate-400 border-slate-800";
+      return "bg-gray-100 text-gray-600 border-gray-200";
   }
 };
 
@@ -73,6 +73,11 @@ const ORDER_STATUS_STEPS = [
   "SHIPPED",
   "COMPLETED"
 ];
+
+interface StockCheckResponse {
+  sufficient: boolean;
+  message: string;
+}
 
 function OrdersPageContent() {
   const router = useRouter();
@@ -119,6 +124,7 @@ function OrdersPageContent() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [stockWarnings, setStockWarnings] = useState<Record<number, string>>({});
 
   // --- DETAIL VIEW STATE ---
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
@@ -190,6 +196,15 @@ function OrdersPageContent() {
       setOrders(data.items || []);
       setTotalPages(data.pages || 1);
       setTotalCount(data.total || 0);
+      setStockWarnings((prev) => {
+        const next: Record<number, string> = {};
+        for (const order of data.items || []) {
+          if (prev[order.id]) {
+            next[order.id] = prev[order.id];
+          }
+        }
+        return next;
+      });
     } catch (err) {
       console.error("Failed to fetch orders:", err);
     } finally {
@@ -448,6 +463,23 @@ function OrdersPageContent() {
 
   // --- TRANSITIONS ACTIONS ---
   const handleConfirmOrder = async (id: number) => {
+    try {
+      const stockCheck = await api.get<StockCheckResponse>(`/orders/${id}/stock-check`);
+      if (!stockCheck.sufficient) {
+        setStockWarnings((prev) => ({ ...prev, [id]: stockCheck.message }));
+        await popupService.alert(`Không thể duyệt đơn: ${stockCheck.message}`);
+        return;
+      }
+      setStockWarnings((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+    } catch (err: any) {
+      await popupService.alert("Không kiểm tra được tồn kho WMS: " + (err.message || "Lỗi không xác định"));
+      return;
+    }
+
     if (await showConfirm("Xác nhận duyệt đơn hàng này? Hệ thống sẽ tạo yêu cầu fulfillment sang WMS.")) {
       try {
         await api.post(`/orders/${id}/confirm`, {});
@@ -494,15 +526,15 @@ function OrdersPageContent() {
   // --- RENDER SECTIONS ---
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-6 text-slate-100">
+    <div className="p-6 md:p-8 max-w-[96rem] mx-auto space-y-6 bg-gray-50 min-h-full text-gray-900">
       {/* 1. LIST VIEW */}
-      {view === "list" && (
+      {view !== "detail" && (
         <>
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h2 className="text-xl font-extrabold text-slate-100">Quản lý Đơn hàng (Orders)</h2>
-              <p className="text-xs text-slate-400 mt-1">
+              <h2 className="text-2xl font-extrabold text-gray-900">Quản lý Đơn hàng (Orders)</h2>
+              <p className="text-sm text-gray-600 mt-1">
                 Lập đơn nháp, duyệt đơn hàng và kiểm tra lịch trình vận chuyển.
               </p>
             </div>
@@ -524,7 +556,7 @@ function OrdersPageContent() {
                 });
                 updateURL("create");
               }}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 transition-all"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white font-bold text-sm rounded-xl shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 transition-all"
             >
               <Plus className="w-4 h-4" />
               <span>Tạo Đơn hàng Nháp</span>
@@ -532,14 +564,14 @@ function OrdersPageContent() {
           </div>
 
           {/* Filters Bar */}
-          <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-sm grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
             {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
                 placeholder="Số đơn, tên, SĐT..."
-                className="w-full pl-9 pr-4 py-2 bg-slate-950 border border-slate-800 text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-100 transition-all"
+                className="w-full pl-9 pr-4 py-2 bg-white border border-gray-300 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 transition-all"
                 value={filterSearch}
                 onChange={(e) => setFilterSearch(e.target.value)}
               />
@@ -547,7 +579,7 @@ function OrdersPageContent() {
 
             {/* Status Selector */}
             <select
-              className="px-3.5 py-2 bg-slate-950 border border-slate-800 text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-200"
+              className="px-3.5 py-2 bg-white border border-gray-300 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900"
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
             >
@@ -560,7 +592,7 @@ function OrdersPageContent() {
 
             {/* Channel Selector */}
             <select
-              className="px-3.5 py-2 bg-slate-950 border border-slate-800 text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-200"
+              className="px-3.5 py-2 bg-white border border-gray-300 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900"
               value={filterChannel}
               onChange={(e) => setFilterChannel(e.target.value)}
             >
@@ -573,7 +605,7 @@ function OrdersPageContent() {
             {/* Date selector */}
             <input
               type="date"
-              className="px-3.5 py-2 bg-slate-950 border border-slate-800 text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-200"
+              className="px-3.5 py-2 bg-white border border-gray-300 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900"
               value={filterDate}
               onChange={(e) => setFilterDate(e.target.value)}
             />
@@ -587,17 +619,17 @@ function OrdersPageContent() {
                 setFilterDate("");
                 setCurrentPage(1);
               }}
-              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl transition-all"
+              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-sm rounded-xl transition-all"
             >
               Xóa bộ lọc
             </button>
           </div>
 
           {/* Orders Table */}
-          <div className="bg-slate-900 rounded-2xl border border-slate-800 shadow-sm overflow-hidden">
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-left text-xs text-slate-300">
-                <thead className="bg-slate-950 border-b border-slate-800 font-bold uppercase text-slate-400">
+              <table className="w-full border-collapse text-left text-sm text-gray-700">
+                <thead className="bg-gray-100 border-b border-gray-200 font-bold uppercase text-gray-600">
                   <tr>
                     <th className="px-6 py-4">Mã đơn</th>
                     <th className="px-6 py-4">Khách hàng</th>
@@ -608,16 +640,16 @@ function OrdersPageContent() {
                     <th className="px-6 py-4 text-right">Thao tác</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800">
+                <tbody className="divide-y divide-gray-200">
                   {listLoading ? (
                     <tr>
-                      <td colSpan={7} className="px-6 py-8 text-center text-slate-400">
+                      <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
                         Đang tải danh sách đơn hàng...
                       </td>
                     </tr>
                   ) : orders.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-6 py-8 text-center text-slate-400">
+                      <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
                         Không tìm thấy đơn hàng nào.
                       </td>
                     </tr>
@@ -626,16 +658,16 @@ function OrdersPageContent() {
                       const isDraft = order.status === "DRAFT";
                       const isCancelable = !["SHIPPED", "CANCELLED", "COMPLETED"].includes(order.status);
                       return (
-                        <tr key={order.id} className="hover:bg-slate-800/30 transition-colors">
-                          <td className="px-6 py-4 font-bold text-slate-200">{order.order_number}</td>
+                        <tr key={order.id} className="hover:bg-gray-50 transition-colors align-top">
+                          <td className="px-6 py-4 font-bold text-gray-900">{order.order_number}</td>
                           <td className="px-6 py-4">
-                            <div className="font-semibold text-slate-200">{order.customer?.name || `Customer ID: ${order.customer_id}`}</div>
-                            <div className="text-[10px] text-slate-400">{order.customer?.phone}</div>
+                            <div className="font-semibold text-gray-900">{order.customer?.name || `Customer ID: ${order.customer_id}`}</div>
+                            <div className="text-xs text-gray-500">{order.customer?.phone}</div>
                           </td>
-                          <td className="px-6 py-4 font-medium text-slate-300">
+                          <td className="px-6 py-4 font-medium text-gray-700">
                             {order.channel?.name || order.channel_id}
                           </td>
-                          <td className="px-6 py-4 font-bold text-slate-200">
+                          <td className="px-6 py-4 font-bold text-gray-900">
                             {formatCurrency(Number(order.total_amount))}
                           </td>
                           <td className="px-6 py-4">
@@ -643,7 +675,7 @@ function OrdersPageContent() {
                               {order.status}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-slate-400">
+                          <td className="px-6 py-4 text-gray-600">
                             {new Date(order.created_at).toLocaleDateString("vi-VN")}
                           </td>
                           <td className="px-6 py-4 text-right space-x-1.5 whitespace-nowrap">
@@ -684,6 +716,11 @@ function OrdersPageContent() {
                                 <span>Hủy</span>
                               </button>
                             )}
+                            {stockWarnings[order.id] && (
+                              <div className="mt-2 text-left text-xs text-rose-600 font-semibold whitespace-normal max-w-xs ml-auto">
+                                {stockWarnings[order.id]}
+                              </div>
+                            )}
                           </td>
                         </tr>
                       );
@@ -695,7 +732,7 @@ function OrdersPageContent() {
 
             {/* Pagination */}
             {!listLoading && totalCount > 0 && (
-              <div className="px-6 py-4 bg-slate-950 border-t border-slate-800 flex items-center justify-between text-xs font-semibold text-slate-400">
+              <div className="px-6 py-4 bg-gray-100 border-t border-gray-200 flex items-center justify-between text-sm font-semibold text-gray-600">
                 <span>
                   Hiển thị {orders.length} trên {totalCount} đơn hàng
                 </span>
@@ -703,17 +740,17 @@ function OrdersPageContent() {
                   <button
                     disabled={currentPage === 1}
                     onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                    className="p-1.5 rounded-lg border border-slate-800 bg-slate-900 disabled:opacity-40"
+                    className="p-1.5 rounded-lg border border-gray-300 bg-white disabled:opacity-40"
                   >
                     <ChevronLeft className="w-4 h-4 text-slate-400" />
                   </button>
-                  <span className="px-3 py-1 bg-slate-900 border border-slate-800 rounded-lg text-slate-200">
+                  <span className="px-3 py-1 bg-white border border-gray-300 rounded-lg text-gray-900">
                     {currentPage} / {totalPages}
                   </span>
                   <button
                     disabled={currentPage === totalPages}
                     onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                    className="p-1.5 rounded-lg border border-slate-800 bg-slate-900 disabled:opacity-40"
+                    className="p-1.5 rounded-lg border border-gray-300 bg-white disabled:opacity-40"
                   >
                     <ChevronRight className="w-4 h-4 text-slate-400" />
                   </button>
@@ -726,27 +763,28 @@ function OrdersPageContent() {
 
       {/* 2. FORM VIEW (Create/Edit Draft) */}
       {(view === "create" || view === "edit") && (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => updateURL("list")}
-              className="px-4 py-2 bg-slate-900 border border-slate-800 text-slate-300 rounded-xl hover:bg-slate-800 transition-colors font-bold text-xs shadow-sm"
-            >
-              ← Quay lại danh sách
-            </button>
-            <h2 className="text-sm font-extrabold text-slate-400 uppercase tracking-widest">
-              {view === "create" ? "TẠO ĐƠN HÀNG NHÁP" : "CẬP NHẬT ĐƠN HÀNG NHÁP"}
-            </h2>
-          </div>
-
-          {formError && (
-            <div className="p-3.5 bg-rose-950/50 border border-rose-900/50 text-rose-400 rounded-xl text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>{formError}</span>
+        <div className="fixed inset-0 z-40 bg-gray-900/30 backdrop-blur-[1px]">
+          <div className="absolute inset-y-0 right-0 w-full max-w-5xl bg-gray-50 border-l border-gray-200 shadow-2xl overflow-y-auto p-6 md:p-8 space-y-6">
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => updateURL("list")}
+                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition-colors font-bold text-sm shadow-sm"
+              >
+                ← Đóng form
+              </button>
+              <h2 className="text-sm font-extrabold text-gray-700 uppercase tracking-widest">
+                {view === "create" ? "TẠO ĐƠN HÀNG NHÁP" : "CẬP NHẬT ĐƠN HÀNG NHÁP"}
+              </h2>
             </div>
-          )}
 
-          <form onSubmit={handleSubmit(handleSaveOrder)} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {formError && (
+              <div className="p-3.5 bg-rose-950/50 border border-rose-900/50 text-rose-400 rounded-xl text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{formError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit(handleSaveOrder)} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left columns: fields */}
             <div className="lg:col-span-2 space-y-6 bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-sm">
               <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider pb-2 border-b border-slate-800">
@@ -991,7 +1029,8 @@ function OrdersPageContent() {
                 </div>
               </div>
             </div>
-          </form>
+            </form>
+          </div>
         </div>
       )}
 

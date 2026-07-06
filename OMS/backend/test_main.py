@@ -82,6 +82,22 @@ def test_create_order_and_flow(client, db, monkeypatch):
         return {}
         
     monkeypatch.setattr("main.call_api", mock_call_api)
+    monkeypatch.setattr(
+        "main.allocate_order_items",
+        lambda order_items: [
+            {
+                "warehouse_code": "WH-001",
+                "items": [
+                    {
+                        "sku_code": item.sku_code,
+                        "product_name": item.product_name,
+                        "quantity": item.quantity,
+                    }
+                    for item in order_items
+                ],
+            }
+        ],
+    )
     
     # 2. Create Order
     payload = {

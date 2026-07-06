@@ -106,15 +106,15 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="p-8 space-y-8 animate-pulse max-w-7xl mx-auto">
-        <div className="h-8 bg-slate-800 rounded-lg w-1/4"></div>
+        <div className="h-8 bg-gray-200 rounded-lg w-1/4"></div>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {[1, 2, 3, 4, 5, 6].map((n) => (
-            <div key={n} className="h-28 bg-slate-900 border border-slate-800 rounded-2xl"></div>
+            <div key={n} className="h-28 bg-white border border-gray-200 rounded-2xl"></div>
           ))}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 h-96 bg-slate-900 border border-slate-800 rounded-2xl"></div>
-          <div className="h-96 bg-slate-900 border border-slate-800 rounded-2xl"></div>
+          <div className="lg:col-span-2 h-96 bg-white border border-gray-200 rounded-2xl"></div>
+          <div className="h-96 bg-white border border-gray-200 rounded-2xl"></div>
         </div>
       </div>
     );
@@ -122,12 +122,12 @@ export default function DashboardPage() {
 
   if (error || !stats) {
     return (
-      <div className="p-8 max-w-xl mx-auto mt-20 text-center bg-slate-900 border border-slate-800 rounded-2xl shadow-lg text-slate-100">
+      <div className="p-8 max-w-xl mx-auto mt-20 text-center bg-white border border-gray-200 rounded-2xl shadow-lg text-gray-900">
         <div className="w-12 h-12 rounded-full bg-rose-950/50 flex items-center justify-center mx-auto text-rose-400 mb-4">
           <AlertCircle className="w-6 h-6" />
         </div>
-        <h3 className="text-sm font-bold text-slate-200 mb-2">Lỗi kết nối Backend</h3>
-        <p className="text-xs text-slate-400 mb-6">{error || "Không có dữ liệu trả về từ API."}</p>
+        <h3 className="text-sm font-bold text-gray-900 mb-2">Lỗi kết nối Backend</h3>
+        <p className="text-sm text-gray-600 mb-6">{error || "Không có dữ liệu trả về từ API."}</p>
         <button
           onClick={fetchData}
           className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/10 hover:bg-indigo-700 transition-colors"
@@ -156,7 +156,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8 text-slate-100">
+    <div className="p-8 max-w-7xl mx-auto space-y-8 text-gray-900 bg-gray-50">
       {/* Welcome banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>

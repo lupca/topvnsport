@@ -10,7 +10,7 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <div className="flex min-h-screen bg-slate-950">
+    <div className="flex min-h-screen bg-gray-50 text-gray-900">
       {/* Fixed Sidebar */}
       <Sidebar />
       
