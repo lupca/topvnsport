@@ -73,6 +73,8 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
   const [categories, setCategories] = useState<Category[]>([]);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [coverImage, setCoverImage] = useState<string | null>(null);
+  const [productImages, setProductImages] = useState<string[]>([]);
+  const [uploadingGallery, setUploadingGallery] = useState(false);
   const [tier1Images, setTier1Images] = useState<Record<string, string>>({}); // optionName -> imageUrl
   const [uploadingTier1, setUploadingTier1] = useState<Record<string, boolean>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -177,6 +179,12 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
         } else {
           setCoverImage(null);
         }
+
+        const gallery = data.media
+          .filter((m: any) => !m.is_cover && !m.variant_id)
+          .sort((a: any, b: any) => a.display_order - b.display_order)
+          .map((m: any) => normalizeImageUrl(m.image_url) || m.image_url);
+        setProductImages(gallery);
 
         const tier1Imgs: Record<string, string> = {};
         data.media.forEach((m: any) => {
@@ -305,6 +313,49 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
     }
   };
 
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const remainingSlots = 8 - productImages.length;
+    if (remainingSlots <= 0) {
+      void popupService.alert("Đã đạt giới hạn tối đa 8 ảnh phụ.");
+      return;
+    }
+
+    const filesToUpload = Array.from(files).slice(0, remainingSlots);
+    setUploadingGallery(true);
+
+    try {
+      const newUrls: string[] = [];
+      for (const file of filesToUpload) {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const res = await fetch(`${API_BASE_URL}/upload`, {
+          method: "POST",
+          body: formData
+        });
+        if (!res.ok) throw new Error("Upload failed");
+
+        const data = await res.json();
+        newUrls.push(normalizeImageUrl(data.image_url) || data.image_url);
+      }
+
+      setProductImages(prev => [...prev, ...newUrls]);
+    } catch (err) {
+      console.error(err);
+      void popupService.alert("Tải lên ảnh phụ thất bại.");
+    } finally {
+      setUploadingGallery(false);
+      e.target.value = "";
+    }
+  };
+
+  const removeGalleryImage = (indexToRemove: number) => {
+    setProductImages(prev => prev.filter((_, idx) => idx !== indexToRemove));
+  };
+
   // Mass Apply values (Price, Stock, and auto-generated SKUs)
   const handleMassApply = () => {
     if (!watchVariants) return;
@@ -349,12 +400,21 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
       });
     }
 
+    productImages.forEach((url, index) => {
+      mediaPayload.push({
+        image_url: url,
+        is_cover: false,
+        display_order: index + 2,
+        variant_tier_1_option: null
+      });
+    });
+
     // Add tier 1 options images if they exist
     Object.entries(tier1Images).forEach(([optionName, url], index) => {
       mediaPayload.push({
         image_url: url,
         is_cover: false,
-        display_order: index + 2,
+        display_order: productImages.length + index + 2,
         variant_tier_1_option: optionName
       });
     });
@@ -441,42 +501,84 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
         <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6">
           <h2 className="text-lg font-bold text-slate-900 border-b pb-3 border-slate-100">Thông tin cơ bản</h2>
           
-          {/* Cover Image Upload */}
+          {/* Product Image Upload */}
           <div className="space-y-2">
-            <label className="block text-sm font-semibold text-slate-700">Hình ảnh sản phẩm (Bìa)</label>
-            <div className="flex items-center gap-4">
-              <div className="relative h-28 w-28 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center bg-slate-50 overflow-hidden group hover:border-primary-400 transition-colors">
-                {coverImage ? (
-                  <>
+            <label className="block text-sm font-semibold text-slate-700">Hình ảnh sản phẩm (Tối đa 9 ảnh chung)</label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-9 gap-4 items-end">
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-[10px] text-slate-500 font-semibold">Ảnh bìa</span>
+                <div className="relative h-24 w-24 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center bg-slate-50 overflow-hidden group hover:border-primary-400 transition-colors">
+                  {coverImage ? (
+                    <>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={coverImage} alt="Cover" className="h-full w-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setCoverImage(null)}
+                        className="absolute inset-0 bg-black/55 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs font-semibold"
+                      >
+                        Thay đổi
+                      </button>
+                    </>
+                  ) : (
+                    <label className="cursor-pointer flex flex-col items-center justify-center h-full w-full">
+                      {uploadingCover ? (
+                        <Loader2 className="h-6 w-6 animate-spin text-primary-500" />
+                      ) : (
+                        <>
+                          <ImageIcon className="h-6 w-6 text-slate-400" />
+                          <span className="text-[9px] text-slate-500 mt-1 font-medium">Tải ảnh bìa</span>
+                        </>
+                      )}
+                      <input type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
+                    </label>
+                  )}
+                </div>
+              </div>
+
+              {productImages.map((url, idx) => (
+                <div key={idx} className="flex flex-col items-center gap-1">
+                  <span className="text-[10px] text-slate-500 font-semibold">Ảnh phụ {idx + 1}</span>
+                  <div className="relative h-24 w-24 border border-slate-200 rounded-2xl overflow-hidden group">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={coverImage} alt="Cover" className="h-full w-full object-cover" />
-                    <button 
-                      type="button" 
-                      onClick={() => setCoverImage(null)}
+                    <img src={url} alt={`Gallery ${idx + 1}`} className="h-full w-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeGalleryImage(idx)}
                       className="absolute inset-0 bg-black/55 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs font-semibold"
                     >
-                      Thay đổi
+                      Xóa
                     </button>
-                  </>
-                ) : (
-                  <label className="cursor-pointer flex flex-col items-center justify-center h-full w-full">
-                    {uploadingCover ? (
-                      <Loader2 className="h-6 w-6 animate-spin text-primary-500" />
+                  </div>
+                </div>
+              ))}
+
+              {productImages.length < 8 && (
+                <div className="flex flex-col items-center gap-1">
+                  <span className="text-[10px] text-slate-500 font-semibold">Thêm ảnh</span>
+                  <label className="h-24 w-24 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center bg-slate-50 hover:bg-slate-100/50 cursor-pointer hover:border-primary-400 transition-colors">
+                    {uploadingGallery ? (
+                      <Loader2 className="h-5 w-5 animate-spin text-primary-500" />
                     ) : (
                       <>
-                        <ImageIcon className="h-6 w-6 text-slate-400" />
-                        <span className="text-[10px] text-slate-500 mt-1 font-medium">Thêm ảnh bìa</span>
+                        <Plus className="h-5 w-5 text-slate-400" />
+                        <span className="text-[9px] text-slate-500 mt-1 font-medium">Tải ảnh phụ</span>
                       </>
                     )}
-                    <input type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={handleGalleryUpload}
+                    />
                   </label>
-                )}
-              </div>
-              <div className="text-xs text-slate-400 space-y-1">
-                <p>Khuyên dùng hình ảnh kích thước 800 x 800 trở lên.</p>
-                <p>Ảnh đầu tiên sẽ được chọn làm ảnh bìa.</p>
-              </div>
+                </div>
+              )}
             </div>
+            <p className="text-[11px] text-slate-400 mt-2">
+              Khuyên dùng hình ảnh kích thước 800 x 800 trở lên. Bạn có thể tải lên tối đa 1 ảnh bìa và 8 ảnh phụ.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
