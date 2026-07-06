@@ -6,22 +6,34 @@ RUN_TESTS=0
 WATCH_MODE=0
 
 print_usage() {
-    echo "Usage: ./start_all.sh [--build] [--test] [--watch]"
-    echo "  --build   Rebuild Docker images before starting services"
+    echo "Usage: ./start_all.sh [--build|--no-build] [--watch|--no-watch] [--test]"
+    echo "  --build      Rebuild Docker images before starting services"
+    echo "  --no-build   Skip rebuild (faster startup, may run stale code)"
     echo "  --test    Run WMS seed + OMS-WMS E2E test after startup"
-    echo "  --watch   Enable hot reload via Docker Compose watch"
+    echo "  --watch      Enable hot reload via Docker Compose watch"
+    echo "  --no-watch   Disable hot reload watchers"
 }
+
+# Dev defaults: always refresh code at startup and keep auto-sync active.
+BUILD_IMAGES=1
+WATCH_MODE=1
 
 for arg in "$@"; do
     case "$arg" in
         --build)
             BUILD_IMAGES=1
             ;;
+        --no-build)
+            BUILD_IMAGES=0
+            ;;
         --test)
             RUN_TESTS=1
             ;;
         --watch)
             WATCH_MODE=1
+            ;;
+        --no-watch)
+            WATCH_MODE=0
             ;;
         -h|--help)
             print_usage
@@ -131,10 +143,17 @@ if [[ $RUN_TESTS -eq 1 ]]; then
     fi
 else
     echo -e "\n${GREEN}===============================================${NC}"
-    echo -e "${GREEN}   SUCCESS: Services started in DEV quick mode ${NC}"
+    echo -e "${GREEN}   SUCCESS: Services started in DEV mode       ${NC}"
     echo -e "${GREEN}===============================================${NC}"
     if [[ $WATCH_MODE -eq 1 ]]; then
         echo -e "\n${YELLOW}Step 6: Enabling hot reload watchers...${NC}"
+
+        if ! docker compose watch --help >/dev/null 2>&1; then
+            echo -e "${RED}Docker Compose watch is not available on this machine.${NC}"
+            echo -e "${YELLOW}Please update Docker Compose or rerun with --no-watch.${NC}"
+            exit 1
+        fi
+
         WATCH_PIDS=()
 
         docker compose -f PMI/docker-compose.yml watch --no-up api frontend &
@@ -153,8 +172,7 @@ else
         echo -e "${GREEN}Hot reload is active.${NC} Keep this terminal open while coding."
         wait
     else
-        echo -e "${YELLOW}Tip:${NC} Use --build when code changes need image rebuild."
+        echo -e "${YELLOW}Tip:${NC} You disabled hot reload with --no-watch."
         echo -e "${YELLOW}Tip:${NC} Use --test when you want seed + E2E validation."
-        echo -e "${YELLOW}Tip:${NC} Use --watch to enable hot reload without rerunning this script."
     fi
 fi

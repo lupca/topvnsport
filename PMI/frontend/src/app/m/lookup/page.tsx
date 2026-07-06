@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import ScannerComponent from "@/components/ScannerComponent";
 import { wmsFetch, WMS_API_URL } from "@/config/wmsApi";
 import { Search, MapPin, Box, AlertCircle, RefreshCw } from "lucide-react";
+import { normalizeImageUrl } from "@/utils/imageUrl";
 
 interface BarcodeMapping {
   id: number;
@@ -145,7 +146,7 @@ export default function MobileLookup() {
           <div className="bg-slate-900 border border-slate-800 rounded-lg p-4 flex gap-4">
             {barcodeMapping.image_url && (
               <img
-                src={barcodeMapping.image_url}
+                src={normalizeImageUrl(barcodeMapping.image_url) || barcodeMapping.image_url}
                 alt={barcodeMapping.product_name}
                 className="w-16 h-16 rounded object-cover border border-slate-700 bg-slate-950 shrink-0"
               />

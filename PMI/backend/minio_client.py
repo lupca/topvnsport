@@ -9,6 +9,7 @@ MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY", "minioadmin")
 MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY", "minioadmin")
 MINIO_SECURE = os.getenv("MINIO_SECURE", "False").lower() == "true"
 MINIO_BUCKET = os.getenv("MINIO_BUCKET", "pim-media")
+MINIO_PUBLIC_BASE_URL = os.getenv("MINIO_PUBLIC_BASE_URL", "").strip()
 
 # Initialize minio client
 client = None
@@ -66,8 +67,11 @@ def upload_file(file_data: bytes, file_name: str, content_type: str) -> str:
             content_type=content_type
         )
         
-        # Construct the access url
-        # If secure, https, else http
+        # Return URL that browser can access. If a public base URL is set, use it.
+        # Fallback keeps the previous behavior for local/dev compatibility.
+        if MINIO_PUBLIC_BASE_URL:
+            return f"{MINIO_PUBLIC_BASE_URL.rstrip('/')}/{MINIO_BUCKET}/{file_name}"
+
         protocol = "https" if MINIO_SECURE else "http"
         return f"{protocol}://{MINIO_ENDPOINT}/{MINIO_BUCKET}/{file_name}"
     except S3Error as err:

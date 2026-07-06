@@ -8,6 +8,7 @@ import {
   Eye, Copy, Trash2, X, ExternalLink
 } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
+import { normalizeImageUrl } from "@/utils/imageUrl";
 
 const API_BASE_URL = APP_SETTINGS.api.baseUrl;
 
@@ -266,14 +267,14 @@ export default function ProductList({
   const getOptionImage = (product: Product, optionName: string | null) => {
     if (!optionName) return null;
     const item = product.media.find(m => m.variant_tier_1_option === optionName);
-    return item ? item.image_url : null;
+    return item ? normalizeImageUrl(item.image_url) || item.image_url : null;
   };
 
   // Helper: Get Product Cover Image
   const getCoverImage = (product: Product) => {
     const cover = product.media.find(m => m.is_cover);
-    if (cover) return cover.image_url;
-    if (product.media.length > 0) return product.media[0].image_url;
+    if (cover) return normalizeImageUrl(cover.image_url) || cover.image_url;
+    if (product.media.length > 0) return normalizeImageUrl(product.media[0].image_url) || product.media[0].image_url;
     return null;
   };
 
@@ -806,14 +807,14 @@ export default function ProductList({
                         {previewProduct.media.find(m => m.is_cover) ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img 
-                            src={previewProduct.media.find(m => m.is_cover)?.image_url} 
+                            src={normalizeImageUrl(previewProduct.media.find(m => m.is_cover)?.image_url) || previewProduct.media.find(m => m.is_cover)?.image_url} 
                             alt={previewProduct.name} 
                             className="h-full w-full object-cover" 
                           />
                         ) : previewProduct.media.length > 0 ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img 
-                            src={previewProduct.media[0].image_url} 
+                            src={normalizeImageUrl(previewProduct.media[0].image_url) || previewProduct.media[0].image_url} 
                             alt={previewProduct.name} 
                             className="h-full w-full object-cover" 
                           />
@@ -828,7 +829,7 @@ export default function ProductList({
                           {previewProduct.media.map((img) => (
                             <div key={img.id} className={`h-14 w-14 border rounded-xl overflow-hidden shrink-0 bg-slate-50 flex items-center justify-center ${img.is_cover ? 'border-primary-500 ring-2 ring-primary-100' : 'border-slate-100'}`}>
                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={img.image_url} alt="Thumbnail" className="h-full w-full object-cover" />
+                              <img src={normalizeImageUrl(img.image_url) || img.image_url} alt="Thumbnail" className="h-full w-full object-cover" />
                             </div>
                           ))}
                         </div>

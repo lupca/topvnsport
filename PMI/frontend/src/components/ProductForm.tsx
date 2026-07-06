@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
 import { popupService } from "@/components/ui/popupService";
+import { normalizeImageUrl } from "@/utils/imageUrl";
 
 const API_BASE_URL = APP_SETTINGS.api.baseUrl;
 
@@ -172,7 +173,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
         // Map Media State
         const cover = data.media.find((m: any) => m.is_cover);
         if (cover) {
-          setCoverImage(cover.image_url);
+          setCoverImage(normalizeImageUrl(cover.image_url) || null);
         } else {
           setCoverImage(null);
         }
@@ -182,7 +183,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
           if (m.variant_id) {
             const variant = data.variants.find((v: any) => v.id === m.variant_id);
             if (variant && variant.tier_1_option) {
-              tier1Imgs[variant.tier_1_option] = m.image_url;
+              tier1Imgs[variant.tier_1_option] = normalizeImageUrl(m.image_url) || m.image_url;
             }
           }
         });
@@ -274,7 +275,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
       });
       if (!res.ok) throw new Error("Upload failed");
       const data = await res.json();
-      setCoverImage(data.image_url);
+      setCoverImage(normalizeImageUrl(data.image_url) || data.image_url);
     } catch (err) {
       console.error(err);
       void popupService.alert("Không thể tải lên ảnh bìa");
@@ -295,7 +296,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
       });
       if (!res.ok) throw new Error("Upload failed");
       const data = await res.json();
-      setTier1Images(prev => ({ ...prev, [optionName]: data.image_url }));
+      setTier1Images(prev => ({ ...prev, [optionName]: normalizeImageUrl(data.image_url) || data.image_url }));
     } catch (err) {
       console.error(err);
       void popupService.alert(`Không thể tải lên ảnh cho phân loại ${optionName}`);
