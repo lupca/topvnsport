@@ -715,7 +715,12 @@ def cancel_fulfillment_order(id: str, db: Session = Depends(get_db)):
             log_stock_transaction(db, item.sku_code, item.location_id, "UNRESERVE", -item.quantity, f"Cancel {fo.fulfillment_number}")
             
     fo.status = "CANCELLED"
-    db.commit()
+    try:
+        notify_oms_status(fo.oms_order_id, fo.fulfillment_number, "CANCELLED")
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Lỗi đồng bộ với OMS, thao tác bị hủy.")
     return {"status": "success", "fulfillment_number": fo.fulfillment_number}
 
 class FulfillmentScanPickInput(schemas.BaseModel):

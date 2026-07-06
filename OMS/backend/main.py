@@ -869,11 +869,8 @@ def update_order_status(id: int, payload: schemas.OrderStatusUpdate, db: Session
         
     order.status = new_status
     
-    for fo in order.fulfillment_orders:
-        fo.status = new_status
-        if new_status == "SHIPPED":
-            fo.shipped_at = utcnow()
-            
+    # Removed legacy synchronization loop for fulfillment orders.
+    # Frontend/WMS should use /orders/{id}/fulfillments/{fn}/status for sync.
     db.commit()
     db.refresh(order)
     return order
@@ -885,6 +882,9 @@ def update_fulfillment_status(id: int, fulfillment_number: str, payload: schemas
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
         
+    if order.status == "CANCELLED":
+        raise HTTPException(status_code=409, detail="Order is already cancelled")
+        
     target_fo = next((fo for fo in order.fulfillment_orders if fo.fulfillment_number == fulfillment_number), None)
     if not target_fo:
         raise HTTPException(status_code=404, detail="Fulfillment order not found")
@@ -892,6 +892,11 @@ def update_fulfillment_status(id: int, fulfillment_number: str, payload: schemas
     new_status = payload.status
     if new_status not in ALLOWED_TRANSITIONS:
         raise HTTPException(status_code=400, detail=f"Invalid status: {new_status}")
+        
+    precedence = {"CANCELLED": -1, "DRAFT": 0, "CONFIRMED": 1, "PROCESSING": 2, "PICKING": 3, "PACKED": 4, "SHIPPED": 5, "COMPLETED": 6}
+    if precedence.get(new_status, 0) < precedence.get(target_fo.status, 0):
+        # Idempotent: ignore regress attempts (e.g. late callback)
+        return order
         
     target_fo.status = new_status
     if new_status == "SHIPPED":
@@ -903,7 +908,6 @@ def update_fulfillment_status(id: int, fulfillment_number: str, payload: schemas
     if not active_statuses:
         order.status = "CANCELLED"
     else:
-        precedence = {"DRAFT": 0, "CONFIRMED": 1, "PROCESSING": 2, "PICKING": 3, "PACKED": 4, "SHIPPED": 5, "COMPLETED": 6}
         min_status = min(active_statuses, key=lambda s: precedence.get(s, 2))
         # Only update if it's a valid transition or same status
         order.status = min_status

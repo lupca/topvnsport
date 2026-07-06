@@ -316,7 +316,7 @@ def test_illegal_status_transitions(client, db):
 def test_seeded_channels(client, db):
     resp = client.get("/channels")
     assert resp.status_code == 200
-    codes = [c["code"] for c in resp.json()]
+    codes = [c["code"] for c in resp.json()["items"]]
     assert "MANUAL" in codes
     assert "SHOPEE" in codes
     assert "TIKTOK_SHOP" in codes
