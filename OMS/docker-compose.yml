@@ -11,6 +11,11 @@ services:
       - "15434:5432"
     volumes:
       - oms_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
 
   oms_backend:
     build:
@@ -23,7 +28,8 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@oms_db:5432/oms_db
     depends_on:
-      - oms_db
+      oms_db:
+        condition: service_healthy
     networks:
       - default
       - pmi_default
