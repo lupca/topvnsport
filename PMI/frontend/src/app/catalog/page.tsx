@@ -37,7 +37,7 @@ export default function CatalogPage() {
           <div className="max-w-6xl mx-auto pt-8 px-4 flex items-center justify-between">
             <button
               onClick={handleBack}
-              className="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-colors font-bold text-xs shadow-sm"
+              className="px-4 py-2 bg-slate-900 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-colors font-bold text-xs shadow-sm"
             >
               ← Quay lại danh sách
             </button>

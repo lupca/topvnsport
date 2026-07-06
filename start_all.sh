@@ -73,7 +73,6 @@ echo -e "${BLUE}===============================================${NC}"
 # Step 1: Ensure external Docker networks exist
 echo -e "\n${YELLOW}Step 1: Checking and creating Docker networks...${NC}"
 docker network create pmi_default || true
-docker network create oms_default || true
 docker network create wms_default || true
 
 # Step 2: Build and start the projects using compose

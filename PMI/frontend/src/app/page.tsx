@@ -102,7 +102,7 @@ export default function DashboardPage() {
 
   if (error || !stats) {
     return (
-      <div className="p-8 max-w-xl mx-auto mt-20 text-center bg-white border border-slate-200 rounded-2xl shadow-lg">
+      <div className="p-8 max-w-xl mx-auto mt-20 text-center bg-slate-900 border border-slate-200 rounded-2xl shadow-lg">
         <div className="w-12 h-12 rounded-full bg-rose-50 flex items-center justify-center mx-auto text-rose-500 mb-4">
           <AlertCircle className="w-6 h-6" />
         </div>
@@ -160,17 +160,17 @@ export default function DashboardPage() {
             <span className="text-[11px] font-extrabold uppercase tracking-widest text-indigo-100">
               Tổng số Sản phẩm
             </span>
-            <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-slate-900/10 flex items-center justify-center">
               <Package className="w-4 h-4 text-indigo-100" />
             </div>
           </div>
           <div className="mt-4">
             <h3 className="text-3xl font-extrabold">{stats.total_products}</h3>
             <div className="flex items-center gap-2 mt-2 text-[10px] text-indigo-150">
-              <span className="bg-white/15 px-1.5 py-0.5 rounded font-bold">
+              <span className="bg-slate-900/15 px-1.5 py-0.5 rounded font-bold">
                 {stats.active_products} Đang bán
               </span>
-              <span className="bg-white/10 px-1.5 py-0.5 rounded font-bold">
+              <span className="bg-slate-900/10 px-1.5 py-0.5 rounded font-bold">
                 {stats.inactive_products} Nháp
               </span>
             </div>
@@ -178,7 +178,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Total Categories Card */}
-        <div className="bg-white border border-slate-200/80 p-6 rounded-2xl shadow-sm flex flex-col justify-between relative overflow-hidden group hover:border-slate-350 hover:shadow-md transition-all duration-200">
+        <div className="bg-slate-900 border border-slate-200/80 p-6 rounded-2xl shadow-sm flex flex-col justify-between relative overflow-hidden group hover:border-slate-350 hover:shadow-md transition-all duration-200">
           <div className="absolute right-0 bottom-0 translate-x-4 translate-y-4 opacity-5 pointer-events-none group-hover:scale-110 transition-transform duration-300">
             <FolderTree className="w-32 h-32 text-slate-800" />
           </div>
@@ -199,7 +199,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Data Completeness Card */}
-        <div className="bg-white border border-slate-200/80 p-6 rounded-2xl shadow-sm flex flex-col justify-between hover:border-slate-350 hover:shadow-md transition-all duration-200">
+        <div className="bg-slate-900 border border-slate-200/80 p-6 rounded-2xl shadow-sm flex flex-col justify-between hover:border-slate-350 hover:shadow-md transition-all duration-200">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-extrabold uppercase tracking-widest text-slate-400">
               Độ hoàn thiện dữ liệu
@@ -234,7 +234,7 @@ export default function DashboardPage() {
       {/* Main Grid: Activity & Catalog Structure */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Analytics Chart */}
-        <div className="lg:col-span-2 bg-white border border-slate-200/80 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
+        <div className="lg:col-span-2 bg-slate-900 border border-slate-200/80 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-sm font-extrabold text-slate-800">Hoạt động thêm sản phẩm</h3>
@@ -299,7 +299,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Right Column: Catalog Structure Counts */}
-        <div className="bg-white border border-slate-200/80 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
+        <div className="bg-slate-900 border border-slate-200/80 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
           <div className="mb-4">
             <h3 className="text-sm font-extrabold text-slate-800">Cấu trúc dữ liệu PIM</h3>
             <p className="text-[10px] text-slate-400 mt-0.5">

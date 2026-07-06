@@ -259,7 +259,7 @@ export default function ProductList({
       </div>
 
       {/* ADVANCED SEARCH BOX */}
-      <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+      <div className="bg-slate-900 p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Text Search */}
           <div className="relative">
@@ -276,7 +276,7 @@ export default function ProductList({
           {/* Category Select */}
           <div>
             <select
-              className="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white transition-all text-slate-600"
+              className="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500 bg-slate-900 transition-all text-slate-600"
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
             >
@@ -290,7 +290,7 @@ export default function ProductList({
           {/* Product Type Select */}
           <div>
             <select
-              className="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white transition-all text-slate-600"
+              className="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500 bg-slate-900 transition-all text-slate-600"
               value={productType}
               onChange={(e) => setProductType(e.target.value)}
             >
@@ -365,7 +365,7 @@ export default function ProductList({
             onClick={() => { setSortBy("id"); setSortOrder("desc"); }}
             className={`px-3 py-1.5 rounded-lg transition-colors ${
               sortBy === "id" 
-                ? "bg-white text-primary-600 shadow-sm border border-slate-100" 
+                ? "bg-slate-900 text-primary-600 shadow-sm border border-slate-100" 
                 : "hover:bg-slate-200/50"
             }`}
           >
@@ -376,7 +376,7 @@ export default function ProductList({
             onClick={() => { setSortBy("name"); toggleSort("name"); }}
             className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 ${
               sortBy === "name" 
-                ? "bg-white text-primary-600 shadow-sm border border-slate-100" 
+                ? "bg-slate-900 text-primary-600 shadow-sm border border-slate-100" 
                 : "hover:bg-slate-200/50"
             }`}
           >
@@ -388,7 +388,7 @@ export default function ProductList({
             onClick={() => { setSortBy("price"); toggleSort("price"); }}
             className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 ${
               sortBy === "price" 
-                ? "bg-white text-primary-600 shadow-sm border border-slate-100" 
+                ? "bg-slate-900 text-primary-600 shadow-sm border border-slate-100" 
                 : "hover:bg-slate-200/50"
             }`}
           >
@@ -400,7 +400,7 @@ export default function ProductList({
             onClick={() => { setSortBy("stock"); toggleSort("stock"); }}
             className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 ${
               sortBy === "stock" 
-                ? "bg-white text-primary-600 shadow-sm border border-slate-100" 
+                ? "bg-slate-900 text-primary-600 shadow-sm border border-slate-100" 
                 : "hover:bg-slate-200/50"
             }`}
           >
@@ -411,7 +411,7 @@ export default function ProductList({
       </div>
 
       {/* PRODUCT LIST TABLE */}
-      <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className="bg-slate-900 rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-left text-sm text-slate-600">
             <thead className="bg-slate-50/75 border-b border-slate-100 text-xs font-bold uppercase text-slate-500">
@@ -599,7 +599,7 @@ export default function ProductList({
                         <tr>
                           <td colSpan={7} className="p-0 bg-slate-50/50">
                             <div className="px-16 py-4 border-t border-b border-slate-100">
-                              <table className="w-full text-left text-xs text-slate-500 border-collapse bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                              <table className="w-full text-left text-xs text-slate-500 border-collapse bg-slate-900 rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
                                 <thead className="bg-slate-50 text-[10px] uppercase font-bold text-slate-400 border-b border-slate-100">
                                   <tr>
                                     <th className="px-5 py-3 w-16">Hình ảnh</th>
@@ -671,7 +671,7 @@ export default function ProductList({
             <div className="flex items-center gap-2">
               <span>Hiển thị</span>
               <select
-                className="px-2 py-1 border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="px-2 py-1 border border-slate-200 rounded-lg bg-slate-900 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 value={pageSize}
                 onChange={(e) => {
                   setPageSize(Number(e.target.value));
@@ -692,7 +692,7 @@ export default function ProductList({
               <button
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-white transition-colors"
+                className="p-1.5 rounded-lg border border-slate-200 bg-slate-900 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-slate-900 transition-colors"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
@@ -704,7 +704,7 @@ export default function ProductList({
                   className={`px-3 py-1.5 rounded-lg transition-colors ${
                     currentPage === p
                       ? "bg-primary-600 text-white font-bold"
-                      : "border border-slate-200 bg-white hover:bg-slate-100"
+                      : "border border-slate-200 bg-slate-900 hover:bg-slate-100"
                   }`}
                 >
                   {p}
@@ -714,7 +714,7 @@ export default function ProductList({
               <button
                 disabled={currentPage === totalPages}
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-white transition-colors"
+                className="p-1.5 rounded-lg border border-slate-200 bg-slate-900 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-slate-900 transition-colors"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
@@ -726,7 +726,7 @@ export default function ProductList({
       {/* PREVIEW MODAL */}
       {showPreviewModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl w-full max-w-4xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-slate-900 rounded-3xl w-full max-w-4xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
               <div>
@@ -838,7 +838,7 @@ export default function ProductList({
                     <div className="space-y-2.5">
                       <h3 className="font-bold text-xs text-slate-500 uppercase tracking-wider">Danh sách phân loại sản phẩm</h3>
                       <div className="border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
-                        <table className="w-full text-left text-xs text-slate-600 border-collapse bg-white">
+                        <table className="w-full text-left text-xs text-slate-600 border-collapse bg-slate-900">
                           <thead className="bg-slate-50 text-[10px] uppercase font-bold text-slate-400 border-b border-slate-100">
                             <tr>
                               <th className="px-4 py-2.5">Phân loại</th>

@@ -29,7 +29,8 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: "docker compose -f ../docker-compose.yml up api",
+      command:
+        "docker network inspect pmi_default >/dev/null 2>&1 || docker network create pmi_default && docker compose -f ../docker-compose.yml up api",
       url: "http://localhost:18100/categories",
       timeout: 180_000,
       reuseExistingServer: !process.env.CI,

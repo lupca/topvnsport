@@ -719,7 +719,9 @@ def scan_pick_fulfillment_order(id: str, payload: FulfillmentScanPickInput, db: 
         
     bm = db.query(models.BarcodeMapping).filter(models.BarcodeMapping.barcode == payload.barcode).first()
     if not bm:
-        raise HTTPException(status_code=400, detail=f"Barcode {payload.barcode} mapping not found")
+        bm = db.query(models.BarcodeMapping).filter(models.BarcodeMapping.sku_code == payload.barcode).first()
+        if not bm:
+            raise HTTPException(status_code=400, detail=f"Barcode or SKU {payload.barcode} mapping not found")
         
     item = db.query(models.PickListItem).filter(
         models.PickListItem.fulfillment_order_id == fo.id,

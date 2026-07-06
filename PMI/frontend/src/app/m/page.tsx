@@ -106,7 +106,7 @@ export default function MobileDashboard() {
               href={item.href}
               className={`flex items-center gap-4 p-5 rounded-lg text-white transition-colors duration-150 select-none shadow-lg ${item.color}`}
             >
-              <div className="p-3 bg-white/10 rounded-full">
+              <div className="p-3 bg-slate-900/10 rounded-full">
                 <Icon className="h-6 w-6" />
               </div>
               <div className="flex-1">

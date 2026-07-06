@@ -59,7 +59,7 @@ export default function AccountPage() {
       {/* Main Grid Forms */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         {/* General Settings Column */}
-        <div className="lg:col-span-2 bg-white border border-slate-200/80 rounded-2xl shadow-sm p-6 space-y-6">
+        <div className="lg:col-span-2 bg-slate-900 border border-slate-200/80 rounded-2xl shadow-sm p-6 space-y-6">
           <div className="border-b border-slate-100 pb-4">
             <h2 className="text-sm font-bold text-slate-800 tracking-wide">General</h2>
           </div>
@@ -83,7 +83,7 @@ export default function AccountPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="w-full bg-slate-50/30 border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all"
+                className="w-full bg-slate-50/30 border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-slate-900 transition-all"
               />
             </div>
 
@@ -95,7 +95,7 @@ export default function AccountPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full bg-slate-50/30 border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all"
+                className="w-full bg-slate-50/30 border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-slate-900 transition-all"
               />
             </div>
 
@@ -105,7 +105,7 @@ export default function AccountPage() {
               <select
                 value={uiLocale}
                 onChange={(e) => setUiLocale(e.target.value)}
-                className="w-full bg-slate-50/30 border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all"
+                className="w-full bg-slate-50/30 border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-indigo-500 focus:bg-slate-900 transition-all"
               >
                 <option value="en_US">English (United States)</option>
                 <option value="vi_VN">Tiếng Việt (Việt Nam)</option>
@@ -118,7 +118,7 @@ export default function AccountPage() {
               <select
                 value={timezone}
                 onChange={(e) => setTimezone(e.target.value)}
-                className="w-full bg-slate-50/30 border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all"
+                className="w-full bg-slate-50/30 border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-indigo-500 focus:bg-slate-900 transition-all"
               >
                 <option value="Asia/Kolkata">Asia/Kolkata (+05:30)</option>
                 <option value="Asia/Ho_Chi_Minh">Asia/Ho_Chi_Minh (+07:00)</option>
@@ -129,7 +129,7 @@ export default function AccountPage() {
         </div>
 
         {/* Change Password Column */}
-        <div className="bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden">
+        <div className="bg-slate-900 border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden">
           <button
             onClick={() => setIsPasswordCollapsed(!isPasswordCollapsed)}
             className="w-full px-6 py-5 flex items-center justify-between border-b border-slate-100 bg-slate-50/30 hover:bg-slate-50 transition-colors"
@@ -152,7 +152,7 @@ export default function AccountPage() {
                   placeholder="Current Password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="w-full bg-slate-50/30 border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all"
+                  className="w-full bg-slate-50/30 border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-slate-900 transition-all"
                 />
               </div>
 
@@ -164,7 +164,7 @@ export default function AccountPage() {
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-slate-50/30 border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all"
+                  className="w-full bg-slate-50/30 border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-slate-900 transition-all"
                 />
               </div>
 
@@ -176,7 +176,7 @@ export default function AccountPage() {
                   placeholder="Confirm Password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full bg-slate-50/30 border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all"
+                  className="w-full bg-slate-50/30 border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-slate-900 transition-all"
                 />
               </div>
             </div>

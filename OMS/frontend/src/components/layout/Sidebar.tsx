@@ -9,7 +9,6 @@ import {
   ShoppingCart,
   Users as UsersIcon,
   RefreshCw,
-  TrendingUp,
   Globe,
   Truck,
   Settings as SettingsIcon,
@@ -34,7 +33,6 @@ export default function Sidebar() {
       title: "Hàng hóa & Phân bổ",
       items: [
         { name: "Đồng bộ Catalog (Catalog Sync)", href: "#catalog", icon: RefreshCw },
-        { name: "Phân bổ kho (Stock Allocation)", href: "#allocations", icon: TrendingUp },
       ],
     },
     {

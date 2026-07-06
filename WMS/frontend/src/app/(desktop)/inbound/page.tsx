@@ -352,7 +352,7 @@ export default function InboundPage() {
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8 bg-gray-50 text-gray-900">
+    <div className="p-8 max-w-7xl mx-auto space-y-8 bg-transparent text-slate-100">
       <audio ref={successAudioRef} preload="auto" src="data:audio/wav;base64,UklGRlQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YTAAAAAAAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8=" />
       <audio ref={errorAudioRef} preload="auto" src="data:audio/wav;base64,UklGRmQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YUAAAAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////" />
       {/* Header */}
@@ -430,15 +430,15 @@ export default function InboundPage() {
         {/* Right Details & Scanner Drawer */}
         {selectedShipment && (
           <div className="fixed inset-0 z-40 bg-gray-900/30 backdrop-blur-[1px]">
-            <div className="absolute inset-y-0 right-0 w-full max-w-6xl bg-white border-l border-gray-200 rounded-l-2xl p-6 shadow-2xl overflow-y-auto space-y-6">
+            <div className="absolute inset-y-0 right-0 w-full max-w-6xl bg-slate-900 border-l border-slate-800 rounded-l-2xl p-6 shadow-2xl overflow-y-auto space-y-6">
               <div className="flex justify-between items-start border-b pb-4 border-slate-800">
                 <div>
                   <div className="flex items-center gap-2">
                     <Truck className="w-5 h-5 text-indigo-500" />
-                    <h3 className="text-sm font-extrabold text-gray-900">{selectedShipment.inbound_number}</h3>
+                    <h3 className="text-sm font-extrabold text-slate-100">{selectedShipment.inbound_number}</h3>
                   </div>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Trạng thái: <span className="font-bold uppercase text-gray-900">{selectedShipment.status}</span> • Kho: {getWarehouseName(selectedShipment.warehouse_id)}
+                  <p className="text-sm text-slate-400 mt-1">
+                    Trạng thái: <span className="font-bold uppercase text-slate-100">{selectedShipment.status}</span> • Kho: {getWarehouseName(selectedShipment.warehouse_id)}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -453,7 +453,7 @@ export default function InboundPage() {
                   )}
                   <button
                     onClick={() => setSelectedShipment(null)}
-                    className="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100"
+                    className="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-slate-700 text-slate-400 hover:bg-slate-800"
                     aria-label="Đóng drawer"
                   >
                     <X className="w-4 h-4" />
@@ -527,7 +527,7 @@ export default function InboundPage() {
                             placeholder="Nhập mã barcode (VD: BAR-SKU-SPORTS-BLUE-M)"
                             value={scanBarcode}
                             onChange={(e) => setScanBarcode(e.target.value)}
-                            className="w-full pl-10 pr-3 py-3 bg-white border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 text-lg font-semibold"
+                            className="w-full pl-10 pr-3 py-3 bg-slate-900 border-2 border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-100 text-lg font-semibold"
                             required
                           />
                         </div>

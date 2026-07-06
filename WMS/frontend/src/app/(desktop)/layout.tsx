@@ -6,5 +6,5 @@ export default function DesktopLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <DashboardLayout><div className="min-h-full bg-gray-50">{children}</div></DashboardLayout>;
+  return <DashboardLayout><div className="min-h-full bg-transparent">{children}</div></DashboardLayout>;
 }

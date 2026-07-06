@@ -53,7 +53,7 @@ export default function RolesPage() {
       </div>
 
       {/* Toolbar controls */}
-      <div className="bg-white border border-slate-200/80 rounded-xl shadow-sm p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-slate-900 border border-slate-200/80 rounded-xl shadow-sm p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
         {/* Search & Results */}
         <div className="flex items-center gap-4 flex-1">
           <div className="relative w-72">
@@ -65,7 +65,7 @@ export default function RolesPage() {
               placeholder="Search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-indigo-500 focus:bg-white transition-all text-slate-700"
+              className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-indigo-500 focus:bg-slate-900 transition-all text-slate-700"
             />
           </div>
           <span className="text-xs text-slate-400 font-medium">
@@ -123,7 +123,7 @@ export default function RolesPage() {
       </div>
 
       {/* Roles Table */}
-      <div className="bg-white border border-slate-200/80 rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-slate-900 border border-slate-200/80 rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>

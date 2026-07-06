@@ -161,6 +161,40 @@ export default function FulfillmentPage() {
     }
   };
 
+  const handleQuickPick = async (skuCode: string) => {
+    if (!selectedOrder) return;
+
+    try {
+      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${selectedOrder.id}/scan-pick`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          barcode: skuCode,
+          quantity: 1
+        })
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.detail || "Quét nhặt hàng thất bại.");
+      }
+
+      const data = await res.json();
+      setPickMessage({
+        text: `Đã nhặt thành công: SKU ${data.sku_code} - ${data.picked_qty}/${data.required_qty}`,
+        type: "success"
+      });
+      setPickBarcode("");
+      handleSelectOrder(selectedOrder);
+      fetchData();
+    } catch (err: any) {
+      setPickMessage({
+        text: err.message || "Lỗi quét nhặt hàng.",
+        type: "error"
+      });
+    }
+  };
+
   const handleCompletePick = async (orderId: number) => {
     try {
       const res = await fetch(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${orderId}/complete-pick`, {
@@ -269,8 +303,12 @@ export default function FulfillmentPage() {
   };
 
   // Split Orders side-by-side
-  const pickQueue = orders.filter(o => ["PENDING", "PICKING"].includes(o.status.toUpperCase()));
-  const packQueue = orders.filter(o => ["PICKED", "PACKING", "PACKED", "SHIPPED"].includes(o.status.toUpperCase()));
+  const pickQueue = orders
+    .filter(o => ["PENDING", "PICKING"].includes(o.status.toUpperCase()))
+    .sort((a, b) => b.id - a.id);
+  const packQueue = orders
+    .filter(o => ["PICKED", "PACKING", "PACKED", "SHIPPED"].includes(o.status.toUpperCase()))
+    .sort((a, b) => b.id - a.id);
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8 text-slate-100">
@@ -415,16 +453,29 @@ export default function FulfillmentPage() {
                 </h4>
                 <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
                   {selectedOrder.pick_list_items.map((item) => (
-                    <div key={item.id} className="p-2 bg-slate-950 rounded-lg text-[11px] border border-slate-800 space-y-1">
-                      <div className="flex justify-between font-bold text-slate-200">
+                    <div key={item.id} className="p-2 bg-slate-950 rounded-lg text-[11px] border border-slate-800 space-y-1 relative">
+                      <div className="flex justify-between font-bold text-slate-200 pr-16">
                         <span>{item.sku_code}</span>
                         <span>{item.picked_qty}/{item.quantity}</span>
                       </div>
-                      <p className="text-[10px] text-slate-400 font-semibold">{item.product_name}</p>
+                      <p className="text-[10px] text-slate-400 font-semibold pr-16">{item.product_name}</p>
                       <div className="flex items-center gap-1 text-[9px] text-indigo-400 font-bold">
                         <MapPin className="w-3 h-3" />
                         <span>Vị trí nhặt: {getLocationCode(item.location_id)}</span>
                       </div>
+                      {selectedOrder.status.toUpperCase() === "PICKING" && item.picked_qty < item.quantity && (
+                        <button
+                          onClick={() => handleQuickPick(item.sku_code)}
+                          className="absolute top-2 right-2 px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded shadow-sm text-[9px] flex items-center gap-1"
+                        >
+                          <Scan className="w-3 h-3" /> Nhặt 1
+                        </button>
+                      )}
+                      {item.picked_qty >= item.quantity && (
+                        <div className="absolute top-2 right-2 px-2 py-1 bg-emerald-950/50 text-emerald-400 border border-emerald-900/50 font-bold rounded text-[9px] flex items-center gap-1">
+                          <CheckCircle className="w-3 h-3" /> Đã đủ
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -435,13 +486,13 @@ export default function FulfillmentPage() {
                 <div className="bg-slate-950 border border-slate-800 p-3 rounded-xl space-y-3">
                   <h4 className="text-xs font-bold text-slate-200 flex items-center gap-1">
                     <Scan className="w-3.5 h-3.5 text-indigo-400" />
-                    <span>Quét Nhặt Hàng (Pick Scan)</span>
+                    <span>Xác nhận Nhặt Hàng (Scan / Quick Pick)</span>
                   </h4>
                   <form onSubmit={handleScanPick} className="space-y-2 text-xs">
                     <input
                       type="text"
                       data-testid="barcode-manual-input"
-                      placeholder="Quét Barcode (VD: BAR-SKU-SPORTS-BLUE-M)"
+                      placeholder="Quét mã vạch hoặc nhập SKU..."
                       value={pickBarcode}
                       onChange={(e) => setPickBarcode(e.target.value)}
                       className="w-full p-2 border border-slate-800 rounded-lg focus:outline-none bg-slate-900 text-slate-100"

@@ -438,7 +438,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         
         {/* SECTION 1: BASIC INFORMATION */}
-        <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6">
+        <div className="bg-slate-900 p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6">
           <h2 className="text-lg font-bold text-slate-900 border-b pb-3 border-slate-100">Thông tin cơ bản</h2>
           
           {/* Cover Image Upload */}
@@ -506,7 +506,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
               <div className="space-y-1.5">
                 <label className="text-sm font-semibold text-slate-700">Ngành hàng *</label>
                 <select 
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-slate-900 transition-all"
                   {...register("category_id")}
                 >
                   <option value={0}>Chọn ngành hàng</option>
@@ -534,7 +534,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
         </div>
 
         {/* SECTION 2: SALES INFORMATION (VARIATIONS) */}
-        <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6">
+        <div className="bg-slate-900 p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6">
           <div className="flex items-center justify-between border-b pb-3 border-slate-100">
             <h2 className="text-lg font-bold text-slate-900">Thông tin bán hàng</h2>
             <div className="text-xs text-slate-400 flex items-center gap-1">
@@ -561,7 +561,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                     <input 
                       type="text" 
                       placeholder={tierIndex === 0 ? "Ví dụ: Màu sắc" : "Ví dụ: Kích cỡ"}
-                      className="w-full px-4 py-2 bg-white rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                      className="w-full px-4 py-2 bg-slate-900 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                       {...register(`tier_variations.${tierIndex}.name` as const)}
                     />
                     {errors.tier_variations?.[tierIndex]?.name && (
@@ -575,7 +575,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                     <input 
                       type="text" 
                       placeholder={tierIndex === 0 ? "Đỏ, Xanh, Vàng" : "M, L, XL"}
-                      className="w-full px-4 py-2 bg-white rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                      className="w-full px-4 py-2 bg-slate-900 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                       onChange={(e) => {
                         const val = e.target.value;
                         const opts = val.split(",").map(s => s.trim()).filter(s => s !== "");
@@ -596,7 +596,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                     <label className="block text-xs font-semibold text-slate-500 mb-2">Hình ảnh cho phân loại thứ 1</label>
                     <div className="flex flex-wrap gap-4">
                       {watchTiers[0].options.map((opt) => (
-                        <div key={opt} className="flex flex-col items-center gap-1.5 p-3 bg-white border border-slate-100 rounded-xl">
+                        <div key={opt} className="flex flex-col items-center gap-1.5 p-3 bg-slate-900 border border-slate-100 rounded-xl">
                           <span className="text-xs text-slate-600 font-medium max-w-[80px] truncate">{opt}</span>
                           <div className="relative h-14 w-14 border border-dashed border-slate-200 rounded-lg flex items-center justify-center bg-slate-50/50 overflow-hidden hover:border-primary-400 cursor-pointer">
                             {tier1Images[opt] ? (
@@ -662,7 +662,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                   <input 
                     type="number" 
                     placeholder="Giá"
-                    className="w-full px-3 py-2 bg-white text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 bg-slate-900 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
                     value={bulkPrice}
                     onChange={(e) => setBulkPrice(e.target.value)}
                   />
@@ -671,7 +671,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                   <input 
                     type="number" 
                     placeholder="Kho hàng"
-                    className="w-full px-3 py-2 bg-white text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 bg-slate-900 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
                     value={bulkStock}
                     onChange={(e) => setBulkStock(e.target.value)}
                   />
@@ -750,7 +750,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
         </div>
 
         {/* SECTION 3: LOGISTICS & SHIPPING */}
-        <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6">
+        <div className="bg-slate-900 p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6">
           <h2 className="text-lg font-bold text-slate-900 border-b pb-3 border-slate-100">Vận chuyển & Logistics</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -810,7 +810,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
         </div>
 
         {/* SECTION 4: PRE-ORDER & STATUS */}
-        <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6">
+        <div className="bg-slate-900 p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6">
           <h2 className="text-lg font-bold text-slate-900 border-b pb-3 border-slate-100">Thông tin khác</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
@@ -828,7 +828,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                     className="sr-only peer"
                     {...register("is_pre_order")}
                   />
-                  <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
+                  <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-900 after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
                 </label>
               </div>
 
@@ -840,7 +840,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                       type="number" 
                       min={7}
                       max={30}
-                      className="w-full pr-12 pl-4 py-2 bg-white rounded-xl border border-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                      className="w-full pr-12 pl-4 py-2 bg-slate-900 rounded-xl border border-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500"
                       {...register("dts_days")}
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">ngày</span>

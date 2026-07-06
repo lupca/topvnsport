@@ -576,4 +576,5 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
         </button>
       </div>
     </div>
-      </div>
+  );
+}
