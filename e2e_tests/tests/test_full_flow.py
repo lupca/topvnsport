@@ -78,7 +78,7 @@ def test_full_flow(api_clients, page, web_base_url):
     expect(dropdown_result).to_be_visible(timeout=15_000)
     dropdown_result.click()
 
-    expect(page.get_by_text(product_name, exact=True)).to_be_visible(timeout=15_000)
+    expect(page.get_by_role("heading", name=product_name)).to_be_visible(timeout=15_000)
     page.get_by_role("button", name="Thêm vào giỏ hàng").click()
     expect(page.get_by_text("Giỏ Hàng Của Bạn")).to_be_visible(timeout=15_000)
     page.locator("button").filter(has_text="Tiến hành thanh toán").click()

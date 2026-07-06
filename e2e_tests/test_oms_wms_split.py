@@ -71,7 +71,7 @@ def _create_minimal_product(bundle: ApiBundle, run_id: str, sku_code: str, produ
                 "width": 10.0,
                 "height": 10.0,
                 "is_pre_order": False,
-                "dts_days": 3,
+                "dts_days": 7,
                 "status": "Published",
                 "tier_variations": [],
                 "variants": [
