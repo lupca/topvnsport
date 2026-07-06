@@ -90,3 +90,8 @@ services:
 volumes:
   pgdata:
   miniodata:
+
+networks:
+  default:
+    name: pmi_default
+    external: true

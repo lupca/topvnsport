@@ -4,7 +4,7 @@ import logging
 import math
 from datetime import datetime, timezone, timedelta
 from decimal import Decimal
-from typing import List, Optional
+from typing import Dict, List, Optional
 import httpx
 from fastapi import FastAPI, Depends, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -107,71 +107,149 @@ def call_api(url: str, method: str = "GET", data: dict = None):
         logger.error(f"Unexpected error during inter-service call to {url}: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
-def resolve_fulfillment_warehouse_code(order_items: List[models.OrderItem]) -> str:
+def _fetch_inventory_snapshot(order_items: List[models.OrderItem]) -> tuple[Dict[str, Dict[str, int]], Dict[str, dict]]:
     warehouse_url = f"{WMS_API_URL}/warehouses"
     inventory_url = f"{WMS_API_URL}/inventory"
     locations_url = f"{WMS_API_URL}/locations"
+    with httpx.Client(timeout=10.0) as client:
+        warehouses_resp = client.get(warehouse_url)
+        inventory_resp = client.get(inventory_url)
+        locations_resp = client.get(locations_url)
+
+    if warehouses_resp.is_error:
+        raise HTTPException(status_code=warehouses_resp.status_code, detail="Failed to fetch WMS warehouses")
+    if inventory_resp.is_error:
+        raise HTTPException(status_code=inventory_resp.status_code, detail="Failed to fetch WMS inventory")
+    if locations_resp.is_error:
+        raise HTTPException(status_code=locations_resp.status_code, detail="Failed to fetch WMS locations")
+
+    warehouses = warehouses_resp.json()
+    inventories = inventory_resp.json()
+    locations = locations_resp.json()
+    if not isinstance(warehouses, list) or not isinstance(inventories, list) or not isinstance(locations, list):
+        raise HTTPException(status_code=500, detail="Unexpected WMS payload format")
+
+    warehouse_by_id = {
+        item.get("id"): item.get("code")
+        for item in warehouses
+        if isinstance(item, dict)
+    }
+    location_to_warehouse = {
+        item.get("id"): item.get("warehouse_id")
+        for item in locations
+        if isinstance(item, dict)
+    }
+
+    available_by_warehouse: Dict[str, Dict[str, int]] = {}
+    for record in inventories:
+        if not isinstance(record, dict):
+            continue
+        location_id = record.get("location_id")
+        warehouse_id = location_to_warehouse.get(location_id)
+        warehouse_code = warehouse_by_id.get(warehouse_id)
+        sku_code = record.get("sku_code")
+        if not warehouse_code or not sku_code:
+            continue
+
+        qty_on_hand = int(record.get("qty_on_hand") or 0)
+        qty_reserved = int(record.get("qty_reserved") or 0)
+        qty_available = int(record.get("qty_available") or (qty_on_hand - qty_reserved))
+        qty_available = max(0, qty_available)
+
+        wh_sku = available_by_warehouse.setdefault(warehouse_code, {})
+        # Sum available qty across all locations in the same warehouse.
+        wh_sku[sku_code] = wh_sku.get(sku_code, 0) + qty_available
+
+    required_by_sku: Dict[str, dict] = {}
+    for item in order_items:
+        required = required_by_sku.setdefault(
+            item.sku_code,
+            {
+                "sku_code": item.sku_code,
+                "product_name": item.product_name,
+                "quantity": 0,
+            },
+        )
+        required["quantity"] += int(item.quantity)
+
+    return available_by_warehouse, required_by_sku
+
+
+def allocate_order_items(order_items: List[models.OrderItem]) -> List[dict]:
     try:
-        with httpx.Client(timeout=5.0) as client:
-            warehouses_resp = client.get(warehouse_url)
-            inventory_resp = client.get(inventory_url)
-            locations_resp = client.get(locations_url)
-
-            if not warehouses_resp.is_error and not inventory_resp.is_error and not locations_resp.is_error:
-                warehouses = warehouses_resp.json()
-                inventories = inventory_resp.json()
-                locations = locations_resp.json()
-
-                if isinstance(warehouses, list) and isinstance(inventories, list) and isinstance(locations, list):
-                    warehouse_by_id = {
-                        item.get("id"): item.get("code")
-                        for item in warehouses
-                        if isinstance(item, dict)
-                    }
-                    location_to_warehouse = {
-                        item.get("id"): item.get("warehouse_id")
-                        for item in locations
-                        if isinstance(item, dict)
-                    }
-
-                    available_by_warehouse: dict[str, dict[str, int]] = {}
-                    for record in inventories:
-                        if not isinstance(record, dict):
-                            continue
-                        location_id = record.get("location_id")
-                        warehouse_id = location_to_warehouse.get(location_id)
-                        warehouse_code = warehouse_by_id.get(warehouse_id)
-                        sku_code = record.get("sku_code")
-                        if not warehouse_code or not sku_code:
-                            continue
-
-                        qty_on_hand = int(record.get("qty_on_hand") or 0)
-                        qty_reserved = int(record.get("qty_reserved") or 0)
-                        qty_available = int(record.get("qty_available") or (qty_on_hand - qty_reserved))
-                        if qty_available < 0:
-                            qty_available = 0
-
-                        available_by_warehouse.setdefault(warehouse_code, {})[sku_code] = max(
-                            available_by_warehouse.setdefault(warehouse_code, {}).get(sku_code, 0),
-                            qty_available,
-                        )
-
-                    for warehouse_code, sku_map in available_by_warehouse.items():
-                        can_fulfill = True
-                        for item in order_items:
-                            if sku_map.get(item.sku_code, 0) < int(item.quantity):
-                                can_fulfill = False
-                                break
-                        if can_fulfill:
-                            return warehouse_code
+        available_by_warehouse, required_by_sku = _fetch_inventory_snapshot(order_items)
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.warning(
-            "Unable to resolve fulfillment warehouse from WMS: %s. Using fallback %s",
-            e,
-            DEFAULT_FULFILLMENT_WAREHOUSE_CODE,
+        logger.error("Unable to allocate order from WMS inventory: %s", e)
+        raise HTTPException(status_code=500, detail="Unable to allocate inventory from WMS")
+
+    if not required_by_sku:
+        raise HTTPException(status_code=400, detail="Order has no items to allocate")
+
+    # First try: allocate all items from one warehouse.
+    for warehouse_code, sku_map in available_by_warehouse.items():
+        if all(sku_map.get(sku_code, 0) >= req["quantity"] for sku_code, req in required_by_sku.items()):
+            return [
+                {
+                    "warehouse_code": warehouse_code,
+                    "items": [
+                        {
+                            "sku_code": req["sku_code"],
+                            "product_name": req["product_name"],
+                            "quantity": req["quantity"],
+                        }
+                        for req in required_by_sku.values()
+                    ],
+                }
+            ]
+
+    # Split allocation across multiple warehouses.
+    remaining = {sku_code: req["quantity"] for sku_code, req in required_by_sku.items()}
+    allocations: List[dict] = []
+
+    sorted_warehouses = sorted(
+        available_by_warehouse.items(),
+        key=lambda wh: sum(wh[1].get(sku, 0) for sku in required_by_sku.keys()),
+        reverse=True,
+    )
+
+    for warehouse_code, sku_map in sorted_warehouses:
+        allocated_items = []
+        for sku_code, req in required_by_sku.items():
+            need = remaining.get(sku_code, 0)
+            if need <= 0:
+                continue
+            take = min(need, int(sku_map.get(sku_code, 0)))
+            if take <= 0:
+                continue
+            remaining[sku_code] = need - take
+            allocated_items.append(
+                {
+                    "sku_code": sku_code,
+                    "product_name": req["product_name"],
+                    "quantity": take,
+                }
+            )
+
+        if allocated_items:
+            allocations.append({"warehouse_code": warehouse_code, "items": allocated_items})
+
+        if all(qty <= 0 for qty in remaining.values()):
+            break
+
+    if any(qty > 0 for qty in remaining.values()):
+        shortage_details = [
+            f"{sku_code}: thiếu {qty}"
+            for sku_code, qty in remaining.items()
+            if qty > 0
+        ]
+        raise HTTPException(
+            status_code=400,
+            detail=f"Không đủ tồn kho để duyệt đơn. {'; '.join(shortage_details)}",
         )
 
-    return DEFAULT_FULFILLMENT_WAREHOUSE_CODE
+    return allocations
 
 @app.get("/")
 def read_root():
@@ -659,47 +737,71 @@ def confirm_order(id: int, db: Session = Depends(get_db)):
     if order.status != "DRAFT":
         raise HTTPException(status_code=400, detail="Only DRAFT orders can be confirmed")
         
+    allocations = allocate_order_items(order.items)
     order.status = "CONFIRMED"
     db.flush()
-    
-    fulfillment_number = f"FM-{order.order_number}"
-    warehouse_code = resolve_fulfillment_warehouse_code(order.items)
-    
-    wms_payload = {
-        "fulfillment_number": fulfillment_number,
-        "oms_order_id": order.id,
-        "oms_order_number": order.order_number,
-        "warehouse_code": warehouse_code,
-        "status": "PENDING",
-        "items": [
-            {
-                "sku_code": item.sku_code,
-                "product_name": item.product_name,
-                "quantity": item.quantity
-            } for item in order.items
-        ]
-    }
-    
+
     wms_url = f"{WMS_API_URL}/fulfillment-orders"
+    is_split = len(allocations) > 1
+
     try:
-        wms_resp = call_api(wms_url, "POST", wms_payload)
+        for idx, allocation in enumerate(allocations, start=1):
+            fulfillment_number = (
+                f"FM-{order.order_number}-{idx}"
+                if is_split
+                else f"FM-{order.order_number}"
+            )
+            wms_payload = {
+                "fulfillment_number": fulfillment_number,
+                "oms_order_id": order.id,
+                "oms_order_number": order.order_number,
+                "warehouse_code": allocation["warehouse_code"],
+                "status": "PENDING",
+                "items": allocation["items"],
+            }
+
+            wms_resp = call_api(wms_url, "POST", wms_payload)
+            fo_status = wms_resp.get("status", "PENDING")
+
+            db.add(
+                models.FulfillmentOrder(
+                    order_id=order.id,
+                    fulfillment_number=fulfillment_number,
+                    warehouse_code=allocation["warehouse_code"],
+                    status=fo_status,
+                )
+            )
     except HTTPException as e:
         db.rollback()
         raise HTTPException(status_code=e.status_code, detail=f"WMS integration failed: {e.detail}")
-        
-    fo_status = wms_resp.get("status", "PENDING")
-    db_fo = models.FulfillmentOrder(
-        order_id=order.id,
-        fulfillment_number=fulfillment_number,
-        warehouse_code=warehouse_code,
-        status=fo_status
-    )
-    db.add(db_fo)
     
     order.status = "PROCESSING"
     db.commit()
     db.refresh(order)
     return order
+
+
+@app.get("/orders/{id}/stock-check")
+def check_order_stock(id: int, db: Session = Depends(get_db)):
+    order = db.query(models.Order).filter(models.Order.id == id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    try:
+        allocations = allocate_order_items(order.items)
+        return {
+            "sufficient": True,
+            "message": "Tồn kho đủ để duyệt đơn.",
+            "allocations": allocations,
+        }
+    except HTTPException as e:
+        if e.status_code == 400:
+            return {
+                "sufficient": False,
+                "message": e.detail,
+                "allocations": [],
+            }
+        raise
 
 @app.post("/orders/{id}/cancel", response_model=schemas.OrderOut)
 def cancel_order(id: int, db: Session = Depends(get_db)):
@@ -711,13 +813,12 @@ def cancel_order(id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail=f"Cannot cancel order in {order.status} status")
         
     if order.status in ["PROCESSING", "PICKING", "PACKED"]:
-        wms_cancel_url = f"{WMS_API_URL}/fulfillment-orders/FM-{order.order_number}/cancel"
-        try:
-            call_api(wms_cancel_url, "POST")
-        except HTTPException as e:
-            raise HTTPException(status_code=e.status_code, detail=f"WMS cancel failed: {e.detail}")
-            
         for fo in order.fulfillment_orders:
+            wms_cancel_url = f"{WMS_API_URL}/fulfillment-orders/{fo.fulfillment_number}/cancel"
+            try:
+                call_api(wms_cancel_url, "POST")
+            except HTTPException as e:
+                raise HTTPException(status_code=e.status_code, detail=f"WMS cancel failed: {e.detail}")
             fo.status = "CANCELLED"
             
     order.status = "CANCELLED"
