@@ -14,7 +14,7 @@ describe("DataTable", () => {
     const onSearchChange = vi.fn();
 
     render(
-      <DataTable<Row>
+      <DataTable
         title="Danh sach"
         data={[{ id: 1, name: "Ao" }]}
         columns={[{ key: "name", label: "Ten" }]}
@@ -37,7 +37,7 @@ describe("DataTable", () => {
     const onCopyClick = vi.fn();
 
     render(
-      <DataTable<Row>
+      <DataTable
         title="Danh sach"
         data={[{ id: 1, name: "Ao" }]}
         columns={[{ key: "name", label: "Ten" }]}
