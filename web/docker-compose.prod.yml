@@ -3,9 +3,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        VITE_PMI_API_URL: http://${PUBLIC_HOST:-localhost}:18100
+        VITE_OMS_API_URL: http://${PUBLIC_HOST:-localhost}:18101
     container_name: web_frontend
     restart: always
     ports:
       - "13103:80"
-    env_file:
-      - .env
