@@ -656,7 +656,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
               <input 
                 type="text" 
                 placeholder="Nhập tên sản phẩm (Ví dụ: Áo thun nam Cotton 100% cổ tròn)"
-                className="w-full px-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                className="w-full bg-slate-950 px-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                 {...register("name")}
               />
               {errors.name && <p className="text-xs text-rose-500 font-medium">{errors.name.message}</p>}
@@ -668,7 +668,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                 <input 
                   type="text" 
                   placeholder="Ví dụ: TSHIRT-PARENT"
-                  className="w-full px-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                  className="w-full bg-slate-950 px-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                   {...register("product_code")}
                 />
                 {errors.product_code && <p className="text-xs text-rose-500 font-medium">{errors.product_code.message}</p>}
@@ -677,7 +677,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
               <div className="space-y-1.5">
                 <label className="text-sm font-semibold text-slate-200">Ngành hàng *</label>
                 <select 
-                  className="w-full px-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-slate-900 transition-all"
+                  className="w-full bg-slate-950 px-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-slate-900 transition-all"
                   {...register("category_id")}
                 >
                   <option value={0}>Chọn ngành hàng</option>
@@ -693,7 +693,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
               <div className="space-y-1.5">
                 <label className="text-sm font-semibold text-slate-200">Attribute Family *</label>
                 <select
-                  className="w-full px-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-slate-900 transition-all"
+                  className="w-full bg-slate-950 px-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-slate-900 transition-all"
                   {...register("family_id")}
                 >
                   <option value={0}>Chọn bộ thuộc tính</option>
@@ -713,7 +713,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
             <textarea 
               rows={4}
               placeholder="Mô tả thông tin chi tiết về sản phẩm của bạn (chất liệu, công dụng, thông số kỹ thuật...)"
-              className="w-full px-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+              className="w-full bg-slate-950 px-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
               {...register("description")}
             />
             {errors.description && <p className="text-xs text-rose-500 font-medium">{errors.description.message}</p>}
@@ -744,7 +744,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                       const value = e.target.value;
                       setAttributeValues(prev => ({ ...prev, [attr.id]: value }));
                     }}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                    className="w-full bg-slate-950 px-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                   />
                   <p className="text-[11px] text-slate-400">Code: {attr.code}</p>
                 </div>
@@ -781,7 +781,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                     <input 
                       type="text" 
                       placeholder={tierIndex === 0 ? "Ví dụ: Màu sắc" : "Ví dụ: Kích cỡ"}
-                      className="w-full px-4 py-2 bg-slate-900 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                      className="w-full bg-slate-950 px-4 py-2 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                       {...register(`tier_variations.${tierIndex}.name` as const)}
                     />
                     {errors.tier_variations?.[tierIndex]?.name && (
@@ -795,7 +795,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                     <input 
                       type="text" 
                       placeholder={tierIndex === 0 ? "Đỏ, Xanh, Vàng" : "M, L, XL"}
-                      className="w-full px-4 py-2 bg-slate-900 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                      className="w-full bg-slate-950 px-4 py-2 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                       onChange={(e) => {
                         const val = e.target.value;
                         const opts = val.split(",").map(s => s.trim()).filter(s => s !== "");
@@ -980,7 +980,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                 <input 
                   type="number" 
                   placeholder="0"
-                  className="w-full pr-12 pl-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                  className="w-full bg-slate-950 pr-12 pl-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                   {...register("weight")}
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-xs">gram</span>
@@ -994,7 +994,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                 <input 
                   type="number" 
                   placeholder="0"
-                  className="w-full pr-12 pl-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                  className="w-full bg-slate-950 pr-12 pl-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                   {...register("length")}
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-xs">cm</span>
@@ -1007,7 +1007,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                 <input 
                   type="number" 
                   placeholder="0"
-                  className="w-full pr-12 pl-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                  className="w-full bg-slate-950 pr-12 pl-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                   {...register("width")}
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-xs">cm</span>
@@ -1020,7 +1020,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                 <input 
                   type="number" 
                   placeholder="0"
-                  className="w-full pr-12 pl-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                  className="w-full bg-slate-950 pr-12 pl-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                   {...register("height")}
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-xs">cm</span>
@@ -1060,7 +1060,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                       type="number" 
                       min={7}
                       max={30}
-                      className="w-full pr-12 pl-4 py-2 bg-slate-900 rounded-xl border border-slate-700 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                      className="w-full bg-slate-950 pr-12 pl-4 py-2 rounded-xl border border-slate-700 focus:outline-none focus:ring-1 focus:ring-primary-500"
                       {...register("dts_days")}
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">ngày</span>
