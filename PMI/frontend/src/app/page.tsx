@@ -102,12 +102,12 @@ export default function DashboardPage() {
 
   if (error || !stats) {
     return (
-      <div className="p-8 max-w-xl mx-auto mt-20 text-center bg-slate-900 border border-slate-200 rounded-2xl shadow-lg">
+      <div className="p-8 max-w-xl mx-auto mt-20 text-center bg-slate-900 border border-slate-800 rounded-2xl shadow-lg">
         <div className="w-12 h-12 rounded-full bg-rose-50 flex items-center justify-center mx-auto text-rose-500 mb-4">
           <AlertCircle className="w-6 h-6" />
         </div>
-        <h3 className="text-sm font-bold text-slate-800 mb-2">Lỗi kết nối Backend</h3>
-        <p className="text-xs text-slate-500 mb-6">{error || "Không có dữ liệu trả về từ API."}</p>
+        <h3 className="text-sm font-bold text-slate-100 mb-2">Lỗi kết nối Backend</h3>
+        <p className="text-xs text-slate-400 mb-6">{error || "Không có dữ liệu trả về từ API."}</p>
         <button
           onClick={fetchStats}
           className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/10 hover:bg-indigo-700 transition-colors"
@@ -132,11 +132,11 @@ export default function DashboardPage() {
       {/* Header welcome banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-extrabold text-slate-800 flex items-center gap-2">
+          <h2 className="text-xl font-extrabold text-slate-100 flex items-center gap-2">
             <span>Catalog Dashboard</span>
             <Sparkles className="w-5 h-5 text-indigo-500 animate-spin" style={{ animationDuration: '3s' }} />
           </h2>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-400 mt-1">
             Quản lý tổng quan cấu trúc catalog, phân tích mức độ hoàn thiện dữ liệu và kênh bán hàng.
           </p>
         </div>
@@ -178,9 +178,9 @@ export default function DashboardPage() {
         </div>
 
         {/* Total Categories Card */}
-        <div className="bg-slate-900 border border-slate-200/80 p-6 rounded-2xl shadow-sm flex flex-col justify-between relative overflow-hidden group hover:border-slate-350 hover:shadow-md transition-all duration-200">
+        <div className="bg-slate-900 border border-slate-800/80 p-6 rounded-2xl shadow-sm flex flex-col justify-between relative overflow-hidden group hover:border-slate-600 hover:shadow-md transition-all duration-200">
           <div className="absolute right-0 bottom-0 translate-x-4 translate-y-4 opacity-5 pointer-events-none group-hover:scale-110 transition-transform duration-300">
-            <FolderTree className="w-32 h-32 text-slate-800" />
+            <FolderTree className="w-32 h-32 text-slate-100" />
           </div>
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-extrabold uppercase tracking-widest text-slate-400">
@@ -191,7 +191,7 @@ export default function DashboardPage() {
             </div>
           </div>
           <div className="mt-4">
-            <h3 className="text-3xl font-extrabold text-slate-800">{stats.total_categories}</h3>
+            <h3 className="text-3xl font-extrabold text-slate-100">{stats.total_categories}</h3>
             <p className="text-[10px] text-slate-400 mt-2 font-medium">
               Định hình phân nhóm cấu trúc sản phẩm của PIM.
             </p>
@@ -199,7 +199,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Data Completeness Card */}
-        <div className="bg-slate-900 border border-slate-200/80 p-6 rounded-2xl shadow-sm flex flex-col justify-between hover:border-slate-350 hover:shadow-md transition-all duration-200">
+        <div className="bg-slate-900 border border-slate-800/80 p-6 rounded-2xl shadow-sm flex flex-col justify-between hover:border-slate-600 hover:shadow-md transition-all duration-200">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-extrabold uppercase tracking-widest text-slate-400">
               Độ hoàn thiện dữ liệu
@@ -218,7 +218,7 @@ export default function DashboardPage() {
               </span>
             </div>
             {/* Progress Bar */}
-            <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+            <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
               <div
                 className="bg-gradient-to-r from-violet-500 to-indigo-600 h-full rounded-full transition-all duration-500"
                 style={{ width: `${stats.completeness_rate}%` }}
@@ -234,10 +234,10 @@ export default function DashboardPage() {
       {/* Main Grid: Activity & Catalog Structure */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Analytics Chart */}
-        <div className="lg:col-span-2 bg-slate-900 border border-slate-200/80 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
+        <div className="lg:col-span-2 bg-slate-900 border border-slate-800/80 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-sm font-extrabold text-slate-800">Hoạt động thêm sản phẩm</h3>
+              <h3 className="text-sm font-extrabold text-slate-100">Hoạt động thêm sản phẩm</h3>
               <p className="text-[10px] text-slate-400 mt-0.5">Số lượng sản phẩm đăng ký mới trong 7 ngày qua</p>
             </div>
             <span className="text-[10px] text-indigo-600 bg-indigo-50 font-bold px-2 py-1 rounded-lg">
@@ -299,9 +299,9 @@ export default function DashboardPage() {
         </div>
 
         {/* Right Column: Catalog Structure Counts */}
-        <div className="bg-slate-900 border border-slate-200/80 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
+        <div className="bg-slate-900 border border-slate-800/80 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
           <div className="mb-4">
-            <h3 className="text-sm font-extrabold text-slate-800">Cấu trúc dữ liệu PIM</h3>
+            <h3 className="text-sm font-extrabold text-slate-100">Cấu trúc dữ liệu PIM</h3>
             <p className="text-[10px] text-slate-400 mt-0.5">
               Cơ sở dữ liệu metadata được định dạng chuẩn chỉnh
             </p>
@@ -309,7 +309,7 @@ export default function DashboardPage() {
 
           <div className="grid grid-cols-2 gap-4 flex-1">
             {/* Attributes */}
-            <div className="border border-slate-100 hover:border-indigo-100 hover:bg-indigo-50/10 p-3.5 rounded-xl transition-all duration-200 flex flex-col justify-between group">
+            <div className="border border-slate-800 hover:border-indigo-100 hover:bg-indigo-50/10 p-3.5 rounded-xl transition-all duration-200 flex flex-col justify-between group">
               <div className="flex items-center justify-between">
                 <Sliders className="w-4 h-4 text-indigo-500 group-hover:scale-110 transition-transform" />
                 <span className="text-[9px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">
@@ -318,12 +318,12 @@ export default function DashboardPage() {
               </div>
               <div className="mt-3">
                 <span className="text-[10px] text-slate-400 font-bold block">Thuộc tính</span>
-                <span className="text-base font-extrabold text-slate-700">{stats.total_attributes}</span>
+                <span className="text-base font-extrabold text-slate-200">{stats.total_attributes}</span>
               </div>
             </div>
 
             {/* Groups */}
-            <div className="border border-slate-100 hover:border-violet-100 hover:bg-violet-50/10 p-3.5 rounded-xl transition-all duration-200 flex flex-col justify-between group">
+            <div className="border border-slate-800 hover:border-violet-100 hover:bg-violet-50/10 p-3.5 rounded-xl transition-all duration-200 flex flex-col justify-between group">
               <div className="flex items-center justify-between">
                 <Layers className="w-4 h-4 text-violet-500 group-hover:scale-110 transition-transform" />
                 <span className="text-[9px] font-bold text-violet-600 bg-violet-50 px-1.5 py-0.5 rounded">
@@ -332,12 +332,12 @@ export default function DashboardPage() {
               </div>
               <div className="mt-3">
                 <span className="text-[10px] text-slate-400 font-bold block">Nhóm</span>
-                <span className="text-base font-extrabold text-slate-700">{stats.total_groups}</span>
+                <span className="text-base font-extrabold text-slate-200">{stats.total_groups}</span>
               </div>
             </div>
 
             {/* Families */}
-            <div className="border border-slate-100 hover:border-emerald-100 hover:bg-emerald-50/10 p-3.5 rounded-xl transition-all duration-200 flex flex-col justify-between group">
+            <div className="border border-slate-800 hover:border-emerald-100 hover:bg-emerald-50/10 p-3.5 rounded-xl transition-all duration-200 flex flex-col justify-between group">
               <div className="flex items-center justify-between">
                 <FolderTree className="w-4 h-4 text-emerald-500 group-hover:scale-110 transition-transform" />
                 <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
@@ -346,12 +346,12 @@ export default function DashboardPage() {
               </div>
               <div className="mt-3">
                 <span className="text-[10px] text-slate-400 font-bold block">Họ thuộc tính</span>
-                <span className="text-base font-extrabold text-slate-700">{stats.total_families}</span>
+                <span className="text-base font-extrabold text-slate-200">{stats.total_families}</span>
               </div>
             </div>
 
             {/* Channels */}
-            <div className="border border-slate-100 hover:border-sky-100 hover:bg-sky-50/10 p-3.5 rounded-xl transition-all duration-200 flex flex-col justify-between group">
+            <div className="border border-slate-800 hover:border-sky-100 hover:bg-sky-50/10 p-3.5 rounded-xl transition-all duration-200 flex flex-col justify-between group">
               <div className="flex items-center justify-between">
                 <Globe className="w-4 h-4 text-sky-500 group-hover:scale-110 transition-transform" />
                 <span className="text-[9px] font-bold text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded">
@@ -360,12 +360,12 @@ export default function DashboardPage() {
               </div>
               <div className="mt-3">
                 <span className="text-[10px] text-slate-400 font-bold block">Kênh bán</span>
-                <span className="text-base font-extrabold text-slate-700">{stats.total_channels}</span>
+                <span className="text-base font-extrabold text-slate-200">{stats.total_channels}</span>
               </div>
             </div>
 
             {/* Locales */}
-            <div className="border border-slate-100 hover:border-amber-100 hover:bg-amber-50/10 p-3.5 rounded-xl transition-all duration-200 flex flex-col justify-between group">
+            <div className="border border-slate-800 hover:border-amber-100 hover:bg-amber-50/10 p-3.5 rounded-xl transition-all duration-200 flex flex-col justify-between group">
               <div className="flex items-center justify-between">
                 <Languages className="w-4 h-4 text-amber-500 group-hover:scale-110 transition-transform" />
                 <span className="text-[9px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">
@@ -374,12 +374,12 @@ export default function DashboardPage() {
               </div>
               <div className="mt-3">
                 <span className="text-[10px] text-slate-400 font-bold block">Ngôn ngữ</span>
-                <span className="text-base font-extrabold text-slate-700">{stats.total_locales}</span>
+                <span className="text-base font-extrabold text-slate-200">{stats.total_locales}</span>
               </div>
             </div>
 
             {/* Currencies */}
-            <div className="border border-slate-100 hover:border-rose-100 hover:bg-rose-50/10 p-3.5 rounded-xl transition-all duration-200 flex flex-col justify-between group">
+            <div className="border border-slate-800 hover:border-rose-100 hover:bg-rose-50/10 p-3.5 rounded-xl transition-all duration-200 flex flex-col justify-between group">
               <div className="flex items-center justify-between">
                 <DollarSign className="w-4 h-4 text-rose-500 group-hover:scale-110 transition-transform" />
                 <span className="text-[9px] font-bold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded">
@@ -388,7 +388,7 @@ export default function DashboardPage() {
               </div>
               <div className="mt-3">
                 <span className="text-[10px] text-slate-400 font-bold block">Tiền tệ</span>
-                <span className="text-base font-extrabold text-slate-700">{stats.total_currencies}</span>
+                <span className="text-base font-extrabold text-slate-200">{stats.total_currencies}</span>
               </div>
             </div>
           </div>

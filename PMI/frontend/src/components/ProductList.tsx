@@ -288,7 +288,7 @@ export default function ProductList({
             Danh Sách Sản Phẩm <Sparkles className="h-5 w-5 text-primary-500 fill-primary-100" />
           </h1>
           <div className="flex items-center gap-2 mt-1.5">
-            <span className="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full font-medium">
+            <span className="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-full font-medium">
               Hạn mức đăng bán: 5000
             </span>
             <HelpCircle className="h-4 w-4 text-slate-400 cursor-pointer" />
@@ -303,7 +303,7 @@ export default function ProductList({
       </div>
 
       {/* ADVANCED SEARCH BOX */}
-      <div className="bg-slate-900 p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+      <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 shadow-sm space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Text Search */}
           <div className="relative">
@@ -311,7 +311,7 @@ export default function ProductList({
             <input 
               type="text" 
               placeholder="Tìm Tên sản phẩm, SKU sản phẩm, SKU phân loại..."
-              className="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+              className="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -320,7 +320,7 @@ export default function ProductList({
           {/* Category Select */}
           <div>
             <select
-              className="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500 bg-slate-900 transition-all text-slate-600"
+              className="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 bg-slate-900 transition-all text-slate-300"
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
             >
@@ -334,7 +334,7 @@ export default function ProductList({
           {/* Product Type Select */}
           <div>
             <select
-              className="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500 bg-slate-900 transition-all text-slate-600"
+              className="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 bg-slate-900 transition-all text-slate-300"
               value={productType}
               onChange={(e) => setProductType(e.target.value)}
             >
@@ -349,7 +349,7 @@ export default function ProductList({
         <div className="flex justify-end gap-3 pt-2">
           <button 
             onClick={handleResetFilters}
-            className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-colors font-semibold text-xs flex items-center gap-1.5"
+            className="px-4 py-2 border border-slate-700 text-slate-300 rounded-xl hover:bg-slate-950 transition-colors font-semibold text-xs flex items-center gap-1.5"
           >
             <RotateCcw className="h-3.5 w-3.5" /> Đặt lại
           </button>
@@ -363,13 +363,13 @@ export default function ProductList({
       </div>
 
       {/* FILTER TABS & QUICK SORT BAR */}
-      <div className="flex flex-col gap-4 border-b border-slate-200/60 pb-3">
+      <div className="flex flex-col gap-4 border-b border-slate-700/60 pb-3">
         <div className="flex items-center justify-between">
           <div className="flex gap-6">
             <button
               onClick={() => setActiveTab("all")}
               className={`pb-3 text-sm font-bold transition-all relative ${
-                activeTab === "all" ? "text-primary-600" : "text-slate-500 hover:text-slate-800"
+                activeTab === "all" ? "text-primary-600" : "text-slate-400 hover:text-slate-100"
               }`}
             >
               Tất cả {totalItems > 0 && activeTab === "all" ? `(${totalItems})` : ""}
@@ -378,7 +378,7 @@ export default function ProductList({
             <button
               onClick={() => setActiveTab("Published")}
               className={`pb-3 text-sm font-bold transition-all relative ${
-                activeTab === "Published" ? "text-primary-600" : "text-slate-500 hover:text-slate-800"
+                activeTab === "Published" ? "text-primary-600" : "text-slate-400 hover:text-slate-100"
               }`}
             >
               Đang hoạt động {totalItems > 0 && activeTab === "Published" ? `(${totalItems})` : ""}
@@ -387,7 +387,7 @@ export default function ProductList({
             <button
               onClick={() => setActiveTab("Draft")}
               className={`pb-3 text-sm font-bold transition-all relative ${
-                activeTab === "Draft" ? "text-primary-600" : "text-slate-500 hover:text-slate-800"
+                activeTab === "Draft" ? "text-primary-600" : "text-slate-400 hover:text-slate-100"
               }`}
             >
               Chưa được đăng (Nháp) {totalItems > 0 && activeTab === "Draft" ? `(${totalItems})` : ""}
@@ -396,20 +396,20 @@ export default function ProductList({
           </div>
 
           <div className="flex items-center gap-2 text-slate-400">
-            <button className="p-1 hover:text-slate-600"><List className="h-4 w-4" /></button>
-            <button className="p-1 hover:text-slate-600"><Grid className="h-4 w-4" /></button>
+            <button className="p-1 hover:text-slate-300"><List className="h-4 w-4" /></button>
+            <button className="p-1 hover:text-slate-300"><Grid className="h-4 w-4" /></button>
           </div>
         </div>
 
         {/* Shopee-like Quick Sort Toolbar */}
-        <div className="bg-slate-50 p-3 rounded-2xl flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-600">
+        <div className="bg-slate-950 p-3 rounded-2xl flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-300">
           <span className="text-slate-400">Sắp xếp theo:</span>
           
           <button 
             onClick={() => { setSortBy("id"); setSortOrder("desc"); }}
             className={`px-3 py-1.5 rounded-lg transition-colors ${
               sortBy === "id" 
-                ? "bg-slate-900 text-primary-600 shadow-sm border border-slate-100" 
+                ? "bg-slate-900 text-primary-600 shadow-sm border border-slate-800" 
                 : "hover:bg-slate-200/50"
             }`}
           >
@@ -420,7 +420,7 @@ export default function ProductList({
             onClick={() => { setSortBy("name"); toggleSort("name"); }}
             className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 ${
               sortBy === "name" 
-                ? "bg-slate-900 text-primary-600 shadow-sm border border-slate-100" 
+                ? "bg-slate-900 text-primary-600 shadow-sm border border-slate-800" 
                 : "hover:bg-slate-200/50"
             }`}
           >
@@ -432,7 +432,7 @@ export default function ProductList({
             onClick={() => { setSortBy("price"); toggleSort("price"); }}
             className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 ${
               sortBy === "price" 
-                ? "bg-slate-900 text-primary-600 shadow-sm border border-slate-100" 
+                ? "bg-slate-900 text-primary-600 shadow-sm border border-slate-800" 
                 : "hover:bg-slate-200/50"
             }`}
           >
@@ -444,7 +444,7 @@ export default function ProductList({
             onClick={() => { setSortBy("stock"); toggleSort("stock"); }}
             className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 ${
               sortBy === "stock" 
-                ? "bg-slate-900 text-primary-600 shadow-sm border border-slate-100" 
+                ? "bg-slate-900 text-primary-600 shadow-sm border border-slate-800" 
                 : "hover:bg-slate-200/50"
             }`}
           >
@@ -455,25 +455,25 @@ export default function ProductList({
       </div>
 
       {/* PRODUCT LIST TABLE */}
-      <div className="bg-slate-900 rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className="bg-slate-900 rounded-3xl border border-slate-800 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-left text-sm text-slate-600">
-            <thead className="bg-slate-50/75 border-b border-slate-100 text-xs font-bold uppercase text-slate-500">
+          <table className="w-full border-collapse text-left text-sm text-slate-300">
+            <thead className="bg-slate-950/75 border-b border-slate-800 text-xs font-bold uppercase text-slate-400">
               <tr>
                 <th className="px-6 py-4 w-12"><input type="checkbox" className="rounded text-primary-500" /></th>
-                <th className="px-6 py-4 cursor-pointer hover:bg-slate-100/50" onClick={() => toggleSort("name")}>
+                <th className="px-6 py-4 cursor-pointer hover:bg-slate-800/50" onClick={() => toggleSort("name")}>
                   <div className="flex items-center gap-1">
                     Tên sản phẩm
                     <ArrowUpDown className="h-3 w-3 text-slate-400" />
                   </div>
                 </th>
-                <th className="px-6 py-4 w-48 cursor-pointer hover:bg-slate-100/50" onClick={() => toggleSort("price")}>
+                <th className="px-6 py-4 w-48 cursor-pointer hover:bg-slate-800/50" onClick={() => toggleSort("price")}>
                   <div className="flex items-center gap-1">
                     Giá bán
                     <ArrowUpDown className="h-3 w-3 text-slate-400" />
                   </div>
                 </th>
-                <th className="px-6 py-4 w-36 cursor-pointer hover:bg-slate-100/50" onClick={() => toggleSort("stock")}>
+                <th className="px-6 py-4 w-36 cursor-pointer hover:bg-slate-800/50" onClick={() => toggleSort("stock")}>
                   <div className="flex items-center gap-1">
                     Kho hàng
                     <ArrowUpDown className="h-3 w-3 text-slate-400" />
@@ -500,7 +500,7 @@ export default function ProductList({
               <tbody>
                 <tr>
                   <td colSpan={7} className="py-20 text-center text-slate-400 space-y-2">
-                    <p className="font-semibold text-slate-600 text-base">Không tìm thấy sản phẩm nào</p>
+                    <p className="font-semibold text-slate-300 text-base">Không tìm thấy sản phẩm nào</p>
                     <p className="text-xs">Hãy thử thay đổi điều kiện tìm kiếm hoặc thêm sản phẩm mới.</p>
                   </td>
                 </tr>
@@ -516,7 +516,7 @@ export default function ProductList({
                   return (
                     <React.Fragment key={product.id}>
                       {/* Product Parent Row */}
-                      <tr className={`hover:bg-slate-50/20 transition-colors ${isExpanded ? 'bg-slate-50/10' : ''}`}>
+                      <tr className={`hover:bg-slate-950/20 transition-colors ${isExpanded ? 'bg-slate-950/10' : ''}`}>
                         <td className="px-6 py-4.5 align-top">
                           <input type="checkbox" className="rounded text-primary-500 mt-1" />
                         </td>
@@ -524,7 +524,7 @@ export default function ProductList({
                         {/* Info Column */}
                         <td className="px-6 py-4.5 align-top">
                           <div className="flex gap-4">
-                            <div className="h-16 w-16 bg-slate-50 rounded-xl overflow-hidden border border-slate-100 shrink-0 flex items-center justify-center text-slate-400">
+                            <div className="h-16 w-16 bg-slate-950 rounded-xl overflow-hidden border border-slate-800 shrink-0 flex items-center justify-center text-slate-400">
                               {cover ? (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img src={cover} alt={product.name} className="h-full w-full object-cover" />
@@ -533,7 +533,7 @@ export default function ProductList({
                               )}
                             </div>
                             <div className="space-y-1 max-w-md">
-                              <h3 className="font-bold text-slate-800 line-clamp-2 text-sm leading-snug">
+                              <h3 className="font-bold text-slate-100 line-clamp-2 text-sm leading-snug">
                                 {product.name}
                               </h3>
                               <div className="flex flex-wrap gap-2 text-[11px] font-medium text-slate-400">
@@ -544,7 +544,7 @@ export default function ProductList({
                                 <span className={`px-2 py-0.5 rounded-full ${
                                   product.status === "Published" 
                                     ? "bg-emerald-50 text-emerald-600 border border-emerald-100" 
-                                    : "bg-slate-100 text-slate-600"
+                                    : "bg-slate-800 text-slate-300"
                                 }`}>
                                   {product.status === "Published" ? "Đang hoạt động" : "Bản nháp"}
                                 </span>
@@ -554,7 +554,7 @@ export default function ProductList({
                         </td>
 
                         {/* Price Range */}
-                        <td className="px-6 py-4.5 align-top font-semibold text-slate-800">
+                        <td className="px-6 py-4.5 align-top font-semibold text-slate-100">
                           {getPriceRange(product)}
                         </td>
 
@@ -563,14 +563,14 @@ export default function ProductList({
                           {totalStock === 0 ? (
                             <span className="text-rose-500 bg-rose-50 border border-rose-100 px-2.5 py-0.5 rounded-full text-xs font-bold inline-block">Hết hàng</span>
                           ) : (
-                            <span className="text-slate-700">{totalStock}</span>
+                            <span className="text-slate-200">{totalStock}</span>
                           )}
                         </td>
 
                         {/* Performance (Mocked) */}
                         <td className="px-6 py-4.5 align-top">
                           <div className="space-y-0.5">
-                            <span className="text-slate-700 font-medium text-xs flex items-center gap-1">
+                            <span className="text-slate-200 font-medium text-xs flex items-center gap-1">
                               <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
                               Doanh số: {product.status === "Published" ? "12" : "0"}
                             </span>
@@ -580,7 +580,7 @@ export default function ProductList({
 
                         {/* Rating (Mocked) */}
                         <td className="px-6 py-4.5 align-top">
-                          <div className="flex items-center gap-1 text-slate-700 font-medium text-xs">
+                          <div className="flex items-center gap-1 text-slate-200 font-medium text-xs">
                             <Star className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
                             <span>{product.status === "Published" ? "4.8" : "--"}</span>
                             <span className="text-slate-300">/ 5</span>
@@ -597,13 +597,13 @@ export default function ProductList({
                           </button>
                           <button 
                             onClick={() => onCopyProductClick(product.id)} 
-                            className="text-slate-500 hover:text-slate-700 block ml-auto flex items-center justify-end gap-1"
+                            className="text-slate-400 hover:text-slate-200 block ml-auto flex items-center justify-end gap-1"
                           >
                             Sao chép
                           </button>
                           <button 
                             onClick={() => handlePreviewClick(product.id)} 
-                            className="text-slate-400 hover:text-slate-600 block ml-auto flex items-center justify-end gap-1"
+                            className="text-slate-400 hover:text-slate-300 block ml-auto flex items-center justify-end gap-1"
                           >
                             Xem trước
                           </button>
@@ -620,10 +620,10 @@ export default function ProductList({
                       {/* Expandable Variants Section Trigger */}
                       {hasVariants && (
                         <tr>
-                          <td colSpan={7} className="px-6 py-1 bg-slate-50/30 border-t border-slate-100/60">
+                          <td colSpan={7} className="px-6 py-1 bg-slate-950/30 border-t border-slate-800/60">
                             <button 
                               onClick={() => toggleExpand(product.id)}
-                              className="text-xs font-semibold text-slate-500 hover:text-primary-600 flex items-center gap-1.5 py-1.5 focus:outline-none transition-colors"
+                              className="text-xs font-semibold text-slate-400 hover:text-primary-600 flex items-center gap-1.5 py-1.5 focus:outline-none transition-colors"
                             >
                               {isExpanded ? (
                                 <>
@@ -642,10 +642,10 @@ export default function ProductList({
                       {/* Expanded Sub-table */}
                       {isExpanded && hasVariants && (
                         <tr>
-                          <td colSpan={7} className="p-0 bg-slate-50/50">
-                            <div className="px-16 py-4 border-t border-b border-slate-100">
-                              <table className="w-full text-left text-xs text-slate-500 border-collapse bg-slate-900 rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                                <thead className="bg-slate-50 text-[10px] uppercase font-bold text-slate-400 border-b border-slate-100">
+                          <td colSpan={7} className="p-0 bg-slate-950/50">
+                            <div className="px-16 py-4 border-t border-b border-slate-800">
+                              <table className="w-full text-left text-xs text-slate-400 border-collapse bg-slate-900 rounded-2xl border border-slate-800 shadow-sm overflow-hidden">
+                                <thead className="bg-slate-950 text-[10px] uppercase font-bold text-slate-400 border-b border-slate-800">
                                   <tr>
                                     <th className="px-5 py-3 w-16">Hình ảnh</th>
                                     <th className="px-5 py-3">Phân loại hàng</th>
@@ -661,9 +661,9 @@ export default function ProductList({
                                     const label = [v.tier_1_option, v.tier_2_option].filter(Boolean).join(" - ");
 
                                     return (
-                                      <tr key={v.id} className="hover:bg-slate-50/50 transition-colors">
+                                      <tr key={v.id} className="hover:bg-slate-950/50 transition-colors">
                                         <td className="px-5 py-2">
-                                          <div className="h-9 w-9 rounded-lg border border-slate-100 bg-slate-50 overflow-hidden flex items-center justify-center text-slate-300">
+                                          <div className="h-9 w-9 rounded-lg border border-slate-800 bg-slate-950 overflow-hidden flex items-center justify-center text-slate-300">
                                             {variantImage ? (
                                               // eslint-disable-next-line @next/next/no-img-element
                                               <img src={variantImage} alt={label} className="h-full w-full object-cover" />
@@ -676,20 +676,20 @@ export default function ProductList({
                                             )}
                                           </div>
                                         </td>
-                                        <td className="px-5 py-2 font-semibold text-slate-700">
+                                        <td className="px-5 py-2 font-semibold text-slate-200">
                                           {label}
                                         </td>
-                                        <td className="px-5 py-2 font-mono text-slate-500">
+                                        <td className="px-5 py-2 font-mono text-slate-400">
                                           {v.sku_code}
                                         </td>
-                                        <td className="px-5 py-2 font-semibold text-slate-700">
+                                        <td className="px-5 py-2 font-semibold text-slate-200">
                                           ₫{v.price.toLocaleString("vi-VN")}
                                         </td>
                                         <td className="px-5 py-2 font-semibold">
                                           {v.stock === 0 ? (
                                             <span className="text-rose-500">Hết hàng</span>
                                           ) : (
-                                            <span className="text-slate-600">{v.stock}</span>
+                                            <span className="text-slate-300">{v.stock}</span>
                                           )}
                                         </td>
                                       </tr>
@@ -711,12 +711,12 @@ export default function ProductList({
 
         {/* PAGINATION SYSTEM FOOTER */}
         {!loading && totalItems > 0 && (
-          <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-semibold text-slate-500">
+          <div className="px-6 py-4 bg-slate-950 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-semibold text-slate-400">
             {/* Rows Per Page Select */}
             <div className="flex items-center gap-2">
               <span>Hiển thị</span>
               <select
-                className="px-2 py-1 border border-slate-200 rounded-lg bg-slate-900 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="px-2 py-1 border border-slate-700 rounded-lg bg-slate-900 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 value={pageSize}
                 onChange={(e) => {
                   setPageSize(Number(e.target.value));
@@ -737,7 +737,7 @@ export default function ProductList({
               <button
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                className="p-1.5 rounded-lg border border-slate-200 bg-slate-900 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-slate-900 transition-colors"
+                className="p-1.5 rounded-lg border border-slate-700 bg-slate-900 hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-slate-900 transition-colors"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
@@ -749,7 +749,7 @@ export default function ProductList({
                   className={`px-3 py-1.5 rounded-lg transition-colors ${
                     currentPage === p
                       ? "bg-primary-600 text-white font-bold"
-                      : "border border-slate-200 bg-slate-900 hover:bg-slate-100"
+                      : "border border-slate-700 bg-slate-900 hover:bg-slate-800"
                   }`}
                 >
                   {p}
@@ -759,7 +759,7 @@ export default function ProductList({
               <button
                 disabled={currentPage === totalPages}
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                className="p-1.5 rounded-lg border border-slate-200 bg-slate-900 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-slate-900 transition-colors"
+                className="p-1.5 rounded-lg border border-slate-700 bg-slate-900 hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-slate-900 transition-colors"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
@@ -771,18 +771,18 @@ export default function ProductList({
       {/* PREVIEW MODAL */}
       {showPreviewModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-slate-900 rounded-3xl w-full max-w-4xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-slate-900 rounded-3xl w-full max-w-4xl shadow-2xl border border-slate-800 overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+            <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/50">
               <div>
                 <span className="text-xs bg-primary-50 text-primary-600 px-2.5 py-1 rounded-full font-bold border border-primary-100">
                   Chi tiết sản phẩm
                 </span>
-                <h2 className="text-lg font-bold text-slate-800 mt-1">Xem trước thông tin</h2>
+                <h2 className="text-lg font-bold text-slate-100 mt-1">Xem trước thông tin</h2>
               </div>
               <button 
                 onClick={() => { setShowPreviewModal(false); setPreviewProduct(null); }}
-                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all"
+                className="p-2 text-slate-400 hover:text-slate-300 hover:bg-slate-800 rounded-xl transition-all"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -803,7 +803,7 @@ export default function ProductList({
                   <div className="space-y-6">
                     {/* Main Image & Gallery */}
                     <div>
-                      <div className="aspect-square bg-slate-50 border border-slate-100 rounded-2xl overflow-hidden flex items-center justify-center text-slate-300 relative">
+                      <div className="aspect-square bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden flex items-center justify-center text-slate-300 relative">
                         {previewProduct.media.find(m => m.is_cover) ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img 
@@ -827,7 +827,7 @@ export default function ProductList({
                       {previewProduct.media.length > 1 && (
                         <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
                           {previewProduct.media.map((img) => (
-                            <div key={img.id} className={`h-14 w-14 border rounded-xl overflow-hidden shrink-0 bg-slate-50 flex items-center justify-center ${img.is_cover ? 'border-primary-500 ring-2 ring-primary-100' : 'border-slate-100'}`}>
+                            <div key={img.id} className={`h-14 w-14 border rounded-xl overflow-hidden shrink-0 bg-slate-950 flex items-center justify-center ${img.is_cover ? 'border-primary-500 ring-2 ring-primary-100' : 'border-slate-800'}`}>
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img src={normalizeImageUrl(img.image_url) || img.image_url} alt="Thumbnail" className="h-full w-full object-cover" />
                             </div>
@@ -837,26 +837,26 @@ export default function ProductList({
                     </div>
 
                     {/* Logistics Card */}
-                    <div className="bg-slate-50 p-4.5 rounded-2xl border border-slate-100/60 space-y-3">
-                      <h4 className="font-bold text-xs text-slate-500 uppercase tracking-wider">Thông tin vận chuyển</h4>
+                    <div className="bg-slate-950 p-4.5 rounded-2xl border border-slate-800/60 space-y-3">
+                      <h4 className="font-bold text-xs text-slate-400 uppercase tracking-wider">Thông tin vận chuyển</h4>
                       <div className="grid grid-cols-2 gap-4 text-xs">
                         <div>
                           <span className="text-slate-400 block">Cân nặng (sau đóng gói):</span>
-                          <strong className="text-slate-700">{previewProduct.weight} g</strong>
+                          <strong className="text-slate-200">{previewProduct.weight} g</strong>
                         </div>
                         <div>
                           <span className="text-slate-400 block">Kích thước đóng gói:</span>
-                          <strong className="text-slate-700">
+                          <strong className="text-slate-200">
                             {[previewProduct.length, previewProduct.width, previewProduct.height].filter(Boolean).join(" x ") || "N/A"} cm
                           </strong>
                         </div>
                         <div>
                           <span className="text-slate-400 block">Hàng đặt trước:</span>
-                          <strong className="text-slate-700">{previewProduct.is_pre_order ? `Có (${previewProduct.dts_days} ngày)` : "Không"}</strong>
+                          <strong className="text-slate-200">{previewProduct.is_pre_order ? `Có (${previewProduct.dts_days} ngày)` : "Không"}</strong>
                         </div>
                         <div>
                           <span className="text-slate-400 block">Trạng thái:</span>
-                          <strong className="text-slate-700">{previewProduct.status === "Published" ? "Đang hoạt động" : "Bản nháp"}</strong>
+                          <strong className="text-slate-200">{previewProduct.status === "Published" ? "Đang hoạt động" : "Bản nháp"}</strong>
                         </div>
                       </div>
                     </div>
@@ -867,24 +867,24 @@ export default function ProductList({
                     {/* Basic Info */}
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">
+                        <span className="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full font-bold">
                           {categories.find(c => c.id === previewProduct.category_id)?.name || "Chưa phân loại"}
                         </span>
                         <span className="text-slate-300">•</span>
                         <span className="text-xs font-mono text-slate-400">Parent SKU: {previewProduct.product_code}</span>
                       </div>
-                      <h1 className="text-xl font-bold text-slate-800 leading-snug">{previewProduct.name}</h1>
-                      <div className="text-xs font-medium text-slate-500 bg-slate-50/50 p-3 rounded-xl border border-slate-100 overflow-y-auto max-h-36 whitespace-pre-wrap">
+                      <h1 className="text-xl font-bold text-slate-100 leading-snug">{previewProduct.name}</h1>
+                      <div className="text-xs font-medium text-slate-400 bg-slate-950/50 p-3 rounded-xl border border-slate-800 overflow-y-auto max-h-36 whitespace-pre-wrap">
                         {previewProduct.description || "Không có mô tả sản phẩm."}
                       </div>
                     </div>
 
                     {/* Variations Table */}
                     <div className="space-y-2.5">
-                      <h3 className="font-bold text-xs text-slate-500 uppercase tracking-wider">Danh sách phân loại sản phẩm</h3>
-                      <div className="border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
-                        <table className="w-full text-left text-xs text-slate-600 border-collapse bg-slate-900">
-                          <thead className="bg-slate-50 text-[10px] uppercase font-bold text-slate-400 border-b border-slate-100">
+                      <h3 className="font-bold text-xs text-slate-400 uppercase tracking-wider">Danh sách phân loại sản phẩm</h3>
+                      <div className="border border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+                        <table className="w-full text-left text-xs text-slate-300 border-collapse bg-slate-900">
+                          <thead className="bg-slate-950 text-[10px] uppercase font-bold text-slate-400 border-b border-slate-800">
                             <tr>
                               <th className="px-4 py-2.5">Phân loại</th>
                               <th className="px-4 py-2.5">SKU phân loại</th>
@@ -896,11 +896,11 @@ export default function ProductList({
                             {previewProduct.variants.map((v) => {
                               const label = [v.tier_1_option, v.tier_2_option].filter(Boolean).join(" - ");
                               return (
-                                <tr key={v.id} className="hover:bg-slate-50/50 transition-colors">
-                                  <td className="px-4 py-2 font-bold text-slate-700">{label || "Mặc định"}</td>
+                                <tr key={v.id} className="hover:bg-slate-950/50 transition-colors">
+                                  <td className="px-4 py-2 font-bold text-slate-200">{label || "Mặc định"}</td>
                                   <td className="px-4 py-2 font-mono text-slate-400 text-[11px]">{v.sku_code}</td>
                                   <td className="px-4 py-2 font-bold text-primary-600">₫{v.price.toLocaleString("vi-VN")}</td>
-                                  <td className="px-4 py-2 text-slate-500 font-semibold">{v.stock}</td>
+                                  <td className="px-4 py-2 text-slate-400 font-semibold">{v.stock}</td>
                                 </tr>
                               );
                             })}
@@ -916,10 +916,10 @@ export default function ProductList({
             </div>
             
             {/* Modal Footer */}
-            <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex justify-end gap-3">
+            <div className="px-6 py-4 border-t border-slate-800 bg-slate-950/50 flex justify-end gap-3">
               <button 
                 onClick={() => { setShowPreviewModal(false); setPreviewProduct(null); }}
-                className="px-5 py-2 border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition-all text-xs"
+                className="px-5 py-2 border border-slate-700 text-slate-300 font-bold rounded-xl hover:bg-slate-950 transition-all text-xs"
               >
                 Đóng
               </button>
@@ -942,16 +942,16 @@ export default function ProductList({
       {/* DELETE CONFIRM MODAL */}
       {deleteTarget && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md rounded-3xl border border-slate-100 bg-slate-900 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="px-6 py-5 border-b border-slate-100 bg-rose-50/40">
+          <div className="w-full max-w-md rounded-3xl border border-slate-800 bg-slate-900 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="px-6 py-5 border-b border-slate-800 bg-rose-50/40">
               <h3 className="text-lg font-black text-slate-900 tracking-tight">Xác nhận xóa sản phẩm</h3>
-              <p className="text-xs text-slate-500 mt-1">Thao tác này sẽ xóa dữ liệu sản phẩm khỏi hệ thống PMI.</p>
+              <p className="text-xs text-slate-400 mt-1">Thao tác này sẽ xóa dữ liệu sản phẩm khỏi hệ thống PMI.</p>
             </div>
 
             <div className="px-6 py-5 space-y-3">
-              <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
-                <p className="text-sm font-bold text-slate-800 line-clamp-2">{deleteTarget.name}</p>
-                <p className="text-xs text-slate-500 mt-1">SKU parent: {deleteTarget.product_code}</p>
+              <div className="rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3">
+                <p className="text-sm font-bold text-slate-100 line-clamp-2">{deleteTarget.name}</p>
+                <p className="text-xs text-slate-400 mt-1">SKU parent: {deleteTarget.product_code}</p>
                 <p className="text-xs text-slate-400 mt-0.5">ID: {deleteTarget.id}</p>
               </div>
 
@@ -962,7 +962,7 @@ export default function ProductList({
               )}
             </div>
 
-            <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/60 flex items-center justify-end gap-3">
+            <div className="px-6 py-4 border-t border-slate-800 bg-slate-950/60 flex items-center justify-end gap-3">
               <button
                 onClick={() => {
                   if (deletingProductId !== null) return;
@@ -970,7 +970,7 @@ export default function ProductList({
                   setDeleteError(null);
                 }}
                 disabled={deletingProductId !== null}
-                className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-4 py-2 rounded-xl border border-slate-700 text-slate-300 font-bold text-xs hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 Hủy
               </button>
