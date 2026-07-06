@@ -1,3 +1,4 @@
+import React from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi } from "vitest";
@@ -14,13 +15,13 @@ describe("DataTable", () => {
     const onSearchChange = vi.fn();
 
     render(
-      <DataTable
-        title="Danh sach"
-        data={[{ id: 1, name: "Ao" }]}
-        columns={[{ key: "name", label: "Ten" }]}
-        searchQuery=""
-        onSearchChange={onSearchChange}
-      />,
+      React.createElement(DataTable, {
+        title: "Danh sach",
+        data: [{ id: 1, name: "Ao" }],
+        columns: [{ key: "name", label: "Ten" }],
+        searchQuery: "",
+        onSearchChange,
+      }),
     );
 
     expect(screen.getByText("Danh sach")).toBeInTheDocument();
@@ -37,16 +38,16 @@ describe("DataTable", () => {
     const onCopyClick = vi.fn();
 
     render(
-      <DataTable
-        title="Danh sach"
-        data={[{ id: 1, name: "Ao" }]}
-        columns={[{ key: "name", label: "Ten" }]}
-        onAddClick={onAddClick}
-        addLabel="Them"
-        onEditClick={onEditClick}
-        onDeleteClick={onDeleteClick}
-        onCopyClick={onCopyClick}
-      />,
+      React.createElement(DataTable, {
+        title: "Danh sach",
+        data: [{ id: 1, name: "Ao" }],
+        columns: [{ key: "name", label: "Ten" }],
+        onAddClick,
+        addLabel: "Them",
+        onEditClick,
+        onDeleteClick,
+        onCopyClick,
+      }),
     );
 
     await userEvent.click(screen.getByRole("button", { name: "Them" }));
