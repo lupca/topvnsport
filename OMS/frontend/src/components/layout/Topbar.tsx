@@ -22,15 +22,15 @@ export default function Topbar() {
       {/* Right Actions */}
       <div className="flex items-center gap-4 ml-auto">
         {/* Database Status Tag */}
-        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-full text-[10px] font-bold tracking-wide">
+        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-950 text-emerald-400 rounded-full text-[10px] font-bold tracking-wide">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
           <span>PostgreSQL Active</span>
         </div>
 
         {/* Notifications Icon */}
-        <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all relative">
+        <button className="p-2 text-slate-400 hover:text-slate-300 hover:bg-slate-800 rounded-xl transition-all relative">
           <Bell className="w-4.5 h-4.5" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 border border-white"></span>
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 border border-slate-900"></span>
         </button>
 
         <div className="h-6 w-px bg-slate-800"></div>

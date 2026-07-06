@@ -564,14 +564,14 @@ function OrdersPageContent() {
           </div>
 
           {/* Filters Bar */}
-          <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="bg-slate-900 p-5 rounded-2xl border border-gray-200 shadow-sm grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
             {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -trangray-y-1/2 w-4 h-4 text-gray-500" />
               <input
                 type="text"
                 placeholder="Số đơn, tên, SĐT..."
-                className="w-full pl-9 pr-4 py-2 bg-white border border-gray-300 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 transition-all"
+                className="w-full pl-9 pr-4 py-2 bg-slate-900 border border-gray-300 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 transition-all"
                 value={filterSearch}
                 onChange={(e) => setFilterSearch(e.target.value)}
               />
@@ -579,7 +579,7 @@ function OrdersPageContent() {
 
             {/* Status Selector */}
             <select
-              className="px-3.5 py-2 bg-white border border-gray-300 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900"
+              className="px-3.5 py-2 bg-slate-900 border border-gray-300 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900"
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
             >
@@ -592,7 +592,7 @@ function OrdersPageContent() {
 
             {/* Channel Selector */}
             <select
-              className="px-3.5 py-2 bg-white border border-gray-300 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900"
+              className="px-3.5 py-2 bg-slate-900 border border-gray-300 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900"
               value={filterChannel}
               onChange={(e) => setFilterChannel(e.target.value)}
             >
@@ -605,7 +605,7 @@ function OrdersPageContent() {
             {/* Date selector */}
             <input
               type="date"
-              className="px-3.5 py-2 bg-white border border-gray-300 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900"
+              className="px-3.5 py-2 bg-slate-900 border border-gray-300 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900"
               value={filterDate}
               onChange={(e) => setFilterDate(e.target.value)}
             />
@@ -626,7 +626,7 @@ function OrdersPageContent() {
           </div>
 
           {/* Orders Table */}
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="bg-slate-900 rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-left text-sm text-gray-700">
                 <thead className="bg-gray-100 border-b border-gray-200 font-bold uppercase text-gray-600">
@@ -740,17 +740,17 @@ function OrdersPageContent() {
                   <button
                     disabled={currentPage === 1}
                     onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                    className="p-1.5 rounded-lg border border-gray-300 bg-white disabled:opacity-40"
+                    className="p-1.5 rounded-lg border border-gray-300 bg-slate-900 disabled:opacity-40"
                   >
                     <ChevronLeft className="w-4 h-4 text-gray-500" />
                   </button>
-                  <span className="px-3 py-1 bg-white border border-gray-300 rounded-lg text-gray-900">
+                  <span className="px-3 py-1 bg-slate-900 border border-gray-300 rounded-lg text-gray-900">
                     {currentPage} / {totalPages}
                   </span>
                   <button
                     disabled={currentPage === totalPages}
                     onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                    className="p-1.5 rounded-lg border border-gray-300 bg-white disabled:opacity-40"
+                    className="p-1.5 rounded-lg border border-gray-300 bg-slate-900 disabled:opacity-40"
                   >
                     <ChevronRight className="w-4 h-4 text-gray-500" />
                   </button>
@@ -768,7 +768,7 @@ function OrdersPageContent() {
             <div className="flex items-center justify-between">
               <button
                 onClick={() => updateURL("list")}
-                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition-colors font-bold text-sm shadow-sm"
+                className="px-4 py-2 bg-slate-900 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition-colors font-bold text-sm shadow-sm"
               >
                 ← Đóng form
               </button>
@@ -786,7 +786,7 @@ function OrdersPageContent() {
 
             <form onSubmit={handleSubmit(handleSaveOrder)} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left columns: fields */}
-            <div className="lg:col-span-2 space-y-6 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+            <div className="lg:col-span-2 space-y-6 bg-slate-900 p-6 rounded-2xl border border-gray-200 shadow-sm">
               <h3 className="text-xs font-bold text-gray-800 uppercase tracking-wider pb-2 border-b border-gray-200">
                 Thông tin khách hàng & vận chuyển
               </h3>
@@ -798,7 +798,7 @@ function OrdersPageContent() {
                     Khách hàng <span className="text-rose-400">*</span>
                   </label>
                   <div className="flex gap-2">
-                    <div className="flex-1 px-3.5 py-2 bg-white border border-gray-200 rounded-xl text-xs text-gray-800 font-semibold flex items-center justify-between min-h-[36px]">
+                    <div className="flex-1 px-3.5 py-2 bg-slate-900 border border-gray-200 rounded-xl text-xs text-gray-800 font-semibold flex items-center justify-between min-h-[36px]">
                       {formCustomer ? (
                         <span>{formCustomer.name} ({formCustomer.phone})</span>
                       ) : (
@@ -824,7 +824,7 @@ function OrdersPageContent() {
                     Kênh bán hàng <span className="text-rose-400">*</span>
                   </label>
                   <select
-                    className="w-full px-3.5 py-2 bg-white border border-gray-200 text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 font-semibold"
+                    className="w-full px-3.5 py-2 bg-slate-900 border border-gray-200 text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 font-semibold"
                     value={formChannelId || ""}
                     onChange={(e) => {
                       const val = e.target.value ? parseInt(e.target.value, 10) : null;
@@ -832,9 +832,9 @@ function OrdersPageContent() {
                       setValue("channel_id", val || 0, { shouldValidate: true });
                     }}
                   >
-                    <option value="" className="bg-white">-- Chọn kênh bán hàng --</option>
+                    <option value="" className="bg-slate-900">-- Chọn kênh bán hàng --</option>
                     {channels.filter(ch => ch.is_active).map((ch) => (
-                      <option key={ch.id} value={ch.id} className="bg-white">{ch.name}</option>
+                      <option key={ch.id} value={ch.id} className="bg-slate-900">{ch.name}</option>
                     ))}
                   </select>
                   {errors.channel_id && (
@@ -857,7 +857,7 @@ function OrdersPageContent() {
                       setValue("shipping_address", e.target.value, { shouldValidate: true });
                     }}
                     placeholder="Số nhà, tên đường, Phường, Quận, Thành phố"
-                    className="w-full px-3.5 py-2 bg-white border border-gray-200 text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900"
+                    className="w-full px-3.5 py-2 bg-slate-900 border border-gray-200 text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900"
                   />
                   {errors.shipping_address && (
                     <p className="text-[10px] text-rose-400 font-bold">{errors.shipping_address.message}</p>
@@ -876,7 +876,7 @@ function OrdersPageContent() {
                       setFormShippingFee(val);
                       setValue("shipping_fee", val, { shouldValidate: true });
                     }}
-                    className="w-full px-3.5 py-2 bg-white border border-gray-200 text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900"
+                    className="w-full px-3.5 py-2 bg-slate-900 border border-gray-200 text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900"
                     min="0"
                   />
                   {errors.shipping_fee && (
@@ -897,7 +897,7 @@ function OrdersPageContent() {
                   }}
                   placeholder="Ghi chú giao hàng, đóng gói..."
                   rows={2}
-                  className="w-full px-3.5 py-2 bg-white border border-gray-200 text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none text-gray-900"
+                  className="w-full px-3.5 py-2 bg-slate-900 border border-gray-200 text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none text-gray-900"
                 />
               </div>
 
@@ -923,7 +923,7 @@ function OrdersPageContent() {
                 {/* Items table */}
                 <div className="border border-gray-200 rounded-xl overflow-hidden">
                   <table className="w-full border-collapse text-left text-xs">
-                    <thead className="bg-white border-b border-gray-200 text-gray-600 font-bold">
+                    <thead className="bg-slate-900 border-b border-gray-200 text-gray-600 font-bold">
                       <tr>
                         <th className="px-4 py-3">Sản phẩm</th>
                         <th className="px-4 py-3">Mã SKU</th>
@@ -992,7 +992,7 @@ function OrdersPageContent() {
 
             {/* Right sidebar: Summary */}
             <div className="space-y-6">
-              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+              <div className="bg-slate-900 p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
                 <h3 className="text-xs font-bold text-gray-800 uppercase tracking-wider pb-2 border-b border-gray-200">
                   Tóm tắt đơn hàng
                 </h3>
@@ -1040,7 +1040,7 @@ function OrdersPageContent() {
           <div className="flex items-center justify-between">
             <button
               onClick={() => updateURL("list")}
-              className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-100 transition-colors font-bold text-xs shadow-sm"
+              className="px-4 py-2 bg-slate-900 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-100 transition-colors font-bold text-xs shadow-sm"
             >
               ← Quay lại danh sách
             </button>
@@ -1050,7 +1050,7 @@ function OrdersPageContent() {
           </div>
 
           {detailLoading || !currentOrder ? (
-            <div className="p-8 text-center text-gray-600 bg-white border border-gray-200 rounded-2xl shadow-sm">
+            <div className="p-8 text-center text-gray-600 bg-slate-900 border border-gray-200 rounded-2xl shadow-sm">
               Đang tải chi tiết đơn hàng...
             </div>
           ) : (
@@ -1059,7 +1059,7 @@ function OrdersPageContent() {
               <div className="lg:col-span-2 space-y-6">
                 
                 {/* Timeline */}
-                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-6">
+                <div className="bg-slate-900 p-6 rounded-2xl border border-gray-200 shadow-sm space-y-6">
                   <h3 className="text-xs font-bold text-gray-800 uppercase tracking-wider pb-2 border-b border-gray-200">
                     Lộ trình trạng thái đơn hàng
                   </h3>
@@ -1078,7 +1078,7 @@ function OrdersPageContent() {
                           <div className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-[10px] border-2 transition-all duration-300 z-10 ${
                             isCurrent ? "bg-indigo-600 text-white border-indigo-600 scale-110 shadow-md shadow-indigo-600/20" :
                             isCompleted ? "bg-indigo-950 border-indigo-500 text-indigo-400" :
-                            "bg-white border-gray-200 text-gray-500"
+                            "bg-slate-900 border-gray-200 text-gray-500"
                           }`}>
                             {idx + 1}
                           </div>
@@ -1112,14 +1112,14 @@ function OrdersPageContent() {
                 </div>
 
                 {/* Items */}
-                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                <div className="bg-slate-900 p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
                   <h3 className="text-xs font-bold text-gray-800 uppercase tracking-wider pb-2 border-b border-gray-200">
                     Sản phẩm trong đơn hàng
                   </h3>
 
                   <div className="border border-gray-200 rounded-xl overflow-hidden">
                     <table className="w-full text-left text-xs">
-                      <thead className="bg-white border-b border-gray-200 text-gray-600 font-bold">
+                      <thead className="bg-slate-900 border-b border-gray-200 text-gray-600 font-bold">
                         <tr>
                           <th className="px-4 py-3">Sản phẩm</th>
                           <th className="px-4 py-3">Mã SKU</th>
@@ -1160,7 +1160,7 @@ function OrdersPageContent() {
 
                 {/* Fulfillment Sync details */}
                 {currentOrder.fulfillment_orders && currentOrder.fulfillment_orders.length > 0 && (
-                  <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                  <div className="bg-slate-900 p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
                     <h3 className="text-xs font-bold text-gray-800 uppercase tracking-wider pb-2 border-b border-gray-200 flex items-center gap-2">
                       <Package className="w-4 h-4 text-indigo-400" />
                       <span>Thông tin Fulfillment (WMS integration)</span>
@@ -1168,7 +1168,7 @@ function OrdersPageContent() {
 
                     <div className="space-y-4">
                       {currentOrder.fulfillment_orders.map((fo) => (
-                        <div key={fo.id} className="p-4 bg-white border border-gray-200 rounded-xl grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                        <div key={fo.id} className="p-4 bg-slate-900 border border-gray-200 rounded-xl grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs">
                           <div>
                             <span className="text-gray-500 block">Mã vận vận (WMS ID):</span>
                             <strong className="text-gray-800">{fo.fulfillment_number}</strong>
@@ -1209,7 +1209,7 @@ function OrdersPageContent() {
               {/* Right Column: Actions & Details */}
               <div className="space-y-6">
                 {/* Meta details */}
-                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                <div className="bg-slate-900 p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
                   <div className="pb-2 border-b border-gray-200 flex items-center justify-between">
                     <div>
                       <h4 className="text-sm font-extrabold text-gray-800">{currentOrder.order_number}</h4>
@@ -1306,7 +1306,7 @@ function OrdersPageContent() {
                     {currentOrder.status === "DRAFT" && (
                       <button
                         onClick={() => handleDeleteOrder(currentOrder.id)}
-                        className="w-full py-2 bg-white border border-gray-200 text-rose-400 hover:text-rose-500 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5"
+                        className="w-full py-2 bg-slate-900 border border-gray-200 text-rose-400 hover:text-rose-500 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5"
                       >
                         <Trash2 className="w-4 h-4" />
                         <span>Xóa vĩnh viễn đơn nháp</span>
@@ -1324,8 +1324,8 @@ function OrdersPageContent() {
 
       {/* A. Customer Selection Modal */}
       {isCustomerModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl border border-gray-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-gray-900">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 rounded-3xl w-full max-w-lg shadow-2xl border border-gray-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-gray-900">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-gray-100">
               <h2 className="text-sm font-bold text-gray-800">Chọn khách hàng</h2>
               <button
@@ -1343,7 +1343,7 @@ function OrdersPageContent() {
                   <input
                     type="text"
                     placeholder="Tìm theo tên hoặc số điện thoại..."
-                    className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900"
+                    className="w-full pl-9 pr-4 py-2 bg-slate-900 border border-gray-200 text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900"
                     value={customerSearch}
                     onChange={(e) => setCustomerSearch(e.target.value)}
                   />
@@ -1358,12 +1358,12 @@ function OrdersPageContent() {
               </div>
 
               {/* List */}
-              <div className="max-h-60 overflow-y-auto border border-gray-200 rounded-xl divide-y divide-gray-200 text-xs bg-white">
+              <div className="max-h-60 overflow-y-auto border border-gray-200 rounded-xl divide-y divide-gray-200 text-xs bg-slate-900">
                 {filteredCustomers.map((cust) => (
                   <div
                     key={cust.id}
                     onClick={() => handleSelectCustomer(cust)}
-                    className="p-3 hover:bg-white cursor-pointer flex items-center justify-between"
+                    className="p-3 hover:bg-slate-900 cursor-pointer flex items-center justify-between"
                   >
                     <div>
                       <div className="font-bold text-gray-800">{cust.name}</div>
@@ -1383,8 +1383,8 @@ function OrdersPageContent() {
 
       {/* B. Quick Add Customer Modal */}
       {isNewCustomerModalOpen && (
-        <div className="fixed inset-0 z-55 flex items-center justify-center bg-white/80 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl border border-gray-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-gray-900">
+        <div className="fixed inset-0 z-55 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 rounded-3xl w-full max-w-md shadow-2xl border border-gray-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-gray-900">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-gray-100">
               <h2 className="text-sm font-bold text-gray-800">Thêm nhanh khách hàng mới</h2>
               <button
@@ -1403,7 +1403,7 @@ function OrdersPageContent() {
                 <input
                   type="text"
                   placeholder="Nhập họ và tên"
-                  className="w-full px-3.5 py-2 bg-white border border-gray-200 text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900"
+                  className="w-full px-3.5 py-2 bg-slate-900 border border-gray-200 text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900"
                   value={newCustomerName}
                   onChange={(e) => setNewCustomerName(e.target.value)}
                   required
@@ -1417,7 +1417,7 @@ function OrdersPageContent() {
                 <input
                   type="text"
                   placeholder="Nhập số điện thoại"
-                  className="w-full px-3.5 py-2 bg-white border border-gray-200 text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900"
+                  className="w-full px-3.5 py-2 bg-slate-900 border border-gray-200 text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900"
                   value={newCustomerPhone}
                   onChange={(e) => setNewCustomerPhone(e.target.value)}
                   required
@@ -1429,7 +1429,7 @@ function OrdersPageContent() {
                 <input
                   type="email"
                   placeholder="Nhập địa chỉ email"
-                  className="w-full px-3.5 py-2 bg-white border border-gray-200 text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900"
+                  className="w-full px-3.5 py-2 bg-slate-900 border border-gray-200 text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900"
                   value={newCustomerEmail}
                   onChange={(e) => setNewCustomerEmail(e.target.value)}
                 />
@@ -1440,7 +1440,7 @@ function OrdersPageContent() {
                 <textarea
                   placeholder="Nhập địa chỉ"
                   rows={2}
-                  className="w-full px-3.5 py-2 bg-white border border-gray-200 text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none text-gray-900"
+                  className="w-full px-3.5 py-2 bg-slate-900 border border-gray-200 text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none text-gray-900"
                   value={newCustomerAddress}
                   onChange={(e) => setNewCustomerAddress(e.target.value)}
                 />
@@ -1468,8 +1468,8 @@ function OrdersPageContent() {
 
       {/* C. Product Search Modal */}
       {isProductModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl w-full max-w-2xl shadow-2xl border border-gray-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-gray-900">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 rounded-3xl w-full max-w-2xl shadow-2xl border border-gray-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-gray-900">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-gray-100">
               <h2 className="text-sm font-bold text-gray-800">Tìm kiếm & thêm sản phẩm từ PIM</h2>
               <button
@@ -1487,7 +1487,7 @@ function OrdersPageContent() {
                   <input
                     type="text"
                     placeholder="Nhập tên sản phẩm hoặc mã SKU..."
-                    className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900"
+                    className="w-full pl-9 pr-4 py-2 bg-slate-900 border border-gray-200 text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900"
                     value={productSearch}
                     onChange={(e) => setProductSearch(e.target.value)}
                     required
@@ -1502,7 +1502,7 @@ function OrdersPageContent() {
               </form>
 
               {/* Results */}
-              <div className="max-h-80 overflow-y-auto border border-gray-200 rounded-xl divide-y divide-gray-200 text-xs bg-white">
+              <div className="max-h-80 overflow-y-auto border border-gray-200 rounded-xl divide-y divide-gray-200 text-xs bg-slate-900">
                 {productSearchLoading ? (
                   <div className="p-6 text-center text-gray-500">Đang tìm kiếm sản phẩm...</div>
                 ) : searchResults.length === 0 ? (
@@ -1524,7 +1524,7 @@ function OrdersPageContent() {
                         </div>
 
                         {/* Variants List */}
-                        <div className="bg-white p-2 rounded-lg divide-y divide-gray-200 border border-gray-200">
+                        <div className="bg-slate-900 p-2 rounded-lg divide-y divide-gray-200 border border-gray-200">
                           {product.variants?.map((v) => {
                             const variantLabel = [v.tier_1_option, v.tier_2_option].filter(Boolean).join(" - ");
                             return (
