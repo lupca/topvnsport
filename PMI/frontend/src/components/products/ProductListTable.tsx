@@ -10,6 +10,9 @@ interface ProductListTableProps {
   products: Product[];
   loading: boolean;
   expandedProducts: Record<number, boolean>;
+  selectedProductIds: number[];
+  onToggleSelectProduct: (id: number) => void;
+  onToggleSelectAll: () => void;
   onToggleExpand: (id: number) => void;
   onToggleSort: (field: string) => void;
   onEditProductClick: (id: number) => void;
@@ -23,6 +26,9 @@ export default function ProductListTable({
   products,
   loading,
   expandedProducts,
+  selectedProductIds,
+  onToggleSelectProduct,
+  onToggleSelectAll,
   onToggleExpand,
   onToggleSort,
   onEditProductClick,
@@ -71,7 +77,14 @@ export default function ProductListTable({
         <table className="pim-table">
           <thead>
             <tr>
-              <th className="px-6 py-4 w-12"><input type="checkbox" className="rounded text-brand-primary" /></th>
+              <th className="px-6 py-4 w-12">
+                <input 
+                  type="checkbox" 
+                  className="rounded text-brand-primary cursor-pointer" 
+                  checked={products.length > 0 && selectedProductIds.length === products.length}
+                  onChange={onToggleSelectAll}
+                />
+              </th>
               <th className="px-6 py-4 cursor-pointer hover:bg-gray-100" onClick={() => onToggleSort("name")}>
                 <div className="flex items-center gap-1">
                   Tên sản phẩm
@@ -129,7 +142,12 @@ export default function ProductListTable({
                     {/* Product Parent Row */}
                     <tr className={`hover:bg-gray-50/20 transition-colors ${isExpanded ? 'bg-gray-50/10' : ''}`}>
                       <td className="px-6 py-4.5 align-top">
-                        <input type="checkbox" className="rounded text-brand-primary mt-1" />
+                        <input 
+                          type="checkbox" 
+                          className="rounded text-brand-primary mt-1 cursor-pointer" 
+                          checked={selectedProductIds.includes(product.id)}
+                          onChange={() => onToggleSelectProduct(product.id)}
+                        />
                       </td>
                       
                       {/* Info Column */}

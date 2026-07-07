@@ -2,7 +2,7 @@
 
 Hệ thống PIM đa kênh nếu không được thiết kế UI/UX khéo léo sẽ trở thành "ác mộng" cho người nhập liệu vì số lượng trường dữ liệu khổng lồ bị nhồi nhét. 
 
-Nguyên tắc thiết kế cho màn hình Create/Edit Product trên Next.js (Web Frontend) là: **Tách biệt Core và Channel thông qua cơ chế Tabs.**
+Nguyên tắc thiết kế cho màn hình Create/Edit Product (Web Frontend dùng React + Vite) là: **Tách biệt Core và Channel thông qua cơ chế Tabs.**
 
 ## 1. Bố Cục Màn Hình Cập Nhật Sản Phẩm (Product Detail Form)
 
@@ -37,13 +37,14 @@ Ngay dưới bảng biến thể, chúng ta hiển thị một hệ thống Tabs
 4. **Cấu hình giá riêng (Variant Overrides):**
    - Hiển thị lại bảng Matrix SKU ở Core, nhưng chỉ có cột `Giá Bán Shopee`. Hệ thống gợi ý `+10%` hoặc người dùng tự nhập tay để bù phí sàn.
 5. **Thuộc tính đặc thù sàn (Dynamic Channel Attributes):**
-   - Dựa vào Danh mục Shopee vừa chọn ở bước 3, frontend gọi API lấy danh sách các field bắt buộc của Shopee (VD: `Thương hiệu`, `Chất liệu`).
+   - Dựa vào Danh mục Shopee vừa chọn ở bước 3, frontend gọi API lấy danh sách các mapping thuộc tính.
    - UI render động các ô nhập liệu. Hệ thống thông minh tự fill giá trị nếu các thuộc tính này đã khai báo ở Core.
+   - Nếu user nhập tay/sửa đổi giá trị khác với Core, dữ liệu sẽ được lưu xuống mảng `attribute_values` (Map vào bảng `product_channel_attribute_values`).
 
 #### Khi click vào Tab `[ Cấu Hình TikTok ]`:
 Tương tự như Shopee, nhưng UI sẽ render các fields bắt buộc khác của TikTok (dựa trên bảng mapping của TikTok):
 - *Danh mục TikTok:* Dropdown hiển thị chuỗi dài (VD: `Thiết bị thể thao/Cầu lông (603065)`).
-- *Thuộc tính TikTok:* Yêu cầu điền Bảng Kích thước (Size Chart URL), Hình thức Vận Chuyển (Delivery Option).
+- *Thuộc tính TikTok:* Yêu cầu điền Bảng Kích thước (Size Chart URL), Hình thức Vận Chuyển (Delivery Option), và **Hỗ trợ thanh toán khi nhận hàng (COD)**.
 - *Ghi đè giá TikTok:* Người dùng có thể set giá TikTok khác với giá Shopee.
 
 ## 2. Ưu Điểm & Đánh Đổi (Trade-offs) Của Thiết Kế UI Này
@@ -58,7 +59,7 @@ Tương tự như Shopee, nhưng UI sẽ render các fields bắt buộc khác c
 - **Cách hoạt động:** PIM bị "mù" luật của sàn. Giao diện Frontend sẽ **chỉ hiển thị các ô thuộc tính mà Admin đã tự tay cấu hình mapping** trong phần Settings. 
 - **Quy trình:** Nếu user xuất file Excel up lên sàn bị báo lỗi "Thiếu Chất Liệu", thì Admin phải vào PIM Settings khai báo mapping cho "Chất Liệu". Sau đó Frontend mới hiện ô này ra cho User điền. Điều này giúp hệ thống rất nhẹ, không bị crash khi API sàn thay đổi, đánh đổi lại là User có thể gặp lỗi lúc up file lần đầu nếu Admin cấu hình thiếu mapping.
 
-## 3. Kiến trúc Component (Next.js)
+## 3. Kiến trúc Component (React + Vite)
 
 ```javascript
 // Cấu trúc dự kiến cho trang chi tiết sản phẩm
@@ -77,10 +78,10 @@ Tương tự như Shopee, nhưng UI sẽ render các fields bắt buộc khác c
     
     <TabPanels>
       <TabPanel>
-         <ShopeeConfig channelId={2} />
+         <ShopeeConfig channelCode="shopee_vn" />
       </TabPanel>
       <TabPanel>
-         <TikTokConfig channelId={3} />
+         <TikTokConfig channelCode="tiktok_shop" />
       </TabPanel>
     </TabPanels>
   </Tabs>

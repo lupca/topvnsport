@@ -3,7 +3,7 @@
 ## 1. Nguồn Dữ Liệu Phân Tích
 Kiến trúc này được đúc kết từ việc phân tích tài liệu chuẩn của 2 nền tảng lớn (lưu tại thư mục `docs/shopee_mass_upload` và `docs/tiktok_batchupload`), kết hợp với nhu cầu bán hàng trên Webstore (Next.js).
 
-- **Nguồn Shopee:** Dựa trên File `Shopee_mass_upload_2026-06-08_100637.xlsx - Đăng tải bản mẫu.csv` và các file Hướng dẫn.
+- **Nguồn Shopee:** Dựa trên File `Shopee_mass_upload_2026-06-08_100637.xlsx - Bản đăng tải.csv` và các file Hướng dẫn.
 - **Nguồn TikTok:** Dựa trên File `Tiktoksellercenter_batchupload_20260707_template.xlsx - Template.csv` và `Category.csv`.
 
 ## 2. Triết lý Thiết Kế: "Core" & "Channel"
@@ -32,6 +32,6 @@ Tất cả các nền tảng thương mại điện tử đều chia sẻ một 
 
 Khi hệ thống Backend generate file Excel cho từng nền tảng, cơ chế gộp nhóm biến thể (Grouping) là điểm khác biệt lớn nhất:
 
-- **Shopee:** Sử dụng trường **Mã Sản Phẩm (Integration No)** làm khóa gộp. Các dòng nào có cùng `Integration No` sẽ được Shopee tự hiểu là các biến thể của chung 1 Sản phẩm Cha. *(Hệ thống PIM sẽ gán trường `Product.product_code` vào cột này).*
+- **Shopee:** Sử dụng trường **Mã Sản Phẩm (Integration No)** làm khóa gộp. Các dòng nào có cùng `Integration No` sẽ được Shopee tự hiểu là các biến thể của chung 1 Sản phẩm Cha. *(Hệ thống PIM sẽ gán trường `Product.product_code` vào cột này. **Lưu ý:** Cần validate `product_code` ở Frontend/Backend chỉ chứa chữ, số, dấu gạch ngang và giới hạn độ dài để không vi phạm quy tắc Integration No của Shopee).*
 - **TikTok Shop:** Dùng **Tên Sản Phẩm (Product Name)** để gộp nhóm. Các dòng liên tiếp có chung `Product Name` (và Category) sẽ được TikTok gộp lại thành 1 sản phẩm đa biến thể.
 - **Webstore:** Frontend gọi API trực tiếp theo JSON Payload, không cần dùng file Excel. Dữ liệu trả về từ API `/products` đã được nest (gộp sẵn) các `variants` vào trong 1 object `Product`.

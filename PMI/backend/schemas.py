@@ -41,6 +41,7 @@ class ProductVariantBase(BaseModel):
     tier_2_option: Optional[str] = Field(None, max_length=100)
     sku_code: str = Field(..., max_length=100)
     price: float = Field(..., ge=0)
+    barcode: Optional[str] = Field(None, max_length=255)
     stock: int = Field(..., ge=0)
 
 class ProductVariantCreate(ProductVariantBase):
@@ -110,6 +111,10 @@ class ProductBase(BaseModel):
     width: Optional[float] = Field(None, ge=0)
     height: Optional[float] = Field(None, ge=0)
 
+    # Customs & Taxation
+    hs_code: Optional[str] = Field(None, max_length=100)
+    tax_code: Optional[str] = Field(None, max_length=100)
+
     # Pre-order
     is_pre_order: bool = False
     dts_days: Optional[int] = Field(7, ge=7, le=30)
@@ -126,6 +131,8 @@ class ProductCreate(ProductBase):
     media: List[ProductMediaCreate] = Field(default=[])
     # Dynamic technical attributes based on selected family
     attributes: List[ProductAttributeInput] = Field(default=[])
+    # Multi-channel listings
+    channel_listings: List['ProductChannelListingCreate'] = Field(default=[])
 
     @validator('tier_variations')
     def validate_tier_indices(cls, v):
@@ -185,6 +192,7 @@ class ProductResponse(ProductBase):
     variants: List[ProductVariantResponse] = []
     media: List[ProductMediaResponse] = []
     attribute_values: List[ProductAttributeValueResponse] = []
+    channel_listings: List['ProductChannelListingResponse'] = []
 
     class Config:
         from_attributes = True
@@ -289,3 +297,151 @@ class ProductBySkuResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# Channel Schemas
+class ChannelBase(BaseModel):
+    code: str = Field(..., max_length=100)
+    name: str = Field(..., max_length=255)
+
+class ChannelCreate(ChannelBase):
+    pass
+
+class ChannelUpdate(ChannelBase):
+    pass
+
+class ChannelResponse(ChannelBase):
+    id: int
+    class Config:
+        from_attributes = True
+
+
+# Channel Config Schemas
+class ChannelConfigBase(BaseModel):
+    app_key: Optional[str] = Field(None, max_length=255)
+    app_secret: Optional[str] = Field(None, max_length=255)
+    access_token: Optional[str] = Field(None)
+    refresh_token: Optional[str] = Field(None)
+    is_active: bool = True
+
+class ChannelConfigCreate(ChannelConfigBase):
+    pass
+
+class ChannelConfigUpdate(ChannelConfigBase):
+    pass
+
+class ChannelConfigResponse(ChannelConfigBase):
+    id: int
+    channel_id: int
+    class Config:
+        from_attributes = True
+
+
+# Channel Category Mapping Schemas
+class ChannelCategoryMappingBase(BaseModel):
+    pim_category_id: int
+    channel_category_code: str = Field(..., max_length=255)
+    channel_category_name: str = Field(..., max_length=255)
+
+class ChannelCategoryMappingCreate(ChannelCategoryMappingBase):
+    pass
+
+class ChannelCategoryMappingUpdate(ChannelCategoryMappingBase):
+    pass
+
+class ChannelCategoryMappingResponse(ChannelCategoryMappingBase):
+    id: int
+    channel_id: int
+    class Config:
+        from_attributes = True
+
+
+# Channel Attribute Mapping Schemas
+class ChannelAttributeMappingBase(BaseModel):
+    pim_attribute_id: int
+    channel_category_code: Optional[str] = Field(None, max_length=255)
+    channel_attribute_code: str = Field(..., max_length=255)
+    channel_attribute_name: str = Field(..., max_length=255)
+
+class ChannelAttributeMappingCreate(ChannelAttributeMappingBase):
+    pass
+
+class ChannelAttributeMappingUpdate(ChannelAttributeMappingBase):
+    pass
+
+class ChannelAttributeMappingResponse(ChannelAttributeMappingBase):
+    id: int
+    channel_id: int
+    class Config:
+        from_attributes = True
+
+
+# Product Channel Attribute Value Schemas
+class ProductChannelAttributeValueBase(BaseModel):
+    attribute_mapping_id: int
+    value_string: Optional[str] = Field(None)
+    value_decimal: Optional[float] = None
+
+class ProductChannelAttributeValueCreate(ProductChannelAttributeValueBase):
+    pass
+
+class ProductChannelAttributeValueResponse(ProductChannelAttributeValueBase):
+    id: int
+    product_id: int
+    channel_id: int
+    class Config:
+        from_attributes = True
+
+
+# Variant Channel Listing Schemas
+class VariantChannelListingCreate(BaseModel):
+    sku_code: str = Field(..., max_length=100)
+    price_override: Optional[float] = Field(None, ge=0)
+    channel_variant_id: Optional[str] = Field(None, max_length=255)
+
+class VariantChannelListingResponse(BaseModel):
+    id: int
+    variant_id: int
+    channel_id: int
+    price_override: Optional[float] = None
+    channel_variant_id: Optional[str] = None
+    class Config:
+        from_attributes = True
+
+
+# Product Channel Listing Schemas
+class ProductChannelListingCreate(BaseModel):
+    channel_code: str = Field(..., max_length=100)
+    status: str = Field("Draft", pattern="^(Published|Draft|Hidden)$")
+    title_override: Optional[str] = Field(None, max_length=255)
+    description_override: Optional[str] = None
+    shipping_config: Optional[dict] = None
+    channel_product_id: Optional[str] = Field(None, max_length=255)
+    attribute_values: List[ProductChannelAttributeValueCreate] = Field(default=[])
+    variant_overrides: List[VariantChannelListingCreate] = Field(default=[])
+
+class ProductChannelListingResponse(BaseModel):
+    id: int
+    channel_id: int
+    channel_code: Optional[str] = None
+    status: str
+    title_override: Optional[str] = None
+    description_override: Optional[str] = None
+    shipping_config: Optional[dict] = None
+    channel_product_id: Optional[str] = None
+    attribute_values: List[ProductChannelAttributeValueResponse] = []
+    variant_overrides: List[VariantChannelListingResponse] = []
+
+    class Config:
+        from_attributes = True
+
+    @validator('channel_code', pre=True, always=True)
+    def resolve_channel_code(cls, v, values):
+        # Allow resolving from model channel relationship
+        # Wait, if we use from_attributes, 'channel' relation might be fetched
+        # Let's write custom mapping resolver:
+        return v
+
+
+ProductCreate.model_rebuild()
+ProductResponse.model_rebuild()

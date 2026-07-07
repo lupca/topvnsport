@@ -1,5 +1,5 @@
-from sqlalchemy import Column, Integer, String, Boolean, Float, Numeric, ForeignKey, JSON, Text, DateTime, UniqueConstraint
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String, Boolean, Float, ForeignKey, JSON, Text, DateTime, UniqueConstraint, Numeric
+from sqlalchemy.orm import relationship, backref, foreign
 from database import Base
 import datetime
 
@@ -13,7 +13,7 @@ class Category(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
 
     # Self-referencing relationship for category tree hierarchy
-    parent = relationship("Category", remote_side=[id], backref="children")
+    children = relationship("Category", backref=backref("parent", remote_side=[id]))
     products = relationship("Product", back_populates="category")
 
 class Product(Base):
@@ -33,6 +33,10 @@ class Product(Base):
     length = Column(Float, nullable=True) # cm
     width = Column(Float, nullable=True) # cm
     height = Column(Float, nullable=True) # cm
+
+    # Customs & Taxation
+    hs_code = Column(String(100), nullable=True)
+    tax_code = Column(String(100), nullable=True)
 
     # Pre-order
     is_pre_order = Column(Boolean, default=False, nullable=False)
@@ -67,8 +71,8 @@ class ProductVariant(Base):
     tier_1_option = Column(String(100), nullable=True) # e.g. "Đỏ"
     tier_2_option = Column(String(100), nullable=True) # e.g. "Size M"
     sku_code = Column(String(100), unique=True, nullable=False, index=True) # ps_sku_short
-    barcode = Column(String(50), nullable=True) # EAN/UPC
     price = Column(Numeric(12, 2), nullable=False)
+    barcode = Column(String(255), nullable=True)
     stock = Column(Integer, nullable=False)
 
     product = relationship("Product", back_populates="variants")
@@ -173,4 +177,122 @@ class Currency(Base):
     id = Column(Integer, primary_key=True, index=True)
     code = Column(String(100), unique=True, nullable=False, index=True)
     name = Column(String(255), nullable=False)
+
+
+class ChannelCategoryMapping(Base):
+    __tablename__ = "channel_category_mappings"
+    __table_args__ = (
+        UniqueConstraint("channel_id", "pim_category_id", name="uq_channel_pim_category"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    channel_id = Column(Integer, ForeignKey("channels.id", ondelete="CASCADE"), nullable=False, index=True)
+    pim_category_id = Column(Integer, ForeignKey("categories.id", ondelete="CASCADE"), nullable=False, index=True)
+    channel_category_code = Column(String(255), nullable=False)
+    channel_category_name = Column(String(255), nullable=False)
+
+    channel = relationship("Channel")
+    pim_category = relationship("Category")
+
+
+class ChannelAttributeMapping(Base):
+    __tablename__ = "channel_attribute_mappings"
+    __table_args__ = (
+        UniqueConstraint("channel_id", "pim_attribute_id", "channel_category_code", name="uq_channel_pim_attribute_cat"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    channel_id = Column(Integer, ForeignKey("channels.id", ondelete="CASCADE"), nullable=False, index=True)
+    pim_attribute_id = Column(Integer, ForeignKey("attributes.id", ondelete="CASCADE"), nullable=False, index=True)
+    channel_category_code = Column(String(255), nullable=True) # Nullable
+    channel_attribute_code = Column(String(255), nullable=False)
+    channel_attribute_name = Column(String(255), nullable=False)
+
+    channel = relationship("Channel")
+    pim_attribute = relationship("Attribute")
+
+
+class ProductChannelListing(Base):
+    __tablename__ = "product_channel_listings"
+    __table_args__ = (
+        UniqueConstraint("product_id", "channel_id", name="uq_product_channel_listing"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    product_id = Column(Integer, ForeignKey("products.id", ondelete="CASCADE"), nullable=False, index=True)
+    channel_id = Column(Integer, ForeignKey("channels.id", ondelete="CASCADE"), nullable=False, index=True)
+    status = Column(String(50), default="Draft", nullable=False, index=True) # Published, Draft, Hidden
+    title_override = Column(String(255), nullable=True)
+    description_override = Column(Text, nullable=True)
+    shipping_config = Column(JSON, nullable=True)
+    channel_product_id = Column(String(255), nullable=True)
+
+    product = relationship("Product", backref=backref("channel_listings", cascade="all, delete-orphan"))
+    channel = relationship("Channel")
+
+    @property
+    def channel_code(self):
+        return self.channel.code if self.channel else None
+
+    attribute_values = relationship(
+        "ProductChannelAttributeValue",
+        primaryjoin="and_(ProductChannelListing.product_id==foreign(ProductChannelAttributeValue.product_id), ProductChannelListing.channel_id==foreign(ProductChannelAttributeValue.channel_id))",
+        viewonly=True
+    )
+
+    variant_overrides = relationship(
+        "VariantChannelListing",
+        primaryjoin="and_(ProductChannelListing.product_id==foreign(VariantChannelListing.product_id), ProductChannelListing.channel_id==foreign(VariantChannelListing.channel_id))",
+        viewonly=True
+    )
+
+
+class VariantChannelListing(Base):
+    __tablename__ = "variant_channel_listings"
+    __table_args__ = (
+        UniqueConstraint("variant_id", "channel_id", name="uq_variant_channel_listing"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    variant_id = Column(Integer, ForeignKey("product_variants.id", ondelete="CASCADE"), nullable=False, index=True)
+    channel_id = Column(Integer, ForeignKey("channels.id", ondelete="CASCADE"), nullable=False, index=True)
+    product_id = Column(Integer, ForeignKey("products.id", ondelete="CASCADE"), nullable=True, index=True)
+    price_override = Column(Numeric(12, 2), nullable=True)
+    channel_variant_id = Column(String(255), nullable=True)
+
+    variant = relationship("ProductVariant", backref=backref("channel_listings", cascade="all, delete-orphan"))
+    channel = relationship("Channel")
+
+
+class ProductChannelAttributeValue(Base):
+    __tablename__ = "product_channel_attribute_values"
+    __table_args__ = (
+        UniqueConstraint("product_id", "channel_id", "attribute_mapping_id", name="uq_prod_chan_attr_val"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    product_id = Column(Integer, ForeignKey("products.id", ondelete="CASCADE"), nullable=False, index=True)
+    channel_id = Column(Integer, ForeignKey("channels.id", ondelete="CASCADE"), nullable=False, index=True)
+    attribute_mapping_id = Column(Integer, ForeignKey("channel_attribute_mappings.id", ondelete="CASCADE"), nullable=False, index=True)
+    value_string = Column(Text, nullable=True)
+    value_decimal = Column(Numeric(12, 2), nullable=True)
+
+    product = relationship("Product", backref=backref("channel_attribute_values", cascade="all, delete-orphan"))
+    channel = relationship("Channel")
+    attribute_mapping = relationship("ChannelAttributeMapping")
+
+
+class ChannelConfig(Base):
+    __tablename__ = "channel_configs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    channel_id = Column(Integer, ForeignKey("channels.id", ondelete="CASCADE"), nullable=False, index=True, unique=True)
+    app_key = Column(String(255), nullable=True)
+    app_secret = Column(String(255), nullable=True)
+    access_token = Column(Text, nullable=True)
+    refresh_token = Column(Text, nullable=True)
+    is_active = Column(Boolean, default=True, nullable=False)
+
+    channel = relationship("Channel", backref=backref("config", uselist=False, cascade="all, delete-orphan"))
+
 

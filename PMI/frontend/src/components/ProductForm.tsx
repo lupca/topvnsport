@@ -12,6 +12,7 @@ import ProductBasicInfo, { Category, AttributeFamily } from "./products/ProductB
 import ProductTechSpecs, { Attribute } from "./products/ProductTechSpecs";
 import ProductVariations from "./products/ProductVariations";
 import ProductLogistics from "./products/ProductLogistics";
+import ChannelConfig from "./products/ChannelConfig";
 
 const API_BASE_URL = APP_SETTINGS.api.baseUrl;
 
@@ -27,6 +28,7 @@ const variantSchema = z.object({
   tier_2_option: z.string().nullable(),
   sku_code: z.string().min(1, "SKU không được để trống"),
   price: z.coerce.number().min(0, "Giá trị phải >= 0"),
+  barcode: z.string().optional().nullable(),
   stock: z.coerce.number().min(0, "Kho hàng phải >= 0")
 });
 
@@ -35,6 +37,29 @@ const productMediaSchema = z.object({
   is_cover: z.boolean(),
   display_order: z.number().min(1).max(9),
   variant_tier_1_option: z.string().optional().nullable()
+});
+
+const productChannelAttributeValueSchema = z.object({
+  attribute_mapping_id: z.number(),
+  value_string: z.string().optional().nullable(),
+  value_decimal: z.coerce.number().optional().nullable()
+});
+
+const variantChannelListingSchema = z.object({
+  sku_code: z.string(),
+  price_override: z.coerce.number().optional().nullable(),
+  channel_variant_id: z.string().optional().nullable()
+});
+
+const productChannelListingSchema = z.object({
+  channel_code: z.string(),
+  status: z.enum(["Published", "Draft", "Hidden"]),
+  title_override: z.string().optional().nullable(),
+  description_override: z.string().optional().nullable(),
+  shipping_config: z.any().optional().nullable(),
+  channel_product_id: z.string().optional().nullable(),
+  attribute_values: z.array(productChannelAttributeValueSchema).default([]),
+  variant_overrides: z.array(variantChannelListingSchema).default([])
 });
 
 const productFormSchema = z.object({
@@ -47,12 +72,15 @@ const productFormSchema = z.object({
   length: z.coerce.number().optional().nullable(),
   width: z.coerce.number().optional().nullable(),
   height: z.coerce.number().optional().nullable(),
+  hs_code: z.string().optional().nullable(),
+  tax_code: z.string().optional().nullable(),
   is_pre_order: z.boolean().default(false),
   dts_days: z.coerce.number().min(7).max(30).optional().nullable(),
   status: z.enum(["Draft", "Published"]).default("Draft"),
   tier_variations: z.array(tierVariationSchema).max(2),
   variants: z.array(variantSchema).min(1),
-  media: z.array(productMediaSchema)
+  media: z.array(productMediaSchema),
+  channel_listings: z.array(productChannelListingSchema).default([])
 });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
@@ -77,6 +105,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [activeTab, setActiveTab] = useState<"shopee" | "tiktok">("shopee");
 
   // Mass fill state
   const [bulkPrice, setBulkPrice] = useState<string>("");
@@ -94,12 +123,18 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
       length: null,
       width: null,
       height: null,
+      hs_code: "",
+      tax_code: "",
       is_pre_order: false,
       dts_days: 7,
       status: "Draft",
       tier_variations: [],
-      variants: [{ tier_1_option: null, tier_2_option: null, sku_code: "", price: 0, stock: 0 }],
-      media: []
+      variants: [{ tier_1_option: null, tier_2_option: null, sku_code: "", barcode: "", price: 0, stock: 0 }],
+      media: [],
+      channel_listings: [
+        { channel_code: "shopee_vn", status: "Draft", title_override: "", description_override: "", attribute_values: [], variant_overrides: [] },
+        { channel_code: "tiktok_shop", status: "Draft", title_override: "", description_override: "", attribute_values: [], variant_overrides: [] }
+      ]
     }
   });
 
@@ -172,8 +207,16 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
           tier_2_option: v.tier_2_option,
           sku_code: duplicateProductId ? "" : v.sku_code,
           price: v.price,
+          barcode: v.barcode || "",
           stock: v.stock
         }));
+
+        const shopeeListing = data.channel_listings?.find((cl: any) => cl.channel_code === "shopee_vn") || {
+          channel_code: "shopee_vn", status: "Draft", title_override: "", description_override: "", attribute_values: [], variant_overrides: []
+        };
+        const tiktokListing = data.channel_listings?.find((cl: any) => cl.channel_code === "tiktok_shop") || {
+          channel_code: "tiktok_shop", status: "Draft", title_override: "", description_override: "", attribute_values: [], variant_overrides: []
+        };
 
         reset({
           product_code: duplicateProductId ? "" : data.product_code,
@@ -185,12 +228,34 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
           length: data.length,
           width: data.width,
           height: data.height,
+          hs_code: data.hs_code || "",
+          tax_code: data.tax_code || "",
           is_pre_order: data.is_pre_order,
           dts_days: data.dts_days,
           status: data.status,
           tier_variations: tiers,
           variants: variants,
-          media: []
+          media: [],
+          channel_listings: [
+            {
+              channel_code: "shopee_vn",
+              status: shopeeListing.status || "Draft",
+              title_override: shopeeListing.title_override || "",
+              description_override: shopeeListing.description_override || "",
+              channel_product_id: shopeeListing.channel_product_id || "",
+              attribute_values: shopeeListing.attribute_values || [],
+              variant_overrides: shopeeListing.variant_overrides || []
+            },
+            {
+              channel_code: "tiktok_shop",
+              status: tiktokListing.status || "Draft",
+              title_override: tiktokListing.title_override || "",
+              description_override: tiktokListing.description_override || "",
+              channel_product_id: tiktokListing.channel_product_id || "",
+              attribute_values: tiktokListing.attribute_values || [],
+              variant_overrides: tiktokListing.variant_overrides || []
+            }
+          ]
         });
 
         const dynamicAttributeValues: Record<number, string> = {};
@@ -242,11 +307,11 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
     const t2_options = tier2?.options?.filter((o: string) => o.trim() !== "") || [];
 
     // Keep map of existing variant values to avoid clearing inputs when adding/removing option characters
-    const existingMap = new Map<string, { price: number; stock: number; sku_code: string }>();
+    const existingMap = new Map<string, { price: number; stock: number; sku_code: string; barcode: string }>();
     if (watchVariants) {
       watchVariants.forEach((v: any) => {
         const key = `${v.tier_1_option || ""}_${v.tier_2_option || ""}`;
-        existingMap.set(key, { price: v.price, stock: v.stock, sku_code: v.sku_code });
+        existingMap.set(key, { price: v.price, stock: v.stock, sku_code: v.sku_code, barcode: v.barcode || "" });
       });
     }
 
@@ -260,6 +325,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
         tier_1_option: null,
         tier_2_option: null,
         sku_code: existing?.sku_code || (watchParentSku ? watchParentSku : ""),
+        barcode: existing?.barcode || "",
         price: existing?.price ?? 0,
         stock: existing?.stock ?? 0
       }];
@@ -272,6 +338,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
           tier_1_option: opt1,
           tier_2_option: null,
           sku_code: existing?.sku_code || (watchParentSku ? `${watchParentSku}-${opt1.replace(/\s+/g, "")}` : ""),
+          barcode: existing?.barcode || "",
           price: existing?.price ?? 0,
           stock: existing?.stock ?? 0
         });
@@ -286,6 +353,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
             tier_1_option: opt1,
             tier_2_option: opt2,
             sku_code: existing?.sku_code || (watchParentSku ? `${watchParentSku}-${opt1.replace(/\s+/g, "")}-${opt2.replace(/\s+/g, "")}` : ""),
+            barcode: existing?.barcode || "",
             price: existing?.price ?? 0,
             stock: existing?.stock ?? 0
           });
@@ -456,6 +524,46 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
 
           {/* SECTION 4 & 5: LOGISTICS & SHIPPING & PRE-ORDER */}
           <ProductLogistics />
+
+          {/* SECTION 6: SALES CHANNELS CONFIGURATIONS */}
+          <div className="pim-card space-y-6">
+            <h2 className="text-lg font-bold text-gray-900 border-b pb-3 border-gray-200">Cấu hình đa kênh bán hàng</h2>
+            
+            <div className="border-b border-gray-200">
+              <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("shopee")}
+                  className={`border-b-2 py-4 px-1 text-sm font-semibold transition-all ${
+                    activeTab === "shopee"
+                      ? "border-brand-primary text-brand-primary font-bold"
+                      : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                  }`}
+                >
+                  Cấu hình Shopee
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("tiktok")}
+                  className={`border-b-2 py-4 px-1 text-sm font-semibold transition-all ${
+                    activeTab === "tiktok"
+                      ? "border-brand-primary text-brand-primary font-bold"
+                      : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                  }`}
+                >
+                  Cấu hình TikTok Shop
+                </button>
+              </nav>
+            </div>
+
+            <div className="py-4">
+              {activeTab === "shopee" ? (
+                <ChannelConfig channelCode="shopee_vn" channelName="Shopee Việt Nam" />
+              ) : (
+                <ChannelConfig channelCode="tiktok_shop" channelName="TikTok Shop" />
+              )}
+            </div>
+          </div>
 
           {/* SUBMIT BUTTON */}
           <div className="flex justify-end gap-4">

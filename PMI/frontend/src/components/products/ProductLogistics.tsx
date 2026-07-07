@@ -11,9 +11,9 @@ export default function ProductLogistics() {
       <div className="pim-card space-y-6">
         <h2 className="text-lg font-bold text-gray-900 border-b pb-3 border-gray-200">Vận chuyển & Logistics</h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
           <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-gray-700">Cân nặng (sau đóng gói) *</label>
+            <label className="text-sm font-semibold text-gray-700">Cân nặng *</label>
             <div className="relative">
               <input 
                 type="number" 
@@ -63,6 +63,26 @@ export default function ProductLogistics() {
               />
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold text-xs">cm</span>
             </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-sm font-semibold text-gray-700">Mã HS (Customs)</label>
+            <input 
+              type="text" 
+              placeholder="e.g. 9506.51.00"
+              className="pim-input"
+              {...register("hs_code")}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-sm font-semibold text-gray-700">Mã số thuế</label>
+            <input 
+              type="text" 
+              placeholder="e.g. TAX-1234"
+              className="pim-input"
+              {...register("tax_code")}
+            />
           </div>
         </div>
       </div>

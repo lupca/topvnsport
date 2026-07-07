@@ -44,7 +44,7 @@ export default function Sidebar() {
     {
       title: "Cài đặt hệ thống",
       items: [
-        { name: "Kênh bán hàng (Channels)", href: "#channels", icon: Globe },
+        { name: "Kênh bán hàng (Channels)", href: "/settings/channels", icon: Globe },
         { name: "Ngôn ngữ (Locales)", href: "#locales", icon: Languages },
         { name: "Tiền tệ (Currencies)", href: "#currencies", icon: DollarSign },
         { name: "Người dùng (Users)", href: "/settings/users", icon: Users },

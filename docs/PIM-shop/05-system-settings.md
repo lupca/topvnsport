@@ -22,6 +22,8 @@ Lưu trữ các tham số kết nối API hoặc các cấu hình đặc thù ch
 - `access_token` & `refresh_token`: (Lưu mã hóa).
 - `is_active`: Trạng thái Bật/Tắt kênh này trên toàn hệ thống.
 
+> **Lưu ý Seed Data:** Các kênh mặc định (Webstore, Shopee, TikTok) sẽ được Seed tự động khi khởi tạo DB. Trong mã nguồn (Code logic), ưu tiên sử dụng `channel.code` (Ví dụ: `if channel.code == "shopee_vn"`) thay vì hardcode ID để tránh lỗi khi deploy ở các môi trường khác nhau.
+
 ## 2. Thiết Kế Giao Diện (Frontend UI/UX)
 
 Trong phần menu **Cài Đặt (Settings)** của Admin Dashboard, tạo một trang **Kênh Bán Hàng (Sales Channels)**.

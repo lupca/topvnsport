@@ -245,6 +245,7 @@ export default function ProductVariations({
               {watchTiers?.[0]?.name && <th className="px-6 py-4">{watchTiers[0].name}</th>}
               {watchTiers?.[1]?.name && <th className="px-6 py-4">{watchTiers[1].name}</th>}
               <th className="px-6 py-4">Mã SKU phân loại *</th>
+              <th className="px-6 py-4">Mã vạch (Barcode)</th>
               <th className="px-6 py-4">Giá bán *</th>
               <th className="px-6 py-4">Kho hàng *</th>
             </tr>
@@ -267,6 +268,14 @@ export default function ProductVariations({
                   {(errors.variants as any)?.[idx]?.sku_code && (
                     <p className="text-[10px] text-rose-500 mt-0.5">{(errors.variants as any)[idx]?.sku_code?.message}</p>
                   )}
+                </td>
+                <td className="px-6 py-3">
+                  <input 
+                    type="text" 
+                    placeholder="Mã vạch"
+                    className="px-3 py-1.5 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-primary-500"
+                    {...register(`variants.${idx}.barcode` as const)}
+                  />
                 </td>
                 <td className="px-6 py-3">
                   <div className="relative">

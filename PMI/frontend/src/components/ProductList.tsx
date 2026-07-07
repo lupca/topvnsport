@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, HelpCircle, Sparkles, List, Grid } from "lucide-react";
+import { Plus, HelpCircle, Sparkles, List, Grid, Download, ChevronDown } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
 
 import ProductFilterBar, { Category } from "./products/ProductFilterBar";
@@ -25,6 +25,10 @@ export default function ProductList({
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Selection states
+  const [selectedProductIds, setSelectedProductIds] = useState<number[]>([]);
+  const [showExportDropdown, setShowExportDropdown] = useState(false);
 
   // Filter & Search states
   const [searchQuery, setSearchQuery] = useState("");
@@ -168,11 +172,37 @@ export default function ProductList({
     setCurrentPage(1);
   }, [appliedSearch, appliedCategory, activeTab, sortBy, sortOrder, pageSize]);
 
+  // Reset selection on products list refresh
   useEffect(() => {
-    if (!loading && products.length === 0 && currentPage > 1 && totalItems > 0) {
-      setCurrentPage(prev => Math.max(1, prev - 1));
+    setSelectedProductIds([]);
+  }, [products]);
+
+  const handleToggleSelectProduct = (productId: number) => {
+    setSelectedProductIds(prev => {
+      if (prev.includes(productId)) {
+        return prev.filter(id => id !== productId);
+      } else {
+        return [...prev, productId];
+      }
+    });
+  };
+
+  const handleToggleSelectAll = () => {
+    if (selectedProductIds.length === products.length) {
+      setSelectedProductIds([]);
+    } else {
+      setSelectedProductIds(products.map(p => p.id));
     }
-  }, [loading, products.length, currentPage, totalItems]);
+  };
+
+  const handleExport = (platform: "shopee" | "tiktok") => {
+    setShowExportDropdown(false);
+    let url = `${API_BASE_URL}/api/export/${platform}?status=Published`;
+    if (selectedProductIds.length > 0) {
+      url += `&product_ids=${selectedProductIds.join(",")}`;
+    }
+    window.location.href = url;
+  };
 
   const handleApplyFilters = () => {
     setAppliedSearch(searchQuery);
@@ -219,12 +249,58 @@ export default function ProductList({
             <HelpCircle className="h-4 w-4 text-gray-400 cursor-pointer" />
           </div>
         </div>
-        <button 
-          onClick={onAddProductClick}
-          className="btn-primary px-5 py-2.5 rounded-2xl text-sm shrink-0"
-        >
-          <Plus className="h-4 w-4" /> Thêm 1 sản phẩm mới
-        </button>
+        <div className="flex items-center gap-3 shrink-0">
+          {selectedProductIds.length > 0 && (
+            <span className="text-xs text-gray-500 font-medium mr-1">
+              Đã chọn {selectedProductIds.length} sản phẩm
+            </span>
+          )}
+          
+          {/* Dropdown Button */}
+          <div className="relative inline-block text-left">
+            <button 
+              type="button"
+              onClick={() => setShowExportDropdown(!showExportDropdown)}
+              className="btn-outline px-5 py-2.5 rounded-2xl text-sm flex items-center gap-2"
+            >
+              <Download className="h-4 w-4" /> 
+              Xuất dữ liệu 
+              <ChevronDown className="h-4 w-4" />
+            </button>
+            
+            {showExportDropdown && (
+              <>
+                <div 
+                  className="fixed inset-0 z-10" 
+                  onClick={() => setShowExportDropdown(false)}
+                />
+                <div className="absolute right-0 mt-2 w-64 rounded-2xl border border-gray-200 bg-surface shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none z-20 overflow-hidden divide-y divide-gray-100 animate-in fade-in slide-in-from-top-2 duration-150">
+                  <div className="py-1">
+                    <button
+                      onClick={() => handleExport("shopee")}
+                      className="flex w-full items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 gap-2 transition-colors text-left"
+                    >
+                      <span>📥</span> Xuất file Shopee (Đã Published)
+                    </button>
+                    <button
+                      onClick={() => handleExport("tiktok")}
+                      className="flex w-full items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 gap-2 transition-colors text-left"
+                    >
+                      <span>📥</span> Xuất file TikTok (Đã Published)
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          <button 
+            onClick={onAddProductClick}
+            className="btn-primary px-5 py-2.5 rounded-2xl text-sm shrink-0"
+          >
+            <Plus className="h-4 w-4" /> Thêm 1 sản phẩm mới
+          </button>
+        </div>
       </div>
 
       {/* ADVANCED SEARCH BOX */}
@@ -337,6 +413,9 @@ export default function ProductList({
         products={products}
         loading={loading}
         expandedProducts={expandedProducts}
+        selectedProductIds={selectedProductIds}
+        onToggleSelectProduct={handleToggleSelectProduct}
+        onToggleSelectAll={handleToggleSelectAll}
         onToggleExpand={toggleExpand}
         onToggleSort={toggleSort}
         onEditProductClick={onEditProductClick}

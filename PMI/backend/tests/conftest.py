@@ -11,13 +11,31 @@ from testcontainers.postgres import PostgresContainer
 
 @pytest.fixture(scope="session")
 def postgres_container() -> Generator[PostgresContainer, None, None]:
-    with PostgresContainer(
-        "postgres:16-alpine",
-        username="postgres",
-        password="postgres",
-        dbname="pim_test_db",
-    ) as container:
-        yield container
+    if os.environ.get("BYPASS_TESTCONTAINERS") == "true":
+        from sqlalchemy import create_engine, text
+        url = os.environ.get("TEST_DATABASE_URL", "postgresql://postgres:postgres@db:5432/pim_test_db")
+        sys_url = url.rsplit("/", 1)[0] + "/postgres"
+        engine = create_engine(sys_url)
+        with engine.connect() as conn:
+            conn.execute(text("commit"))
+            try:
+                conn.execute(text("CREATE DATABASE pim_test_db"))
+            except Exception:
+                pass
+        engine.dispose()
+
+        class DummyContainer:
+            def get_connection_url(self):
+                return url
+        yield DummyContainer()
+    else:
+        with PostgresContainer(
+            "postgres:16-alpine",
+            username="postgres",
+            password="postgres",
+            dbname="pim_test_db",
+        ) as container:
+            yield container
 
 
 @pytest.fixture(scope="session")

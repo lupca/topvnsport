@@ -26,6 +26,27 @@ describe("ProductForm", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockImplementation((url: string) => {
+        if (url.includes("/api/channels")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve([
+              { id: 1, code: "shopee_vn", name: "Shopee Vietnam" },
+              { id: 2, code: "tiktok_shop", name: "TikTok Shop" }
+            ]),
+          });
+        }
+        if (url.includes("/category-mappings")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve([]),
+          });
+        }
+        if (url.includes("/attribute-mappings")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve([]),
+          });
+        }
         if (url.includes("/categories")) {
           return Promise.resolve({
             ok: true,

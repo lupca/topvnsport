@@ -310,4 +310,75 @@ describe("ProductList", () => {
       expect.objectContaining({ method: "DELETE" })
     );
   });
+
+  test("toggles export dropdown and handles platform export download", async () => {
+    const locationMock = { href: "" };
+    const originalLocation = window.location;
+    delete (window as any).location;
+    window.location = locationMock as any;
+
+    render(
+      <ProductList
+        onAddProductClick={onAddProductClick}
+        onEditProductClick={onEditProductClick}
+        onCopyProductClick={onCopyProductClick}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Áo Polo thể thao nam thoáng khí")).toBeInTheDocument();
+    });
+
+    const exportBtn = screen.getByRole("button", { name: /Xuất dữ liệu/i });
+    await userEvent.click(exportBtn);
+
+    expect(screen.getByText(/Xuất file Shopee/i)).toBeInTheDocument();
+    expect(screen.getByText(/Xuất file TikTok/i)).toBeInTheDocument();
+
+    const shopeeBtn = screen.getByText(/Xuất file Shopee/i);
+    await userEvent.click(shopeeBtn);
+
+    expect(locationMock.href).toContain("/api/export/shopee?status=Published");
+
+    window.location = originalLocation;
+  });
+
+  test("detailed bulk selection checkbox integration and filtered export", async () => {
+    const locationMock = { href: "" };
+    const originalLocation = window.location;
+    delete (window as any).location;
+    window.location = locationMock as any;
+
+    render(
+      <ProductList
+        onAddProductClick={onAddProductClick}
+        onEditProductClick={onEditProductClick}
+        onCopyProductClick={onCopyProductClick}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Áo Polo thể thao nam thoáng khí")).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText(/Đã chọn/i)).not.toBeInTheDocument();
+
+    const checkboxes = screen.getAllByRole("checkbox");
+    await userEvent.click(checkboxes[1]);
+
+    expect(screen.getByText(/Đã chọn 1 sản phẩm/i)).toBeInTheDocument();
+
+    const exportBtn = screen.getByRole("button", { name: /Xuất dữ liệu/i });
+    await userEvent.click(exportBtn);
+
+    const shopeeBtn = screen.getByText(/Xuất file Shopee/i);
+    await userEvent.click(shopeeBtn);
+
+    expect(locationMock.href).toContain("/api/export/shopee?status=Published&product_ids=10");
+
+    await userEvent.click(checkboxes[0]);
+    expect(screen.queryByText(/Đã chọn/i)).not.toBeInTheDocument();
+
+    window.location = originalLocation;
+  });
 });

@@ -13,6 +13,9 @@ Lưu trữ "Từ điển dịch" danh mục của PIM sang danh mục của Sàn
 | `channel_category_code` | String(255) | Mã danh mục của sàn. **Ví dụ Shopee:** `120039` |
 | `channel_category_name` | String(255) | Tên danh mục của sàn hoặc chuỗi đầy đủ. **Ví dụ TikTok:** `Thiết bị các môn thể thao bóng/Cầu lông (603065)` |
 
+**Ràng buộc (Constraints):**
+- `UNIQUE(channel_id, pim_category_id)`: Chống việc map cùng 1 category PIM sang 2 category Shopee.
+
 ## 2. Bảng `channel_attribute_mappings`
 Lưu trữ "Từ điển dịch" thuộc tính PIM sang thuộc tính Sàn.
 
@@ -25,6 +28,9 @@ Lưu trữ "Từ điển dịch" thuộc tính PIM sang thuộc tính Sàn.
 | `channel_attribute_code` | String(255) | Cột trên file mass upload. **Ví dụ Shopee:** `ps_brand`. **TikTok:** `product_property/100107` |
 | `channel_attribute_name` | String(255) | Tên thuộc tính hiển thị (VD: Thương hiệu, Chất liệu) |
 
+**Ràng buộc (Constraints):**
+- `UNIQUE(channel_id, pim_attribute_id, channel_category_code)`: Chống duplicate map thuộc tính.
+
 ## 3. Bảng `product_channel_listings`
 Quản lý trạng thái niêm yết (Publishing) và các tùy chỉnh cấp độ Sản phẩm Cha cho từng Kênh.
 
@@ -34,8 +40,13 @@ Quản lý trạng thái niêm yết (Publishing) và các tùy chỉnh cấp đ
 | `product_id` | Integer | FK -> `products.id` |
 | `channel_id` | Integer | FK -> `channels.id` |
 | `status` | String(50) | Trạng thái hiển thị trên kênh (`Published`, `Draft`, `Hidden`) |
-| `title_override` | String(255) | (Nullable). Tiêu đề ghi đè. Nguồn gốc: Người dùng muốn tên SP trên Shopee có chứa keyword giật tít, trong khi web giữ tên chuẩn. |
-| `channel_product_id` | String(255) | (Nullable). ID do sàn trả về sau khi đăng tải thành công (chuẩn bị cho tích hợp API sau này). |
+| `title_override` | String(255) | (Nullable). Tiêu đề ghi đè cho sàn. |
+| `description_override` | Text | (Nullable). Mô tả chi tiết ghi đè cho sàn (Vì Shopee/TikTok có quy tắc SEO, độ dài mô tả khác với Web chuẩn). |
+| `shipping_config` | JSON | (Nullable). Lưu các cấu hình vận chuyển riêng biệt (VD Shopee yêu cầu cột `channel_id_` như J&T, GHN). |
+| `channel_product_id` | String(255) | (Nullable). ID do sàn trả về sau khi đăng tải. |
+
+**Ràng buộc (Constraints):**
+- `UNIQUE(product_id, channel_id)`: Một sản phẩm chỉ có 1 bản listing duy nhất trên 1 kênh.
 
 ## 4. Bảng `variant_channel_listings`
 Quản lý Giá bán và định danh cho từng Biến thể (SKU) trên từng Kênh.
@@ -45,9 +56,31 @@ Quản lý Giá bán và định danh cho từng Biến thể (SKU) trên từng
 | `id` | Integer | Primary Key |
 | `variant_id` | Integer | FK -> `product_variants.id` |
 | `channel_id` | Integer | FK -> `channels.id` |
-| `price_override` | Float | (Nullable). Giá bán ưu tiên trên kênh này. Nếu NULL, hệ thống fallback về lấy `price` ở bảng `product_variants` gốc. |
+| `price_override` | Numeric(12,2) | (Nullable). Giá bán ưu tiên trên kênh này. Dùng Numeric(12,2) để tránh sai số thập phân. Nếu NULL, hệ thống fallback về lấy `price` ở bảng `product_variants` gốc. |
 | `channel_variant_id` | String(255) | (Nullable). ID biến thể do sàn quản lý. |
 
-> **Lưu ý về Nguồn Dữ Liệu Gốc (Data Source Reference):** 
-> - Khác biệt về Cột thuộc tính động trên file CSV của Shopee (các cột có màu đỏ và xanh lam trong sheet Đăng tải bản mẫu) được giải quyết bởi bảng `channel_attribute_mappings`.
-> - Việc chênh lệch giá bán giữa các sàn được giải quyết bằng `price_override`.
+**Ràng buộc (Constraints):**
+- `UNIQUE(variant_id, channel_id)`: Một biến thể chỉ có 1 bản listing duy nhất trên 1 kênh.
+
+## 5. Bảng `product_channel_attribute_values` [CRITICAL FIX]
+Đóng vai trò cực kỳ quan trọng để lưu các **giá trị thuộc tính ghi đè riêng cho sàn** hoặc các thuộc tính sàn bắt buộc mà PIM không có.
+
+| Column | Type | Constraints / Description |
+| :--- | :--- | :--- |
+| `id` | Integer | Primary Key |
+| `product_id` | Integer | FK -> `products.id` |
+| `channel_id` | Integer | FK -> `channels.id` |
+| `attribute_mapping_id`| Integer | FK -> `channel_attribute_mappings.id`. (Biết được giá trị này đang điền cho cột nào của sàn). |
+| `value_string` | String(255) | Giá trị chữ. (VD: "Polyester") |
+| `value_decimal` | Numeric(12,2)| Giá trị số. |
+
+**Ràng buộc (Constraints):**
+- `UNIQUE(product_id, channel_id, attribute_mapping_id)`: Mỗi thuộc tính sàn trên 1 sản phẩm chỉ được điền 1 giá trị.
+
+---
+
+> **Lưu ý Cập nhật Lớp Core (Models.py):**
+> 1. Đổi trường `price` thành `Numeric(12,2)` thay vì `Float` để tránh lỗi tính toán tiền tệ.
+> 2. Thêm trường `barcode` vào bảng `product_variants`.
+> 3. Khai báo thêm `hs_code` và `tax_code` vào bảng `products` (Lớp Core). Dù đây là trường bắt buộc của Shopee, nhưng mã HS (Harmonized System) là chuẩn hải quan toàn cầu, do đó nó thuộc tính chất vật lý của sản phẩm và xứng đáng nằm ở Core thay vì Channel.
+> 4. Sửa lại `remote_side` trong relationship `children` của Category để tránh bị ngược cấp.

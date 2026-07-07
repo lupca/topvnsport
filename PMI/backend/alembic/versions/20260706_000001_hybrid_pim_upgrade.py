@@ -21,6 +21,7 @@ attribute_families_table = sa.table(
     sa.column("id", sa.Integer),
     sa.column("code", sa.String),
     sa.column("name", sa.String),
+    sa.column("created_at", sa.DateTime),
 )
 
 attributes_table = sa.table(
@@ -33,6 +34,7 @@ attributes_table = sa.table(
     sa.column("is_unique", sa.Boolean),
     sa.column("is_locale_based", sa.Boolean),
     sa.column("is_channel_based", sa.Boolean),
+    sa.column("created_at", sa.DateTime),
 )
 
 
@@ -92,12 +94,15 @@ def upgrade() -> None:
         "DELETE FROM attributes WHERE code IN ('brand', 'balance', 'stiffness', 'maxTension', 'thickness', 'material', 'size')"
     )
 
+    import datetime
+    now = datetime.datetime.utcnow()
+
     op.bulk_insert(
         attribute_families_table,
         [
-            {"code": "family_racket", "name": "Bộ Vợt"},
-            {"code": "family_shoes", "name": "Bộ Giày"},
-            {"code": "family_string", "name": "Bộ Cước"},
+            {"code": "family_racket", "name": "Bộ Vợt", "created_at": now},
+            {"code": "family_shoes", "name": "Bộ Giày", "created_at": now},
+            {"code": "family_string", "name": "Bộ Cước", "created_at": now},
         ],
     )
 
@@ -112,6 +117,7 @@ def upgrade() -> None:
                 "is_unique": False,
                 "is_locale_based": False,
                 "is_channel_based": False,
+                "created_at": now,
             },
             {
                 "code": "balance",
@@ -121,6 +127,7 @@ def upgrade() -> None:
                 "is_unique": False,
                 "is_locale_based": False,
                 "is_channel_based": False,
+                "created_at": now,
             },
             {
                 "code": "stiffness",
@@ -130,6 +137,7 @@ def upgrade() -> None:
                 "is_unique": False,
                 "is_locale_based": False,
                 "is_channel_based": False,
+                "created_at": now,
             },
             {
                 "code": "maxTension",
@@ -139,6 +147,7 @@ def upgrade() -> None:
                 "is_unique": False,
                 "is_locale_based": False,
                 "is_channel_based": False,
+                "created_at": now,
             },
             {
                 "code": "thickness",
@@ -148,6 +157,7 @@ def upgrade() -> None:
                 "is_unique": False,
                 "is_locale_based": False,
                 "is_channel_based": False,
+                "created_at": now,
             },
             {
                 "code": "material",
@@ -157,6 +167,7 @@ def upgrade() -> None:
                 "is_unique": False,
                 "is_locale_based": False,
                 "is_channel_based": False,
+                "created_at": now,
             },
             {
                 "code": "size",
@@ -166,6 +177,7 @@ def upgrade() -> None:
                 "is_unique": False,
                 "is_locale_based": False,
                 "is_channel_based": False,
+                "created_at": now,
             },
         ],
     )
