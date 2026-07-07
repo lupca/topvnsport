@@ -19,13 +19,13 @@ export default function ProductCard({ product, onViewDetails, onQuickView, onAdd
     'Tấn Công': { bg: 'bg-red-50 text-red-600 border-red-100', dot: 'bg-red-500' },
     'Phòng Thủ': { bg: 'bg-blue-50 text-blue-600 border-blue-100', dot: 'bg-blue-500' },
     'Toàn Diện': { bg: 'bg-green-50 text-green-600 border-green-100', dot: 'bg-green-500' },
-    'Người Mới': { bg: 'bg-orange-50 text-orange-600 border-orange-100', dot: 'bg-orange-500' }
+    'Người Mới': { bg: 'bg-brand-light text-brand-primary border-blue-100', dot: 'bg-brand-primary' }
   };
 
   const badgeStyles = {
     'NEW': 'bg-emerald-500 text-white',
-    'HOT': 'bg-orange-500 text-white',
-    'SALE': 'bg-red-500 text-white animate-pulse',
+    'HOT': 'bg-brand-primary text-white',
+    'SALE': 'bg-red-500 text-white ',
     'LIMITED': 'bg-purple-600 text-white',
     'PRO': 'bg-gray-900 text-yellow-400 border border-yellow-400',
     'TOUR': 'bg-blue-700 text-white',
@@ -35,7 +35,7 @@ export default function ProductCard({ product, onViewDetails, onQuickView, onAdd
 
   return (
     <div 
-      className="group bg-white rounded-xl border border-gray-100 overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between h-full relative"
+      className="group bg-white rounded-xl border border-gray-100 overflow-hidden shadow-xs hover:shadow-sm transition-all duration-300 flex flex-col justify-between h-full relative"
       id={`product-card-${product.id}`}
     >
       {/* Product Badges */}
@@ -46,7 +46,7 @@ export default function ProductCard({ product, onViewDetails, onQuickView, onAdd
           </span>
         )}
         {discountPercent > 0 && (
-          <span className="text-[10px] font-extrabold bg-red-600 text-white px-2 py-0.5 rounded-sm">
+          <span className="text-[10px] font-extrabold bg-brand-accent text-white px-2 py-0.5 rounded-sm">
             -{discountPercent}%
           </span>
         )}
@@ -64,14 +64,14 @@ export default function ProductCard({ product, onViewDetails, onQuickView, onAdd
         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2.5 z-10">
           <button
             onClick={() => onQuickView(product)}
-            className="p-2 bg-white text-gray-800 rounded-full hover:bg-orange-500 hover:text-white shadow-md hover:scale-110 transition duration-200"
+            className="p-2 bg-white text-gray-800 rounded-full hover:bg-brand-primary hover:text-white shadow-md hover:scale-110 transition duration-200"
             title="Xem nhanh thông số"
           >
             <Eye className="w-5 h-5" />
           </button>
           <button
             onClick={(e) => onAddToCart(product, e)}
-            className="p-2 bg-white text-gray-800 rounded-full hover:bg-orange-500 hover:text-white shadow-md hover:scale-110 transition duration-200"
+            className="p-2 bg-white text-gray-800 rounded-full hover:bg-brand-primary hover:text-white shadow-md hover:scale-110 transition duration-200"
             title="Thêm nhanh vào giỏ"
           >
             <ShoppingCart className="w-5 h-5" />
@@ -84,12 +84,12 @@ export default function ProductCard({ product, onViewDetails, onQuickView, onAdd
         <div className="space-y-1.5 cursor-pointer">
           {/* Brand & category */}
           <div className="flex items-center justify-between text-[11px] font-mono font-bold text-gray-400">
-            <span className="text-orange-500 uppercase tracking-wider">{product.brand}</span>
+            <span className="text-brand-primary uppercase tracking-wider">{product.brand}</span>
             <span>{product.category}</span>
           </div>
 
           {/* Product Name */}
-          <h3 className="font-sans font-semibold text-sm text-gray-800 group-hover:text-orange-500 line-clamp-2 transition leading-snug">
+          <h3 className="font-sans font-semibold text-sm text-gray-800 group-hover:text-brand-primary line-clamp-2 transition leading-snug">
             {product.name}
           </h3>
 
@@ -132,7 +132,7 @@ export default function ProductCard({ product, onViewDetails, onQuickView, onAdd
         {/* Pricing Block */}
         <div className="mt-4 flex items-end justify-between pt-2 border-t border-gray-50">
           <div>
-            <span className="text-base font-extrabold text-orange-600 font-display">
+            <span className="text-base font-extrabold text-brand-primary font-display">
               {displayPrice.toLocaleString('vi-VN')}đ
             </span>
             {product.salePrice && (
@@ -147,7 +147,7 @@ export default function ProductCard({ product, onViewDetails, onQuickView, onAdd
               e.stopPropagation();
               onViewDetails(product.id);
             }}
-            className="text-xs font-bold text-gray-900 group-hover:text-orange-500 hover:underline transition"
+            className="text-xs font-bold text-gray-900 group-hover:text-brand-primary hover:underline transition"
           >
             Chi tiết &rarr;
           </button>

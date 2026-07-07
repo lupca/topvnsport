@@ -32,7 +32,7 @@ export default function BlogSection({ blogs, selectedBlogId, onBlogClick, onBack
       <div className="max-w-4xl mx-auto px-4 py-8 animate-in fade-in duration-300" id="blog-reader-view">
         <button
           onClick={onBackToBlogs}
-          className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-orange-500 font-medium mb-6 transition"
+          className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-brand-primary font-medium mb-6 transition"
         >
           <ArrowLeft className="w-4 h-4" /> Quay lại danh mục tin tức
         </button>
@@ -44,7 +44,7 @@ export default function BlogSection({ blogs, selectedBlogId, onBlogClick, onBack
           </div>
 
           <div className="space-y-3">
-            <span className="inline-flex items-center gap-1.5 bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full border border-orange-200 uppercase">
+            <span className="inline-flex items-center gap-1.5 text-[10px] bg-black text-white font-bold px-2 py-1 uppercase tracking-widest">
               {selectedBlog.category}
             </span>
             <h1 className="font-display font-black text-2xl md:text-4xl text-gray-900 tracking-tight leading-tight">
@@ -87,11 +87,11 @@ export default function BlogSection({ blogs, selectedBlogId, onBlogClick, onBack
     <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 animate-in fade-in duration-300" id="blog-directory">
       {/* Title */}
       <div className="text-center mb-10">
-        <span className="text-xs bg-orange-50 text-orange-600 font-bold px-3 py-1 rounded-full border border-orange-100 uppercase tracking-widest">
+        <span className="text-xs bg-brand-light text-brand-primary font-bold px-3 py-1 rounded-full border border-blue-100 uppercase tracking-widest">
           Góc Kiến Thức & Đánh Giá
         </span>
         <h1 className="font-display font-black text-2xl md:text-4xl text-gray-900 tracking-tight mt-2">
-          HỆ THỐNG TIN TỨC CHUYÊN SÂU <span className="text-orange-500">CẦU LÔNG</span>
+          HỆ THỐNG TIN TỨC CHUYÊN SÂU <span className="text-brand-primary">CẦU LÔNG</span>
         </h1>
         <p className="text-xs md:text-sm text-gray-500 max-w-lg mx-auto mt-2">
           Nơi cập nhật đánh giá vợt thực tế từ các cao thủ, review chất lượng các cụm sân và hướng dẫn kỹ năng phòng tránh chấn thương hiệu quả nhất.
@@ -104,7 +104,7 @@ export default function BlogSection({ blogs, selectedBlogId, onBlogClick, onBack
           <button
             key={cat}
             onClick={() => setActiveCategory(cat)}
-            className={`text-xs px-4 py-2 rounded-full border font-bold transition flex items-center gap-1.5 shrink-0 ${activeCategory === cat ? 'bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-500/10' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'}`}
+            className={`text-xs px-4 py-2 rounded-full border font-bold transition flex items-center gap-1.5 shrink-0 ${activeCategory === cat ? 'bg-brand-primary text-white border-brand-primary shadow-md shadow-brand-primary/10' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'}`}
           >
             {cat !== 'Tất cả' && catIcons[cat]}
             {cat}
@@ -118,7 +118,7 @@ export default function BlogSection({ blogs, selectedBlogId, onBlogClick, onBack
           <div
             key={blog.id}
             onClick={() => onBlogClick(blog.id)}
-            className="group bg-white rounded-xl border border-gray-100 overflow-hidden shadow-xs hover:shadow-lg transition cursor-pointer flex flex-col justify-between"
+            className="group bg-white rounded-xl border border-gray-100 overflow-hidden shadow-xs hover:shadow-sm transition cursor-pointer flex flex-col justify-between"
           >
             <div>
               <div className="aspect-[16/10] overflow-hidden bg-gray-100">
@@ -129,10 +129,10 @@ export default function BlogSection({ blogs, selectedBlogId, onBlogClick, onBack
                 />
               </div>
               <div className="p-4 space-y-2">
-                <span className="text-[10px] bg-orange-100 text-orange-700 font-bold px-2.5 py-1 rounded-full uppercase">
+                <span className="text-[10px] bg-black text-white font-bold px-2 py-1 uppercase tracking-widest">
                   {blog.category}
                 </span>
-                <h3 className="font-bold text-sm md:text-base text-gray-900 group-hover:text-orange-500 transition line-clamp-2 leading-snug">
+                <h3 className="font-bold text-sm md:text-base text-gray-900 group-hover:text-brand-primary transition line-clamp-2 leading-snug">
                   {blog.title}
                 </h3>
                 <p className="text-xs text-gray-500 line-clamp-3 leading-relaxed">
@@ -143,7 +143,7 @@ export default function BlogSection({ blogs, selectedBlogId, onBlogClick, onBack
 
             <div className="p-4 pt-0 border-t border-gray-50 mt-4 flex items-center justify-between text-xs font-mono text-gray-400">
               <span>{blog.date}</span>
-              <span className="font-bold text-orange-600 flex items-center gap-0.5 group-hover:translate-x-1 transition-transform">
+              <span className="font-bold text-brand-primary flex items-center gap-0.5 group-hover:translate-x-1 transition-transform">
                 Đọc bài viết <ChevronRight className="w-4 h-4" />
               </span>
             </div>

@@ -13,7 +13,7 @@ export default function Footer({ setView }: FooterProps) {
       <div className="bg-gray-900 border-b border-gray-950 py-8 px-4 md:px-8">
         <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-orange-500/10 rounded-full flex items-center justify-center text-orange-500 shrink-0">
+            <div className="w-10 h-10 bg-brand-primary/10 rounded-full flex items-center justify-center text-brand-primary shrink-0">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
@@ -23,7 +23,7 @@ export default function Footer({ setView }: FooterProps) {
           </div>
           
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-orange-500/10 rounded-full flex items-center justify-center text-orange-500 shrink-0">
+            <div className="w-10 h-10 bg-brand-primary/10 rounded-full flex items-center justify-center text-brand-primary shrink-0">
               <Trophy className="w-5 h-5" />
             </div>
             <div>
@@ -33,7 +33,7 @@ export default function Footer({ setView }: FooterProps) {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-orange-500/10 rounded-full flex items-center justify-center text-orange-500 shrink-0">
+            <div className="w-10 h-10 bg-brand-primary/10 rounded-full flex items-center justify-center text-brand-primary shrink-0">
               <Phone className="w-5 h-5" />
             </div>
             <div>
@@ -43,7 +43,7 @@ export default function Footer({ setView }: FooterProps) {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-orange-500/10 rounded-full flex items-center justify-center text-orange-500 shrink-0">
+            <div className="w-10 h-10 bg-brand-primary/10 rounded-full flex items-center justify-center text-brand-primary shrink-0">
               <MapPin className="w-5 h-5" />
             </div>
             <div>
@@ -68,7 +68,7 @@ export default function Footer({ setView }: FooterProps) {
                 referrerPolicy="no-referrer"
               />
             </div>
-            <span className="font-display font-black text-xl text-white tracking-tight">TOPVN<span className="text-orange-500">SPORT</span></span>
+            <span className="font-display font-black text-xl text-white tracking-tight">TOPVN<span className="text-brand-primary">SPORT</span></span>
           </div>
           <p className="text-xs text-gray-500 leading-relaxed">
             Hệ thống siêu thị thể thao cầu lông số 1 Việt Nam. Chuyên cung cấp các sản phẩm vợt, giày, cước đan Yonex, Lining, Victor tiêu chuẩn thi đấu quốc tế.
@@ -108,15 +108,15 @@ export default function Footer({ setView }: FooterProps) {
           <h4 className="font-bold text-white text-xs uppercase tracking-wider">Trụ sở & Liên hệ</h4>
           <ul className="space-y-2 text-gray-500">
             <li className="flex items-start gap-2">
-              <MapPin className="w-4 h-4 text-orange-500 shrink-0" />
+              <MapPin className="w-4 h-4 text-brand-primary shrink-0" />
               <span>Số 1, ngõ 141/3, phố Lê Văn Hiến, Phường Đức Thắng, Quận Bắc Từ Liêm, Hà Nội</span>
             </li>
             <li className="flex items-center gap-2">
-              <Phone className="w-4 h-4 text-orange-500 shrink-0" />
+              <Phone className="w-4 h-4 text-brand-primary shrink-0" />
               <span>097 6007006 (08:00 - 22:00)</span>
             </li>
             <li className="flex items-center gap-2">
-              <Mail className="w-4 h-4 text-orange-500 shrink-0" />
+              <Mail className="w-4 h-4 text-brand-primary shrink-0" />
               <span>support@topvnsport.com.vn</span>
             </li>
           </ul>

@@ -261,9 +261,9 @@ export default function App() {
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center font-sans antialiased" id="api-loading-state">
         <div className="text-center space-y-4 max-w-sm px-6">
           <div className="relative inline-flex">
-            <span className="absolute inline-flex h-12 w-12 rounded-full bg-orange-400 opacity-20 animate-ping"></span>
-            <div className="relative bg-white border border-gray-100 rounded-2xl p-4 shadow-xl flex items-center justify-center animate-bounce duration-1000">
-              <RefreshCw className="w-8 h-8 text-orange-500 animate-spin text-center" />
+            <span className="absolute inline-flex h-12 w-12 rounded-full bg-brand-primary opacity-20 animate-ping"></span>
+            <div className="relative bg-white border border-gray-100 rounded-2xl p-4 shadow-sm flex items-center justify-center  duration-1000">
+              <RefreshCw className="w-8 h-8 text-brand-primary animate-spin text-center" />
             </div>
           </div>
           <div className="space-y-1.5">
@@ -276,7 +276,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col font-sans selection:bg-orange-500 selection:text-white antialiased pb-16 md:pb-0">
+    <div className="min-h-screen bg-gray-50 flex flex-col font-sans selection:bg-brand-primary selection:text-white antialiased pb-16 md:pb-0">
       {/* Header element */}
       <Header
         currentView={currentView}
@@ -301,7 +301,7 @@ export default function App() {
             {/* Quick access categories grid */}
             <section className="max-w-7xl mx-auto px-4 md:px-8">
               <h2 className="font-display font-black text-lg md:text-2xl text-gray-900 tracking-tight uppercase mb-6 flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-orange-500" /> Danh mục trang thiết bị cầu lông
+                <Sparkles className="w-5 h-5 text-brand-primary" /> Danh mục trang thiết bị cầu lông
               </h2>
               
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -321,7 +321,7 @@ export default function App() {
                       <img src={cat.img} alt={cat.name} className="w-full h-full object-cover group-hover:scale-110 transition duration-300" referrerPolicy="no-referrer" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-xs text-gray-800 group-hover:text-orange-500 transition">{cat.name}</h4>
+                      <h4 className="font-bold text-xs text-gray-800 group-hover:text-brand-primary transition">{cat.name}</h4>
                       <p className="text-[10px] text-gray-400 font-mono mt-0.5">{cat.count}</p>
                     </div>
                   </div>
@@ -331,7 +331,7 @@ export default function App() {
 
             {/* Flash Sale Widget Section with countdown clock */}
             <section className="max-w-7xl mx-auto px-4 md:px-8">
-              <div className="bg-red-600 rounded-2xl p-6 text-white flex flex-col lg:flex-row items-center justify-between gap-6 shadow-xl relative overflow-hidden">
+              <div className="bg-brand-accent rounded-2xl p-6 text-white flex flex-col lg:flex-row items-center justify-between gap-6 shadow-sm relative overflow-hidden">
                 <div className="absolute right-0 top-0 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
                 
                 <div className="space-y-2 text-center lg:text-left">
@@ -347,14 +347,14 @@ export default function App() {
                     <span className="text-base md:text-xl font-extrabold text-white block">{timeLeft.hours.toString().padStart(2, '0')}</span>
                     <span className="text-[8px] text-gray-400 uppercase">Giờ</span>
                   </div>
-                  <span className="text-xl font-bold animate-pulse">:</span>
+                  <span className="text-xl font-bold ">:</span>
                   <div className="bg-black/35 px-4 py-2.5 rounded-lg text-center min-w-[50px]">
                     <span className="text-base md:text-xl font-extrabold text-white block">{timeLeft.minutes.toString().padStart(2, '0')}</span>
                     <span className="text-[8px] text-gray-400 uppercase">Phút</span>
                   </div>
-                  <span className="text-xl font-bold animate-pulse">:</span>
+                  <span className="text-xl font-bold ">:</span>
                   <div className="bg-black/35 px-4 py-2.5 rounded-lg text-center min-w-[50px]">
-                    <span className="text-base md:text-xl font-extrabold text-orange-400 block">{timeLeft.seconds.toString().padStart(2, '0')}</span>
+                    <span className="text-base md:text-xl font-extrabold text-brand-primary block">{timeLeft.seconds.toString().padStart(2, '0')}</span>
                     <span className="text-[8px] text-gray-400 uppercase">Giây</span>
                   </div>
                 </div>
@@ -383,14 +383,14 @@ export default function App() {
             <section className="max-w-7xl mx-auto px-4 md:px-8">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                 <div>
-                  <span className="text-xs bg-orange-50 text-orange-600 font-bold px-3 py-1 rounded-full border border-orange-100 uppercase tracking-widest">Kiến thức chuyên môn</span>
+                  <span className="text-xs bg-brand-light text-brand-primary font-bold px-3 py-1 rounded-full border border-blue-100 uppercase tracking-widest">Kiến thức chuyên môn</span>
                   <h2 className="font-display font-black text-xl md:text-2xl text-gray-900 tracking-tight uppercase mt-2">
                     BÀI VIẾT NỔI BẬT & ĐÁNH GIÁ THỰC TẾ
                   </h2>
                 </div>
                 <button
                   onClick={() => setView('blog-list')}
-                  className="text-xs font-bold text-orange-600 hover:underline flex items-center gap-0.5"
+                  className="text-xs font-bold text-brand-primary hover:underline flex items-center gap-0.5"
                 >
                   Xem tất cả bài viết <ChevronRight className="w-4 h-4" />
                 </button>
@@ -406,14 +406,14 @@ export default function App() {
                     <div>
                       <img src={blog.image} alt={blog.title} className="aspect-[16/10] w-full object-cover" />
                       <div className="p-4 space-y-1.5">
-                        <span className="text-[9px] bg-orange-100 text-orange-700 font-bold px-2 py-0.5 rounded-sm uppercase">{blog.category}</span>
-                        <h4 className="font-bold text-sm text-gray-900 line-clamp-2 hover:text-orange-500 transition leading-snug">{blog.title}</h4>
+                        <span className="text-[9px] bg-brand-light text-brand-secondary font-bold px-2 py-0.5 rounded-sm uppercase">{blog.category}</span>
+                        <h4 className="font-bold text-sm text-gray-900 line-clamp-2 hover:text-brand-primary transition leading-snug">{blog.title}</h4>
                         <p className="text-xs text-gray-400 line-clamp-2 leading-relaxed">{blog.summary}</p>
                       </div>
                     </div>
                     <div className="p-4 pt-0 text-[10px] text-gray-400 font-mono flex justify-between items-center mt-3">
                       <span>{blog.date}</span>
-                      <span className="font-bold text-orange-600">Đọc ngay &rarr;</span>
+                      <span className="font-bold text-brand-primary">Đọc ngay &rarr;</span>
                     </div>
                   </div>
                 ))}
@@ -427,9 +427,9 @@ export default function App() {
           <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 animate-in fade-in duration-300">
             {/* Title banner */}
             <div className="text-center mb-10">
-              <span className="text-xs bg-orange-50 text-orange-600 font-bold px-3 py-1 rounded-full border border-orange-100 uppercase tracking-widest">TopVNSport Product Directory</span>
+              <span className="text-xs bg-brand-light text-brand-primary font-bold px-3 py-1 rounded-full border border-blue-100 uppercase tracking-widest">TopVNSport Product Directory</span>
               <h1 className="font-display font-black text-2xl md:text-4xl text-gray-900 tracking-tight uppercase mt-2">
-                HỆ THỐNG PHÂN LOẠI THIẾT BỊ <span className="text-orange-500">TIÊU CHUẨN</span>
+                HỆ THỐNG PHÂN LOẠI THIẾT BỊ <span className="text-brand-primary">TIÊU CHUẨN</span>
               </h1>
               <p className="text-xs md:text-sm text-gray-500 max-w-lg mx-auto mt-2">
                 Lọc nhanh thông số cây vợt lý tưởng theo cân nặng, điểm cân bằng tĩnh, độ cứng đũa và phân khúc tài chính tối ưu nhất.
@@ -443,11 +443,11 @@ export default function App() {
                 <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-xs space-y-5 sticky top-24">
                   <div className="flex items-center justify-between border-b border-gray-100 pb-3">
                     <span className="font-bold text-xs uppercase tracking-wider text-gray-900 flex items-center gap-1.5">
-                      <SlidersHorizontal className="w-4 h-4 text-orange-500" /> Bộ lọc sản phẩm
+                      <SlidersHorizontal className="w-4 h-4 text-brand-primary" /> Bộ lọc sản phẩm
                     </span>
                     <button
                       onClick={resetFilters}
-                      className="text-[11px] text-gray-400 hover:text-orange-500 font-bold flex items-center gap-1 transition"
+                      className="text-[11px] text-gray-400 hover:text-brand-primary font-bold flex items-center gap-1 transition"
                     >
                       <RefreshCw className="w-3 h-3" /> Xóa bộ lọc
                     </button>
@@ -469,7 +469,7 @@ export default function App() {
                                 setSelectedBrand(prev => prev.filter(b => b !== brand));
                               }
                             }}
-                            className="rounded border-gray-300 text-orange-500 focus:ring-orange-400"
+                            className="rounded border-gray-300 text-brand-primary focus:ring-brand-primary/40"
                           />
                           <span>{brand}</span>
                         </label>
@@ -485,7 +485,7 @@ export default function App() {
                         <button
                           key={cat}
                           onClick={() => setSelectedCategory(cat)}
-                          className={`text-xs text-left py-1.5 px-2.5 rounded-lg font-bold transition flex items-center justify-between ${selectedCategory === cat ? 'bg-orange-50 text-orange-600 font-black' : 'text-gray-600 hover:bg-gray-50'}`}
+                          className={`text-xs text-left py-1.5 px-2.5 rounded-lg font-bold transition flex items-center justify-between ${selectedCategory === cat ? 'bg-brand-light text-brand-primary font-black' : 'text-gray-600 hover:bg-gray-50'}`}
                         >
                           <span>{cat}</span>
                           <span className="text-[10px] text-gray-400 font-mono">
@@ -500,7 +500,7 @@ export default function App() {
                   <div className="space-y-2">
                     <div className="flex justify-between text-[11px] uppercase tracking-wider text-gray-500 font-bold">
                       <span>Ngân sách tối đa</span>
-                      <span className="text-orange-600 font-mono">{maxPrice.toLocaleString('vi-VN')}đ</span>
+                      <span className="text-brand-primary font-mono">{maxPrice.toLocaleString('vi-VN')}đ</span>
                     </div>
                     <input
                       type="range"
@@ -509,7 +509,7 @@ export default function App() {
                       step="100000"
                       value={maxPrice}
                       onChange={(e) => setMaxPrice(parseInt(e.target.value))}
-                      className="w-full accent-orange-500 h-1 bg-gray-100 rounded-lg cursor-pointer"
+                      className="w-full accent-brand-primary h-1 bg-gray-100 rounded-lg cursor-pointer"
                     />
                     <div className="flex justify-between text-[10px] text-gray-400 font-mono">
                       <span>100Kđ</span>
@@ -533,7 +533,7 @@ export default function App() {
                                   setSelectedWeight(prev => [...prev, wt]);
                                 }
                               }}
-                              className={`text-[10px] font-mono font-bold px-3 py-1.5 rounded-md border transition ${selectedWeight.includes(wt) ? 'bg-orange-500 text-white border-orange-500 shadow-xs' : 'bg-white border-gray-150 text-gray-700 hover:bg-gray-50'}`}
+                              className={`text-[10px] font-mono font-bold px-3 py-1.5 rounded-md border transition ${selectedWeight.includes(wt) ? 'bg-brand-primary text-white border-brand-primary shadow-xs' : 'bg-white border-gray-150 text-gray-700 hover:bg-gray-50'}`}
                             >
                               {wt}
                             </button>
@@ -547,7 +547,7 @@ export default function App() {
                         <select
                           value={selectedBalance}
                           onChange={(e) => setSelectedBalance(e.target.value)}
-                          className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs text-gray-700 focus:outline-hidden focus:border-orange-500"
+                          className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs text-gray-700 focus:outline-hidden focus:border-brand-primary"
                         >
                           <option value="Tất cả">Mọi điểm cân bằng</option>
                           <option value="nặng">Nặng Đầu (&gt; 298mm - Công)</option>
@@ -562,7 +562,7 @@ export default function App() {
                         <select
                           value={selectedStiffness}
                           onChange={(e) => setSelectedStiffness(e.target.value)}
-                          className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs text-gray-700 focus:outline-hidden focus:border-orange-500"
+                          className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs text-gray-700 focus:outline-hidden focus:border-brand-primary"
                         >
                           <option value="Tất cả">Mọi độ cứng</option>
                           <option value="cứng">Siêu Cứng / Cứng (Extra Stiff/Stiff)</option>
@@ -578,9 +578,9 @@ export default function App() {
               {/* Product list grid (3 cols) */}
               <div className="lg:col-span-3 space-y-6">
                 {searchQuery && (
-                  <div className="bg-orange-50 border border-orange-100 rounded-xl p-3 flex justify-between items-center">
-                    <p className="text-xs text-orange-700">Đang tìm kết quả lọc theo từ khóa: <strong>"{searchQuery}"</strong></p>
-                    <button onClick={() => setSearchQuery('')} className="p-1 text-orange-700 hover:bg-orange-100 rounded-full"><X className="w-4 h-4" /></button>
+                  <div className="bg-brand-light border border-blue-100 rounded-xl p-3 flex justify-between items-center">
+                    <p className="text-xs text-brand-secondary">Đang tìm kết quả lọc theo từ khóa: <strong>"{searchQuery}"</strong></p>
+                    <button onClick={() => setSearchQuery('')} className="p-1 text-brand-secondary hover:bg-brand-light rounded-full"><X className="w-4 h-4" /></button>
                   </div>
                 )}
 
@@ -599,7 +599,7 @@ export default function App() {
                 ) : (
                   <div className="text-center py-24 bg-white border border-gray-100 rounded-2xl p-6">
                     <p className="text-gray-500 text-sm">Không tìm thấy sản phẩm nào khớp với bộ lọc của bạn.</p>
-                    <button onClick={resetFilters} className="mt-4 bg-orange-500 text-white font-bold text-xs uppercase tracking-wider px-6 py-2.5 rounded-full hover:bg-orange-600 transition glow-btn">
+                    <button onClick={resetFilters} className="mt-4 bg-brand-primary text-white font-bold text-xs uppercase tracking-wider px-6 py-2.5 rounded-full hover:bg-brand-secondary transition ">
                       Làm mới bộ lọc
                     </button>
                   </div>
@@ -661,10 +661,10 @@ export default function App() {
       />
 
       {/* MOBILE APP-LIKE BOTTOM TAB NAVIGATION BAR */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-100 flex justify-around items-center py-2 px-2 shadow-lg rounded-t-2xl">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-100 flex justify-around items-center py-2 px-2 shadow-sm rounded-t-2xl">
         <button
           onClick={() => setView('home')}
-          className={`flex flex-col items-center gap-1 p-1 transition ${currentView === 'home' ? 'text-orange-500 font-bold' : 'text-gray-400'}`}
+          className={`flex flex-col items-center gap-1 p-1 transition ${currentView === 'home' ? 'text-brand-primary font-bold' : 'text-gray-400'}`}
         >
           <Home className="w-5 h-5" />
           <span className="text-[10px]">Trang chủ</span>
@@ -672,7 +672,7 @@ export default function App() {
 
         <button
           onClick={() => setView('catalog')}
-          className={`flex flex-col items-center gap-1 p-1 transition ${currentView === 'catalog' ? 'text-orange-500 font-bold' : 'text-gray-400'}`}
+          className={`flex flex-col items-center gap-1 p-1 transition ${currentView === 'catalog' ? 'text-brand-primary font-bold' : 'text-gray-400'}`}
         >
           <Trophy className="w-5 h-5" />
           <span className="text-[10px]">Sản phẩm</span>
@@ -686,15 +686,15 @@ export default function App() {
               if (el) el.scrollIntoView({ behavior: 'smooth' });
             }, 100);
           }}
-          className="flex flex-col items-center gap-1 p-1 text-gray-400 hover:text-orange-500 transition"
+          className="flex flex-col items-center gap-1 p-1 text-gray-400 hover:text-brand-primary transition"
         >
-          <Sparkles className="w-5 h-5 text-purple-500 animate-pulse" />
-          <span className="text-[10px] text-purple-600 font-medium">Chọn vợt AI</span>
+          <Sparkles className="w-5 h-5 text-brand-primary " />
+          <span className="text-[10px] text-brand-primary font-medium">Chọn vợt AI</span>
         </button>
 
         <button
           onClick={() => setView('store-locator')}
-          className={`flex flex-col items-center gap-1 p-1 transition ${currentView === 'store-locator' ? 'text-orange-500 font-bold' : 'text-gray-400'}`}
+          className={`flex flex-col items-center gap-1 p-1 transition ${currentView === 'store-locator' ? 'text-brand-primary font-bold' : 'text-gray-400'}`}
         >
           <MapPin className="w-5 h-5" />
           <span className="text-[10px]">Cửa hàng</span>
@@ -702,12 +702,12 @@ export default function App() {
 
         <button
           onClick={() => setIsCartOpen(true)}
-          className="flex flex-col items-center gap-1 p-1 text-gray-400 hover:text-orange-500 transition relative"
+          className="flex flex-col items-center gap-1 p-1 text-gray-400 hover:text-brand-primary transition relative"
         >
           <div className="relative">
             <ShoppingBag className="w-5 h-5 text-gray-500" />
             {cartItems.length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-[8px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-bold">
+              <span className="absolute -top-1 -right-1 bg-brand-primary text-white text-[8px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-bold">
                 {cartItems.reduce((acc, i) => acc + i.quantity, 0)}
               </span>
             )}

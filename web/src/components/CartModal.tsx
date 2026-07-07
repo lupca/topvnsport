@@ -118,7 +118,7 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
         {/* Header */}
         <div className="p-4 border-b border-gray-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <ShoppingBag className="w-5 h-5 text-orange-500" />
+            <ShoppingBag className="w-5 h-5 text-brand-primary" />
             <span className="font-display font-black text-base text-gray-900 uppercase">
               {step === 1 ? 'Giỏ Hàng Của Bạn' : step === 2 ? 'Thanh Toán Đơn Hàng' : 'Đặt Hàng Thành Công'}
             </span>
@@ -141,14 +141,14 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
                         <div key={item.id} className="py-4 flex gap-3.5">
                           <img src={item.image} alt={item.name} className="w-14 h-14 object-contain rounded-lg bg-gray-50 border border-gray-100 shrink-0" referrerPolicy="no-referrer" />
                           <div className="flex-1 space-y-1">
-                            <span className="text-[10px] font-mono font-bold text-orange-500 uppercase">{item.brand}</span>
+                            <span className="text-[10px] font-mono font-bold text-brand-primary uppercase">{item.brand}</span>
                             <h4 className="font-bold text-xs text-gray-900 line-clamp-1 leading-normal">{item.name}</h4>
                             
                             {/* Selected Specs info */}
                             <div className="text-[10px] text-gray-500 font-mono space-y-0.5">
                               <p>• Phiên bản: <strong className="text-gray-700">{item.selectedWeight} | {item.selectedColor}</strong></p>
                               {item.stringOption ? (
-                                <p className="text-orange-600 font-bold">• Đan cước: {item.stringOption.name} ({item.tension} Kg)</p>
+                                <p className="text-brand-primary font-bold">• Đan cước: {item.stringOption.name} ({item.tension} Kg)</p>
                               ) : (
                                 <p className="text-gray-400">• Không đan lưới (Mua khung trơn)</p>
                               )}
@@ -156,7 +156,7 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
 
                             <div className="flex justify-between items-center pt-1.5">
                               <span className="text-xs text-gray-400">Số lượng: <strong>{item.quantity}</strong></span>
-                              <span className="text-sm font-bold text-orange-600 font-mono">
+                              <span className="text-sm font-bold text-brand-primary font-mono">
                                 {((item.price + stringPrice) * item.quantity).toLocaleString('vi-VN')}đ
                               </span>
                             </div>
@@ -184,7 +184,7 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
                 <div className="text-center py-16 space-y-3">
                   <ShoppingBag className="w-12 h-12 text-gray-300 mx-auto" />
                   <p className="text-gray-500 text-sm">Giỏ hàng của bạn đang trống.</p>
-                  <button onClick={onClose} className="text-xs bg-orange-500 hover:bg-orange-600 text-white font-bold px-4 py-2 rounded-full transition glow-btn">
+                  <button onClick={onClose} className="text-xs btn-primary px-4 py-2 rounded-sm">
                     Mua Sắm Ngay &rarr;
                   </button>
                 </div>
@@ -195,7 +195,7 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
           {step === 2 && (
             <form onSubmit={handleCheckoutSubmit} className="space-y-4">
               <div className="space-y-3">
-                <h3 className="font-bold text-gray-900 text-xs uppercase text-orange-600 border-b border-gray-100 pb-1.5">Thông tin nhận hàng</h3>
+                <h3 className="font-bold text-gray-900 text-xs uppercase text-brand-primary border-b border-gray-100 pb-1.5">Thông tin nhận hàng</h3>
                 
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-gray-400 uppercase">Họ và tên người nhận *</label>
@@ -205,7 +205,7 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
                     placeholder="Ví dụ: Nguyễn Văn A"
                     value={fullName}
                     onChange={e => setFullName(e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-800 focus:outline-hidden focus:border-orange-500 focus:bg-white transition"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-800 focus:outline-hidden focus:border-brand-primary focus:bg-white transition"
                   />
                 </div>
 
@@ -217,7 +217,7 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
                     placeholder="Ví dụ: 0912345678"
                     value={phone}
                     onChange={e => setPhone(e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-800 focus:outline-hidden focus:border-orange-500 focus:bg-white transition"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-800 focus:outline-hidden focus:border-brand-primary focus:bg-white transition"
                   />
                 </div>
 
@@ -226,7 +226,7 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
                   <select
                     value={city}
                     onChange={e => setCity(e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-800 focus:outline-hidden focus:border-orange-500 focus:bg-white transition"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-800 focus:outline-hidden focus:border-brand-primary focus:bg-white transition"
                   >
                     <option value="Hà Nội">Hà Nội</option>
                     <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
@@ -244,20 +244,20 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
                     placeholder="Ví dụ: Số 12 Chùa Hà"
                     value={address}
                     onChange={e => setAddress(e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-800 focus:outline-hidden focus:border-orange-500 focus:bg-white transition"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-800 focus:outline-hidden focus:border-brand-primary focus:bg-white transition"
                   />
                 </div>
               </div>
 
               {/* Shipping Method */}
               <div className="space-y-2 pt-3 border-t border-gray-100">
-                <h3 className="font-bold text-gray-900 text-xs uppercase text-orange-600">Phương thức vận chuyển</h3>
+                <h3 className="font-bold text-gray-900 text-xs uppercase text-brand-primary">Phương thức vận chuyển</h3>
                 <div className="grid grid-cols-2 gap-2.5">
                   <div
                     onClick={() => setShippingMethod('standard')}
-                    className={`p-3 rounded-lg border cursor-pointer transition flex items-center gap-2 ${shippingMethod === 'standard' ? 'bg-orange-50 border-orange-400' : 'bg-white border-gray-150 hover:border-gray-200'}`}
+                    className={`p-3 rounded-lg border cursor-pointer transition flex items-center gap-2 ${shippingMethod === 'standard' ? 'bg-brand-light border-brand-primary' : 'bg-white border-gray-150 hover:border-gray-200'}`}
                   >
-                    <Truck className="w-4 h-4 text-orange-500" />
+                    <Truck className="w-4 h-4 text-brand-primary" />
                     <div>
                       <p className="font-bold text-[11px] text-gray-900">Giao hàng chuẩn (COD)</p>
                       <p className="text-[10px] text-gray-400">3 - 5 ngày • 30.000đ</p>
@@ -266,9 +266,9 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
 
                   <div
                     onClick={() => setShippingMethod('fast')}
-                    className={`p-3 rounded-lg border cursor-pointer transition flex items-center gap-2 ${shippingMethod === 'fast' ? 'bg-orange-50 border-orange-400' : 'bg-white border-gray-150 hover:border-gray-200'}`}
+                    className={`p-3 rounded-lg border cursor-pointer transition flex items-center gap-2 ${shippingMethod === 'fast' ? 'bg-brand-light border-brand-primary' : 'bg-white border-gray-150 hover:border-gray-200'}`}
                   >
-                    <Truck className="w-4 h-4 text-orange-600 animate-pulse" />
+                    <Truck className="w-4 h-4 text-brand-primary " />
                     <div>
                       <p className="font-bold text-[11px] text-gray-900">Giao hỏa tốc</p>
                       <p className="text-[10px] text-gray-400">1 - 2 ngày • 50.000đ</p>
@@ -293,12 +293,12 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
                 <p>• <strong>Số điện thoại:</strong> {phone}</p>
                 <p>• <strong>Địa chỉ giao:</strong> {address}, {city}</p>
                 <p>• <strong>Phương thức giao:</strong> {shippingMethod === 'standard' ? 'Giao hàng chuẩn (COD)' : 'Giao hàng hỏa tốc'}</p>
-                <p className="text-sm font-bold text-orange-600 border-t border-gray-200 pt-2 mt-2">
+                <p className="text-sm font-bold text-brand-primary border-t border-gray-200 pt-2 mt-2">
                   Tổng hóa đơn thanh toán: {orderTotal.toLocaleString('vi-VN')}đ
                 </p>
               </div>
 
-              <div className="bg-orange-50 p-3 rounded-lg border border-orange-100 text-left text-[11px] text-orange-700 flex items-start gap-2 leading-relaxed">
+              <div className="bg-brand-light p-3 rounded-lg border border-blue-100 text-left text-[11px] text-brand-secondary flex items-start gap-2 leading-relaxed">
                 <ShieldCheck className="w-4.5 h-4.5 shrink-0 mt-0.5" />
                 <span>
                   Đơn hàng của bạn sẽ được bảo hành trực tiếp thông qua số điện thoại mua hàng tại tất cả hơn 80 chi nhánh TopVNSport toàn quốc.
@@ -322,14 +322,14 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
               </div>
               <div className="flex justify-between text-sm border-t border-gray-200 pt-1.5 mt-1.5 font-bold">
                 <span className="text-gray-900">Tổng cộng thanh toán:</span>
-                <span className="text-orange-600 font-display text-base">{orderTotal.toLocaleString('vi-VN')}đ</span>
+                <span className="text-brand-primary font-display text-base">{orderTotal.toLocaleString('vi-VN')}đ</span>
               </div>
             </div>
 
             {step === 1 ? (
               <button
                 onClick={() => setStep(2)}
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs uppercase tracking-wider py-3 rounded-full flex items-center justify-center gap-1.5 transition glow-btn"
+                className="w-full btn-primary text-xs uppercase tracking-wider py-3 rounded-sm flex items-center justify-center gap-1.5"
               >
                 Tiến hành thanh toán &rarr;
               </button>
@@ -346,7 +346,7 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
                     void handleCheckoutSubmit();
                   }}
                   disabled={isSubmitting}
-                  className={`flex-1 text-white font-bold text-xs uppercase tracking-wider py-3 rounded-full flex items-center justify-center gap-1.5 transition glow-btn ${isSubmitting ? 'bg-orange-300 cursor-not-allowed' : 'bg-orange-500 hover:bg-orange-600'}`}
+                  className={`flex-1 text-white font-bold text-xs uppercase tracking-wider py-3 rounded-sm flex items-center justify-center gap-1.5 ${isSubmitting ? 'bg-brand-primary/50 cursor-not-allowed' : 'btn-primary'}`}
                 >
                   {isSubmitting ? 'Đang xử lý...' : 'Xác nhận đặt hàng ✓'}
                 </button>

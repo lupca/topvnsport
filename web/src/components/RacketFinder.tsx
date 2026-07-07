@@ -60,16 +60,16 @@ export default function RacketFinder({ products, onProductClick }: RacketFinderP
   };
 
   return (
-    <div className="bg-gray-900 rounded-2xl p-6 md:p-8 text-white border border-gray-800 glow-effect" id="racket-finder-section">
+    <div className="bg-gray-900 rounded-2xl p-6 md:p-8 text-white border border-gray-800 " id="racket-finder-section">
       <div className="max-w-3xl mx-auto">
         
         {/* Header Title */}
         <div className="text-center mb-8">
-          <span className="inline-flex items-center gap-1.5 bg-orange-500/10 text-orange-400 text-xs font-semibold px-3 py-1 rounded-full border border-orange-500/20 uppercase tracking-widest mb-3">
-            <Sparkles className="w-3.5 h-3.5 text-orange-500" /> Trình cố vấn ảo chọn vợt thông minh
+          <span className="inline-flex items-center gap-1.5 bg-brand-primary/10 text-brand-primary text-xs font-semibold px-3 py-1 rounded-full border border-brand-primary/20 uppercase tracking-widest mb-3">
+            <Sparkles className="w-3.5 h-3.5 text-brand-primary" /> Trình cố vấn ảo chọn vợt thông minh
           </span>
           <h2 className="font-display font-extrabold text-xl md:text-3xl tracking-tight leading-tight">
-            TÌM KIẾM VỢT PHÙ HỢP CHỈ TRONG <span className="text-orange-500">30 GIÂY</span>
+            TÌM KIẾM VỢT PHÙ HỢP CHỈ TRONG <span className="text-brand-primary">30 GIÂY</span>
           </h2>
           <p className="text-xs md:text-sm text-gray-400 mt-2">
             Giải quyết triệt để vấn đề không thấu hiểu thông số kỹ thuật. Trả lời 3 câu hỏi nhanh, hệ thống sẽ đề xuất mẫu vợt lý tưởng theo thể trạng của bạn.
@@ -81,10 +81,10 @@ export default function RacketFinder({ products, onProductClick }: RacketFinderP
           <div className="flex items-center justify-center gap-3 mb-8">
             {[1, 2, 3].map((s) => (
               <div key={s} className="flex items-center gap-2">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-all ${step === s ? 'bg-orange-500 text-white font-black scale-110 shadow-lg shadow-orange-500/20' : step > s ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' : 'bg-gray-800 text-gray-500'}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-all ${step === s ? 'bg-brand-primary text-white font-black scale-110 shadow-sm shadow-brand-primary/20' : step > s ? 'bg-brand-primary/20 text-brand-primary border border-brand-primary/30' : 'bg-gray-800 text-gray-500'}`}>
                   {step > s ? <Check className="w-4 h-4" /> : s}
                 </div>
-                {s < 3 && <div className={`w-8 md:w-16 h-0.5 rounded-full ${step > s ? 'bg-orange-500' : 'bg-gray-800'}`} />}
+                {s < 3 && <div className={`w-8 md:w-16 h-0.5 rounded-full ${step > s ? 'bg-brand-primary' : 'bg-gray-800'}`} />}
               </div>
             ))}
           </div>
@@ -100,7 +100,7 @@ export default function RacketFinder({ products, onProductClick }: RacketFinderP
               exit={{ opacity: 0, x: -20 }}
               className="space-y-4"
             >
-              <h3 className="text-sm font-semibold uppercase text-orange-400 tracking-wider text-center mb-4">Câu hỏi 1: Trình độ chơi cầu lông của bạn ở mức nào?</h3>
+              <h3 className="text-sm font-semibold uppercase text-brand-primary tracking-wider text-center mb-4">Câu hỏi 1: Trình độ chơi cầu lông của bạn ở mức nào?</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {[
                   { id: 'beginner', title: 'Mới Tập Chơi / Học Sinh', desc: 'Lực cổ tay còn yếu, cần một cây vợt dẻo, trợ lực tốt và dễ điều khiển.' },
@@ -110,10 +110,10 @@ export default function RacketFinder({ products, onProductClick }: RacketFinderP
                   <div
                     key={opt.id}
                     onClick={() => handleSelect('skill', opt.id)}
-                    className={`cursor-pointer p-5 rounded-xl border-2 transition-all ${answers.skill === opt.id ? 'bg-orange-500/10 border-orange-500 text-white shadow-lg' : 'bg-gray-850 border-gray-800 hover:border-gray-700 hover:bg-gray-800'}`}
+                    className={`cursor-pointer p-5 rounded-xl border-2 transition-all ${answers.skill === opt.id ? 'bg-brand-primary/10 border-brand-primary text-white shadow-sm' : 'bg-gray-850 border-gray-800 hover:border-gray-700 hover:bg-gray-800'}`}
                   >
                     <h4 className="font-bold text-base mb-1.5 flex items-center gap-2">
-                      <Trophy className={`w-4 h-4 ${answers.skill === opt.id ? 'text-orange-500' : 'text-gray-400'}`} />
+                      <Trophy className={`w-4 h-4 ${answers.skill === opt.id ? 'text-brand-primary' : 'text-gray-400'}`} />
                       {opt.title}
                     </h4>
                     <p className="text-xs text-gray-400 leading-relaxed">{opt.desc}</p>
@@ -124,7 +124,7 @@ export default function RacketFinder({ products, onProductClick }: RacketFinderP
                 <button
                   disabled={!answers.skill}
                   onClick={nextStep}
-                  className="bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider px-6 py-2.5 rounded-full flex items-center gap-1.5 transition"
+                  className="bg-brand-primary hover:bg-brand-secondary disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider px-6 py-2.5 rounded-full flex items-center gap-1.5 transition"
                 >
                   Tiếp tục <ChevronRight className="w-4 h-4" />
                 </button>
@@ -141,7 +141,7 @@ export default function RacketFinder({ products, onProductClick }: RacketFinderP
               exit={{ opacity: 0, x: -20 }}
               className="space-y-4"
             >
-              <h3 className="text-sm font-semibold uppercase text-orange-400 tracking-wider text-center mb-4">Câu hỏi 2: Lối đánh ưa thích của bạn là gì?</h3>
+              <h3 className="text-sm font-semibold uppercase text-brand-primary tracking-wider text-center mb-4">Câu hỏi 2: Lối đánh ưa thích của bạn là gì?</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {[
                   { id: 'attack', title: 'Thiên Công Bạo Lực', desc: 'Thích đập nhảy, đập cầu uy lực từ cuối sân. Muốn vợt nặng đầu, đũa cứng.' },
@@ -151,10 +151,10 @@ export default function RacketFinder({ products, onProductClick }: RacketFinderP
                   <div
                     key={opt.id}
                     onClick={() => handleSelect('style', opt.id)}
-                    className={`cursor-pointer p-5 rounded-xl border-2 transition-all ${answers.style === opt.id ? 'bg-orange-500/10 border-orange-500 text-white' : 'bg-gray-850 border-gray-800 hover:border-gray-700 hover:bg-gray-800'}`}
+                    className={`cursor-pointer p-5 rounded-xl border-2 transition-all ${answers.style === opt.id ? 'bg-brand-primary/10 border-brand-primary text-white' : 'bg-gray-850 border-gray-800 hover:border-gray-700 hover:bg-gray-800'}`}
                   >
                     <h4 className="font-bold text-base mb-1.5 flex items-center gap-2">
-                      <ShieldCheck className={`w-4 h-4 ${answers.style === opt.id ? 'text-orange-500' : 'text-gray-400'}`} />
+                      <ShieldCheck className={`w-4 h-4 ${answers.style === opt.id ? 'text-brand-primary' : 'text-gray-400'}`} />
                       {opt.title}
                     </h4>
                     <p className="text-xs text-gray-400 leading-relaxed">{opt.desc}</p>
@@ -171,7 +171,7 @@ export default function RacketFinder({ products, onProductClick }: RacketFinderP
                 <button
                   disabled={!answers.style}
                   onClick={nextStep}
-                  className="bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider px-6 py-2.5 rounded-full flex items-center gap-1.5 transition"
+                  className="bg-brand-primary hover:bg-brand-secondary disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider px-6 py-2.5 rounded-full flex items-center gap-1.5 transition"
                 >
                   Tiếp tục <ChevronRight className="w-4 h-4" />
                 </button>
@@ -188,7 +188,7 @@ export default function RacketFinder({ products, onProductClick }: RacketFinderP
               exit={{ opacity: 0, x: -20 }}
               className="space-y-4"
             >
-              <h3 className="text-sm font-semibold uppercase text-orange-400 tracking-wider text-center mb-4">Câu hỏi 3: Khoảng ngân sách đầu tư cho vợt?</h3>
+              <h3 className="text-sm font-semibold uppercase text-brand-primary tracking-wider text-center mb-4">Câu hỏi 3: Khoảng ngân sách đầu tư cho vợt?</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {[
                   { id: 'low', title: 'Dưới 1,5 Triệu VNĐ', desc: 'Tối ưu ngân sách, các dòng vợt bền dẻo dai trợ lực tốt của Kumpoo, VNB, Apacs.' },
@@ -198,10 +198,10 @@ export default function RacketFinder({ products, onProductClick }: RacketFinderP
                   <div
                     key={opt.id}
                     onClick={() => handleSelect('budget', opt.id)}
-                    className={`cursor-pointer p-5 rounded-xl border-2 transition-all ${answers.budget === opt.id ? 'bg-orange-500/10 border-orange-500 text-white' : 'bg-gray-850 border-gray-800 hover:border-gray-700 hover:bg-gray-800'}`}
+                    className={`cursor-pointer p-5 rounded-xl border-2 transition-all ${answers.budget === opt.id ? 'bg-brand-primary/10 border-brand-primary text-white' : 'bg-gray-850 border-gray-800 hover:border-gray-700 hover:bg-gray-800'}`}
                   >
                     <h4 className="font-bold text-base mb-1.5 flex items-center gap-2">
-                      <DollarSign className={`w-4 h-4 ${answers.budget === opt.id ? 'text-orange-500' : 'text-gray-400'}`} />
+                      <DollarSign className={`w-4 h-4 ${answers.budget === opt.id ? 'text-brand-primary' : 'text-gray-400'}`} />
                       {opt.title}
                     </h4>
                     <p className="text-xs text-gray-400 leading-relaxed">{opt.desc}</p>
@@ -218,7 +218,7 @@ export default function RacketFinder({ products, onProductClick }: RacketFinderP
                 <button
                   disabled={!answers.budget}
                   onClick={handleCalculate}
-                  className="bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider px-8 py-2.5 rounded-full flex items-center gap-1.5 transition glow-btn"
+                  className="bg-brand-primary hover:bg-brand-secondary disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider px-8 py-2.5 rounded-full flex items-center gap-1.5 transition "
                 >
                   Xem đề xuất &rarr;
                 </button>
@@ -244,14 +244,14 @@ export default function RacketFinder({ products, onProductClick }: RacketFinderP
                   <div
                     key={p.id}
                     onClick={() => onProductClick(p.id)}
-                    className="bg-gray-850 border border-gray-800 hover:border-orange-500/50 rounded-xl p-4 cursor-pointer transition-all duration-300 group flex flex-col justify-between"
+                    className="bg-gray-850 border border-gray-800 hover:border-brand-primary/50 rounded-xl p-4 cursor-pointer transition-all duration-300 group flex flex-col justify-between"
                   >
                     <div>
                       <div className="aspect-square bg-gray-900 rounded-lg p-2 flex items-center justify-center overflow-hidden mb-3">
                         <img src={p.image} alt={p.name} className="max-h-full object-contain group-hover:scale-105 transition duration-300" referrerPolicy="no-referrer" />
                       </div>
-                      <span className="text-[10px] font-mono font-bold text-orange-500 block mb-1 uppercase tracking-wider">{p.brand}</span>
-                      <h4 className="font-bold text-sm text-white group-hover:text-orange-400 transition line-clamp-2 leading-snug">{p.name}</h4>
+                      <span className="text-[10px] font-mono font-bold text-brand-primary block mb-1 uppercase tracking-wider">{p.brand}</span>
+                      <h4 className="font-bold text-sm text-white group-hover:text-brand-primary transition line-clamp-2 leading-snug">{p.name}</h4>
                       
                       {/* Specs indicator in result */}
                       <div className="mt-3 space-y-1 text-[11px] text-gray-400 font-mono">
@@ -262,8 +262,8 @@ export default function RacketFinder({ products, onProductClick }: RacketFinderP
                     </div>
 
                     <div className="mt-4 pt-3 border-t border-gray-800 flex items-center justify-between">
-                      <span className="text-sm font-extrabold text-orange-400 font-display">{(p.salePrice || p.price).toLocaleString('vi-VN')}đ</span>
-                      <span className="text-[10px] bg-orange-500/20 text-orange-400 font-bold px-2 py-0.5 rounded-full uppercase">Xem ngay &rarr;</span>
+                      <span className="text-sm font-extrabold text-brand-primary font-display">{(p.salePrice || p.price).toLocaleString('vi-VN')}đ</span>
+                      <span className="text-[10px] bg-brand-primary/20 text-brand-primary font-bold px-2 py-0.5 rounded-full uppercase">Xem ngay &rarr;</span>
                     </div>
                   </div>
                 ))}

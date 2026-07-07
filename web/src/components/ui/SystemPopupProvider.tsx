@@ -79,7 +79,7 @@ export default function SystemPopupProvider({ children }: SystemPopupProviderPro
       {request && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 p-4">
           <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-5 shadow-2xl">
-            <h3 className="text-sm font-black uppercase tracking-wider text-orange-600">
+            <h3 className="text-sm font-black uppercase tracking-wider text-brand-primary">
               {request.kind === 'confirm' ? 'Xac nhan' : request.kind === 'prompt' ? 'Nhap thong tin' : 'Thông báo'}
             </h3>
             <p className="mt-3 whitespace-pre-wrap text-sm text-gray-700">{request.message}</p>
@@ -89,7 +89,7 @@ export default function SystemPopupProvider({ children }: SystemPopupProviderPro
                 autoFocus
                 value={promptValue}
                 onChange={(event) => setPromptValue(event.target.value)}
-                className="mt-4 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm text-gray-800 focus:border-orange-500 focus:outline-none"
+                className="mt-4 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm text-gray-800 focus:border-brand-primary focus:outline-none"
               />
             )}
 
@@ -106,7 +106,7 @@ export default function SystemPopupProvider({ children }: SystemPopupProviderPro
               <button
                 type="button"
                 onClick={handleConfirm}
-                className="rounded-lg bg-orange-500 px-3 py-2 text-xs font-semibold text-white transition hover:bg-orange-600"
+                className="rounded-lg bg-brand-primary px-3 py-2 text-xs font-semibold text-white transition hover:bg-brand-secondary"
               >
                 Đồng ý
               </button>

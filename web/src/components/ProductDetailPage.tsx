@@ -55,7 +55,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
       {/* Breadcrumb / Back button */}
       <button
         onClick={onBackToCatalog}
-        className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-orange-500 font-medium mb-6 transition"
+        className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-brand-primary font-medium mb-6 transition"
       >
         <ArrowLeft className="w-4 h-4" /> Quay lại danh mục sản phẩm
       </button>
@@ -79,7 +79,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
             <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-hide">
               <button
                 onClick={() => setSelectedImage(product.image)}
-                className={`w-16 h-16 p-1 bg-white rounded-lg border flex items-center justify-center overflow-hidden shrink-0 transition-all ${selectedImage === product.image ? 'border-orange-500 ring-2 ring-orange-100' : 'border-gray-200 hover:border-gray-300'}`}
+                className={`w-16 h-16 p-1 bg-white rounded-lg border flex items-center justify-center overflow-hidden shrink-0 transition-all ${selectedImage === product.image ? 'border-brand-primary ring-2 ring-blue-100' : 'border-gray-200 hover:border-gray-300'}`}
               >
                 <img src={product.image} alt={product.name} className="max-h-full object-contain" referrerPolicy="no-referrer" />
               </button>
@@ -87,7 +87,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
                 <button
                   key={i}
                   onClick={() => setSelectedImage(img)}
-                  className={`w-16 h-16 p-1 bg-white rounded-lg border flex items-center justify-center overflow-hidden shrink-0 transition-all ${selectedImage === img ? 'border-orange-500 ring-2 ring-orange-100' : 'border-gray-200 hover:border-gray-300'}`}
+                  className={`w-16 h-16 p-1 bg-white rounded-lg border flex items-center justify-center overflow-hidden shrink-0 transition-all ${selectedImage === img ? 'border-brand-primary ring-2 ring-blue-100' : 'border-gray-200 hover:border-gray-300'}`}
                 >
                   <img src={img} alt={`${product.name} gallery ${i}`} className="max-h-full object-contain" referrerPolicy="no-referrer" />
                 </button>
@@ -102,7 +102,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
               <span>Cam kết chính hãng 100%</span>
             </div>
             <div className="flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-orange-500 shrink-0" />
+              <Trophy className="w-5 h-5 text-brand-primary shrink-0" />
               <span>Bảo hành lưới gãy 90 ngày</span>
             </div>
           </div>
@@ -114,7 +114,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
           {/* Title and Badge block */}
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[10px] bg-orange-500 text-white font-extrabold uppercase px-2 py-0.5 rounded-sm shadow-xs">
+              <span className="text-[10px] bg-brand-primary text-white font-extrabold uppercase px-2 py-0.5 rounded-sm shadow-xs">
                 {product.brand}
               </span>
               {product.badge && (
@@ -145,11 +145,11 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
           </div>
 
           {/* Price Segment */}
-          <div className="bg-orange-50/50 p-4 rounded-xl border border-orange-100 flex items-center justify-between">
+          <div className="bg-brand-light/50 p-4 rounded-xl border border-blue-100 flex items-center justify-between">
             <div>
               <p className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Giá bán hiện tại</p>
               <div className="flex items-end gap-2.5 mt-1">
-                <span className="text-2xl md:text-3xl font-extrabold text-orange-600 font-display">
+                <span className="text-2xl md:text-3xl font-extrabold text-brand-primary font-display">
                   {totalDisplayPrice.toLocaleString('vi-VN')}đ
                 </span>
                 {product.salePrice && (
@@ -160,7 +160,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
               </div>
             </div>
             {product.salePrice && (
-              <span className="bg-orange-500 text-white text-[11px] font-black px-3 py-1.5 rounded-full">
+              <span className="bg-brand-primary text-white text-[11px] font-black px-3 py-1.5 rounded-full">
                 TIẾT KIỆM {Math.round(((product.price - product.salePrice) / product.price) * 100)}%
               </span>
             )}
@@ -177,7 +177,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
                     <button
                       key={wt}
                       onClick={() => setSelectedWeight(wt)}
-                      className={`text-xs px-3.5 py-2 rounded-lg border font-bold transition ${selectedWeight === wt ? 'bg-orange-500 border-orange-500 text-white shadow-md' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'}`}
+                      className={`text-xs px-3.5 py-2 rounded-lg border font-bold transition ${selectedWeight === wt ? 'bg-brand-primary border-brand-primary text-white shadow-md' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'}`}
                     >
                       {wt}
                     </button>
@@ -195,7 +195,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
                     <button
                       key={col}
                       onClick={() => setSelectedColor(col)}
-                      className={`text-xs px-3.5 py-2 rounded-lg border font-bold transition ${selectedColor === col ? 'bg-orange-500 border-orange-500 text-white shadow-md' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'}`}
+                      className={`text-xs px-3.5 py-2 rounded-lg border font-bold transition ${selectedColor === col ? 'bg-brand-primary border-brand-primary text-white shadow-md' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'}`}
                     >
                       {col}
                     </button>
@@ -210,7 +210,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
             <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-xs space-y-4">
               <div className="flex items-center justify-between border-b border-gray-100 pb-3">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-orange-500" />
+                  <Sparkles className="w-5 h-5 text-brand-primary" />
                   <div>
                     <h3 className="font-bold text-sm text-gray-900 uppercase">Dịch vụ đan cước chuyên nghiệp</h3>
                     <p className="text-[11px] text-gray-400">Chọn cước và lực căng tùy biến theo trình độ</p>
@@ -228,7 +228,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
                     }}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-primary"></div>
                 </label>
               </div>
 
@@ -242,13 +242,13 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
                         <div
                           key={str.id}
                           onClick={() => setSelectedString(str)}
-                          className={`p-2.5 rounded-lg border cursor-pointer transition flex justify-between items-center ${selectedString?.id === str.id ? 'bg-orange-50/50 border-orange-500' : 'bg-white border-gray-100 hover:border-gray-200'}`}
+                          className={`p-2.5 rounded-lg border cursor-pointer transition flex justify-between items-center ${selectedString?.id === str.id ? 'bg-brand-light/50 border-brand-primary' : 'bg-white border-gray-100 hover:border-gray-200'}`}
                         >
                           <div>
                             <p className="font-bold text-xs text-gray-900">{str.name}</p>
                             <p className="text-[10px] text-gray-400 font-mono">{str.type} • Ø {str.thickness}</p>
                           </div>
-                          <span className="text-xs font-extrabold text-orange-600">+{str.price.toLocaleString('vi-VN')}đ</span>
+                          <span className="text-xs font-extrabold text-brand-primary">+{str.price.toLocaleString('vi-VN')}đ</span>
                         </div>
                       ))}
                     </div>
@@ -258,7 +258,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
                   <div className="space-y-2 pt-2 border-t border-gray-100">
                     <div className="flex justify-between items-center">
                       <label className="text-xs font-bold uppercase text-gray-500">Bước 2: Chọn lực căng (Số Kg/Lbs)</label>
-                      <span className="text-base font-extrabold text-orange-600 font-mono">
+                      <span className="text-base font-extrabold text-brand-primary font-mono">
                         {tension.toFixed(1)} kg
                       </span>
                     </div>
@@ -270,7 +270,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
                       step="0.5"
                       value={tension}
                       onChange={(e) => setTension(parseFloat(e.target.value))}
-                      className="w-full accent-orange-500 cursor-pointer h-1.5 bg-gray-100 rounded-lg appearance-none"
+                      className="w-full accent-brand-primary cursor-pointer h-1.5 bg-gray-100 rounded-lg appearance-none"
                     />
 
                     {/* Safe ranges visual indicators */}
@@ -282,7 +282,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
 
                     {/* Contextual description tooltip based on selected tension */}
                     <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 text-[11px] text-gray-600 leading-relaxed flex items-start gap-2">
-                      <Sparkles className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
+                      <Sparkles className="w-4 h-4 text-brand-primary shrink-0 mt-0.5" />
                       <span>{getTensionTooltip(tension)}</span>
                     </div>
 
@@ -298,14 +298,14 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
               onClick={() => {
                 onAddToCartWithSpecs(product, selectedWeight, selectedColor, withStringing ? selectedString : null, tension);
               }}
-              className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs uppercase tracking-wider py-4 rounded-full flex items-center justify-center gap-2 shadow-lg transition duration-300 glow-btn"
+              className="flex-1 btn-primary rounded-sm px-6 py-3 uppercase tracking-wider text-xs flex items-center justify-center gap-2 shadow-sm"
             >
               <ShoppingCart className="w-4.5 h-4.5" /> Thêm vào giỏ hàng
             </button>
 
             <button
               onClick={() => onBookTestAtStore(product.id)}
-              className="border-2 border-orange-500 text-orange-600 hover:bg-orange-50 font-bold text-xs uppercase tracking-wider py-3.5 px-6 rounded-full flex items-center justify-center gap-2 transition duration-300"
+              className="btn-outline rounded-sm py-3.5 px-6 text-xs uppercase tracking-wider flex items-center justify-center gap-2"
             >
               <Phone className="w-4.5 h-4.5" /> Trải nghiệm tại cửa hàng
             </button>
@@ -324,7 +324,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`pb-3 px-4 text-xs md:text-sm font-bold uppercase tracking-wider border-b-2 transition ${activeTab === tab.id ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-400 hover:text-gray-700'}`}
+              className={`pb-3 px-4 text-xs md:text-sm font-bold uppercase tracking-wider border-b-2 transition ${activeTab === tab.id ? 'border-brand-primary text-brand-primary' : 'border-transparent text-gray-400 hover:text-gray-700'}`}
             >
               {tab.label}
             </button>
@@ -341,7 +341,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
                 <p className="font-semibold text-gray-900 text-base">Cảm giác đánh thực tế & Phân tích chuyên sâu:</p>
                 <p>{product.description}</p>
                 <div className="space-y-2 mt-4">
-                  <p className="font-bold text-gray-900 text-xs uppercase text-orange-600">Điểm nổi bật:</p>
+                  <p className="font-bold text-gray-900 text-xs uppercase text-brand-primary">Điểm nổi bật:</p>
                   <ul className="list-disc pl-5 space-y-1.5">
                     {product.features?.map((ft, i) => (
                       <li key={i}>{ft}</li>
@@ -351,7 +351,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
               </div>
               
               <div className="lg:col-span-4 bg-gray-50 rounded-xl p-5 border border-gray-100">
-                <h4 className="font-bold text-gray-900 text-xs uppercase tracking-wider mb-4 text-orange-500">Thông số cơ bản:</h4>
+                <h4 className="font-bold text-gray-900 text-xs uppercase tracking-wider mb-4 text-brand-primary">Thông số cơ bản:</h4>
                 {isRacket ? (
                   <div className="space-y-2.5 text-xs text-gray-600 font-mono">
                     <div className="flex justify-between border-b border-gray-100 pb-1.5">
@@ -398,7 +398,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
             <div className="space-y-8 animate-in fade-in-30">
               {isRacket ? (
               <div className="bg-gray-950 text-white rounded-2xl p-6 md:p-8 grid grid-cols-1 md:grid-cols-4 gap-6 relative overflow-hidden">
-                <div className="absolute right-0 top-0 w-32 h-32 bg-orange-500/5 rounded-full blur-3xl" />
+                <div className="absolute right-0 top-0 w-32 h-32 bg-brand-primary/5 rounded-full blur-3xl" />
                 
                 {/* Gauge 1: Weight */}
                 <div className="text-center p-4 bg-gray-900 rounded-xl border border-gray-800 space-y-3">
@@ -406,7 +406,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
                   <div className="relative w-24 h-24 mx-auto flex items-center justify-center">
                     <svg className="w-full h-full transform -rotate-90">
                       <circle cx="48" cy="48" r="40" className="stroke-gray-800" strokeWidth="6" fill="transparent" />
-                      <circle cx="48" cy="48" r="40" className="stroke-orange-500" strokeWidth="6" fill="transparent" strokeDasharray="251.2" strokeDashoffset={product.category === 'Vợt' ? "100" : "180"} />
+                      <circle cx="48" cy="48" r="40" className="stroke-brand-primary" strokeWidth="6" fill="transparent" strokeDasharray="251.2" strokeDashoffset={product.category === 'Vợt' ? "100" : "180"} />
                     </svg>
                     <div className="absolute font-mono text-sm font-bold text-white">{product.specs.weight.split(' ')[0]}</div>
                   </div>
@@ -419,7 +419,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
                   <div className="relative w-24 h-24 mx-auto flex items-center justify-center">
                     <svg className="w-full h-full transform -rotate-90">
                       <circle cx="48" cy="48" r="40" className="stroke-gray-800" strokeWidth="6" fill="transparent" />
-                      <circle cx="48" cy="48" r="40" className="stroke-orange-500" strokeWidth="6" fill="transparent" strokeDasharray="251.2" strokeDashoffset={product.specs.balance > 295 ? "50" : "150"} />
+                      <circle cx="48" cy="48" r="40" className="stroke-brand-primary" strokeWidth="6" fill="transparent" strokeDasharray="251.2" strokeDashoffset={product.specs.balance > 295 ? "50" : "150"} />
                     </svg>
                     <div className="absolute font-mono text-sm font-bold text-white">{product.specs.balance}mm</div>
                   </div>
@@ -434,7 +434,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
                   <div className="relative w-24 h-24 mx-auto flex items-center justify-center">
                     <svg className="w-full h-full transform -rotate-90">
                       <circle cx="48" cy="48" r="40" className="stroke-gray-800" strokeWidth="6" fill="transparent" />
-                      <circle cx="48" cy="48" r="40" className="stroke-orange-500" strokeWidth="6" fill="transparent" strokeDasharray="251.2" strokeDashoffset={product.specs.stiffness.includes('Cứng') ? "60" : "170"} />
+                      <circle cx="48" cy="48" r="40" className="stroke-brand-primary" strokeWidth="6" fill="transparent" strokeDasharray="251.2" strokeDashoffset={product.specs.stiffness.includes('Cứng') ? "60" : "170"} />
                     </svg>
                     <div className="absolute font-sans text-[10px] font-bold text-white text-center px-2 truncate leading-none">{product.specs.stiffness.split(' ')[0]}</div>
                   </div>
@@ -447,7 +447,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
                   <div className="relative w-24 h-24 mx-auto flex items-center justify-center">
                     <svg className="w-full h-full transform -rotate-90">
                       <circle cx="48" cy="48" r="40" className="stroke-gray-800" strokeWidth="6" fill="transparent" />
-                      <circle cx="48" cy="48" r="40" className="stroke-orange-500" strokeWidth="6" fill="transparent" strokeDasharray="251.2" strokeDashoffset="80" />
+                      <circle cx="48" cy="48" r="40" className="stroke-brand-primary" strokeWidth="6" fill="transparent" strokeDasharray="251.2" strokeDashoffset="80" />
                     </svg>
                     <div className="absolute font-mono text-sm font-bold text-white">{product.specs.maxTension} Lbs</div>
                   </div>
@@ -488,8 +488,8 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
                   <h4 className="font-display font-extrabold text-sm uppercase text-gray-900">Bản đồ công nghệ độc quyền (Technology Mapping)</h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {product.technologies.map((tech, idx) => (
-                      <div key={idx} className="bg-gray-50 border border-gray-100 rounded-xl p-4 hover:bg-orange-50/20 transition duration-200">
-                        <span className="text-[10px] bg-orange-100 text-orange-600 font-bold px-2.5 py-1 rounded-sm uppercase tracking-widest block w-max mb-2">{tech.name}</span>
+                      <div key={idx} className="bg-gray-50 border border-gray-100 rounded-xl p-4 hover:bg-brand-light/20 transition duration-200">
+                        <span className="text-[10px] bg-brand-light text-brand-primary font-bold px-2.5 py-1 rounded-sm uppercase tracking-widest block w-max mb-2">{tech.name}</span>
                         <p className="text-xs text-gray-600 leading-normal">{tech.description}</p>
                       </div>
                     ))}
@@ -558,19 +558,19 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
       </div>
 
       {/* STICKY BOTTOM PURCHASE BAR FOR MOBILE */}
-      <div className="fixed bottom-[57px] left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-100 shadow-lg p-3 flex items-center justify-between gap-3 md:hidden">
+      <div className="fixed bottom-[57px] left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-100 shadow-sm p-3 flex items-center justify-between gap-3 md:hidden">
         <div className="flex items-center gap-2 min-w-0">
           <img src={product.image} alt={product.name} className="w-10 h-10 object-contain rounded-lg bg-gray-50 border border-gray-100 shrink-0" referrerPolicy="no-referrer" />
           <div className="min-w-0">
             <h4 className="font-bold text-xs text-gray-900 truncate">{product.name}</h4>
-            <p className="text-orange-600 font-bold text-xs font-mono">{(product.salePrice || product.price).toLocaleString('vi-VN')}đ</p>
+            <p className="text-brand-primary font-bold text-xs font-mono">{(product.salePrice || product.price).toLocaleString('vi-VN')}đ</p>
           </div>
         </div>
         <button
           onClick={async () => {
             onAddToCartWithSpecs(product, selectedWeight, selectedColor, withStringing ? selectedString : null, tension);
           }}
-          className="bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs px-4 py-2.5 rounded-full flex items-center gap-1.5 shrink-0 shadow-md transition duration-200"
+          className="btn-primary text-xs px-4 py-2.5 rounded-sm flex items-center gap-1.5 shrink-0 shadow-sm"
         >
           <ShoppingCart className="w-4 h-4" /> Mua ngay
         </button>

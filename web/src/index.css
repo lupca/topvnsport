@@ -5,27 +5,48 @@
   --font-sans: "Be Vietnam Pro", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Montserrat", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* Yonex Design System Colors */
+  --color-brand-primary: #005eb8;     /* Xanh Yonex chính thức */
+  --color-brand-secondary: #003a70;   /* Xanh đậm Yonex (dùng cho hover) */
+  --color-brand-accent: #000000;      /* Đen nhám cho các nhãn, nút secondary */
+  --color-brand-light: #f5f7fa;       /* Nền xám rất nhạt */
+  
+  --color-surface: #ffffff;
+  --color-surface-hover: #f9f9f9;
 }
 
 /* Ensure headings and buttons consistently use the sporty & professional Montserrat font */
+html {
+  font-size: 17px;
+}
+
 h1, h2, h3, h4, h5, h6, button, .font-display {
   font-family: var(--font-display), sans-serif;
 }
 
-/* Custom styles for high quality UI */
-.glow-effect {
-  box-shadow: 0 0 20px rgba(249, 115, 22, 0.15);
-}
+/* Các utility classes chuẩn hóa của hệ thống */
+@layer utilities {
+  .btn-primary {
+    @apply bg-brand-primary text-white font-bold transition-colors duration-200;
+  }
+  .btn-primary:hover {
+    @apply bg-brand-secondary;
+  }
 
-.glow-btn {
-  box-shadow: 0 4px 14px 0 rgba(249, 115, 22, 0.3);
+  .btn-outline {
+    @apply border border-brand-primary text-brand-primary font-bold transition-colors duration-200 bg-transparent;
+  }
+  .btn-outline:hover {
+    @apply bg-brand-primary text-white;
+  }
+  
+  /* Loại bỏ scrollbar nhưng vẫn scroll được */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
-
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-

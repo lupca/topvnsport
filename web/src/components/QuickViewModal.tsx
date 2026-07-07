@@ -37,7 +37,7 @@ export default function QuickViewModal({ product, onClose, onAddToCart }: QuickV
               
               <div className="space-y-4">
                 <div className="space-y-1">
-                  <span className="text-[10px] bg-orange-500 text-white font-extrabold uppercase px-2 py-0.5 rounded-sm">{product.brand}</span>
+                  <span className="text-[10px] bg-brand-primary text-white font-extrabold uppercase px-2 py-0.5 rounded-sm">{product.brand}</span>
                   <h3 className="font-display font-black text-lg text-gray-900 leading-snug">{product.name}</h3>
                 </div>
 
@@ -64,13 +64,13 @@ export default function QuickViewModal({ product, onClose, onAddToCart }: QuickV
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-lg font-extrabold text-orange-600 font-display">{(product.salePrice || product.price).toLocaleString('vi-VN')}đ</span>
+                  <span className="text-lg font-extrabold text-brand-primary font-display">{(product.salePrice || product.price).toLocaleString('vi-VN')}đ</span>
                   <button
                     onClick={() => {
                       onAddToCart(product);
                       onClose();
                     }}
-                    className="bg-orange-50 hover:bg-orange-600 text-white text-xs font-bold uppercase tracking-wider px-6 py-2.5 rounded-full flex items-center gap-1.5 transition glow-btn"
+                    className="bg-brand-light hover:bg-brand-secondary text-white text-xs font-bold uppercase tracking-wider px-6 py-2.5 rounded-full flex items-center gap-1.5 transition "
                     id="add-to-cart-quickview"
                   >
                     <ShoppingBag className="w-4 h-4" /> Thêm vào giỏ

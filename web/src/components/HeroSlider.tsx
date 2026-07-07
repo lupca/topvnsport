@@ -91,7 +91,7 @@ export default function HeroSlider({ onCtaClick }: HeroSliderProps) {
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  className="inline-flex items-center gap-1 bg-orange-500 text-white text-[10px] md:text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest"
+                  className="inline-flex items-center gap-1 bg-brand-primary text-white text-[10px] md:text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest"
                 >
                   <Trophy className="w-3.5 h-3.5" />
                   {slides[current].badge}
@@ -129,7 +129,7 @@ export default function HeroSlider({ onCtaClick }: HeroSliderProps) {
                         onCtaClick('catalog', { category: slides[current].category });
                       }
                     }}
-                    className="bg-orange-500 hover:bg-orange-600 text-white text-xs md:text-sm font-bold px-6 py-3 rounded-full transition-all duration-300 shadow-lg hover:shadow-orange-500/20 glow-btn"
+                    className="bg-brand-primary hover:bg-brand-secondary text-white text-xs md:text-sm font-bold px-6 py-3 rounded-full transition-all duration-300 shadow-sm hover:shadow-brand-primary/20 "
                   >
                     {slides[current].ctaText}
                   </button>
@@ -143,13 +143,13 @@ export default function HeroSlider({ onCtaClick }: HeroSliderProps) {
       {/* Control buttons */}
       <button
         onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-30 bg-black/30 hover:bg-orange-500/80 text-white p-2 rounded-full transition"
+        className="absolute left-4 top-1/2 -translate-y-1/2 z-30 bg-black/30 hover:bg-brand-primary/80 text-white p-2 rounded-full transition"
       >
         <ChevronLeft className="w-5 h-5" />
       </button>
       <button
         onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-30 bg-black/30 hover:bg-orange-500/80 text-white p-2 rounded-full transition"
+        className="absolute right-4 top-1/2 -translate-y-1/2 z-30 bg-black/30 hover:bg-brand-primary/80 text-white p-2 rounded-full transition"
       >
         <ChevronRight className="w-5 h-5" />
       </button>
@@ -160,7 +160,7 @@ export default function HeroSlider({ onCtaClick }: HeroSliderProps) {
           <button
             key={idx}
             onClick={() => setCurrent(idx)}
-            className={`w-2 h-2 rounded-full transition-all ${idx === current ? 'w-6 bg-orange-500' : 'bg-gray-500'}`}
+            className={`w-2 h-2 rounded-full transition-all ${idx === current ? 'w-6 bg-brand-primary' : 'bg-gray-500'}`}
           />
         ))}
       </div>
