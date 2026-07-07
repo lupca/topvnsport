@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, Float, ForeignKey, JSON, Text, DateTime, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Boolean, Float, Numeric, ForeignKey, JSON, Text, DateTime, UniqueConstraint
 from sqlalchemy.orm import relationship
 from database import Base
 import datetime
@@ -13,7 +13,7 @@ class Category(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
 
     # Self-referencing relationship for category tree hierarchy
-    children = relationship("Category", backref="parent", remote_side=[id])
+    parent = relationship("Category", remote_side=[id], backref="children")
     products = relationship("Product", back_populates="category")
 
 class Product(Base):
@@ -67,7 +67,8 @@ class ProductVariant(Base):
     tier_1_option = Column(String(100), nullable=True) # e.g. "Đỏ"
     tier_2_option = Column(String(100), nullable=True) # e.g. "Size M"
     sku_code = Column(String(100), unique=True, nullable=False, index=True) # ps_sku_short
-    price = Column(Float, nullable=False)
+    barcode = Column(String(50), nullable=True) # EAN/UPC
+    price = Column(Numeric(12, 2), nullable=False)
     stock = Column(Integer, nullable=False)
 
     product = relationship("Product", back_populates="variants")

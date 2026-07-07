@@ -1,0 +1,32 @@
+,
+,
+Tổng Quan,
+Bản mẫu này được thiết kế nhằm giúp người bán đăng tải hàng loạt sản phẩm nhanh chóng và hiệu quả hơn.,
+,
+,
+,
+,
+,
+Lưu ý,
+"Xin lưu ý: với phiên bản mới này, thông tin sản phẩm có thể bị mất trong tập tin Excel. Theo đó, điền thông tin Số SKU Sản phẩm theo từng dòng sẽ giúp bạn quản lý thông tin hiệu quả hơn.",
+,
+,
+,
+Định Nghĩa,
+Sản Phẩm,Sản Phẩm có thể có số SKU để dễ dàng phân biệt
+Nhóm phân loại,Nhóm phân loại thể hiện những thuộc tính khác nhau trên cùng một sản phẩm. Bản đăng tải hỗ trợ đăng các sản phẩm: không có nhóm phân loại; có một nhóm phân loại (ví dụ: màu sắc); có hai nhóm phân loại (ví dụ: màu sắc và kích cỡ)
+SKU Sản Phẩm,Mã nhận dạng cấp 1 (cao nhất) giúp người bán quản lý sản phẩm của họ. Mã SKU sản phẩm không được phép trùng lặp
+SKU,SKU là thông tin giúp phân loại sản phẩm trên hệ thông. Giá trị SKU không được trùng lặp trong Shop.
+HS Code,4/6/8 HSN tax code for your product
+GST Code,Applicable GST Tax code for the product
+Cân Nặng,Cân nặng (sau đóng gói) của sản phẩm. Thông tin này có thể ảnh hưởng đến tiền phí vận chuyển
+Kích thước,"Kích thước (sau đóng gói) của sản phẩm bao gồm thông tin chiều dài, rộng và cao. Thông tin này có thể ảnh hưởng đến tiền phí vận chuyển."
+Vận Chuyển,Đây là những đơn vị vận chuyển Shop đã bật sẵn trong mục Hồ Sơ Shop >> Cài đặt vận chuyển Shop.
+Hình Ảnh,Hình ảnh sản phẩm phải được đăng lên thông qua đường dẫn URL.
+Ngày chuẩn bị hàng cho đặt trước (Pre-order DTS),Thời gian chuẩn bị hàng cho Hàng đặt trước là số ngày dự kiến bạn cần để chuẩn bị hàng và giao cho đơn vị vận chuyển (Tối thiếu: 7 ngày - Tối đa: 30 ngày)
+Hướng dẫn đăng tải sản phẩm có 2 nhóm phân loại,
+Quy định chung để tải lên sản phẩm có 2 nhóm phân loại hàng,"Nếu bạn muốn tải lên sản phẩm có 2 nhóm phân loại hàng, vui lòng điền các giá trị bắt buộc (Mã sản phẩm/ Tên nhóm phân loại hàng 1/ Phân loại hàng cho nhóm phân loại hàng 1/ Giá/ Kho) trong mỗi dòng. Mỗi dòng sẽ tương ứng với 1 phân loại hàng. Hệ thống sẽ tích hợp các phân loại thành 1 sản phẩm theo mã sản phẩm. Đối với sản phẩm có 1 nhóm phân loại, số lượng phân loại hàng tối đa là 20; đối với sản phẩm có 2 nhóm phân loại, số lượng phân hàng loại tối đa là 50)"
+Mã sản phẩm,Mã sản phẩm giúp hệ thống tìm ra những phân loại nằm ở các dòng khác nhau của cùng 1 sản phẩm. Đây là thông tin bắt buộc và không được sử dụng cho 2 sản phẩm trong cùng 1 bản tải lên
+Tên nhóm phân loại,Tối thiểu có 1 nhóm phân loại hàng. Nhóm phân loại hàng là 1 sản phẩm có nhiều tên phân loại
+Phân loại hàng,Tên phân loại hàng là bắt buộc. Phân loại hoặc phân loại tích hợp không được trùng lặp
+Hình ảnh từng phân loại,"Bạn có thể thêm 1 hình ảnh cho mỗi nhóm phân loại hàng 1. Lưu ý, cần phải tải lên hình ảnh cho tất cả các phân loại hàng được thêm, hoặc mẫu đăng tải sẽ xác định hình ảnh chưa sẵn sàng. Bạn có thể bổ sung phần còn lại trong trang chi tiết sản phẩm"

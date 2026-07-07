@@ -1,0 +1,60 @@
+Định dạng ô,Thông tin giải thích,
+,Những ô viền đỏ là bắt buộc điền.,
+,Có thể bỏ trống các ô màu xám.,
+Đảm bảo điền vào tất cả các trường bắt buộc trước khi đăng,,
+Cần hoàn thành thiết lập kho trước khi niêm yết sản phẩm,,
+,,
+Trường,Bắt buộc/không bắt buộc,Mô tả
+Hạng mục,Bắt buộc,"Chọn hạng mục khớp với sản phẩm từ <b>danh sách thả xuống</b>. 
+
+Nếu bạn niêm yết sản phẩm bị cấm/bị hạn chế hoặc gán sản phẩm vào không đúng hạng mục, TikTok Shop có thể thực hiện biện pháp cưỡng chế đối với cả bài niêm yết lẫn tài khoản người bán của bạn."
+Nhãn hiệu,Không bắt buộc,"Chọn thương hiệu khớp với sản phẩm trong <b>menu thả xuống</b>.
+Nếu bạn không chọn thương hiệu nào, phần này sẽ bị bỏ trống và được coi là không có thương hiệu."
+Tên sản phẩm,Bắt buộc,"Tên sản phẩm phải ít hơn 255 ký tự
+• Nhập tên cho sản phẩm của bạn.
+• Nếu có nhiều SKU, hãy dùng tên nhất quán."
+Mô tả sản phẩm,Bắt buộc,"Cung cấp mô tả chi tiết về sản phẩm, chẳng hạn như thông số kỹ thuật của sản phẩm, chất liệu, nội dung có trong hộp hàng, v.v.
+Mô tả sản phẩm có cấu trúc và nhiều thông tin có thể giúp khách hàng đưa ra quyết định mua hàng.
+Bạn nên cung cấp 3-5 lợi điểm bán hàng và có thể mô tả mỗi lợi điểm trong 250 ký tự, chẳng hạn như cảm nhận, cách sử dụng và lợi ích, v.v.
+Chỉnh sửa để nội dung dễ đọc hơn bằng cách ngắt đoạn, đánh số, v.v."
+Hình ảnh chính,Bắt buộc,"Thêm URL cho ảnh bìa sản phẩm của bạn trong cột này. Hình ảnh chất lượng cao là yếu tố cần thiết để danh sách của bạn thành công
+
+Chúng tôi khuyên bạn nên tải hình ảnh lên Trung tâm phương tiện trước. Sau đó, hãy sao chép và thêm liên kết URL vào đúng cột.
+
+Tham khảo trang tính ""Image"" (Hình ảnh) trong tập tin bảng tính này để biết thêm thông tin chi tiết."
+Hình ảnh 2,Không bắt buộc,Thêm URL hình ảnh bổ sung của sản phẩm trong cột này. Bạn nên tải ảnh lên Trung tâm phương tiện và dán ảnh tại đây hoặc bạn có thể chọn URL ảnh công khai.
+Hình ảnh 3,Không bắt buộc,
+Hình ảnh 4,Không bắt buộc,Thêm URL hình ảnh bổ sung của sản phẩm trong cột này. Bạn nên tải ảnh lên Trung tâm phương tiện và dán ảnh tại đây hoặc bạn có thể chọn URL ảnh công khai.
+Hình ảnh 5,Không bắt buộc,Thêm URL hình ảnh bổ sung của sản phẩm trong cột này. Bạn nên tải ảnh lên Trung tâm phương tiện và dán ảnh tại đây hoặc bạn có thể chọn URL ảnh công khai.
+Hình ảnh 6,Không bắt buộc,Thêm URL hình ảnh bổ sung của sản phẩm trong cột này. Bạn nên tải ảnh lên Trung tâm phương tiện và dán ảnh tại đây hoặc bạn có thể chọn URL ảnh công khai.
+Hình ảnh 7,Không bắt buộc,Thêm URL hình ảnh bổ sung của sản phẩm trong cột này. Bạn nên tải ảnh lên Trung tâm phương tiện và dán ảnh tại đây hoặc bạn có thể chọn URL ảnh công khai.
+Hình ảnh sản phẩm 8,Không bắt buộc,Thêm URL hình ảnh bổ sung của sản phẩm trong cột này. Bạn nên tải ảnh lên Trung tâm phương tiện và dán ảnh tại đây hoặc bạn có thể chọn URL ảnh công khai.
+Hình ảnh sản phẩm 9,Không bắt buộc,Thêm URL hình ảnh bổ sung của sản phẩm trong cột này. Bạn nên tải ảnh lên Trung tâm phương tiện và dán ảnh tại đây hoặc bạn có thể chọn URL ảnh công khai.
+Tên biến thể chính (chủ đề),Bắt buộc có điều kiện,"Bạn có thể chọn trong số tên biến thể đề xuất hoặc thêm mới. Chỉ hỗ trợ thông tin nhập là văn bản (tối đa 20 ký tự). Nếu sản phẩm có nhiều biến thể, hãy cung cấp biến thể khác tại đây."
+Giá trị biến thể chính (lựa chọn),Bắt buộc có điều kiện,"Thêm ít nhất 1 lựa chọn cụ thể tương ứng với tên biến thể (ví dụ: nhập ""trắng"" nếu tên biến thể là ""màu sắc""). Mỗi biến thể không được quá 50 ký tự. Biến thể phải có cùng tên sản phẩm và kích thước kiện hàng. Xem ví dụ trong bảng tính ""Ví dụ""."
+Hình ảnh biến thể chính 1,Không bắt buộc,Thêm URL của biến thể trong cột này. Đảm bảo ảnh thể hiện biến thể sản phẩm. Bạn nên tải ảnh lên Trung tâm phương tiện và dán ảnh tại đây hoặc bạn có thể chọn URL ảnh công khai.
+Tên biến thể phụ (chủ đề),Bắt buộc có điều kiện,"Bạn có thể chọn trong số tên biến thể đề xuất hoặc thêm mới. Chỉ hỗ trợ thông tin nhập là văn bản (tối đa 20 ký tự). <b>Nếu sản phẩm có nhiều biến thể, hãy cung cấp biến thể khác tại đây.</b>"
+Giá trị biến thể phụ (lựa chọn),Không bắt buộc,"Chỉ hoàn thành cột này nếu sản phẩm của bạn có các biến thể bổ sung ở đầu cột ""Biến thể"" trước đó.
+
+Thêm các biến thể bổ sung, chẳng hạn như kích cỡ có sẵn của mỗi màu. Giới hạn mục nhập chỉ được có tối đa 50 ký tự.
+
+Ví dụ: Nếu một sản phẩm có 2 màu là đỏ và đen, mỗi biến thể có hai kích cỡ (nhỏ và vừa) thì sẽ cần phải nhập bốn hàng thông tin.
+
+Các biến thể phải có cùng tên sản phẩm và kích thước kiện hàng. Để xem ví dụ, hãy xem trang tính có tiêu đề ""Ví dụ""."
+Trọng lượng kiện hàng(g),Bắt buộc,"Trọng lượng của kiện hàng chứ không phải của riêng sản phẩm.
+Nhập trọng lượng của sản phẩm và bao bì, chứ không chỉ trọng lượng của sản phẩm.
+
+Trọng lượng và kích thước của SKU đầu tiên sẽ được sử dụng để tính phương thức và phí vận chuyển cho tất cả biến thể, ngay cả khi các biến thể này hiển thị giá trị khác."
+Chiều dài kiện hàng(cm),Bắt buộc có điều kiện,Kích thước kiện hàng của SKU đầu tiên sẽ được sử dụng để tính phương thức và phí vận chuyển cho tất cả các biến thể. Hãy đảm bảo tất cả kích thước của SKU đều chính xác.
+Chiều rộng kiện hàng(cm),Bắt buộc có điều kiện,
+Chiều cao kiện hàng(cm),Bắt buộc có điều kiện,
+Cách giao hàng,Không bắt buộc,Cách giao sản phẩm này giống với các cách giao hàng cho cửa hàng. 
+Giá bán lẻ (Nội tệ),Bắt buộc,Nhập giá của sản phẩm hoặc phiên bản. VUI LÒNG KHÔNG thêm ký hiệu tiền tệ.
+Số lượng,Bắt buộc,Lượng hàng có sẵn của sản phẩm.
+SKU người bán,Không bắt buộc,Mã nhận dạng sản phẩm hoặc phiên bản. Thông tin này được dùng để nhanh chóng tìm thấy mặt hàng này trong các hệ thống khác.
+Bảng kích thước,Bắt buộc có điều kiện,"Sao chép URL hoặc nhập ID mẫu biểu đồ kích cỡ tại đây.
+Mục này không được hỗ trợ cho một số hạng mục sản phẩm. Nếu bạn nhập thông tin cho một sản phẩm trong hạng mục bị ảnh hưởng thì thông tin đã nhập cho mục này sẽ không được đăng. Các thông tin khác sẽ được đăng như bình thường. "
+Chọn có hỗ trợ thanh toán khi nhận hàng hay không.,Không bắt buộc,"Chọn có hỗ trợ thanh toán khi nhận hàng hay không.
+Mục này không được hỗ trợ cho một số hạng mục sản phẩm. Nếu bạn nhập thông tin cho một sản phẩm trong hạng mục bị ảnh hưởng thì thông tin đã nhập cho mục này sẽ không được đăng. Các thông tin khác sẽ được đăng như bình thường. "
+,,
+Tuyên bố sử dụng dữ liệu,"Bằng cách gửi URL, bạn cấp cho chúng tôi giấy phép toàn cầu, không thể thu hồi, không có bản quyền, vĩnh viễn, không độc quyền để sử dụng, tái sản xuất, hiển thị, phân phối, trình diễn công khai và truyền thông đến công chúng, các URL và mọi ảnh, nhãn hiệu, logo hiển thị trên các trang web đã gửi (""Tài liệu sản phẩm""). Bạn xác nhận và tuyên bố rằng bạn sở hữu tất cả các quyền đối với Tài liệu sản phẩm hoặc đã có tất cả các giấy phép cần thiết để sử dụng chúng trong TikTok Shop. Ngoài ra, bạn giải trừ TikTok khỏi bất kỳ khiếu nại nào phát sinh về việc TikTok sử dụng Tài liệu sản phẩm.",

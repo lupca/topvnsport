@@ -1,42 +1,21 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, FormProvider } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { 
-  Plus, Trash, Upload, Check, Loader2, 
-  HelpCircle, AlertCircle, Sparkles, Image as ImageIcon, ChevronRight 
-} from "lucide-react";
+import { Check, Loader2, AlertCircle, Sparkles, ChevronRight } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
-import { popupService } from "@/components/ui/popupService";
 import { normalizeImageUrl } from "@/utils/imageUrl";
+
+import ProductBasicInfo, { Category, AttributeFamily } from "./products/ProductBasicInfo";
+import ProductTechSpecs, { Attribute } from "./products/ProductTechSpecs";
+import ProductVariations from "./products/ProductVariations";
+import ProductLogistics from "./products/ProductLogistics";
 
 const API_BASE_URL = APP_SETTINGS.api.baseUrl;
 
-// Interface definitions
-interface Category {
-  id: number;
-  parent_id: number | null;
-  name: string;
-  code: string;
-}
-
-interface AttributeFamily {
-  id: number;
-  code: string;
-  name: string;
-}
-
-interface Attribute {
-  id: number;
-  code: string;
-  name: string;
-  type: string;
-  is_required: boolean;
-}
-
-// Zod schemas
+// Zod validation schemas
 const tierVariationSchema = z.object({
   tier_index: z.number().min(1).max(2),
   name: z.string().min(1, "Nhóm phân loại hàng không được trống"),
@@ -103,15 +82,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
   const [bulkPrice, setBulkPrice] = useState<string>("");
   const [bulkStock, setBulkStock] = useState<string>("");
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    watch,
-    setValue,
-    reset,
-    formState: { errors }
-  } = useForm<ProductFormValues>({
+  const methods = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
     defaultValues: {
       product_code: "",
@@ -132,15 +103,11 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
     }
   });
 
-  const { fields: tierFields, append: appendTier, remove: removeTier } = useFieldArray({
-    control,
-    name: "tier_variations"
-  });
+  const { handleSubmit, watch, setValue, reset } = methods;
 
   const watchTiers = watch("tier_variations");
   const watchFamilyId = watch("family_id");
   const watchParentSku = watch("product_code");
-  const watchIsPreOrder = watch("is_pre_order");
   const watchVariants = watch("variants");
 
   // Fetch categories
@@ -271,13 +238,13 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
     const tier1 = watchTiers?.[0];
     const tier2 = watchTiers?.[1];
 
-    const t1_options = tier1?.options?.filter(o => o.trim() !== "") || [];
-    const t2_options = tier2?.options?.filter(o => o.trim() !== "") || [];
+    const t1_options = tier1?.options?.filter((o: string) => o.trim() !== "") || [];
+    const t2_options = tier2?.options?.filter((o: string) => o.trim() !== "") || [];
 
     // Keep map of existing variant values to avoid clearing inputs when adding/removing option characters
     const existingMap = new Map<string, { price: number; stock: number; sku_code: string }>();
     if (watchVariants) {
-      watchVariants.forEach(v => {
+      watchVariants.forEach((v: any) => {
         const key = `${v.tier_1_option || ""}_${v.tier_2_option || ""}`;
         existingMap.set(key, { price: v.price, stock: v.stock, sku_code: v.sku_code });
       });
@@ -298,7 +265,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
       }];
     } else if (t2_options.length === 0) {
       // 1 Tier
-      t1_options.forEach(opt1 => {
+      t1_options.forEach((opt1: string) => {
         const key = `${opt1}_`;
         const existing = existingMap.get(key);
         newVariants.push({
@@ -311,8 +278,8 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
       });
     } else {
       // 2 Tiers
-      t1_options.forEach(opt1 => {
-        t2_options.forEach(opt2 => {
+      t1_options.forEach((opt1: string) => {
+        t2_options.forEach((opt2: string) => {
           const key = `${opt1}_${opt2}`;
           const existing = existingMap.get(key);
           newVariants.push({
@@ -329,120 +296,6 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
     // Set the state in hook form
     setValue("variants", newVariants);
   }, [watchTiers, watchParentSku, setValue]);
-
-  // Handle image upload to MinIO
-  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploadingCover(true);
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      const res = await fetch(`${API_BASE_URL}/upload`, {
-        method: "POST",
-        body: formData
-      });
-      if (!res.ok) throw new Error("Upload failed");
-      const data = await res.json();
-      setCoverImage(normalizeImageUrl(data.image_url) || data.image_url);
-    } catch (err) {
-      console.error(err);
-      void popupService.alert("Không thể tải lên ảnh bìa");
-    } finally {
-      setUploadingCover(false);
-    }
-  };
-
-  const handleTier1ImageUpload = async (optionName: string, file: File) => {
-    setUploadingTier1(prev => ({ ...prev, [optionName]: true }));
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      const res = await fetch(`${API_BASE_URL}/upload`, {
-        method: "POST",
-        body: formData
-      });
-      if (!res.ok) throw new Error("Upload failed");
-      const data = await res.json();
-      setTier1Images(prev => ({ ...prev, [optionName]: normalizeImageUrl(data.image_url) || data.image_url }));
-    } catch (err) {
-      console.error(err);
-      void popupService.alert(`Không thể tải lên ảnh cho phân loại ${optionName}`);
-    } finally {
-      setUploadingTier1(prev => ({ ...prev, [optionName]: false }));
-    }
-  };
-
-  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-
-    const remainingSlots = 8 - productImages.length;
-    if (remainingSlots <= 0) {
-      void popupService.alert("Đã đạt giới hạn tối đa 8 ảnh phụ.");
-      return;
-    }
-
-    const filesToUpload = Array.from(files).slice(0, remainingSlots);
-    setUploadingGallery(true);
-
-    try {
-      const newUrls: string[] = [];
-      for (const file of filesToUpload) {
-        const formData = new FormData();
-        formData.append("file", file);
-
-        const res = await fetch(`${API_BASE_URL}/upload`, {
-          method: "POST",
-          body: formData
-        });
-        if (!res.ok) throw new Error("Upload failed");
-
-        const data = await res.json();
-        newUrls.push(normalizeImageUrl(data.image_url) || data.image_url);
-      }
-
-      setProductImages(prev => [...prev, ...newUrls]);
-    } catch (err) {
-      console.error(err);
-      void popupService.alert("Tải lên ảnh phụ thất bại.");
-    } finally {
-      setUploadingGallery(false);
-      e.target.value = "";
-    }
-  };
-
-  const removeGalleryImage = (indexToRemove: number) => {
-    setProductImages(prev => prev.filter((_, idx) => idx !== indexToRemove));
-  };
-
-  // Mass Apply values (Price, Stock, and auto-generated SKUs)
-  const handleMassApply = () => {
-    if (!watchVariants) return;
-
-    const price = parseFloat(bulkPrice);
-    const stock = parseInt(bulkStock);
-
-    const updated = watchVariants.map(v => {
-      const val: typeof v = { ...v };
-      if (!isNaN(price)) val.price = price;
-      if (!isNaN(stock)) val.stock = stock;
-      
-      // Auto-regenerate SKU if empty or currently matching old parent SKU
-      if (watchParentSku) {
-        let suffix = "";
-        if (v.tier_1_option) suffix += `-${v.tier_1_option.replace(/\s+/g, "")}`;
-        if (v.tier_2_option) suffix += `-${v.tier_2_option.replace(/\s+/g, "")}`;
-        val.sku_code = `${watchParentSku}${suffix}`;
-      }
-      return val;
-    });
-
-    setValue("variants", updated);
-  };
 
   // Submit Product Form
   const onSubmit = async (values: ProductFormValues) => {
@@ -564,567 +417,74 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
         </div>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-        
-        {/* SECTION 1: BASIC INFORMATION */}
-        <div className="pim-card space-y-6">
-          <h2 className="text-lg font-bold text-gray-900 border-b pb-3 border-gray-200">Thông tin cơ bản</h2>
+      <FormProvider {...methods}>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
           
-          {/* Product Image Upload */}
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-gray-700">Hình ảnh sản phẩm (Tối đa 9 ảnh chung)</label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-9 gap-4 items-end">
-              <div className="flex flex-col items-center gap-1">
-                <span className="text-[10px] text-gray-500 font-semibold">Ảnh bìa</span>
-                <div className="relative h-24 w-24 border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center bg-gray-50 overflow-hidden group hover:border-primary-400 transition-colors">
-                  {coverImage ? (
-                    <>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={coverImage} alt="Cover" className="h-full w-full object-cover" />
-                      <button
-                        type="button"
-                        onClick={() => setCoverImage(null)}
-                        className="absolute inset-0 bg-black/55 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs font-semibold"
-                      >
-                        Thay đổi
-                      </button>
-                    </>
-                  ) : (
-                    <label className="cursor-pointer flex flex-col items-center justify-center h-full w-full">
-                      {uploadingCover ? (
-                        <Loader2 className="h-6 w-6 animate-spin text-brand-primary" />
-                      ) : (
-                        <>
-                          <ImageIcon className="h-6 w-6 text-gray-500" />
-                          <span className="text-[9px] text-gray-500 mt-1 font-medium">Tải ảnh bìa</span>
-                        </>
-                      )}
-                      <input type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
-                    </label>
-                  )}
-                </div>
-              </div>
+          {/* SECTION 1: BASIC INFORMATION */}
+          <ProductBasicInfo
+            categories={categories}
+            families={families}
+            coverImage={coverImage}
+            setCoverImage={setCoverImage}
+            productImages={productImages}
+            setProductImages={setProductImages}
+            uploadingCover={uploadingCover}
+            setUploadingCover={setUploadingCover}
+            uploadingGallery={uploadingGallery}
+            setUploadingGallery={setUploadingGallery}
+          />
 
-              {productImages.map((url, idx) => (
-                <div key={idx} className="flex flex-col items-center gap-1">
-                  <span className="text-[10px] text-gray-500 font-semibold">Ảnh phụ {idx + 1}</span>
-                  <div className="relative h-24 w-24 border border-gray-300 rounded-2xl overflow-hidden group">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={url} alt={`Gallery ${idx + 1}`} className="h-full w-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => removeGalleryImage(idx)}
-                      className="absolute inset-0 bg-black/55 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs font-semibold"
-                    >
-                      Xóa
-                    </button>
-                  </div>
-                </div>
-              ))}
+          {/* SECTION 2: TECHNICAL SPECS */}
+          <ProductTechSpecs
+            watchFamilyId={watchFamilyId}
+            familyAttributes={familyAttributes}
+            attributeValues={attributeValues}
+            setAttributeValues={setAttributeValues}
+          />
 
-              {productImages.length < 8 && (
-                <div className="flex flex-col items-center gap-1">
-                  <span className="text-[10px] text-gray-500 font-semibold">Thêm ảnh</span>
-                  <label className="h-24 w-24 border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 cursor-pointer hover:border-primary-400 transition-colors">
-                    {uploadingGallery ? (
-                      <Loader2 className="h-5 w-5 animate-spin text-brand-primary" />
-                    ) : (
-                      <>
-                        <Plus className="h-5 w-5 text-gray-500" />
-                        <span className="text-[9px] text-gray-500 mt-1 font-medium">Tải ảnh phụ</span>
-                      </>
-                    )}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      className="hidden"
-                      onChange={handleGalleryUpload}
-                    />
-                  </label>
-                </div>
+          {/* SECTION 3: SALES INFORMATION (VARIATIONS) */}
+          <ProductVariations
+            tier1Images={tier1Images}
+            setTier1Images={setTier1Images}
+            uploadingTier1={uploadingTier1}
+            setUploadingTier1={setUploadingTier1}
+            bulkPrice={bulkPrice}
+            setBulkPrice={setBulkPrice}
+            bulkStock={bulkStock}
+            setBulkStock={setBulkStock}
+          />
+
+          {/* SECTION 4 & 5: LOGISTICS & SHIPPING & PRE-ORDER */}
+          <ProductLogistics />
+
+          {/* SUBMIT BUTTON */}
+          <div className="flex justify-end gap-4">
+            <button 
+              type="button"
+              onClick={onSaveSuccess}
+              className="btn-outline px-6 py-3 rounded-2xl text-sm"
+            >
+              Hủy bỏ
+            </button>
+            <button 
+              type="submit"
+              disabled={submitting}
+              className="btn-primary px-8 py-3 rounded-2xl text-sm shadow-sm flex items-center gap-2"
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" /> Đang lưu...
+                </>
+              ) : productId ? (
+                "Lưu thay đổi"
+              ) : (
+                "Lưu & Hiển thị"
               )}
-            </div>
-            <p className="text-[11px] text-gray-500 mt-2">
-              Khuyên dùng hình ảnh kích thước 800 x 800 trở lên. Bạn có thể tải lên tối đa 1 ảnh bìa và 8 ảnh phụ.
-            </p>
+            </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-gray-700">Tên sản phẩm *</label>
-              <input 
-                type="text" 
-                placeholder="Nhập tên sản phẩm (Ví dụ: Áo thun nam Cotton 100% cổ tròn)"
-                className="pim-input"
-                {...register("name")}
-              />
-              {errors.name && <p className="text-xs text-rose-500 font-medium">{errors.name.message}</p>}
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-gray-700">Mã SKU sản phẩm cha *</label>
-                <input 
-                  type="text" 
-                  placeholder="Ví dụ: TSHIRT-PARENT"
-                  className="pim-input"
-                  {...register("product_code")}
-                />
-                {errors.product_code && <p className="text-xs text-rose-500 font-medium">{errors.product_code.message}</p>}
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-gray-700">Ngành hàng *</label>
-                <select 
-                  className="pim-input"
-                  {...register("category_id")}
-                >
-                  <option value={0}>Chọn ngành hàng</option>
-                  {categories.map(cat => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name} ({cat.code})
-                    </option>
-                  ))}
-                </select>
-                {errors.category_id && <p className="text-xs text-rose-500 font-medium">{errors.category_id.message}</p>}
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-gray-700">Attribute Family *</label>
-                <select
-                  className="pim-input"
-                  {...register("family_id")}
-                >
-                  <option value={0}>Chọn bộ thuộc tính</option>
-                  {families.map(fam => (
-                    <option key={fam.id} value={fam.id}>
-                      {fam.name} ({fam.code})
-                    </option>
-                  ))}
-                </select>
-                {errors.family_id && <p className="text-xs text-rose-500 font-medium">{errors.family_id.message}</p>}
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-gray-700">Mô tả sản phẩm *</label>
-            <textarea 
-              rows={4}
-              placeholder="Mô tả thông tin chi tiết về sản phẩm của bạn (chất liệu, công dụng, thông số kỹ thuật...)"
-              className="pim-input"
-              {...register("description")}
-            />
-            {errors.description && <p className="text-xs text-rose-500 font-medium">{errors.description.message}</p>}
-          </div>
-        </div>
-
-        {/* SECTION 2: TECHNICAL SPECS (DYNAMIC BY FAMILY) */}
-        <div className="pim-card space-y-6">
-          <h2 className="text-lg font-bold text-gray-900 border-b pb-3 border-gray-200">Thuộc tính kỹ thuật</h2>
-
-          {!watchFamilyId || Number(watchFamilyId) <= 0 ? (
-            <p className="text-sm text-gray-500">Chọn Attribute Family để tải danh sách thông số kỹ thuật phù hợp.</p>
-          ) : familyAttributes.length === 0 ? (
-            <p className="text-sm text-gray-500">Family hiện tại chưa có thuộc tính nào được gán.</p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {familyAttributes.map(attr => (
-                <div key={attr.id} className="space-y-1.5">
-                  <label className="text-sm font-semibold text-gray-700">
-                    {attr.name}{attr.is_required ? " *" : ""}
-                  </label>
-                  <input
-                    type={attr.type === "decimal" || attr.type === "number" || attr.type === "float" ? "number" : "text"}
-                    step={attr.type === "decimal" || attr.type === "number" || attr.type === "float" ? "any" : undefined}
-                    placeholder={`Nhập ${attr.name.toLowerCase()}`}
-                    value={attributeValues[attr.id] || ""}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setAttributeValues(prev => ({ ...prev, [attr.id]: value }));
-                    }}
-                    className="pim-input"
-                  />
-                  <p className="text-[11px] text-gray-500">Code: {attr.code}</p>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* SECTION 3: SALES INFORMATION (VARIATIONS) */}
-        <div className="pim-card space-y-6">
-          <div className="flex items-center justify-between border-b pb-3 border-gray-200">
-            <h2 className="text-lg font-bold text-gray-900">Thông tin bán hàng</h2>
-            <div className="text-xs text-gray-500 flex items-center gap-1">
-              <HelpCircle className="h-4 w-4" />
-              <span>Hỗ trợ tối đa 2 nhóm phân loại</span>
-            </div>
-          </div>
-
-          {/* Tier Variation Creation UI */}
-          <div className="space-y-6">
-            {tierFields.map((field, tierIndex) => (
-              <div key={field.id} className="p-6 bg-gray-50 border border-gray-200 rounded-2xl space-y-4 relative">
-                <button 
-                  type="button" 
-                  onClick={() => removeTier(tierIndex)}
-                  className="absolute top-4 right-4 text-gray-500 hover:text-rose-500 transition-colors"
-                >
-                  <Trash className="h-5 w-5" />
-                </button>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-semibold text-gray-600">Tên nhóm phân loại {tierIndex + 1}</label>
-                    <input 
-                      type="text" 
-                      placeholder={tierIndex === 0 ? "Ví dụ: Màu sắc" : "Ví dụ: Kích cỡ"}
-                      className="pim-input"
-                      {...register(`tier_variations.${tierIndex}.name` as const)}
-                    />
-                    {errors.tier_variations?.[tierIndex]?.name && (
-                      <p className="text-xs text-rose-500 font-medium">{errors.tier_variations[tierIndex]?.name?.message}</p>
-                    )}
-                  </div>
-                  
-                  {/* Options Input list (comma separated or tag-based, let's use dynamic options inside a single text field or an array) */}
-                  <div className="md:col-span-2 space-y-1.5">
-                    <label className="text-sm font-semibold text-gray-600">Phân loại hàng (Các tùy chọn, cách nhau bằng dấu phẩy)</label>
-                    <input 
-                      type="text" 
-                      placeholder={tierIndex === 0 ? "Đỏ, Xanh, Vàng" : "M, L, XL"}
-                      className="pim-input"
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        const opts = val.split(",").map(s => s.trim()).filter(s => s !== "");
-                        setValue(`tier_variations.${tierIndex}.options` as const, opts, { shouldValidate: true });
-                        setValue(`tier_variations.${tierIndex}.tier_index` as const, tierIndex + 1);
-                      }}
-                      defaultValue={watchTiers?.[tierIndex]?.options?.join(", ")}
-                    />
-                    {errors.tier_variations?.[tierIndex]?.options && (
-                      <p className="text-xs text-rose-500 font-medium">{errors.tier_variations[tierIndex]?.options?.message}</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Tier 1 specific option media uploads */}
-                {tierIndex === 0 && watchTiers?.[0]?.options && watchTiers[0].options.length > 0 && (
-                  <div className="pt-4 border-t border-gray-200">
-                    <label className="block text-xs font-semibold text-gray-500 mb-2">Hình ảnh cho phân loại thứ 1</label>
-                    <div className="flex flex-wrap gap-4">
-                      {watchTiers[0].options.map((opt) => (
-                        <div key={opt} className="flex flex-col items-center gap-1.5 p-3 bg-surface border border-gray-200 rounded-xl">
-                          <span className="text-xs text-gray-600 font-medium max-w-[80px] truncate">{opt}</span>
-                          <div className="relative h-14 w-14 border border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50 overflow-hidden hover:border-primary-400 cursor-pointer">
-                            {tier1Images[opt] ? (
-                              <>
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={tier1Images[opt]} alt={opt} className="h-full w-full object-cover" />
-                                <button
-                                  type="button"
-                                  onClick={() => setTier1Images(prev => {
-                                    const next = { ...prev };
-                                    delete next[opt];
-                                    return next;
-                                  })}
-                                  className="absolute inset-0 bg-black/55 text-white flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity text-[8px] font-bold"
-                                >
-                                  Xóa
-                                </button>
-                              </>
-                            ) : (
-                              <label className="h-full w-full flex items-center justify-center cursor-pointer">
-                                {uploadingTier1[opt] ? (
-                                  <Loader2 className="h-4 w-4 animate-spin text-brand-primary" />
-                                ) : (
-                                  <Upload className="h-4 w-4 text-gray-500" />
-                                )}
-                                <input
-                                  type="file"
-                                  accept="image/*"
-                                  className="hidden"
-                                  onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) handleTier1ImageUpload(opt, file);
-                                  }}
-                                />
-                              </label>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-
-            {tierFields.length < 2 && (
-              <button 
-                type="button" 
-                onClick={() => appendTier({ tier_index: tierFields.length + 1, name: "", options: [] })}
-                className="w-full py-3 border-2 border-dashed border-gray-300 rounded-2xl flex items-center justify-center gap-2 text-gray-500 hover:text-brand-primary hover:border-brand-primary hover:bg-blue-50 transition-all font-semibold"
-              >
-                <Plus className="h-5 w-5" /> Thêm nhóm phân loại hàng
-              </button>
-            )}
-          </div>
-
-          {/* Mass Edit / Apply to all Row */}
-          {watchVariants && watchVariants.length > 0 && (
-            <div className="p-4 bg-gray-50 border border-gray-200 rounded-2xl flex flex-wrap gap-4 items-end justify-between">
-              <div className="flex flex-wrap gap-4 items-center">
-                <span className="text-sm font-bold text-gray-700">Áp dụng hàng loạt:</span>
-                <div className="w-32">
-                  <input 
-                    type="number" 
-                    placeholder="Giá"
-                    className="pim-input"
-                    value={bulkPrice}
-                    onChange={(e) => setBulkPrice(e.target.value)}
-                  />
-                </div>
-                <div className="w-32">
-                  <input 
-                    type="number" 
-                    placeholder="Kho hàng"
-                    className="pim-input"
-                    value={bulkStock}
-                    onChange={(e) => setBulkStock(e.target.value)}
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={handleMassApply}
-                  className="px-4 py-2 bg-brand-light text-brand-primary border border-primary-100 rounded-xl hover:bg-primary-100 font-semibold text-sm transition-colors"
-                >
-                  Áp dụng cho tất cả
-                </button>
-              </div>
-              <span className="text-xs text-gray-500">Tự động cấu hình SKU dựa trên SKU cha</span>
-            </div>
-          )}
-
-          {/* Variations Table / Matrix */}
-          <div className="overflow-x-auto border border-gray-200 rounded-2xl">
-            <table className="w-full border-collapse text-left text-sm text-gray-600">
-              <thead className="bg-gray-50 text-xs font-bold uppercase text-gray-700 border-b border-gray-200">
-                <tr>
-                  {watchTiers?.[0]?.name && <th className="px-6 py-4">{watchTiers[0].name}</th>}
-                  {watchTiers?.[1]?.name && <th className="px-6 py-4">{watchTiers[1].name}</th>}
-                  <th className="px-6 py-4">Mã SKU phân loại *</th>
-                  <th className="px-6 py-4">Giá bán *</th>
-                  <th className="px-6 py-4">Kho hàng *</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {watchVariants?.map((v, idx) => (
-                  <tr key={idx} className="hover:bg-gray-50 transition-colors">
-                    {v.tier_1_option !== null && (
-                      <td className="px-6 py-4 font-semibold text-gray-900">{v.tier_1_option}</td>
-                    )}
-                    {v.tier_2_option !== null && (
-                      <td className="px-6 py-4 text-gray-500">{v.tier_2_option}</td>
-                    )}
-                    <td className="px-6 py-3">
-                      <input 
-                        type="text" 
-                        className="px-3 py-1.5 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-primary-500"
-                        {...register(`variants.${idx}.sku_code` as const)}
-                      />
-                      {errors.variants?.[idx]?.sku_code && (
-                        <p className="text-[10px] text-rose-500 mt-0.5">{errors.variants[idx]?.sku_code?.message}</p>
-                      )}
-                    </td>
-                    <td className="px-6 py-3">
-                      <div className="relative">
-                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 text-xs">₫</span>
-                        <input 
-                          type="number" 
-                          className="pl-6 pr-3 py-1.5 border border-gray-300 rounded-lg w-32 focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-primary-500"
-                          {...register(`variants.${idx}.price` as const)}
-                        />
-                      </div>
-                      {errors.variants?.[idx]?.price && (
-                        <p className="text-[10px] text-rose-500 mt-0.5">{errors.variants[idx]?.price?.message}</p>
-                      )}
-                    </td>
-                    <td className="px-6 py-3">
-                      <input 
-                        type="number" 
-                        className="px-3 py-1.5 border border-gray-300 rounded-lg w-24 focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-primary-500"
-                        {...register(`variants.${idx}.stock` as const)}
-                      />
-                      {errors.variants?.[idx]?.stock && (
-                        <p className="text-[10px] text-rose-500 mt-0.5">{errors.variants[idx]?.stock?.message}</p>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* SECTION 4: LOGISTICS & SHIPPING */}
-        <div className="pim-card space-y-6">
-          <h2 className="text-lg font-bold text-gray-900 border-b pb-3 border-gray-200">Vận chuyển & Logistics</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-gray-700">Cân nặng (sau đóng gói) *</label>
-              <div className="relative">
-                <input 
-                  type="number" 
-                  placeholder="0"
-                  className="pim-input pr-12"
-                  {...register("weight")}
-                />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold text-xs">gram</span>
-              </div>
-              {errors.weight && <p className="text-xs text-rose-500 font-medium">{errors.weight.message}</p>}
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-gray-700">Chiều dài</label>
-              <div className="relative">
-                <input 
-                  type="number" 
-                  placeholder="0"
-                  className="pim-input pr-12"
-                  {...register("length")}
-                />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold text-xs">cm</span>
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-gray-700">Chiều rộng</label>
-              <div className="relative">
-                <input 
-                  type="number" 
-                  placeholder="0"
-                  className="pim-input pr-12"
-                  {...register("width")}
-                />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold text-xs">cm</span>
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-gray-700">Chiều cao</label>
-              <div className="relative">
-                <input 
-                  type="number" 
-                  placeholder="0"
-                  className="pim-input pr-12"
-                  {...register("height")}
-                />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold text-xs">cm</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* SECTION 5: PRE-ORDER & STATUS */}
-        <div className="pim-card space-y-6">
-          <h2 className="text-lg font-bold text-gray-900 border-b pb-3 border-gray-200">Thông tin khác</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-            
-            {/* Pre Order Switch */}
-            <div className="p-6 bg-gray-50 border border-gray-200 rounded-2xl space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-bold text-gray-900">Hàng đặt trước</h4>
-                  <p className="text-xs text-gray-500 mt-0.5">Tôi cần thêm thời gian chuẩn bị hàng (7-30 ngày)</p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    className="sr-only peer"
-                    {...register("is_pre_order")}
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-primary"></div>
-                </label>
-              </div>
-
-              {watchIsPreOrder && (
-                <div className="space-y-1.5 pt-2 border-t border-gray-300/50">
-                  <label className="text-xs font-semibold text-gray-600">Thời gian chuẩn bị hàng (dts_days) *</label>
-                  <div className="relative w-36">
-                    <input 
-                      type="number" 
-                      min={7}
-                      max={30}
-                      className="pim-input pr-12"
-                      {...register("dts_days")}
-                    />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs">ngày</span>
-                  </div>
-                  {errors.dts_days && <p className="text-xs text-rose-500 font-medium">{errors.dts_days.message}</p>}
-                </div>
-              )}
-            </div>
-
-            {/* Status Option */}
-            <div className="p-6 bg-gray-50 border border-gray-200 rounded-2xl space-y-4">
-              <h4 className="font-bold text-gray-900">Trạng thái phát hành</h4>
-              <div className="flex gap-6">
-                <label className="flex items-center gap-2 cursor-pointer font-medium text-sm text-gray-700">
-                  <input 
-                    type="radio" 
-                    value="Draft"
-                    className="text-brand-primary focus:ring-brand-primary"
-                    {...register("status")}
-                  />
-                  Lưu bản nháp (Draft)
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer font-medium text-sm text-gray-700">
-                  <input 
-                    type="radio" 
-                    value="Published"
-                    className="text-brand-primary focus:ring-brand-primary"
-                    {...register("status")}
-                  />
-                  Công khai ngay (Published)
-                </label>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        {/* SUBMIT BUTTON */}
-        <div className="flex justify-end gap-4">
-          <button 
-            type="button"
-            onClick={onSaveSuccess}
-            className="btn-outline px-6 py-3 rounded-2xl text-sm"
-          >
-            Hủy bỏ
-          </button>
-          <button 
-            type="submit"
-            disabled={submitting}
-            className="btn-primary px-8 py-3 rounded-2xl text-sm shadow-sm flex items-center gap-2"
-          >
-            {submitting ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" /> Đang lưu...
-              </>
-            ) : productId ? (
-              "Lưu thay đổi"
-            ) : (
-              "Lưu & Hiển thị"
-            )}
-          </button>
-        </div>
-
-      </form>
+        </form>
+      </FormProvider>
     </div>
   );
 }
