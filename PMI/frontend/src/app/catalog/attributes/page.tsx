@@ -170,7 +170,7 @@ export default function AttributesPage() {
       key: "code",
       label: "Mã Code",
       render: (item: Attribute) => (
-        <span className="font-mono text-xs text-indigo-400 bg-indigo-950/40 border border-indigo-900/60 px-2 py-0.5 rounded">
+        <span className="font-mono text-xs text-brand-primary bg-blue-50 border border-blue-100 px-2 py-0.5 rounded">
           {item.code}
         </span>
       ),
@@ -179,7 +179,7 @@ export default function AttributesPage() {
       key: "name",
       label: "Tên thuộc tính",
       render: (item: Attribute) => (
-        <span className="font-semibold text-white">{item.name}</span>
+        <span className="font-semibold text-gray-900">{item.name}</span>
       ),
     },
     {
@@ -193,7 +193,7 @@ export default function AttributesPage() {
           decimal: "Số thập phân (Decimal)",
           boolean: "Đúng/Sai (Boolean)",
         };
-        return <span className="text-slate-300">{typeLabels[item.type] || item.type}</span>;
+        return <span className="text-gray-600">{typeLabels[item.type] || item.type}</span>;
       },
     },
     {
@@ -201,11 +201,11 @@ export default function AttributesPage() {
       label: "Bắt buộc",
       render: (item: Attribute) =>
         item.is_required ? (
-          <span className="inline-flex items-center gap-1 text-[10px] bg-amber-950/40 text-amber-400 border border-amber-900/60 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+          <span className="inline-flex items-center gap-1 text-[10px] bg-brand-primary text-amber-700 border border-brand-primary px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
             <Check className="w-3 h-3" /> Bắt buộc
           </span>
         ) : (
-          <span className="text-slate-600">-</span>
+          <span className="text-gray-400">-</span>
         ),
     },
     {
@@ -213,11 +213,11 @@ export default function AttributesPage() {
       label: "Duy nhất",
       render: (item: Attribute) =>
         item.is_unique ? (
-          <span className="inline-flex items-center gap-1 text-[10px] bg-rose-950/40 text-rose-400 border border-rose-900/60 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+          <span className="inline-flex items-center gap-1 text-[10px] bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
             <Check className="w-3 h-3" /> Duy nhất
           </span>
         ) : (
-          <span className="text-slate-600">-</span>
+          <span className="text-gray-400">-</span>
         ),
     },
     {
@@ -225,11 +225,11 @@ export default function AttributesPage() {
       label: "Dịch theo Locale",
       render: (item: Attribute) =>
         item.is_locale_based ? (
-          <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-950/40 text-emerald-400 border border-emerald-900/60 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+          <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
             Có
           </span>
         ) : (
-          <span className="text-slate-600">Không</span>
+          <span className="text-gray-500">Không</span>
         ),
     },
     {
@@ -237,18 +237,18 @@ export default function AttributesPage() {
       label: "Theo Channel",
       render: (item: Attribute) =>
         item.is_channel_based ? (
-          <span className="inline-flex items-center gap-1 text-[10px] bg-sky-950/40 text-sky-400 border border-sky-900/60 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+          <span className="inline-flex items-center gap-1 text-[10px] bg-sky-50 text-sky-700 border border-sky-200 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
             Có
           </span>
         ) : (
-          <span className="text-slate-600">Không</span>
+          <span className="text-gray-500">Không</span>
         ),
     },
     {
       key: "created_at",
       label: "Ngày tạo",
       render: (item: Attribute) => (
-        <span className="text-slate-400 font-medium">
+        <span className="text-gray-500 font-medium">
           {item.created_at ? new Date(item.created_at).toLocaleDateString("vi-VN") : "-"}
         </span>
       ),
@@ -256,18 +256,18 @@ export default function AttributesPage() {
   ];
 
   return (
-    <div className="p-8 space-y-6 bg-slate-950 min-h-screen text-slate-100">
+    <div className="pim-page text-gray-700">
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
-          <div className="flex items-center gap-2 text-slate-400 text-xs font-semibold uppercase tracking-wider">
-            <Sliders className="w-4 h-4 text-indigo-500" />
+          <div className="flex items-center gap-2 text-gray-500 text-xs font-semibold uppercase tracking-wider">
+            <Sliders className="w-4 h-4 text-brand-primary" />
             <span>Catalog</span>
             <span>/</span>
-            <span className="text-indigo-400">Thuộc tính (Attributes)</span>
+            <span className="text-brand-primary">Thuộc tính (Attributes)</span>
           </div>
-          <h1 className="text-2xl font-black text-white tracking-tight">Thuộc tính sản phẩm</h1>
-          <p className="text-sm text-slate-400 max-w-2xl">
+          <h1 className="text-2xl font-black text-gray-900 tracking-tight">Thuộc tính sản phẩm</h1>
+          <p className="text-sm text-gray-500 max-w-2xl">
             Quản lý các thuộc tính động của sản phẩm (ví dụ: Tên, SKU, Kích thước, Màu sắc) để xây dựng hệ thống PIM đồng nhất.
           </p>
         </div>
@@ -304,16 +304,16 @@ export default function AttributesPage() {
 
       {/* Modal Popup */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-          <div className="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="pim-modal-backdrop z-50">
+          <div className="w-full max-w-xl bg-surface border border-gray-200 rounded-2xl shadow-2xl overflow-hidden transition-all duration-200">
             {/* Header */}
-            <div className="px-6 py-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/40">
-              <h3 className="text-base font-bold text-white tracking-wide">
+            <div className="px-6 py-5 border-b border-gray-200 flex items-center justify-between bg-gray-50">
+              <h3 className="text-base font-bold text-gray-900 tracking-wide">
                 {editingAttr ? "Chỉnh Sửa Thuộc Tính" : "Tạo Thuộc Tính Mới"}
               </h3>
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+                className="btn-icon p-1"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -331,8 +331,8 @@ export default function AttributesPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">
-                      Mã Code <span className="text-indigo-400">*</span>
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">
+                      Mã Code <span className="text-brand-primary">*</span>
                     </label>
                     <input
                       type="text"
@@ -340,32 +340,32 @@ export default function AttributesPage() {
                       value={code}
                       onChange={(e) => setCode(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
                       disabled={editingAttr !== null}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 disabled:opacity-50 disabled:bg-slate-950 transition-colors"
+                      className="pim-input disabled:opacity-50 disabled:bg-gray-100"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">
-                      Tên thuộc tính <span className="text-indigo-400">*</span>
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">
+                      Tên thuộc tính <span className="text-brand-primary">*</span>
                     </label>
                     <input
                       type="text"
                       placeholder="VD: Màu Sắc, Kích Thước Màn Hình"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-colors"
+                      className="pim-input"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">
                     Kiểu dữ liệu
                   </label>
                   <select
                     value={type}
                     onChange={(e) => setType(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                    className="pim-input"
                   >
                     <option value="text">Văn bản ngắn (Text)</option>
                     <option value="textarea">Văn bản dài (Textarea)</option>
@@ -376,8 +376,8 @@ export default function AttributesPage() {
                 </div>
 
                 {/* Configuration Checkboxes */}
-                <div className="bg-slate-950/50 border border-slate-850 p-4 rounded-xl space-y-4">
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block border-b border-slate-800/60 pb-2">
+                <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl space-y-4">
+                  <span className="text-xs font-bold text-gray-500 uppercase tracking-wider block border-b border-gray-200 pb-2">
                     Thiết lập Ràng buộc & Phạm vi
                   </span>
 
@@ -387,13 +387,13 @@ export default function AttributesPage() {
                         type="checkbox"
                         checked={isRequired}
                         onChange={(e) => setIsRequired(e.target.checked)}
-                        className="w-4 h-4 rounded border-slate-800 bg-slate-950 text-indigo-600 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                        className="w-4 h-4 rounded border-gray-300 bg-white text-brand-primary focus:ring-0 focus:ring-offset-0 cursor-pointer"
                       />
                       <div className="space-y-0.5">
-                        <span className="text-xs font-semibold text-slate-200 group-hover:text-white transition-colors">
+                        <span className="text-xs font-semibold text-gray-700 group-hover:text-gray-900 transition-colors">
                           Bắt buộc (Required)
                         </span>
-                        <p className="text-[10px] text-slate-500">Bắt buộc nhập dữ liệu này</p>
+                        <p className="text-[10px] text-gray-500">Bắt buộc nhập dữ liệu này</p>
                       </div>
                     </label>
 
@@ -402,13 +402,13 @@ export default function AttributesPage() {
                         type="checkbox"
                         checked={isUnique}
                         onChange={(e) => setIsUnique(e.target.checked)}
-                        className="w-4 h-4 rounded border-slate-800 bg-slate-950 text-indigo-600 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                        className="w-4 h-4 rounded border-gray-300 bg-white text-brand-primary focus:ring-0 focus:ring-offset-0 cursor-pointer"
                       />
                       <div className="space-y-0.5">
-                        <span className="text-xs font-semibold text-slate-200 group-hover:text-white transition-colors">
+                        <span className="text-xs font-semibold text-gray-700 group-hover:text-gray-900 transition-colors">
                           Duy nhất (Unique)
                         </span>
-                        <p className="text-[10px] text-slate-500">Không trùng lặp giữa các sp</p>
+                        <p className="text-[10px] text-gray-500">Không trùng lặp giữa các sp</p>
                       </div>
                     </label>
 
@@ -417,13 +417,13 @@ export default function AttributesPage() {
                         type="checkbox"
                         checked={isLocaleBased}
                         onChange={(e) => setIsLocaleBased(e.target.checked)}
-                        className="w-4 h-4 rounded border-slate-800 bg-slate-950 text-indigo-600 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                        className="w-4 h-4 rounded border-gray-300 bg-white text-brand-primary focus:ring-0 focus:ring-offset-0 cursor-pointer"
                       />
                       <div className="space-y-0.5">
-                        <span className="text-xs font-semibold text-slate-200 group-hover:text-white transition-colors">
+                        <span className="text-xs font-semibold text-gray-700 group-hover:text-gray-900 transition-colors">
                           Dịch theo ngôn ngữ
                         </span>
-                        <p className="text-[10px] text-slate-500">Dữ liệu dịch theo locale</p>
+                        <p className="text-[10px] text-gray-500">Dữ liệu dịch theo locale</p>
                       </div>
                     </label>
 
@@ -432,13 +432,13 @@ export default function AttributesPage() {
                         type="checkbox"
                         checked={isChannelBased}
                         onChange={(e) => setIsChannelBased(e.target.checked)}
-                        className="w-4 h-4 rounded border-slate-800 bg-slate-950 text-indigo-600 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                        className="w-4 h-4 rounded border-gray-200 bg-gray-50 text-brand-secondary focus:ring-0 focus:ring-offset-0 cursor-pointer"
                       />
                       <div className="space-y-0.5">
-                        <span className="text-xs font-semibold text-slate-200 group-hover:text-white transition-colors">
+                        <span className="text-xs font-semibold text-gray-700 group-hover:text-gray-900 transition-colors">
                           Theo kênh bán hàng
                         </span>
-                        <p className="text-[10px] text-slate-500">Giá trị khác nhau ở mỗi kênh</p>
+                        <p className="text-[10px] text-gray-500">Giá trị khác nhau ở mỗi kênh</p>
                       </div>
                     </label>
                   </div>
@@ -446,18 +446,18 @@ export default function AttributesPage() {
               </div>
 
               {/* Footer Actions */}
-              <div className="px-6 py-4 border-t border-slate-800 bg-slate-950/40 flex justify-end gap-3">
+              <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="px-4 py-2 border border-slate-850 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg text-xs font-semibold active:scale-95 transition-all"
+                  className="px-4 py-2 border border-gray-300 hover:bg-gray-100 text-gray-500 hover:text-gray-900 rounded-lg text-xs font-semibold active:scale-95 transition-all"
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 rounded-lg active:scale-95 shadow-md shadow-indigo-600/10 hover:shadow-indigo-500/20 transition-all duration-200"
+                  className="btn-primary disabled:opacity-50 text-gray-900 text-xs font-semibold px-4 py-2 rounded-lg active:scale-95 shadow-md shadow-sm hover:shadow-sm transition-all duration-200"
                 >
                   {submitting ? "Đang lưu..." : "Lưu thay đổi"}
                 </button>

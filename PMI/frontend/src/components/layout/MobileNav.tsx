@@ -36,7 +36,7 @@ export default function MobileNav() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 h-16 bg-slate-900 border-t border-slate-800 flex items-center justify-around px-2 z-50">
+    <nav className="fixed bottom-0 left-0 right-0 h-16 bg-surface border-t border-gray-200 flex items-center justify-around px-2 z-50">
       {navItems.map((item) => {
         const Icon = item.icon;
         const isActive = item.activePattern.test(pathname || "");
@@ -45,10 +45,10 @@ export default function MobileNav() {
             key={item.href}
             href={item.href}
             className={`flex flex-col items-center justify-center flex-1 h-full py-1 text-xs font-medium transition-colors ${
-              isActive ? "text-amber-500 font-semibold" : "text-slate-400 hover:text-slate-200"
+              isActive ? "text-brand-primary font-semibold" : "text-gray-500 hover:text-gray-800"
             }`}
           >
-            <Icon className={`h-6 w-6 mb-1 ${isActive ? "text-amber-500" : "text-slate-400"}`} />
+            <Icon className={`h-6 w-6 mb-1 ${isActive ? "text-brand-primary" : "text-gray-400"}`} />
             <span>{item.label}</span>
           </Link>
         );

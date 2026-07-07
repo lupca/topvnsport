@@ -530,17 +530,17 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
       {/* Title */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
-            {productId ? "Cập Nhật Sản Phẩm" : duplicateProductId ? "Sao Chép Sản Phẩm" : "Thêm Sản Phẩm Mới"} <Sparkles className="h-6 w-6 text-primary-500 fill-primary-100" />
+          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 flex items-center gap-2">
+            {productId ? "Cập Nhật Sản Phẩm" : duplicateProductId ? "Sao Chép Sản Phẩm" : "Thêm Sản Phẩm Mới"} <Sparkles className="h-6 w-6 text-brand-primary fill-primary-100" />
           </h1>
-          <p className="text-slate-400 mt-1">
+          <p className="text-gray-500 mt-1">
             {productId ? "Chỉnh sửa thông tin chi tiết của sản phẩm" : duplicateProductId ? "Tạo sản phẩm mới bằng cách sao chép thông tin" : "Đăng tải sản phẩm mới lên hệ thống Shopee PIM"}
           </p>
         </div>
-        <div className="flex items-center gap-2 text-sm text-slate-400">
+        <div className="flex items-center gap-2 text-sm text-gray-500">
           <span>Kênh Người Bán</span>
           <ChevronRight className="h-4 w-4" />
-          <span className="font-semibold text-primary-600">Quản lý Sản Phẩm</span>
+          <span className="font-semibold text-brand-primary">Quản lý Sản Phẩm</span>
         </div>
       </div>
 
@@ -567,16 +567,16 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         
         {/* SECTION 1: BASIC INFORMATION */}
-        <div className="bg-slate-900 p-8 rounded-3xl shadow-sm border border-slate-800 space-y-6">
-          <h2 className="text-lg font-bold text-slate-900 border-b pb-3 border-slate-800">Thông tin cơ bản</h2>
+        <div className="pim-card space-y-6">
+          <h2 className="text-lg font-bold text-gray-900 border-b pb-3 border-gray-200">Thông tin cơ bản</h2>
           
           {/* Product Image Upload */}
           <div className="space-y-2">
-            <label className="block text-sm font-semibold text-slate-200">Hình ảnh sản phẩm (Tối đa 9 ảnh chung)</label>
+            <label className="block text-sm font-semibold text-gray-700">Hình ảnh sản phẩm (Tối đa 9 ảnh chung)</label>
             <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-9 gap-4 items-end">
               <div className="flex flex-col items-center gap-1">
-                <span className="text-[10px] text-slate-400 font-semibold">Ảnh bìa</span>
-                <div className="relative h-24 w-24 border-2 border-dashed border-slate-700 rounded-2xl flex flex-col items-center justify-center bg-slate-950 overflow-hidden group hover:border-primary-400 transition-colors">
+                <span className="text-[10px] text-gray-500 font-semibold">Ảnh bìa</span>
+                <div className="relative h-24 w-24 border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center bg-gray-50 overflow-hidden group hover:border-primary-400 transition-colors">
                   {coverImage ? (
                     <>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -592,11 +592,11 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                   ) : (
                     <label className="cursor-pointer flex flex-col items-center justify-center h-full w-full">
                       {uploadingCover ? (
-                        <Loader2 className="h-6 w-6 animate-spin text-primary-500" />
+                        <Loader2 className="h-6 w-6 animate-spin text-brand-primary" />
                       ) : (
                         <>
-                          <ImageIcon className="h-6 w-6 text-slate-400" />
-                          <span className="text-[9px] text-slate-400 mt-1 font-medium">Tải ảnh bìa</span>
+                          <ImageIcon className="h-6 w-6 text-gray-500" />
+                          <span className="text-[9px] text-gray-500 mt-1 font-medium">Tải ảnh bìa</span>
                         </>
                       )}
                       <input type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
@@ -607,8 +607,8 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
 
               {productImages.map((url, idx) => (
                 <div key={idx} className="flex flex-col items-center gap-1">
-                  <span className="text-[10px] text-slate-400 font-semibold">Ảnh phụ {idx + 1}</span>
-                  <div className="relative h-24 w-24 border border-slate-700 rounded-2xl overflow-hidden group">
+                  <span className="text-[10px] text-gray-500 font-semibold">Ảnh phụ {idx + 1}</span>
+                  <div className="relative h-24 w-24 border border-gray-300 rounded-2xl overflow-hidden group">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={url} alt={`Gallery ${idx + 1}`} className="h-full w-full object-cover" />
                     <button
@@ -624,14 +624,14 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
 
               {productImages.length < 8 && (
                 <div className="flex flex-col items-center gap-1">
-                  <span className="text-[10px] text-slate-400 font-semibold">Thêm ảnh</span>
-                  <label className="h-24 w-24 border-2 border-dashed border-slate-700 rounded-2xl flex flex-col items-center justify-center bg-slate-950 hover:bg-slate-800/50 cursor-pointer hover:border-primary-400 transition-colors">
+                  <span className="text-[10px] text-gray-500 font-semibold">Thêm ảnh</span>
+                  <label className="h-24 w-24 border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 cursor-pointer hover:border-primary-400 transition-colors">
                     {uploadingGallery ? (
-                      <Loader2 className="h-5 w-5 animate-spin text-primary-500" />
+                      <Loader2 className="h-5 w-5 animate-spin text-brand-primary" />
                     ) : (
                       <>
-                        <Plus className="h-5 w-5 text-slate-400" />
-                        <span className="text-[9px] text-slate-400 mt-1 font-medium">Tải ảnh phụ</span>
+                        <Plus className="h-5 w-5 text-gray-500" />
+                        <span className="text-[9px] text-gray-500 mt-1 font-medium">Tải ảnh phụ</span>
                       </>
                     )}
                     <input
@@ -645,18 +645,18 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                 </div>
               )}
             </div>
-            <p className="text-[11px] text-slate-400 mt-2">
+            <p className="text-[11px] text-gray-500 mt-2">
               Khuyên dùng hình ảnh kích thước 800 x 800 trở lên. Bạn có thể tải lên tối đa 1 ảnh bìa và 8 ảnh phụ.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-200">Tên sản phẩm *</label>
+              <label className="text-sm font-semibold text-gray-700">Tên sản phẩm *</label>
               <input 
                 type="text" 
                 placeholder="Nhập tên sản phẩm (Ví dụ: Áo thun nam Cotton 100% cổ tròn)"
-                className="w-full bg-slate-950 px-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                className="pim-input"
                 {...register("name")}
               />
               {errors.name && <p className="text-xs text-rose-500 font-medium">{errors.name.message}</p>}
@@ -664,20 +664,20 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-slate-200">Mã SKU sản phẩm cha *</label>
+                <label className="text-sm font-semibold text-gray-700">Mã SKU sản phẩm cha *</label>
                 <input 
                   type="text" 
                   placeholder="Ví dụ: TSHIRT-PARENT"
-                  className="w-full bg-slate-950 px-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                  className="pim-input"
                   {...register("product_code")}
                 />
                 {errors.product_code && <p className="text-xs text-rose-500 font-medium">{errors.product_code.message}</p>}
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-slate-200">Ngành hàng *</label>
+                <label className="text-sm font-semibold text-gray-700">Ngành hàng *</label>
                 <select 
-                  className="w-full bg-slate-950 px-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-slate-900 transition-all"
+                  className="pim-input"
                   {...register("category_id")}
                 >
                   <option value={0}>Chọn ngành hàng</option>
@@ -691,9 +691,9 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-slate-200">Attribute Family *</label>
+                <label className="text-sm font-semibold text-gray-700">Attribute Family *</label>
                 <select
-                  className="w-full bg-slate-950 px-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-slate-900 transition-all"
+                  className="pim-input"
                   {...register("family_id")}
                 >
                   <option value={0}>Chọn bộ thuộc tính</option>
@@ -709,11 +709,11 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-slate-200">Mô tả sản phẩm *</label>
+            <label className="text-sm font-semibold text-gray-700">Mô tả sản phẩm *</label>
             <textarea 
               rows={4}
               placeholder="Mô tả thông tin chi tiết về sản phẩm của bạn (chất liệu, công dụng, thông số kỹ thuật...)"
-              className="w-full bg-slate-950 px-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+              className="pim-input"
               {...register("description")}
             />
             {errors.description && <p className="text-xs text-rose-500 font-medium">{errors.description.message}</p>}
@@ -721,18 +721,18 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
         </div>
 
         {/* SECTION 2: TECHNICAL SPECS (DYNAMIC BY FAMILY) */}
-        <div className="bg-slate-900 p-8 rounded-3xl shadow-sm border border-slate-800 space-y-6">
-          <h2 className="text-lg font-bold text-slate-900 border-b pb-3 border-slate-800">Thuộc tính kỹ thuật</h2>
+        <div className="pim-card space-y-6">
+          <h2 className="text-lg font-bold text-gray-900 border-b pb-3 border-gray-200">Thuộc tính kỹ thuật</h2>
 
           {!watchFamilyId || Number(watchFamilyId) <= 0 ? (
-            <p className="text-sm text-slate-400">Chọn Attribute Family để tải danh sách thông số kỹ thuật phù hợp.</p>
+            <p className="text-sm text-gray-500">Chọn Attribute Family để tải danh sách thông số kỹ thuật phù hợp.</p>
           ) : familyAttributes.length === 0 ? (
-            <p className="text-sm text-slate-400">Family hiện tại chưa có thuộc tính nào được gán.</p>
+            <p className="text-sm text-gray-500">Family hiện tại chưa có thuộc tính nào được gán.</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {familyAttributes.map(attr => (
                 <div key={attr.id} className="space-y-1.5">
-                  <label className="text-sm font-semibold text-slate-200">
+                  <label className="text-sm font-semibold text-gray-700">
                     {attr.name}{attr.is_required ? " *" : ""}
                   </label>
                   <input
@@ -744,9 +744,9 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                       const value = e.target.value;
                       setAttributeValues(prev => ({ ...prev, [attr.id]: value }));
                     }}
-                    className="w-full bg-slate-950 px-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                    className="pim-input"
                   />
-                  <p className="text-[11px] text-slate-400">Code: {attr.code}</p>
+                  <p className="text-[11px] text-gray-500">Code: {attr.code}</p>
                 </div>
               ))}
             </div>
@@ -754,10 +754,10 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
         </div>
 
         {/* SECTION 3: SALES INFORMATION (VARIATIONS) */}
-        <div className="bg-slate-900 p-8 rounded-3xl shadow-sm border border-slate-800 space-y-6">
-          <div className="flex items-center justify-between border-b pb-3 border-slate-800">
-            <h2 className="text-lg font-bold text-slate-900">Thông tin bán hàng</h2>
-            <div className="text-xs text-slate-400 flex items-center gap-1">
+        <div className="pim-card space-y-6">
+          <div className="flex items-center justify-between border-b pb-3 border-gray-200">
+            <h2 className="text-lg font-bold text-gray-900">Thông tin bán hàng</h2>
+            <div className="text-xs text-gray-500 flex items-center gap-1">
               <HelpCircle className="h-4 w-4" />
               <span>Hỗ trợ tối đa 2 nhóm phân loại</span>
             </div>
@@ -766,22 +766,22 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
           {/* Tier Variation Creation UI */}
           <div className="space-y-6">
             {tierFields.map((field, tierIndex) => (
-              <div key={field.id} className="p-6 bg-slate-950/50 border border-slate-800 rounded-2xl space-y-4 relative">
+              <div key={field.id} className="p-6 bg-gray-50 border border-gray-200 rounded-2xl space-y-4 relative">
                 <button 
                   type="button" 
                   onClick={() => removeTier(tierIndex)}
-                  className="absolute top-4 right-4 text-slate-400 hover:text-rose-500 transition-colors"
+                  className="absolute top-4 right-4 text-gray-500 hover:text-rose-500 transition-colors"
                 >
                   <Trash className="h-5 w-5" />
                 </button>
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
                   <div className="space-y-1.5">
-                    <label className="text-sm font-semibold text-slate-300">Tên nhóm phân loại {tierIndex + 1}</label>
+                    <label className="text-sm font-semibold text-gray-600">Tên nhóm phân loại {tierIndex + 1}</label>
                     <input 
                       type="text" 
                       placeholder={tierIndex === 0 ? "Ví dụ: Màu sắc" : "Ví dụ: Kích cỡ"}
-                      className="w-full bg-slate-950 px-4 py-2 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                      className="pim-input"
                       {...register(`tier_variations.${tierIndex}.name` as const)}
                     />
                     {errors.tier_variations?.[tierIndex]?.name && (
@@ -791,11 +791,11 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                   
                   {/* Options Input list (comma separated or tag-based, let's use dynamic options inside a single text field or an array) */}
                   <div className="md:col-span-2 space-y-1.5">
-                    <label className="text-sm font-semibold text-slate-300">Phân loại hàng (Các tùy chọn, cách nhau bằng dấu phẩy)</label>
+                    <label className="text-sm font-semibold text-gray-600">Phân loại hàng (Các tùy chọn, cách nhau bằng dấu phẩy)</label>
                     <input 
                       type="text" 
                       placeholder={tierIndex === 0 ? "Đỏ, Xanh, Vàng" : "M, L, XL"}
-                      className="w-full bg-slate-950 px-4 py-2 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                      className="pim-input"
                       onChange={(e) => {
                         const val = e.target.value;
                         const opts = val.split(",").map(s => s.trim()).filter(s => s !== "");
@@ -812,13 +812,13 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
 
                 {/* Tier 1 specific option media uploads */}
                 {tierIndex === 0 && watchTiers?.[0]?.options && watchTiers[0].options.length > 0 && (
-                  <div className="pt-4 border-t border-slate-800">
-                    <label className="block text-xs font-semibold text-slate-400 mb-2">Hình ảnh cho phân loại thứ 1</label>
+                  <div className="pt-4 border-t border-gray-200">
+                    <label className="block text-xs font-semibold text-gray-500 mb-2">Hình ảnh cho phân loại thứ 1</label>
                     <div className="flex flex-wrap gap-4">
                       {watchTiers[0].options.map((opt) => (
-                        <div key={opt} className="flex flex-col items-center gap-1.5 p-3 bg-slate-900 border border-slate-800 rounded-xl">
-                          <span className="text-xs text-slate-300 font-medium max-w-[80px] truncate">{opt}</span>
-                          <div className="relative h-14 w-14 border border-dashed border-slate-700 rounded-lg flex items-center justify-center bg-slate-950/50 overflow-hidden hover:border-primary-400 cursor-pointer">
+                        <div key={opt} className="flex flex-col items-center gap-1.5 p-3 bg-surface border border-gray-200 rounded-xl">
+                          <span className="text-xs text-gray-600 font-medium max-w-[80px] truncate">{opt}</span>
+                          <div className="relative h-14 w-14 border border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50 overflow-hidden hover:border-primary-400 cursor-pointer">
                             {tier1Images[opt] ? (
                               <>
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -838,9 +838,9 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                             ) : (
                               <label className="h-full w-full flex items-center justify-center cursor-pointer">
                                 {uploadingTier1[opt] ? (
-                                  <Loader2 className="h-4 w-4 animate-spin text-primary-500" />
+                                  <Loader2 className="h-4 w-4 animate-spin text-brand-primary" />
                                 ) : (
-                                  <Upload className="h-4 w-4 text-slate-400" />
+                                  <Upload className="h-4 w-4 text-gray-500" />
                                 )}
                                 <input
                                   type="file"
@@ -866,7 +866,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
               <button 
                 type="button" 
                 onClick={() => appendTier({ tier_index: tierFields.length + 1, name: "", options: [] })}
-                className="w-full py-3 border-2 border-dashed border-slate-700 rounded-2xl flex items-center justify-center gap-2 text-slate-400 hover:text-primary-500 hover:border-primary-300 hover:bg-primary-50/10 transition-all font-semibold"
+                className="w-full py-3 border-2 border-dashed border-gray-300 rounded-2xl flex items-center justify-center gap-2 text-gray-500 hover:text-brand-primary hover:border-brand-primary hover:bg-blue-50 transition-all font-semibold"
               >
                 <Plus className="h-5 w-5" /> Thêm nhóm phân loại hàng
               </button>
@@ -875,14 +875,14 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
 
           {/* Mass Edit / Apply to all Row */}
           {watchVariants && watchVariants.length > 0 && (
-            <div className="p-4 bg-slate-950 border border-slate-800 rounded-2xl flex flex-wrap gap-4 items-end justify-between">
+            <div className="p-4 bg-gray-50 border border-gray-200 rounded-2xl flex flex-wrap gap-4 items-end justify-between">
               <div className="flex flex-wrap gap-4 items-center">
-                <span className="text-sm font-bold text-slate-200">Áp dụng hàng loạt:</span>
+                <span className="text-sm font-bold text-gray-700">Áp dụng hàng loạt:</span>
                 <div className="w-32">
                   <input 
                     type="number" 
                     placeholder="Giá"
-                    className="w-full px-3 py-2 bg-slate-900 text-sm rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="pim-input"
                     value={bulkPrice}
                     onChange={(e) => setBulkPrice(e.target.value)}
                   />
@@ -891,7 +891,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                   <input 
                     type="number" 
                     placeholder="Kho hàng"
-                    className="w-full px-3 py-2 bg-slate-900 text-sm rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="pim-input"
                     value={bulkStock}
                     onChange={(e) => setBulkStock(e.target.value)}
                   />
@@ -899,19 +899,19 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                 <button
                   type="button"
                   onClick={handleMassApply}
-                  className="px-4 py-2 bg-primary-50 text-primary-600 border border-primary-100 rounded-xl hover:bg-primary-100 font-semibold text-sm transition-colors"
+                  className="px-4 py-2 bg-brand-light text-brand-primary border border-primary-100 rounded-xl hover:bg-primary-100 font-semibold text-sm transition-colors"
                 >
                   Áp dụng cho tất cả
                 </button>
               </div>
-              <span className="text-xs text-slate-400">Tự động cấu hình SKU dựa trên SKU cha</span>
+              <span className="text-xs text-gray-500">Tự động cấu hình SKU dựa trên SKU cha</span>
             </div>
           )}
 
           {/* Variations Table / Matrix */}
-          <div className="overflow-x-auto border border-slate-800 rounded-2xl">
-            <table className="w-full border-collapse text-left text-sm text-slate-300">
-              <thead className="bg-slate-950 text-xs font-bold uppercase text-slate-200 border-b border-slate-800">
+          <div className="overflow-x-auto border border-gray-200 rounded-2xl">
+            <table className="w-full border-collapse text-left text-sm text-gray-600">
+              <thead className="bg-gray-50 text-xs font-bold uppercase text-gray-700 border-b border-gray-200">
                 <tr>
                   {watchTiers?.[0]?.name && <th className="px-6 py-4">{watchTiers[0].name}</th>}
                   {watchTiers?.[1]?.name && <th className="px-6 py-4">{watchTiers[1].name}</th>}
@@ -920,19 +920,19 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                   <th className="px-6 py-4">Kho hàng *</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-gray-100">
                 {watchVariants?.map((v, idx) => (
-                  <tr key={idx} className="hover:bg-slate-950/50 transition-colors">
+                  <tr key={idx} className="hover:bg-gray-50 transition-colors">
                     {v.tier_1_option !== null && (
-                      <td className="px-6 py-4 font-semibold text-slate-900">{v.tier_1_option}</td>
+                      <td className="px-6 py-4 font-semibold text-gray-900">{v.tier_1_option}</td>
                     )}
                     {v.tier_2_option !== null && (
-                      <td className="px-6 py-4 text-slate-400">{v.tier_2_option}</td>
+                      <td className="px-6 py-4 text-gray-500">{v.tier_2_option}</td>
                     )}
                     <td className="px-6 py-3">
                       <input 
                         type="text" 
-                        className="px-3 py-1.5 border border-slate-700 rounded-lg w-full focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+                        className="px-3 py-1.5 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-primary-500"
                         {...register(`variants.${idx}.sku_code` as const)}
                       />
                       {errors.variants?.[idx]?.sku_code && (
@@ -941,10 +941,10 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                     </td>
                     <td className="px-6 py-3">
                       <div className="relative">
-                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs">₫</span>
+                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 text-xs">₫</span>
                         <input 
                           type="number" 
-                          className="pl-6 pr-3 py-1.5 border border-slate-700 rounded-lg w-32 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+                          className="pl-6 pr-3 py-1.5 border border-gray-300 rounded-lg w-32 focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-primary-500"
                           {...register(`variants.${idx}.price` as const)}
                         />
                       </div>
@@ -955,7 +955,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                     <td className="px-6 py-3">
                       <input 
                         type="number" 
-                        className="px-3 py-1.5 border border-slate-700 rounded-lg w-24 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+                        className="px-3 py-1.5 border border-gray-300 rounded-lg w-24 focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-primary-500"
                         {...register(`variants.${idx}.stock` as const)}
                       />
                       {errors.variants?.[idx]?.stock && (
@@ -970,77 +970,77 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
         </div>
 
         {/* SECTION 4: LOGISTICS & SHIPPING */}
-        <div className="bg-slate-900 p-8 rounded-3xl shadow-sm border border-slate-800 space-y-6">
-          <h2 className="text-lg font-bold text-slate-900 border-b pb-3 border-slate-800">Vận chuyển & Logistics</h2>
+        <div className="pim-card space-y-6">
+          <h2 className="text-lg font-bold text-gray-900 border-b pb-3 border-gray-200">Vận chuyển & Logistics</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-200">Cân nặng (sau đóng gói) *</label>
+              <label className="text-sm font-semibold text-gray-700">Cân nặng (sau đóng gói) *</label>
               <div className="relative">
                 <input 
                   type="number" 
                   placeholder="0"
-                  className="w-full bg-slate-950 pr-12 pl-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                  className="pim-input pr-12"
                   {...register("weight")}
                 />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-xs">gram</span>
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold text-xs">gram</span>
               </div>
               {errors.weight && <p className="text-xs text-rose-500 font-medium">{errors.weight.message}</p>}
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-200">Chiều dài</label>
+              <label className="text-sm font-semibold text-gray-700">Chiều dài</label>
               <div className="relative">
                 <input 
                   type="number" 
                   placeholder="0"
-                  className="w-full bg-slate-950 pr-12 pl-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                  className="pim-input pr-12"
                   {...register("length")}
                 />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-xs">cm</span>
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold text-xs">cm</span>
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-200">Chiều rộng</label>
+              <label className="text-sm font-semibold text-gray-700">Chiều rộng</label>
               <div className="relative">
                 <input 
                   type="number" 
                   placeholder="0"
-                  className="w-full bg-slate-950 pr-12 pl-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                  className="pim-input pr-12"
                   {...register("width")}
                 />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-xs">cm</span>
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold text-xs">cm</span>
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-200">Chiều cao</label>
+              <label className="text-sm font-semibold text-gray-700">Chiều cao</label>
               <div className="relative">
                 <input 
                   type="number" 
                   placeholder="0"
-                  className="w-full bg-slate-950 pr-12 pl-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                  className="pim-input pr-12"
                   {...register("height")}
                 />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-xs">cm</span>
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold text-xs">cm</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* SECTION 5: PRE-ORDER & STATUS */}
-        <div className="bg-slate-900 p-8 rounded-3xl shadow-sm border border-slate-800 space-y-6">
-          <h2 className="text-lg font-bold text-slate-900 border-b pb-3 border-slate-800">Thông tin khác</h2>
+        <div className="pim-card space-y-6">
+          <h2 className="text-lg font-bold text-gray-900 border-b pb-3 border-gray-200">Thông tin khác</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
             
             {/* Pre Order Switch */}
-            <div className="p-6 bg-slate-950/50 border border-slate-800 rounded-2xl space-y-4">
+            <div className="p-6 bg-gray-50 border border-gray-200 rounded-2xl space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="font-bold text-slate-100">Hàng đặt trước</h4>
-                  <p className="text-xs text-slate-400 mt-0.5">Tôi cần thêm thời gian chuẩn bị hàng (7-30 ngày)</p>
+                  <h4 className="font-bold text-gray-900">Hàng đặt trước</h4>
+                  <p className="text-xs text-gray-500 mt-0.5">Tôi cần thêm thời gian chuẩn bị hàng (7-30 ngày)</p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input 
@@ -1048,22 +1048,22 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                     className="sr-only peer"
                     {...register("is_pre_order")}
                   />
-                  <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-900 after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-primary"></div>
                 </label>
               </div>
 
               {watchIsPreOrder && (
-                <div className="space-y-1.5 pt-2 border-t border-slate-700/50">
-                  <label className="text-xs font-semibold text-slate-300">Thời gian chuẩn bị hàng (dts_days) *</label>
+                <div className="space-y-1.5 pt-2 border-t border-gray-300/50">
+                  <label className="text-xs font-semibold text-gray-600">Thời gian chuẩn bị hàng (dts_days) *</label>
                   <div className="relative w-36">
                     <input 
                       type="number" 
                       min={7}
                       max={30}
-                      className="w-full bg-slate-950 pr-12 pl-4 py-2 rounded-xl border border-slate-700 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                      className="pim-input pr-12"
                       {...register("dts_days")}
                     />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">ngày</span>
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs">ngày</span>
                   </div>
                   {errors.dts_days && <p className="text-xs text-rose-500 font-medium">{errors.dts_days.message}</p>}
                 </div>
@@ -1071,23 +1071,23 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
             </div>
 
             {/* Status Option */}
-            <div className="p-6 bg-slate-950/50 border border-slate-800 rounded-2xl space-y-4">
-              <h4 className="font-bold text-slate-100">Trạng thái phát hành</h4>
+            <div className="p-6 bg-gray-50 border border-gray-200 rounded-2xl space-y-4">
+              <h4 className="font-bold text-gray-900">Trạng thái phát hành</h4>
               <div className="flex gap-6">
-                <label className="flex items-center gap-2 cursor-pointer font-medium text-sm text-slate-200">
+                <label className="flex items-center gap-2 cursor-pointer font-medium text-sm text-gray-700">
                   <input 
                     type="radio" 
                     value="Draft"
-                    className="text-primary-500 focus:ring-primary-500"
+                    className="text-brand-primary focus:ring-brand-primary"
                     {...register("status")}
                   />
                   Lưu bản nháp (Draft)
                 </label>
-                <label className="flex items-center gap-2 cursor-pointer font-medium text-sm text-slate-200">
+                <label className="flex items-center gap-2 cursor-pointer font-medium text-sm text-gray-700">
                   <input 
                     type="radio" 
                     value="Published"
-                    className="text-primary-500 focus:ring-primary-500"
+                    className="text-brand-primary focus:ring-brand-primary"
                     {...register("status")}
                   />
                   Công khai ngay (Published)
@@ -1103,14 +1103,14 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
           <button 
             type="button"
             onClick={onSaveSuccess}
-            className="px-6 py-3 bg-slate-800 text-slate-200 rounded-2xl hover:bg-slate-200 transition-colors font-bold text-sm"
+            className="btn-outline px-6 py-3 rounded-2xl text-sm"
           >
             Hủy bỏ
           </button>
           <button 
             type="submit"
             disabled={submitting}
-            className="px-8 py-3 bg-primary-600 text-white rounded-2xl hover:bg-primary-700 disabled:opacity-50 transition-colors font-bold text-sm shadow-lg shadow-primary-500/20 flex items-center gap-2"
+            className="btn-primary px-8 py-3 rounded-2xl text-sm shadow-sm flex items-center gap-2"
           >
             {submitting ? (
               <>

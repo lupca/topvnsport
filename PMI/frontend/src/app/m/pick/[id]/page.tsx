@@ -132,7 +132,7 @@ export default function PickFlow() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen text-slate-400">
+      <div className="flex flex-col items-center justify-center min-h-screen text-gray-500">
         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500 mb-3"></div>
         <span>Loading picking task...</span>
       </div>
@@ -143,7 +143,7 @@ export default function PickFlow() {
     return (
       <div className="p-4 flex flex-col gap-4 text-center">
         <div className="text-red-500 font-bold">Picking Order Not Found</div>
-        <button onClick={() => router.back()} className="text-amber-500 underline">
+        <button onClick={() => router.back()} className="text-brand-primary underline">
           Go Back
         </button>
       </div>
@@ -156,23 +156,23 @@ export default function PickFlow() {
   return (
     <div className="p-4 flex flex-col gap-4">
       {/* Header */}
-      <div className="border-b border-slate-800 pb-3 flex items-center justify-between">
+      <div className="border-b border-gray-200 pb-3 flex items-center justify-between">
         <button
           onClick={() => router.push("/m/pick/select")}
-          className="flex items-center gap-1 text-slate-400 hover:text-slate-200"
+          className="flex items-center gap-1 text-gray-500 hover:text-gray-700"
         >
           <ArrowLeft className="h-5 w-5" />
           <span>Back</span>
         </button>
         <div className="text-right">
           <h1 className="text-lg font-bold text-blue-500">{order.fulfillment_number}</h1>
-          <p className="text-xs text-slate-450">OMS Order: #{order.oms_order_number}</p>
+          <p className="text-xs text-gray-500">OMS Order: #{order.oms_order_number}</p>
         </div>
       </div>
 
       {/* Status Banner */}
-      <div className="bg-slate-900 border border-slate-800 rounded-lg p-3 flex justify-between items-center">
-        <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Status</span>
+      <div className="bg-surface border border-gray-200 rounded-lg p-3 flex justify-between items-center">
+        <span className="text-xs text-gray-500 font-bold uppercase tracking-wider">Status</span>
         <span className="text-xs font-semibold bg-blue-500/15 border border-blue-500/35 text-blue-400 px-2 py-0.5 rounded uppercase">
           {order.status}
         </span>
@@ -193,8 +193,8 @@ export default function PickFlow() {
       )}
 
       {isPending ? (
-        <div className="bg-slate-900 border border-slate-800 rounded-lg p-6 flex flex-col items-center gap-4 text-center">
-          <p className="text-sm text-slate-350">This pick task has not started yet. Ready to pick items?</p>
+        <div className="bg-surface border border-gray-200 rounded-lg p-6 flex flex-col items-center gap-4 text-center">
+          <p className="text-sm text-gray-500">This pick task has not started yet. Ready to pick items?</p>
           <button
             onClick={handleStartPicking}
             className="w-full py-4 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold rounded-lg text-lg select-none shadow-md shadow-blue-950/40"
@@ -209,7 +209,7 @@ export default function PickFlow() {
 
           {/* Items list */}
           <div className="flex flex-col gap-3">
-            <h2 className="text-xs font-bold text-slate-400 tracking-wider">PICK LIST ITEMS</h2>
+            <h2 className="text-xs font-bold text-gray-500 tracking-wider">PICK LIST ITEMS</h2>
             <div className="flex flex-col gap-2">
               {order.pick_list_items.map((item) => {
                 const isCompleted = item.picked_qty >= item.quantity;
@@ -217,18 +217,18 @@ export default function PickFlow() {
                 return (
                   <div
                     key={item.id}
-                    className={`p-3 bg-slate-900 border rounded-lg flex flex-col gap-2 ${
-                      isCompleted ? "border-slate-800 opacity-60" : "border-blue-500/30"
+                    className={`p-3 bg-surface border rounded-lg flex flex-col gap-2 ${
+                      isCompleted ? "border-gray-200 opacity-60" : "border-blue-500/30"
                     }`}
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <span className="text-xs font-bold text-slate-400">{item.sku_code}</span>
-                        <h3 className="font-bold text-slate-200 text-sm mt-0.5 leading-tight">{item.product_name}</h3>
+                        <span className="text-xs font-bold text-gray-500">{item.sku_code}</span>
+                        <h3 className="font-bold text-gray-700 text-sm mt-0.5 leading-tight">{item.product_name}</h3>
                       </div>
                       <div className="text-right">
-                        <span className="text-xs font-semibold text-slate-400">Pick</span>
-                        <div className="text-base font-bold text-slate-100">
+                        <span className="text-xs font-semibold text-gray-500">Pick</span>
+                        <div className="text-base font-bold text-gray-900">
                           <span className={isCompleted ? "text-emerald-500" : "text-blue-500"}>
                             {item.picked_qty}
                           </span>
@@ -236,12 +236,12 @@ export default function PickFlow() {
                         </div>
                       </div>
                     </div>
-                    <div className="border-t border-slate-850 pt-2 flex items-center justify-between text-xs text-slate-450 font-medium">
+                    <div className="border-t border-gray-200 pt-2 flex items-center justify-between text-xs text-gray-500 font-medium">
                       <span className="flex items-center gap-1">
                         <MapPin className="h-3.5 w-3.5 text-blue-500" />
-                        Location: <strong className="text-slate-250 text-sm">{locCode}</strong>
+                        Location: <strong className="text-gray-500 text-sm">{locCode}</strong>
                       </span>
-                      <span className="uppercase text-[10px] font-bold tracking-wider px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800 text-slate-400">
+                      <span className="uppercase text-[10px] font-bold tracking-wider px-1.5 py-0.5 rounded bg-surface-hover border border-gray-200 text-gray-500">
                         {item.status}
                       </span>
                     </div>
@@ -255,7 +255,7 @@ export default function PickFlow() {
           <button
             onClick={handleCompletePicking}
             disabled={!allPicked && order.status !== "PICKED"}
-            className="w-full mt-6 py-4 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-800 disabled:text-slate-500 disabled:cursor-not-allowed text-white font-bold rounded-lg text-center select-none shadow-md shadow-blue-950/40 text-base"
+            className="w-full mt-6 py-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed text-white font-bold rounded-lg text-center select-none shadow-md shadow-blue-950/40 text-base"
           >
             COMPLETE PICKING
           </button>

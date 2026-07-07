@@ -144,14 +144,14 @@ export default function AttributeFamiliesPage() {
       key: "id",
       label: "ID",
       render: (item: AttributeFamily) => (
-        <span className="font-semibold text-slate-400">{item.id}</span>
+        <span className="font-semibold text-gray-500">{item.id}</span>
       ),
     },
     {
       key: "code",
       label: "Mã Code",
       render: (item: AttributeFamily) => (
-        <span className="font-mono text-xs text-indigo-400 bg-indigo-950/40 border border-indigo-900/60 px-2 py-0.5 rounded">
+        <span className="font-mono text-xs text-brand-primary bg-blue-50 border border-blue-100 px-2 py-0.5 rounded">
           {item.code}
         </span>
       ),
@@ -160,14 +160,14 @@ export default function AttributeFamiliesPage() {
       key: "name",
       label: "Tên họ thuộc tính (Family Name)",
       render: (item: AttributeFamily) => (
-        <span className="font-semibold text-white">{item.name}</span>
+        <span className="font-semibold text-gray-900">{item.name}</span>
       ),
     },
     {
       key: "created_at",
       label: "Ngày tạo",
       render: (item: AttributeFamily) => (
-        <span className="text-slate-400 font-medium">
+        <span className="text-gray-500 font-medium">
           {item.created_at ? new Date(item.created_at).toLocaleDateString("vi-VN") : "-"}
         </span>
       ),
@@ -175,18 +175,18 @@ export default function AttributeFamiliesPage() {
   ];
 
   return (
-    <div className="p-8 space-y-6 bg-slate-950 min-h-screen text-slate-100">
+    <div className="p-8 space-y-6 pim-page text-gray-700">
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
-          <div className="flex items-center gap-2 text-slate-400 text-xs font-semibold uppercase tracking-wider">
-            <FolderTree className="w-4 h-4 text-indigo-500" />
+          <div className="flex items-center gap-2 text-gray-500 text-xs font-semibold uppercase tracking-wider">
+            <FolderTree className="w-4 h-4 text-brand-primary" />
             <span>Catalog</span>
             <span>/</span>
-            <span className="text-indigo-400">Họ thuộc tính (Families)</span>
+            <span className="text-brand-primary">Họ thuộc tính (Families)</span>
           </div>
-          <h1 className="text-2xl font-black text-white tracking-tight">Họ thuộc tính</h1>
-          <p className="text-sm text-slate-400 max-w-2xl">
+          <h1 className="text-2xl font-black text-gray-900 tracking-tight">Họ thuộc tính</h1>
+          <p className="text-sm text-gray-500 max-w-2xl">
             Định nghĩa bộ khung các thuộc tính bắt buộc đi liền với loại sản phẩm cụ thể (ví dụ: Điện thoại cần CPU, RAM; Quần áo cần Kích cỡ, Chất liệu).
           </p>
         </div>
@@ -223,16 +223,16 @@ export default function AttributeFamiliesPage() {
 
       {/* Modal Popup */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md bg-surface border border-gray-200 rounded-2xl shadow-2xl overflow-hidden duration-200">
             {/* Header */}
-            <div className="px-6 py-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/40">
-              <h3 className="text-base font-bold text-white tracking-wide">
+            <div className="px-6 py-5 border-b border-gray-200 flex items-center justify-between bg-gray-50">
+              <h3 className="text-base font-bold text-gray-900 tracking-wide">
                 {editingFamily ? "Chỉnh Sửa Họ Thuộc Tính" : "Tạo Họ Thuộc Tính"}
               </h3>
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+                className="p-1 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-900 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -249,8 +249,8 @@ export default function AttributeFamiliesPage() {
                 )}
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">
-                    Mã Code <span className="text-indigo-400">*</span>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">
+                    Mã Code <span className="text-brand-primary">*</span>
                   </label>
                   <input
                     type="text"
@@ -258,37 +258,37 @@ export default function AttributeFamiliesPage() {
                     value={code}
                     onChange={(e) => setCode(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
                     disabled={editingFamily !== null}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 disabled:opacity-50 disabled:bg-slate-950 transition-colors"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:border-brand-primary disabled:opacity-50 disabled:bg-gray-50 transition-colors"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">
-                    Tên họ thuộc tính <span className="text-indigo-400">*</span>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">
+                    Tên họ thuộc tính <span className="text-brand-primary">*</span>
                   </label>
                   <input
                     type="text"
                     placeholder="VD: Mặc Định, Thiết Bị Số"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-colors"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:border-brand-primary transition-colors"
                   />
                 </div>
               </div>
 
               {/* Footer Actions */}
-              <div className="px-6 py-4 border-t border-slate-800 bg-slate-950/40 flex justify-end gap-3">
+              <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="px-4 py-2 border border-slate-850 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg text-xs font-semibold active:scale-95 transition-all"
+                  className="px-4 py-2 border border-gray-300 hover:bg-gray-100 text-gray-500 hover:text-gray-900 rounded-lg text-xs font-semibold active:scale-95 transition-all"
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 rounded-lg active:scale-95 shadow-md shadow-indigo-600/10 hover:shadow-indigo-500/20 transition-all duration-200"
+                  className="btn-primary disabled:opacity-50 text-gray-900 text-xs font-semibold px-4 py-2 rounded-lg active:scale-95 shadow-md shadow-sm hover:shadow-sm transition-all duration-200"
                 >
                   {submitting ? "Đang lưu..." : "Lưu thay đổi"}
                 </button>

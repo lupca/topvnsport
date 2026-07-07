@@ -1,0 +1,15 @@
+.pim-table-container {
+  @apply bg-surface rounded-3xl border border-gray-200 shadow-sm overflow-hidden;
+}
+
+.pim-table {
+  @apply w-full text-left text-sm text-gray-600 border-collapse;
+}
+
+.pim-table th {
+  @apply bg-gray-50 border-b border-gray-200 px-6 py-4 text-xs font-bold uppercase text-gray-500;
+}
+
+.pim-table tr {
+  @apply border-b border-gray-100 transition-colors hover:bg-surface-hover;
+}

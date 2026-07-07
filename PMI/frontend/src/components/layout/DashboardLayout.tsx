@@ -16,7 +16,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   if (isMobile) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans select-none">
+      <div className="min-h-screen bg-brand-light text-gray-700 flex flex-col font-sans select-none">
         <main className="flex-1 overflow-y-auto pb-20">
           {children}
         </main>
@@ -26,7 +26,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-950/60">
+    <div className="flex min-h-screen bg-brand-light">
       {/* Fixed Sidebar */}
       <Sidebar />
       

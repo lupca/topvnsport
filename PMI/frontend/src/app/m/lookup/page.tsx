@@ -95,15 +95,15 @@ export default function MobileLookup() {
   return (
     <div className="p-4 flex flex-col gap-4">
       {/* Header */}
-      <div className="border-b border-slate-800 pb-3 flex justify-between items-center">
+      <div className="border-b border-gray-200 pb-3 flex justify-between items-center">
         <div>
-          <h1 className="text-xl font-bold tracking-wider text-amber-500">LOOKUP</h1>
-          <p className="text-xs text-slate-400">Inventory & Barcode Lookup</p>
+          <h1 className="text-xl font-bold tracking-wider text-brand-primary">LOOKUP</h1>
+          <p className="text-xs text-gray-500">Inventory & Barcode Lookup</p>
         </div>
         {barcodeMapping && (
           <button
             onClick={handleReset}
-            className="flex items-center gap-1 text-xs font-semibold bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded text-amber-500 transition-colors"
+            className="flex items-center gap-1 text-xs font-semibold bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded text-brand-primary transition-colors"
           >
             <RefreshCw className="h-3 w-3" />
             CLEAR
@@ -117,9 +117,9 @@ export default function MobileLookup() {
       )}
 
       {loading && (
-        <div className="flex flex-col items-center justify-center p-12 bg-slate-900 border border-slate-800 rounded-lg">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-amber-500 mb-3"></div>
-          <span className="text-sm text-slate-400">Searching barcode database...</span>
+        <div className="flex flex-col items-center justify-center p-12 bg-surface border border-gray-200 rounded-lg">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-primary mb-3"></div>
+          <span className="text-sm text-gray-500">Searching barcode database...</span>
         </div>
       )}
 
@@ -131,7 +131,7 @@ export default function MobileLookup() {
             <p className="text-xs mt-0.5">{error}</p>
             <button
               onClick={handleReset}
-              className="mt-2 text-xs font-bold text-amber-500 hover:underline block"
+              className="mt-2 text-xs font-bold text-brand-primary hover:underline block"
             >
               Try Again
             </button>
@@ -143,26 +143,26 @@ export default function MobileLookup() {
       {barcodeMapping && (
         <div className="flex flex-col gap-4">
           {/* SKU / Variant Header */}
-          <div className="bg-slate-900 border border-slate-800 rounded-lg p-4 flex gap-4">
+          <div className="bg-surface border border-gray-200 rounded-lg p-4 flex gap-4">
             {barcodeMapping.image_url && (
               <img
                 src={normalizeImageUrl(barcodeMapping.image_url) || barcodeMapping.image_url}
                 alt={barcodeMapping.product_name}
-                className="w-16 h-16 rounded object-cover border border-slate-700 bg-slate-950 shrink-0"
+                className="w-16 h-16 rounded object-cover border border-gray-300 bg-surface-hover shrink-0"
               />
             )}
             <div className="flex-1">
-              <span className="text-xs font-bold tracking-wider text-amber-500">
+              <span className="text-xs font-bold tracking-wider text-brand-primary">
                 {barcodeMapping.sku_code}
               </span>
-              <h2 className="text-lg font-bold text-slate-100 mt-0.5 leading-tight">
+              <h2 className="text-lg font-bold text-gray-900 mt-0.5 leading-tight">
                 {barcodeMapping.product_name}
               </h2>
               {barcodeMapping.variant_name && (
-                <p className="text-sm text-slate-400 mt-1">{barcodeMapping.variant_name}</p>
+                <p className="text-sm text-gray-500 mt-1">{barcodeMapping.variant_name}</p>
               )}
               <div className="flex items-center gap-2 mt-2">
-                <span className="text-xs bg-slate-850 px-2 py-0.5 rounded text-slate-400 border border-slate-700">
+                <span className="text-xs bg-surface px-2 py-0.5 rounded text-gray-500 border border-gray-300">
                   Barcode: {barcodeMapping.barcode}
                 </span>
               </div>
@@ -170,10 +170,10 @@ export default function MobileLookup() {
           </div>
 
           {/* Location details */}
-          <div className="bg-slate-900 border border-slate-800 rounded-lg p-4">
-            <h3 className="text-sm font-bold text-slate-350 tracking-wider mb-3">CURRENT LOCATIONS</h3>
+          <div className="bg-surface border border-gray-200 rounded-lg p-4">
+            <h3 className="text-sm font-bold text-gray-500 tracking-wider mb-3">CURRENT LOCATIONS</h3>
             {inventory.length === 0 ? (
-              <div className="text-center py-6 text-slate-500 text-sm">
+              <div className="text-center py-6 text-gray-500 text-sm">
                 No active inventory found for this item
               </div>
             ) : (
@@ -184,24 +184,24 @@ export default function MobileLookup() {
                   return (
                     <div
                       key={inv.id}
-                      className="flex items-center justify-between p-3 bg-slate-950 border border-slate-850 rounded"
+                      className="flex items-center justify-between p-3 bg-surface-hover border border-gray-200 rounded"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-amber-500/10 rounded">
-                          <MapPin className="h-5 w-5 text-amber-500" />
+                        <div className="p-2 bg-brand-primary/10 rounded">
+                          <MapPin className="h-5 w-5 text-brand-primary" />
                         </div>
                         <div>
-                          <div className="font-bold text-slate-100">{locCode}</div>
+                          <div className="font-bold text-gray-900">{locCode}</div>
                           {loc && (
-                            <div className="text-xs text-slate-500">
+                            <div className="text-xs text-gray-500">
                               Zone {loc.zone || "-"} · Aisle {loc.aisle || "-"} · Rack {loc.rack || "-"}
                             </div>
                           )}
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-bold text-slate-100 text-lg">{inv.qty_on_hand}</div>
-                        <div className="text-xs text-slate-500">
+                        <div className="font-bold text-gray-900 text-lg">{inv.qty_on_hand}</div>
+                        <div className="text-xs text-gray-500">
                           {inv.qty_reserved > 0 ? `${inv.qty_reserved} reserved` : "0 reserved"}
                         </div>
                       </div>

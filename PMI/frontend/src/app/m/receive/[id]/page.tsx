@@ -131,7 +131,7 @@ export default function ReceiveFlow() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen text-slate-400">
+      <div className="flex flex-col items-center justify-center min-h-screen text-gray-500">
         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-500 mb-3"></div>
         <span>Loading shipment...</span>
       </div>
@@ -142,7 +142,7 @@ export default function ReceiveFlow() {
     return (
       <div className="p-4 flex flex-col gap-4 text-center">
         <div className="text-red-500 font-bold">Shipment Not Found</div>
-        <button onClick={() => router.back()} className="text-amber-500 underline">
+        <button onClick={() => router.back()} className="text-brand-primary underline">
           Go Back
         </button>
       </div>
@@ -152,23 +152,23 @@ export default function ReceiveFlow() {
   return (
     <div className="p-4 flex flex-col gap-4">
       {/* Header */}
-      <div className="border-b border-slate-800 pb-3 flex items-center justify-between">
+      <div className="border-b border-gray-200 pb-3 flex items-center justify-between">
         <button
           onClick={() => router.push("/m/receive/select")}
-          className="flex items-center gap-1 text-slate-400 hover:text-slate-200"
+          className="flex items-center gap-1 text-gray-500 hover:text-gray-700"
         >
           <ArrowLeft className="h-5 w-5" />
           <span>Back</span>
         </button>
         <div className="text-right">
           <h1 className="text-lg font-bold text-emerald-500">{shipment.inbound_number}</h1>
-          <p className="text-xs text-slate-450">{shipment.supplier_name}</p>
+          <p className="text-xs text-gray-500">{shipment.supplier_name}</p>
         </div>
       </div>
 
       {/* Status Banner */}
-      <div className="bg-slate-900 border border-slate-800 rounded-lg p-3 flex justify-between items-center">
-        <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Status</span>
+      <div className="bg-surface border border-gray-200 rounded-lg p-3 flex justify-between items-center">
+        <span className="text-xs text-gray-500 font-bold uppercase tracking-wider">Status</span>
         <span className="text-xs font-semibold bg-emerald-500/15 border border-emerald-500/35 text-emerald-400 px-2 py-0.5 rounded uppercase">
           {shipment.status}
         </span>
@@ -193,10 +193,10 @@ export default function ReceiveFlow() {
 
       {/* Put Away Location Assignment Modal/Section */}
       {putAwaySku && (
-        <div className="bg-slate-900 border border-amber-600/50 rounded-lg p-4 flex flex-col gap-3">
+        <div className="bg-surface border border-brand-primary/50 rounded-lg p-4 flex flex-col gap-3">
           <div className="flex justify-between items-center">
-            <h3 className="text-xs font-bold text-amber-500 tracking-wider">ASSIGN LOCATION FOR {putAwaySku}</h3>
-            <button onClick={() => setPutAwaySku(null)} className="text-xs text-slate-400 hover:text-slate-200">
+            <h3 className="text-xs font-bold text-brand-primary tracking-wider">ASSIGN LOCATION FOR {putAwaySku}</h3>
+            <button onClick={() => setPutAwaySku(null)} className="text-xs text-gray-500 hover:text-gray-700">
               CANCEL
             </button>
           </div>
@@ -206,13 +206,13 @@ export default function ReceiveFlow() {
               value={putAwayLocCode}
               onChange={(e) => setPutAwayLocCode(e.target.value)}
               placeholder="Enter Location Code (e.g. LOC-01)"
-              className="flex-1 bg-slate-950 border border-slate-700 rounded px-3 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500 text-lg"
+              className="flex-1 bg-surface-hover border border-gray-300 rounded px-3 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-brand-primary text-lg"
               autoFocus
             />
             <button
               type="submit"
               disabled={isSubmittingPutAway}
-              className="bg-amber-600 hover:bg-amber-700 text-white font-bold px-4 py-3 rounded text-sm disabled:opacity-50"
+              className="bg-brand-primary hover:bg-brand-secondary text-white font-bold px-4 py-3 rounded text-sm disabled:opacity-50"
             >
               SAVE
             </button>
@@ -222,7 +222,7 @@ export default function ReceiveFlow() {
 
       {/* Item List */}
       <div className="flex flex-col gap-3">
-        <h2 className="text-xs font-bold text-slate-400 tracking-wider">EXPECTED ITEMS</h2>
+        <h2 className="text-xs font-bold text-gray-500 tracking-wider">EXPECTED ITEMS</h2>
         <div className="flex flex-col gap-2">
           {shipment.items.map((item) => {
             const isCompleted = item.received_qty >= item.expected_qty;
@@ -231,19 +231,19 @@ export default function ReceiveFlow() {
             return (
               <div
                 key={item.id}
-                className={`p-3 bg-slate-900 border rounded-lg flex flex-col gap-2 ${
-                  isCompleted ? "border-slate-800" : "border-amber-500/30"
+                className={`p-3 bg-surface border rounded-lg flex flex-col gap-2 ${
+                  isCompleted ? "border-gray-200" : "border-brand-primary/30"
                 }`}
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <span className="text-xs font-bold text-slate-400">{item.sku_code}</span>
-                    <h3 className="font-bold text-slate-200 text-sm mt-0.5 leading-tight">{item.product_name}</h3>
+                    <span className="text-xs font-bold text-gray-500">{item.sku_code}</span>
+                    <h3 className="font-bold text-gray-700 text-sm mt-0.5 leading-tight">{item.product_name}</h3>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs font-semibold text-slate-400">Qty</span>
-                    <div className="text-base font-bold text-slate-100">
-                      <span className={isCompleted ? "text-emerald-500" : "text-amber-500"}>
+                    <span className="text-xs font-semibold text-gray-500">Qty</span>
+                    <div className="text-base font-bold text-gray-900">
+                      <span className={isCompleted ? "text-emerald-500" : "text-brand-primary"}>
                         {item.received_qty}
                       </span>
                       {" "}/ {item.expected_qty}
@@ -251,9 +251,9 @@ export default function ReceiveFlow() {
                   </div>
                 </div>
 
-                <div className="flex justify-between items-center border-t border-slate-800 pt-2 mt-1">
-                  <div className="flex items-center gap-1.5 text-xs text-slate-400">
-                    <MapPin className="h-3.5 w-3.5 text-slate-500" />
+                <div className="flex justify-between items-center border-t border-gray-200 pt-2 mt-1">
+                  <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                    <MapPin className="h-3.5 w-3.5 text-gray-500" />
                     <span>Loc: {hasLocation ? `ID #${item.location_id}` : "Not Assigned"}</span>
                   </div>
                   <button
@@ -263,8 +263,8 @@ export default function ReceiveFlow() {
                     }}
                     className={`text-xs px-2.5 py-1 rounded font-bold border transition-colors ${
                       hasLocation
-                        ? "bg-slate-950 border-slate-800 text-slate-450 hover:bg-slate-800"
-                        : "bg-amber-600/10 border-amber-600/30 text-amber-500 hover:bg-amber-600/20"
+                        ? "bg-surface-hover border-gray-200 text-gray-500 hover:bg-gray-100"
+                        : "bg-brand-primary/10 border-brand-primary/30 text-brand-primary hover:bg-brand-primary/20"
                     }`}
                   >
                     {hasLocation ? "CHANGE LOC" : "ASSIGN LOC"}

@@ -54,45 +54,45 @@ export default function MobileDashboard() {
       description: "Verify, pack & generate labels",
       href: "/m/pack/select",
       icon: Package,
-      color: "bg-indigo-600 hover:bg-indigo-700",
+      color: "bg-brand-primary hover:bg-brand-secondary",
     },
     {
       title: "LOOKUP SKU/BARCODE",
       description: "Check location & stock info",
       href: "/m/lookup",
       icon: Search,
-      color: "bg-amber-600 hover:bg-amber-700",
+      color: "bg-brand-primary hover:bg-brand-secondary",
     },
   ];
 
   return (
     <div className="p-4 flex flex-col gap-6">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+      <div className="flex items-center justify-between border-b border-gray-200 pb-3">
         <div>
-          <h1 className="text-xl font-bold tracking-wider text-amber-500">WMS MOBILE</h1>
-          <p className="text-xs text-slate-400">Scanner Operations Terminal</p>
+          <h1 className="text-xl font-bold tracking-wider text-brand-primary">WMS MOBILE</h1>
+          <p className="text-xs text-gray-500">Scanner Operations Terminal</p>
         </div>
         <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
       </div>
 
       {/* Stats Summary */}
-      <div className="grid grid-cols-2 gap-3 bg-slate-900 border border-slate-800 rounded-lg p-3">
+      <div className="grid grid-cols-2 gap-3 bg-surface border border-gray-200 rounded-lg p-3">
         <div className="flex flex-col">
-          <span className="text-xs text-slate-400">On Hand Stock</span>
-          <span className="text-xl font-bold text-slate-100">{loading ? "..." : stats?.total_qty_on_hand}</span>
+          <span className="text-xs text-gray-500">On Hand Stock</span>
+          <span className="text-xl font-bold text-gray-900">{loading ? "..." : stats?.total_qty_on_hand}</span>
         </div>
         <div className="flex flex-col">
-          <span className="text-xs text-slate-400">Inbound Tasks</span>
-          <span className="text-xl font-bold text-slate-100">{loading ? "..." : stats?.inbound_count}</span>
+          <span className="text-xs text-gray-500">Inbound Tasks</span>
+          <span className="text-xl font-bold text-gray-900">{loading ? "..." : stats?.inbound_count}</span>
         </div>
         <div className="flex flex-col">
-          <span className="text-xs text-slate-400">Fulfillments</span>
-          <span className="text-xl font-bold text-slate-100">{loading ? "..." : stats?.fulfillment_count}</span>
+          <span className="text-xs text-gray-500">Fulfillments</span>
+          <span className="text-xl font-bold text-gray-900">{loading ? "..." : stats?.fulfillment_count}</span>
         </div>
         <div className="flex flex-col">
-          <span className="text-xs text-slate-400">Reserved</span>
-          <span className="text-xl font-bold text-slate-100">{loading ? "..." : stats?.total_qty_reserved}</span>
+          <span className="text-xs text-gray-500">Reserved</span>
+          <span className="text-xl font-bold text-gray-900">{loading ? "..." : stats?.total_qty_reserved}</span>
         </div>
       </div>
 
@@ -106,7 +106,7 @@ export default function MobileDashboard() {
               href={item.href}
               className={`flex items-center gap-4 p-5 rounded-lg text-white transition-colors duration-150 select-none shadow-lg ${item.color}`}
             >
-              <div className="p-3 bg-slate-900/10 rounded-full">
+              <div className="p-3 bg-surface/10 rounded-full">
                 <Icon className="h-6 w-6" />
               </div>
               <div className="flex-1">

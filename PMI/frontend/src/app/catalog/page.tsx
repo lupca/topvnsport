@@ -24,7 +24,7 @@ export default function CatalogPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950/50">
+    <div className="min-h-screen bg-brand-light">
       {view === "list" ? (
         <ProductList 
           onAddProductClick={() => setView("create")} 
@@ -37,11 +37,11 @@ export default function CatalogPage() {
           <div className="max-w-6xl mx-auto pt-8 px-4 flex items-center justify-between">
             <button
               onClick={handleBack}
-              className="px-4 py-2 bg-slate-900 border border-slate-700 text-slate-300 rounded-xl hover:bg-slate-950 transition-colors font-bold text-xs shadow-sm"
+              className="btn-outline px-4 py-2 text-xs"
             >
               ← Quay lại danh sách
             </button>
-            <span className="text-xs text-slate-400 uppercase font-bold tracking-wider">
+            <span className="text-xs text-gray-500 uppercase font-bold tracking-wider">
               PIM / {view === "create" ? "Thêm Sản Phẩm Mới" : view === "edit" ? "Cập Nhật Sản Phẩm" : "Sao Chép Sản Phẩm"}
             </span>
           </div>
