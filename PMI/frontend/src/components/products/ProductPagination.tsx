@@ -46,7 +46,7 @@ export default function ProductPagination({
       <div className="flex items-center gap-1">
         <button
           disabled={currentPage === 1}
-          onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+          onClick={() => setCurrentPage((prev: number) => Math.max(1, prev - 1))}
           className="p-1.5 rounded-lg border border-gray-300 bg-surface hover:bg-gray-100 disabled:opacity-40 disabled:hover:bg-surface transition-colors"
         >
           <ChevronLeft className="h-4 w-4" />
@@ -68,7 +68,7 @@ export default function ProductPagination({
 
         <button
           disabled={currentPage === totalPages}
-          onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+          onClick={() => setCurrentPage((prev: number) => Math.min(totalPages, prev + 1))}
           className="p-1.5 rounded-lg border border-gray-300 bg-surface hover:bg-gray-100 disabled:opacity-40 disabled:hover:bg-surface transition-colors"
         >
           <ChevronRight className="h-4 w-4" />
