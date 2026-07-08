@@ -405,6 +405,17 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
 
     const finalPayload = {
       ...values,
+      channel_listings: values.channel_listings?.map((cl: any) => ({
+        ...cl,
+        variant_overrides: values.variants.map((v: any, idx: number) => {
+          const existing = cl.variant_overrides?.find((vo: any) => vo.sku_code === v.sku_code) || cl.variant_overrides?.[idx];
+          return {
+            sku_code: v.sku_code,
+            price_override: existing?.price_override || null,
+            channel_variant_id: existing?.channel_variant_id || ""
+          };
+        })
+      })) || [],
       media: mediaPayload,
       attributes: familyAttributes
         .map(attr => ({

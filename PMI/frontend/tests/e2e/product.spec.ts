@@ -25,9 +25,13 @@ test("create product with image upload flow", async ({ page }) => {
   expect(families.length).toBeGreaterThan(0);
 
   await page.goto("/catalog");
+  await expect(page.getByText("Đang tải danh sách sản phẩm...")).not.toBeVisible({ timeout: 60000 });
+
   await page.getByRole("button", { name: "Thêm 1 sản phẩm mới" }).click();
 
-  await page.locator('input[type="file"]').first().setInputFiles(buildUploadFile("cover.png"));
+  const fileInput = page.locator('input[type="file"]').first();
+  await fileInput.waitFor({ state: "attached" });
+  await fileInput.setInputFiles(buildUploadFile("cover.png"));
 
   await page.getByPlaceholder("Nhập tên sản phẩm (Ví dụ: Áo thun nam Cotton 100% cổ tròn)").fill(productName);
   await page.getByPlaceholder("Ví dụ: TSHIRT-PARENT").fill(parentSku);
@@ -50,6 +54,11 @@ test("create product with image upload flow", async ({ page }) => {
   await page.getByRole("button", { name: "Lưu & Hiển thị" }).click();
 
   const createResponse = await createResponsePromise;
+  if (!createResponse.ok()) {
+    const errorBody = await createResponse.json();
+    throw new Error(`API Error: ${JSON.stringify(errorBody)}`);
+  }
+  expect(createResponse.ok()).toBeTruthy();
   expect(createResponse.ok()).toBeTruthy();
 
   await expect(page.getByRole("heading", { name: "Danh Sách Sản Phẩm", exact: true })).toBeVisible({ timeout: 20000 });
@@ -104,11 +113,18 @@ test("edit existing product", async ({ page }) => {
   expect(createResponse.ok()).toBeTruthy();
 
   await page.goto("/catalog");
+  await expect(page.getByText("Đang tải danh sách sản phẩm...")).not.toBeVisible({ timeout: 60000 });
+
   await page.getByPlaceholder("Tìm Tên sản phẩm, SKU sản phẩm, SKU phân loại...").fill(parentSku);
+
+  const filterResponsePromise = page.waitForResponse(
+    (response) => response.url().includes("/products") && response.request().method() === "GET"
+  );
   await page.getByRole("button", { name: "Áp dụng" }).click();
+  await filterResponsePromise;
 
   const row = page.locator("tr", { hasText: parentSku }).first();
-  await expect(row).toBeVisible();
+  await expect(row).toBeVisible({ timeout: 15000 });
   await row.getByRole("button", { name: "Cập nhật" }).click();
 
   await page.getByPlaceholder("Nhập tên sản phẩm (Ví dụ: Áo thun nam Cotton 100% cổ tròn)").fill(updatedName);

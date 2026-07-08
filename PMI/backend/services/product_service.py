@@ -139,7 +139,8 @@ def _save_product_channel_listings(
         for vo in cl.variant_overrides:
             db_var = next((v for v in db_variants if v.sku_code == vo.sku_code), None)
             if not db_var:
-                raise HTTPException(status_code=400, detail=f"Variant SKU '{vo.sku_code}' not found in variants list")
+                available_skus = [v.sku_code for v in db_variants]
+                raise HTTPException(status_code=400, detail=f"Variant SKU '{vo.sku_code}' not found in variants list. Available: {available_skus}")
             
             chan_var_id = vo.channel_variant_id
             if not chan_var_id:
