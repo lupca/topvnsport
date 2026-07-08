@@ -1,5 +1,5 @@
 from decimal import Decimal
-from pydantic import BaseModel, Field, conlist, validator
+from pydantic import BaseModel, Field, conlist, field_validator, ConfigDict, ValidationInfo
 from typing import List, Optional, Any
 
 # Category Schemas
@@ -18,14 +18,13 @@ class CategoryResponse(CategoryBase):
     id: int
     created_at: Optional[Any] = None
     display_name: Optional[str] = None
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # Tier Variation Schemas
 class TierVariationBase(BaseModel):
     tier_index: int = Field(..., ge=1, le=2)
     name: str = Field(..., max_length=100) # e.g. "Màu sắc", "Kích cỡ"
-    options: List[str] = Field(..., min_items=1) # e.g. ["Đỏ", "Xanh"]
+    options: List[str] = Field(..., min_length=1) # e.g. ["Đỏ", "Xanh"]
 
 class TierVariationCreate(TierVariationBase):
     pass
@@ -33,8 +32,7 @@ class TierVariationCreate(TierVariationBase):
 class TierVariationResponse(TierVariationBase):
     id: int
     product_id: int
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # Product Variant (SKU) Schemas
 class ProductVariantBase(BaseModel):
@@ -51,8 +49,7 @@ class ProductVariantCreate(ProductVariantBase):
 class ProductVariantResponse(ProductVariantBase):
     id: int
     product_id: int
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # Product Media Schemas
 class ProductMediaBase(BaseModel):
@@ -68,8 +65,7 @@ class ProductMediaResponse(ProductMediaBase):
     id: int
     product_id: int
     variant_id: Optional[int] = None
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ProductAttributeInput(BaseModel):
@@ -83,8 +79,7 @@ class ProductAttributeMeta(BaseModel):
     name: str
     type: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ProductAttributeValueResponse(BaseModel):
@@ -95,8 +90,7 @@ class ProductAttributeValueResponse(BaseModel):
     value_decimal: Optional[float] = None
     attribute: Optional[ProductAttributeMeta] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # Product Schemas
 class ProductBase(BaseModel):
@@ -125,9 +119,9 @@ class ProductBase(BaseModel):
 class ProductCreate(ProductBase):
     family_id: int = Field(..., ge=1)
     # Support up to 2 tier variations
-    tier_variations: List[TierVariationCreate] = Field(default=[], max_items=2)
+    tier_variations: List[TierVariationCreate] = Field(default=[], max_length=2)
     # The actual combinations of variants
-    variants: List[ProductVariantCreate] = Field(..., min_items=1)
+    variants: List[ProductVariantCreate] = Field(..., min_length=1)
     # Media list
     media: List[ProductMediaCreate] = Field(default=[])
     # Dynamic technical attributes based on selected family
@@ -135,7 +129,7 @@ class ProductCreate(ProductBase):
     # Multi-channel listings
     channel_listings: List['ProductChannelListingCreate'] = Field(default=[])
 
-    @validator('tier_variations')
+    @field_validator('tier_variations')
     def validate_tier_indices(cls, v):
         indices = [tv.tier_index for tv in v]
         if len(indices) != len(set(indices)):
@@ -144,9 +138,9 @@ class ProductCreate(ProductBase):
             raise ValueError("If two tiers are present, they must be tier 1 and tier 2")
         return v
 
-    @validator('variants')
-    def validate_variants_match_tiers(cls, v, values):
-        tier_variations = values.get('tier_variations', [])
+    @field_validator('variants')
+    def validate_variants_match_tiers(cls, v, info: ValidationInfo):
+        tier_variations = info.data.get('tier_variations', [])
         
         # If no tier variations, there should be exactly one variant with null tier options
         if not tier_variations:
@@ -189,14 +183,14 @@ class ProductCreate(ProductBase):
 
 class ProductResponse(ProductBase):
     id: int
+    family: Optional['AttributeFamilyResponse'] = None
     tier_variations: List[TierVariationResponse] = []
     variants: List[ProductVariantResponse] = []
     media: List[ProductMediaResponse] = []
     attribute_values: List[ProductAttributeValueResponse] = []
     channel_listings: List['ProductChannelListingResponse'] = []
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class PaginatedProductResponse(BaseModel):
     items: List[ProductResponse]
@@ -246,8 +240,7 @@ class AttributeUpdate(AttributeBase):
 class AttributeResponse(AttributeBase):
     id: int
     created_at: Optional[Any] = None
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # Attribute Group Schemas
 class AttributeGroupBase(BaseModel):
@@ -263,8 +256,7 @@ class AttributeGroupUpdate(AttributeGroupBase):
 class AttributeGroupResponse(AttributeGroupBase):
     id: int
     created_at: Optional[Any] = None
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # Attribute Family Schemas
 class AttributeFamilyBase(BaseModel):
@@ -280,8 +272,10 @@ class AttributeFamilyUpdate(AttributeFamilyBase):
 class AttributeFamilyResponse(AttributeFamilyBase):
     id: int
     created_at: Optional[Any] = None
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+
+class AttributeFamilyLinkCreate(BaseModel):
+    attribute_id: int
 
 # Product by SKU response schema
 class ProductBySkuResponse(BaseModel):
@@ -296,8 +290,7 @@ class ProductBySkuResponse(BaseModel):
     image_url: Optional[str] = None
     category: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Channel Schemas
@@ -313,8 +306,7 @@ class ChannelUpdate(ChannelBase):
 
 class ChannelResponse(ChannelBase):
     id: int
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Channel Config Schemas
@@ -334,8 +326,7 @@ class ChannelConfigUpdate(ChannelConfigBase):
 class ChannelConfigResponse(ChannelConfigBase):
     id: int
     channel_id: int
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Channel Category Mapping Schemas
@@ -353,8 +344,7 @@ class ChannelCategoryMappingUpdate(ChannelCategoryMappingBase):
 class ChannelCategoryMappingResponse(ChannelCategoryMappingBase):
     id: int
     channel_id: int
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Channel Attribute Mapping Schemas
@@ -373,8 +363,7 @@ class ChannelAttributeMappingUpdate(ChannelAttributeMappingBase):
 class ChannelAttributeMappingResponse(ChannelAttributeMappingBase):
     id: int
     channel_id: int
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Product Channel Attribute Value Schemas
@@ -390,8 +379,7 @@ class ProductChannelAttributeValueResponse(ProductChannelAttributeValueBase):
     id: int
     product_id: int
     channel_id: int
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Variant Channel Listing Schemas
@@ -406,8 +394,7 @@ class VariantChannelListingResponse(BaseModel):
     channel_id: int
     price_override: Optional[Decimal] = None
     channel_variant_id: Optional[str] = None
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Product Channel Listing Schemas
@@ -433,8 +420,7 @@ class ProductChannelListingResponse(BaseModel):
     attribute_values: List[ProductChannelAttributeValueResponse] = []
     variant_overrides: List[VariantChannelListingResponse] = []
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 ProductCreate.model_rebuild()

@@ -57,10 +57,11 @@ def reset_database(app_module):
 
 
 @pytest.fixture()
-def mock_minio(app_module, mocker):
-    mocker.patch.object(app_module.minio_client, "init_bucket", return_value=None)
+def mock_minio(mocker):
+    minio_client = importlib.import_module("minio_client")
+    mocker.patch.object(minio_client, "init_bucket", return_value=None)
     return mocker.patch.object(
-        app_module.minio_client,
+        minio_client,
         "upload_file",
         return_value="http://localhost:19005/pim-media/test-image.jpg",
     )
@@ -82,7 +83,8 @@ def client(app_module, mock_minio) -> Generator[TestClient, None, None]:
         finally:
             db.close()
 
-    app_module.app.dependency_overrides[app_module.get_db] = override_get_db
+    database_module = importlib.import_module("database")
+    app_module.app.dependency_overrides[database_module.get_db] = override_get_db
 
     with TestClient(app_module.app) as test_client:
         yield test_client

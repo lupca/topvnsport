@@ -105,6 +105,7 @@ class Attribute(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
 
     family_links = relationship("AttributeFamilyAttribute", back_populates="attribute", cascade="all, delete-orphan")
+    group_links = relationship("AttributeGroupAttribute", back_populates="attribute", cascade="all, delete-orphan")
     product_values = relationship("ProductAttributeValue", back_populates="attribute", cascade="all, delete-orphan")
 
 class AttributeGroup(Base):
@@ -114,6 +115,8 @@ class AttributeGroup(Base):
     code = Column(String(100), unique=True, nullable=False, index=True)
     name = Column(String(255), nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+
+    group_attributes = relationship("AttributeGroupAttribute", back_populates="group", cascade="all, delete-orphan")
 
 class AttributeFamily(Base):
     __tablename__ = "attribute_families"
@@ -140,6 +143,21 @@ class AttributeFamilyAttribute(Base):
 
     family = relationship("AttributeFamily", back_populates="family_attributes")
     attribute = relationship("Attribute", back_populates="family_links")
+
+
+class AttributeGroupAttribute(Base):
+    __tablename__ = "attribute_group_attributes"
+    __table_args__ = (
+        UniqueConstraint("group_id", "attribute_id", name="uq_group_attribute"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    group_id = Column(Integer, ForeignKey("attribute_groups.id", ondelete="CASCADE"), nullable=False, index=True)
+    attribute_id = Column(Integer, ForeignKey("attributes.id", ondelete="CASCADE"), nullable=False, index=True)
+    display_order = Column(Integer, default=1, nullable=False)
+
+    group = relationship("AttributeGroup", back_populates="group_attributes")
+    attribute = relationship("Attribute", back_populates="group_links")
 
 
 class ProductAttributeValue(Base):
