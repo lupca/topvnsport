@@ -42,9 +42,17 @@ test("create product with image upload flow", async ({ page }) => {
   await page.locator('input[name="variants.0.price"]').fill("150000");
   await page.locator('input[name="variants.0.stock"]').fill("9");
 
+  const createResponsePromise = page.waitForResponse(
+    (response) =>
+      response.url().includes("/products") && response.request().method() === "POST"
+  );
+
   await page.getByRole("button", { name: "Lưu & Hiển thị" }).click();
 
-  await expect(page.getByText("Danh Sách Sản Phẩm")).toBeVisible();
+  const createResponse = await createResponsePromise;
+  expect(createResponse.ok()).toBeTruthy();
+
+  await expect(page.getByRole("heading", { name: "Danh Sách Sản Phẩm", exact: true })).toBeVisible({ timeout: 20000 });
   await expect(page.getByText(parentSku)).toBeVisible();
 });
 
@@ -104,8 +112,14 @@ test("edit existing product", async ({ page }) => {
   await row.getByRole("button", { name: "Cập nhật" }).click();
 
   await page.getByPlaceholder("Nhập tên sản phẩm (Ví dụ: Áo thun nam Cotton 100% cổ tròn)").fill(updatedName);
+  const updateResponsePromise = page.waitForResponse(
+    (response) =>
+      response.url().includes("/products/") && response.request().method() === "PUT"
+  );
   await page.getByRole("button", { name: "Lưu thay đổi" }).click();
+  const updateResponse = await updateResponsePromise;
+  expect(updateResponse.ok()).toBeTruthy();
 
-  await expect(page.getByText("Danh Sách Sản Phẩm")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Danh Sách Sản Phẩm", exact: true })).toBeVisible({ timeout: 20000 });
   await expect(page.getByText(updatedName)).toBeVisible();
 });
