@@ -93,15 +93,15 @@ ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "
 "
 
 echo "[4.1/5] Post-deploy smoke checks"
-ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "
-  set -euo pipefail
-  cd $DEPLOY_PATH
+ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "DEPLOY_PATH='$DEPLOY_PATH' bash -se" <<'REMOTE'
+set -euo pipefail
+cd "$DEPLOY_PATH"
 
-  # Ensure storefront bundle does not carry localhost API URLs.
-  sudo docker exec web_frontend sh -lc 'if grep -R "localhost:18100\\|localhost:18101" -n /usr/share/nginx/html >/tmp/web_localhost_hits 2>/dev/null; then if [ -s /tmp/web_localhost_hits ]; then cat /tmp/web_localhost_hits; exit 1; fi; fi'
+# Ensure storefront bundle does not carry localhost API URLs.
+sudo docker exec web_frontend sh -lc "if grep -R -E 'localhost:18100|localhost:18101' -n /usr/share/nginx/html >/tmp/web_localhost_hits 2>/dev/null; then if [ -s /tmp/web_localhost_hits ]; then cat /tmp/web_localhost_hits; exit 1; fi; fi"
 
-  # Verify WMS can resolve and call PMI over Docker network.
-  sudo docker exec -i wms-api python - <<'PY'
+# Verify WMS can resolve and call PMI over Docker network.
+sudo docker exec -i wms-api python - <<'PY'
 import urllib.request
 with urllib.request.urlopen('http://pim-api:8000/docs', timeout=5) as resp:
     if resp.status != 200:
@@ -109,13 +109,13 @@ with urllib.request.urlopen('http://pim-api:8000/docs', timeout=5) as resp:
 print('WMS->PMI connectivity OK')
 PY
 
-  # Mark deployed revision for observability.
-  if [[ -f .deploy_revision ]]; then
-    echo \"Deployed revision: \$(cat .deploy_revision)\"
-  else
-    echo \"Deployed revision: missing\"
-  fi
-"
+# Mark deployed revision for observability.
+if [[ -f .deploy_revision ]]; then
+  echo "Deployed revision: $(cat .deploy_revision)"
+else
+  echo "Deployed revision: missing"
+fi
+REMOTE
 
 echo "[5/5] Running containers"
 ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "sudo docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'"
