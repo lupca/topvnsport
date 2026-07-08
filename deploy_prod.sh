@@ -95,6 +95,11 @@ ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "
 echo "[4.1/5] Post-deploy smoke checks"
 ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "DEPLOY_PATH='$DEPLOY_PATH' bash -se" <<'REMOTE'
 set -euo pipefail
+
+if [[ "$DEPLOY_PATH" == ~/* ]]; then
+  DEPLOY_PATH="$HOME/${DEPLOY_PATH#~/}"
+fi
+
 cd "$DEPLOY_PATH"
 
 # Ensure storefront bundle does not carry localhost API URLs.
