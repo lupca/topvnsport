@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean, Float, ForeignKey, JSON, Text, DateTime, UniqueConstraint, Numeric
-from sqlalchemy.orm import relationship, backref, foreign
+from sqlalchemy.orm import relationship, backref
 from database import Base
 import datetime
 
@@ -236,14 +236,14 @@ class ProductChannelListing(Base):
 
     attribute_values = relationship(
         "ProductChannelAttributeValue",
-        primaryjoin="and_(ProductChannelListing.product_id==foreign(ProductChannelAttributeValue.product_id), ProductChannelListing.channel_id==foreign(ProductChannelAttributeValue.channel_id))",
-        viewonly=True
+        back_populates="listing",
+        cascade="all, delete-orphan"
     )
 
     variant_overrides = relationship(
         "VariantChannelListing",
-        primaryjoin="and_(ProductChannelListing.product_id==foreign(VariantChannelListing.product_id), ProductChannelListing.channel_id==foreign(VariantChannelListing.channel_id))",
-        viewonly=True
+        back_populates="listing",
+        cascade="all, delete-orphan"
     )
 
 
@@ -254,6 +254,7 @@ class VariantChannelListing(Base):
     )
 
     id = Column(Integer, primary_key=True, index=True)
+    listing_id = Column(Integer, ForeignKey("product_channel_listings.id", ondelete="CASCADE"), nullable=False, index=True)
     variant_id = Column(Integer, ForeignKey("product_variants.id", ondelete="CASCADE"), nullable=False, index=True)
     channel_id = Column(Integer, ForeignKey("channels.id", ondelete="CASCADE"), nullable=False, index=True)
     product_id = Column(Integer, ForeignKey("products.id", ondelete="CASCADE"), nullable=True, index=True)
@@ -262,6 +263,7 @@ class VariantChannelListing(Base):
 
     variant = relationship("ProductVariant", backref=backref("channel_listings", cascade="all, delete-orphan"))
     channel = relationship("Channel")
+    listing = relationship("ProductChannelListing", back_populates="variant_overrides")
 
 
 class ProductChannelAttributeValue(Base):
@@ -271,6 +273,7 @@ class ProductChannelAttributeValue(Base):
     )
 
     id = Column(Integer, primary_key=True, index=True)
+    listing_id = Column(Integer, ForeignKey("product_channel_listings.id", ondelete="CASCADE"), nullable=False, index=True)
     product_id = Column(Integer, ForeignKey("products.id", ondelete="CASCADE"), nullable=False, index=True)
     channel_id = Column(Integer, ForeignKey("channels.id", ondelete="CASCADE"), nullable=False, index=True)
     attribute_mapping_id = Column(Integer, ForeignKey("channel_attribute_mappings.id", ondelete="CASCADE"), nullable=False, index=True)
@@ -280,6 +283,7 @@ class ProductChannelAttributeValue(Base):
     product = relationship("Product", backref=backref("channel_attribute_values", cascade="all, delete-orphan"))
     channel = relationship("Channel")
     attribute_mapping = relationship("ChannelAttributeMapping")
+    listing = relationship("ProductChannelListing", back_populates="attribute_values")
 
 
 class ChannelConfig(Base):

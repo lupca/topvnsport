@@ -210,7 +210,7 @@ def test_product_creation_and_export(client: TestClient, db_session: Session):
     assert listing["channel_code"] == "shopee_vn"
     assert listing["title_override"] == "Vợt Tennis Pro 2026 Siêu Nhẹ Chính Hãng"
     assert len(listing["variant_overrides"]) == 1
-    assert listing["variant_overrides"][0]["price_override"] == 2400000.0
+    assert float(listing["variant_overrides"][0]["price_override"]) == 2400000.0
     assert len(listing["attribute_values"]) == 1
     assert "Xanh Neon" in listing["attribute_values"][0]["value_string"]
     
@@ -360,4 +360,193 @@ def test_detailed_export_with_filtering_and_logistics(client: TestClient, db_ses
     assert "TAX-VAT-8" in csv_tiktok_text
     # Should exclude product 2 since it does not have a published TikTok listing
     assert "Giày Yonex 65Z3 Trắng 2026" not in csv_tiktok_text
+
+
+def test_update_product_preserves_channel_ids(client: TestClient, db_session: Session):
+    cat = models.Category(name="Tennis Update", code="TENNIS-UPDATE")
+    db_session.add(cat)
+    db_session.commit()
+
+    families_resp = client.get("/attribute-families")
+    family_id = families_resp.json()[0]["id"]
+
+    product_payload = {
+        "product_code": "PROD-UPD-01",
+        "name": "Vợt Tennis Astrox 99",
+        "description": "Vợt tennis cao cấp.",
+        "category_id": cat.id,
+        "family_id": family_id,
+        "weight": 300,
+        "length": 68,
+        "width": 27,
+        "height": 3,
+        "hs_code": "9506.51.00",
+        "tax_code": "TAX-9999",
+        "status": "Published",
+        "tier_variations": [],
+        "variants": [
+            {
+                "tier_1_option": None,
+                "tier_2_option": None,
+                "sku_code": "ASTROX-99-STD",
+                "price": 3200000.0,
+                "stock": 5,
+                "barcode": "893123999"
+            }
+        ],
+        "channel_listings": [
+            {
+                "channel_code": "shopee_vn",
+                "status": "Published",
+                "title_override": "Vợt Yonex Astrox 99 Chính Hãng",
+                "channel_product_id": "shopee-prod-99999",
+                "variant_overrides": [
+                    {
+                        "sku_code": "ASTROX-99-STD",
+                        "price_override": 3100000.0,
+                        "channel_variant_id": "shopee-var-88888"
+                    }
+                ]
+            }
+        ]
+    }
+    
+    r1 = client.post("/products", json=product_payload)
+    assert r1.status_code == 201
+    prod_data = r1.json()
+    prod_id = prod_data["id"]
+
+    update_payload = {
+        "product_code": "PROD-UPD-01",
+        "name": "Vợt Tennis Astrox 99 Pro New",
+        "description": "Mô tả cập nhật.",
+        "category_id": cat.id,
+        "family_id": family_id,
+        "weight": 305,
+        "length": 68,
+        "width": 27,
+        "height": 3,
+        "hs_code": "9506.51.00",
+        "tax_code": "TAX-9999",
+        "status": "Published",
+        "tier_variations": [],
+        "variants": [
+            {
+                "tier_1_option": None,
+                "tier_2_option": None,
+                "sku_code": "ASTROX-99-STD",
+                "price": 3250000.0,
+                "stock": 4,
+                "barcode": "893123999"
+            }
+        ],
+        "channel_listings": [
+            {
+                "channel_code": "shopee_vn",
+                "status": "Published",
+                "title_override": "Vợt Yonex Astrox 99 Pro Bản Mới 2026",
+                "variant_overrides": [
+                    {
+                        "sku_code": "ASTROX-99-STD",
+                        "price_override": 3150000.0
+                    }
+                ]
+            }
+        ]
+    }
+
+    r2 = client.put(f"/products/{prod_id}", json=update_payload)
+    assert r2.status_code == 200
+
+    r3 = client.get(f"/products/{prod_id}")
+    assert r3.status_code == 200
+    updated_prod = r3.json()
+    assert len(updated_prod["channel_listings"]) == 1
+    listing = updated_prod["channel_listings"][0]
+    assert listing["title_override"] == "Vợt Yonex Astrox 99 Pro Bản Mới 2026"
+    assert listing["channel_product_id"] == "shopee-prod-99999"
+    assert len(listing["variant_overrides"]) == 1
+    assert float(listing["variant_overrides"][0]["price_override"]) == 3150000.0
+    assert listing["variant_overrides"][0]["channel_variant_id"] == "shopee-var-88888"
+
+
+def test_delete_channel_with_active_listings_blocks(client: TestClient, db_session: Session):
+    cat = models.Category(name="Tennis Delete", code="TENNIS-DELETE")
+    db_session.add(cat)
+    db_session.commit()
+
+    families_resp = client.get("/attribute-families")
+    family_id = families_resp.json()[0]["id"]
+
+    new_chan = models.Channel(code="tmp_chan_del", name="Temporary Channel for Deletion")
+    db_session.add(new_chan)
+    db_session.commit()
+
+    product_payload = {
+        "product_code": "PROD-DEL-01",
+        "name": "Sản phẩm test xóa kênh",
+        "category_id": cat.id,
+        "family_id": family_id,
+        "weight": 100,
+        "status": "Published",
+        "variants": [
+            {
+                "sku_code": "SKU-DEL-01",
+                "price": 100000.0,
+                "stock": 5
+            }
+        ],
+        "channel_listings": [
+            {
+                "channel_code": "tmp_chan_del",
+                "status": "Published"
+            }
+        ]
+    }
+    r = client.post("/products", json=product_payload)
+    assert r.status_code == 201
+
+    response = client.delete(f"/api/channels/{new_chan.id}")
+    assert response.status_code == 400
+    assert "active listings" in response.json()["detail"].lower()
+
+
+def test_export_fallback_empty_category(client: TestClient, db_session: Session):
+    cat = models.Category(name="Tennis No Map", code="TENNIS-NO-MAP")
+    db_session.add(cat)
+    db_session.commit()
+
+    families_resp = client.get("/attribute-families")
+    family_id = families_resp.json()[0]["id"]
+
+    product_payload = {
+        "product_code": "PROD-NOMAP-01",
+        "name": "Giày Không Map Danh Mục",
+        "category_id": cat.id,
+        "family_id": family_id,
+        "weight": 350,
+        "status": "Published",
+        "variants": [
+            {
+                "sku_code": "NOMAP-SKU-01",
+                "price": 1500000.0,
+                "stock": 12
+            }
+        ],
+        "channel_listings": [
+            {
+                "channel_code": "shopee_vn",
+                "status": "Published"
+            }
+        ]
+    }
+    r = client.post("/products", json=product_payload)
+    assert r.status_code == 201
+    prod = r.json()
+
+    response = client.get(f"/api/export/shopee?status=Published&product_ids={prod['id']}")
+    assert response.status_code == 200
+    csv_text = response.text
+    assert "Giày Không Map Danh Mục" in csv_text
+
 

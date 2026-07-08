@@ -1,3 +1,4 @@
+from decimal import Decimal
 from pydantic import BaseModel, Field, conlist, validator
 from typing import List, Optional, Any
 
@@ -40,7 +41,7 @@ class ProductVariantBase(BaseModel):
     tier_1_option: Optional[str] = Field(None, max_length=100)
     tier_2_option: Optional[str] = Field(None, max_length=100)
     sku_code: str = Field(..., max_length=100)
-    price: float = Field(..., ge=0)
+    price: Decimal = Field(..., ge=0)
     barcode: Optional[str] = Field(None, max_length=255)
     stock: int = Field(..., ge=0)
 
@@ -396,14 +397,14 @@ class ProductChannelAttributeValueResponse(ProductChannelAttributeValueBase):
 # Variant Channel Listing Schemas
 class VariantChannelListingCreate(BaseModel):
     sku_code: str = Field(..., max_length=100)
-    price_override: Optional[float] = Field(None, ge=0)
+    price_override: Optional[Decimal] = Field(None, ge=0)
     channel_variant_id: Optional[str] = Field(None, max_length=255)
 
 class VariantChannelListingResponse(BaseModel):
     id: int
     variant_id: int
     channel_id: int
-    price_override: Optional[float] = None
+    price_override: Optional[Decimal] = None
     channel_variant_id: Optional[str] = None
     class Config:
         from_attributes = True
@@ -434,13 +435,6 @@ class ProductChannelListingResponse(BaseModel):
 
     class Config:
         from_attributes = True
-
-    @validator('channel_code', pre=True, always=True)
-    def resolve_channel_code(cls, v, values):
-        # Allow resolving from model channel relationship
-        # Wait, if we use from_attributes, 'channel' relation might be fetched
-        # Let's write custom mapping resolver:
-        return v
 
 
 ProductCreate.model_rebuild()

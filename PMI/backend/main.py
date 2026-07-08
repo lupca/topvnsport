@@ -151,43 +151,86 @@ def _save_product_channel_listings(
     db: Session,
     product_id: int,
     channel_listings: List[schemas.ProductChannelListingCreate],
-    db_variants: List[models.ProductVariant]
+    db_variants: List[models.ProductVariant],
+    existing_vo_map: Optional[dict] = None
 ):
-    db.query(models.ProductChannelListing).filter(
+    # 1. Fetch existing listings and index by channel code
+    existing_listings = db.query(models.ProductChannelListing).filter(
         models.ProductChannelListing.product_id == product_id
-    ).delete(synchronize_session=False)
+    ).all()
+    channel_ids = [el.channel_id for el in existing_listings]
+    existing_channels = db.query(models.Channel).filter(models.Channel.id.in_(channel_ids)).all() if channel_ids else []
+    chan_id_to_code = {c.id: c.code for c in existing_channels}
+    
+    existing_map = {}
+    for el in existing_listings:
+        code = chan_id_to_code.get(el.channel_id)
+        if code:
+            existing_map[code] = el
 
-    db.query(models.ProductChannelAttributeValue).filter(
-        models.ProductChannelAttributeValue.product_id == product_id
-    ).delete(synchronize_session=False)
+    # Index existing variant overrides to preserve channel_variant_id
+    if existing_vo_map is None:
+        existing_vo_map = {}
+        existing_vos = db.query(models.VariantChannelListing).filter(
+            models.VariantChannelListing.product_id == product_id
+        ).all()
+        variant_ids = [vo.variant_id for vo in existing_vos]
+        existing_variants = db.query(models.ProductVariant).filter(models.ProductVariant.id.in_(variant_ids)).all() if variant_ids else []
+        var_id_to_sku = {v.id: v.sku_code for v in existing_variants}
+        for vo in existing_vos:
+            sku = var_id_to_sku.get(vo.variant_id)
+            if sku:
+                existing_vo_map[(vo.channel_id, sku)] = vo.channel_variant_id
 
-    var_ids = [v.id for v in db_variants]
-    if var_ids:
-        db.query(models.VariantChannelListing).filter(
-            models.VariantChannelListing.variant_id.in_(var_ids)
-        ).delete(synchronize_session=False)
-        
+    # Delete listings that are not in the new payload (deactivated)
+    incoming_codes = {cl.channel_code for cl in channel_listings}
+    for code, el in list(existing_map.items()):
+        if code not in incoming_codes:
+            db.delete(el)
+            existing_map.pop(code)
+
     for cl in channel_listings:
         channel = db.query(models.Channel).filter(models.Channel.code == cl.channel_code).first()
         if not channel:
             raise HTTPException(status_code=400, detail=f"Channel with code '{cl.channel_code}' not found")
         
-        db_cl = models.ProductChannelListing(
-            product_id=product_id,
-            channel_id=channel.id,
-            status=cl.status,
-            title_override=cl.title_override,
-            description_override=cl.description_override,
-            shipping_config=cl.shipping_config,
-            channel_product_id=cl.channel_product_id
-        )
-        db.add(db_cl)
+        if cl.channel_code in existing_map:
+            db_cl = existing_map[cl.channel_code]
+            db_cl.status = cl.status
+            db_cl.title_override = cl.title_override
+            db_cl.description_override = cl.description_override
+            db_cl.shipping_config = cl.shipping_config
+            if cl.channel_product_id:
+                db_cl.channel_product_id = cl.channel_product_id
+        else:
+            db_cl = models.ProductChannelListing(
+                product_id=product_id,
+                channel_id=channel.id,
+                status=cl.status,
+                title_override=cl.title_override,
+                description_override=cl.description_override,
+                shipping_config=cl.shipping_config,
+                channel_product_id=cl.channel_product_id
+            )
+            db.add(db_cl)
         db.flush()
         
+        # Clear child attribute values and variant overrides for this channel
+        db.query(models.ProductChannelAttributeValue).filter(
+            models.ProductChannelAttributeValue.product_id == product_id,
+            models.ProductChannelAttributeValue.channel_id == channel.id
+        ).delete(synchronize_session=False)
+
+        db.query(models.VariantChannelListing).filter(
+            models.VariantChannelListing.product_id == product_id,
+            models.VariantChannelListing.channel_id == channel.id
+        ).delete(synchronize_session=False)
+
         for attr_val in cl.attribute_values:
             db_attr_val = models.ProductChannelAttributeValue(
                 product_id=product_id,
                 channel_id=channel.id,
+                listing_id=db_cl.id,
                 attribute_mapping_id=attr_val.attribute_mapping_id,
                 value_string=attr_val.value_string,
                 value_decimal=attr_val.value_decimal
@@ -199,14 +242,163 @@ def _save_product_channel_listings(
             if not db_var:
                 raise HTTPException(status_code=400, detail=f"Variant SKU '{vo.sku_code}' not found in variants list")
             
+            chan_var_id = vo.channel_variant_id
+            if not chan_var_id:
+                chan_var_id = existing_vo_map.get((channel.id, vo.sku_code))
+
             db_vo = models.VariantChannelListing(
                 variant_id=db_var.id,
                 channel_id=channel.id,
                 product_id=product_id,
+                listing_id=db_cl.id,
                 price_override=vo.price_override,
-                channel_variant_id=vo.channel_variant_id
+                channel_variant_id=chan_var_id
             )
             db.add(db_vo)
+
+
+def _seed_channel_mappings(db: Session):
+    shopee_channels = db.query(models.Channel).filter(models.Channel.code.in_(["shopee", "shopee_vn"])).all()
+    tiktok_channels = db.query(models.Channel).filter(models.Channel.code.in_(["tiktok", "tiktok_shop"])).all()
+    lazada_channels = db.query(models.Channel).filter(models.Channel.code.in_(["lazada", "lazada_vn"])).all()
+
+    rackets_cat = db.query(models.Category).filter(models.Category.code == "rackets").first()
+    shoes_cat = db.query(models.Category).filter(models.Category.code == "shoes").first()
+
+    for chan in shopee_channels:
+        if db.query(models.ChannelCategoryMapping).filter(models.ChannelCategoryMapping.channel_id == chan.id).count() == 0:
+            print(f"Seeding Shopee category mappings for channel {chan.code}...")
+            if rackets_cat:
+                db.add(models.ChannelCategoryMapping(
+                    channel_id=chan.id,
+                    pim_category_id=rackets_cat.id,
+                    channel_category_code="shopee_rackets_101",
+                    channel_category_name="Thể thao > Vợt cầu lông"
+                ))
+            if shoes_cat:
+                db.add(models.ChannelCategoryMapping(
+                    channel_id=chan.id,
+                    pim_category_id=shoes_cat.id,
+                    channel_category_code="shopee_shoes_102",
+                    channel_category_name="Giày nam > Sneaker"
+                ))
+            db.flush()
+
+        shopee_attr_mappings = {
+            "brand": (None, "shopee_brand", "Thương hiệu"),
+            "balance": ("shopee_rackets_101", "shopee_balance", "Điểm cân bằng"),
+            "stiffness": ("shopee_rackets_101", "shopee_stiffness", "Độ cứng"),
+            "maxTension": ("shopee_rackets_101", "shopee_max_tension", "Sức căng tối đa"),
+            "weightClass": ("shopee_rackets_101", "shopee_weight", "Trọng lượng"),
+            "thickness": ("shopee_rackets_101", "shopee_thickness", "Đường kính cước"),
+            "material": ("shopee_rackets_101", "shopee_material", "Chất liệu"),
+            "size": ("shopee_shoes_102", "shopee_size", "Kích thước")
+        }
+        for attr_code, (cat_code, chan_code, chan_name) in shopee_attr_mappings.items():
+            attr = db.query(models.Attribute).filter(models.Attribute.code == attr_code).first()
+            if attr:
+                exists = db.query(models.ChannelAttributeMapping).filter(
+                    models.ChannelAttributeMapping.channel_id == chan.id,
+                    models.ChannelAttributeMapping.pim_attribute_id == attr.id
+                ).first()
+                if not exists:
+                    db.add(models.ChannelAttributeMapping(
+                        channel_id=chan.id,
+                        pim_attribute_id=attr.id,
+                        channel_category_code=cat_code,
+                        channel_attribute_code=chan_code,
+                        channel_attribute_name=chan_name
+                    ))
+
+    for chan in tiktok_channels:
+        if db.query(models.ChannelCategoryMapping).filter(models.ChannelCategoryMapping.channel_id == chan.id).count() == 0:
+            print(f"Seeding TikTok category mappings for channel {chan.code}...")
+            if rackets_cat:
+                db.add(models.ChannelCategoryMapping(
+                    channel_id=chan.id,
+                    pim_category_id=rackets_cat.id,
+                    channel_category_code="tiktok_rackets_201",
+                    channel_category_name="Sports > Badminton > Rackets"
+                ))
+            if shoes_cat:
+                db.add(models.ChannelCategoryMapping(
+                    channel_id=chan.id,
+                    pim_category_id=shoes_cat.id,
+                    channel_category_code="tiktok_shoes_201",
+                    channel_category_name="Shoes > Mens Shoes > Sneakers"
+                ))
+            db.flush()
+
+        tiktok_attr_mappings = {
+            "brand": (None, "tiktok_brand", "Brand"),
+            "balance": ("tiktok_rackets_201", "tiktok_balance", "Balance Point"),
+            "stiffness": ("tiktok_rackets_201", "tiktok_stiffness", "Stiffness"),
+            "maxTension": ("tiktok_rackets_201", "tiktok_max_tension", "Max Tension"),
+            "weightClass": ("tiktok_rackets_201", "tiktok_weight", "Weight Class"),
+            "thickness": ("tiktok_rackets_201", "tiktok_thickness", "Grip Thickness"),
+            "material": ("tiktok_rackets_201", "tiktok_material", "Material"),
+            "size": ("tiktok_shoes_201", "tiktok_size", "Size")
+        }
+        for attr_code, (cat_code, chan_code, chan_name) in tiktok_attr_mappings.items():
+            attr = db.query(models.Attribute).filter(models.Attribute.code == attr_code).first()
+            if attr:
+                exists = db.query(models.ChannelAttributeMapping).filter(
+                    models.ChannelAttributeMapping.channel_id == chan.id,
+                    models.ChannelAttributeMapping.pim_attribute_id == attr.id
+                ).first()
+                if not exists:
+                    db.add(models.ChannelAttributeMapping(
+                        channel_id=chan.id,
+                        pim_attribute_id=attr.id,
+                        channel_category_code=cat_code,
+                        channel_attribute_code=chan_code,
+                        channel_attribute_name=chan_name
+                    ))
+
+    for chan in lazada_channels:
+        if db.query(models.ChannelCategoryMapping).filter(models.ChannelCategoryMapping.channel_id == chan.id).count() == 0:
+            print(f"Seeding Lazada category mappings for channel {chan.code}...")
+            if rackets_cat:
+                db.add(models.ChannelCategoryMapping(
+                    channel_id=chan.id,
+                    pim_category_id=rackets_cat.id,
+                    channel_category_code="lazada_rackets_302",
+                    channel_category_name="Sports > Badminton > Rackets"
+                ))
+            if shoes_cat:
+                db.add(models.ChannelCategoryMapping(
+                    channel_id=chan.id,
+                    pim_category_id=shoes_cat.id,
+                    channel_category_code="lazada_shoes_305",
+                    channel_category_name="Mens Shoes > Sneakers"
+                ))
+            db.flush()
+
+        lazada_attr_mappings = {
+            "brand": (None, "lazada_brand", "Brand"),
+            "balance": ("lazada_rackets_302", "lazada_balance", "Balance"),
+            "stiffness": ("lazada_rackets_302", "lazada_stiffness", "Flex"),
+            "maxTension": ("lazada_rackets_302", "lazada_max_tension", "Max Tension"),
+            "weightClass": ("lazada_rackets_302", "lazada_weight_class", "Weight Class"),
+            "thickness": ("lazada_rackets_302", "lazada_thickness", "Gauge"),
+            "material": ("lazada_rackets_302", "lazada_material", "Material"),
+            "size": ("lazada_shoes_305", "lazada_size", "Size")
+        }
+        for attr_code, (cat_code, chan_code, chan_name) in lazada_attr_mappings.items():
+            attr = db.query(models.Attribute).filter(models.Attribute.code == attr_code).first()
+            if attr:
+                exists = db.query(models.ChannelAttributeMapping).filter(
+                    models.ChannelAttributeMapping.channel_id == chan.id,
+                    models.ChannelAttributeMapping.pim_attribute_id == attr.id
+                ).first()
+                if not exists:
+                    db.add(models.ChannelAttributeMapping(
+                        channel_id=chan.id,
+                        pim_attribute_id=attr.id,
+                        channel_category_code=cat_code,
+                        channel_attribute_code=chan_code,
+                        channel_attribute_name=chan_name
+                    ))
 
 
 # Startup hook to initialize MinIO bucket and seed Categories & PIM metadata
@@ -348,148 +540,8 @@ def startup_populate():
                         display_order=order,
                     ))
 
-        # Seed Category & Attribute Mappings for all variants of Shopee/TikTok/Lazada channels
-        shopee_channels = db.query(models.Channel).filter(models.Channel.code.in_(["shopee", "shopee_vn"])).all()
-        tiktok_channels = db.query(models.Channel).filter(models.Channel.code.in_(["tiktok", "tiktok_shop"])).all()
-        lazada_channels = db.query(models.Channel).filter(models.Channel.code.in_(["lazada", "lazada_vn"])).all()
-
-        rackets_cat = db.query(models.Category).filter(models.Category.code == "rackets").first()
-        shoes_cat = db.query(models.Category).filter(models.Category.code == "shoes").first()
-
-        for chan in shopee_channels:
-            if db.query(models.ChannelCategoryMapping).filter(models.ChannelCategoryMapping.channel_id == chan.id).count() == 0:
-                print(f"Seeding Shopee category mappings for channel {chan.code}...")
-                if rackets_cat:
-                    db.add(models.ChannelCategoryMapping(
-                        channel_id=chan.id,
-                        pim_category_id=rackets_cat.id,
-                        channel_category_code="shopee_rackets_102",
-                        channel_category_name="Thể thao & Dã ngoại > Vợt cầu lông"
-                    ))
-                if shoes_cat:
-                    db.add(models.ChannelCategoryMapping(
-                        channel_id=chan.id,
-                        pim_category_id=shoes_cat.id,
-                        channel_category_code="shopee_shoes_105",
-                        channel_category_name="Thời trang Nam > Giày thể thao"
-                    ))
-                db.flush()
-
-            shopee_attr_mappings = {
-                "brand": (None, "ps_brand", "Thương hiệu"),
-                "balance": ("shopee_rackets_102", "ps_balance", "Điểm cân bằng"),
-                "stiffness": ("shopee_rackets_102", "ps_stiffness", "Độ cứng"),
-                "maxTension": ("shopee_rackets_102", "ps_max_tension", "Sức căng tối đa"),
-                "weightClass": ("shopee_rackets_102", "ps_weight_class", "Trọng lượng"),
-                "thickness": ("shopee_rackets_102", "ps_thickness", "Đường kính cước"),
-                "material": ("shopee_rackets_102", "ps_material", "Chất liệu"),
-                "size": ("shopee_shoes_105", "ps_size", "Kích cỡ giày")
-            }
-            for attr_code, (cat_code, chan_code, chan_name) in shopee_attr_mappings.items():
-                attr = db.query(models.Attribute).filter(models.Attribute.code == attr_code).first()
-                if attr:
-                    exists = db.query(models.ChannelAttributeMapping).filter(
-                        models.ChannelAttributeMapping.channel_id == chan.id,
-                        models.ChannelAttributeMapping.pim_attribute_id == attr.id
-                    ).first()
-                    if not exists:
-                        db.add(models.ChannelAttributeMapping(
-                            channel_id=chan.id,
-                            pim_attribute_id=attr.id,
-                            channel_category_code=cat_code,
-                            channel_attribute_code=chan_code,
-                            channel_attribute_name=chan_name
-                        ))
-
-        for chan in tiktok_channels:
-            if db.query(models.ChannelCategoryMapping).filter(models.ChannelCategoryMapping.channel_id == chan.id).count() == 0:
-                print(f"Seeding TikTok category mappings for channel {chan.code}...")
-                if rackets_cat:
-                    db.add(models.ChannelCategoryMapping(
-                        channel_id=chan.id,
-                        pim_category_id=rackets_cat.id,
-                        channel_category_code="tiktok_rackets_202",
-                        channel_category_name="Sports & Outdoors > Rackets > Badminton"
-                    ))
-                if shoes_cat:
-                    db.add(models.ChannelCategoryMapping(
-                        channel_id=chan.id,
-                        pim_category_id=shoes_cat.id,
-                        channel_category_code="tiktok_shoes_205",
-                        channel_category_name="Shoes > Mens Shoes > Sports Shoes"
-                    ))
-                db.flush()
-
-            tiktok_attr_mappings = {
-                "brand": (None, "tiktok_brand", "Brand Name"),
-                "balance": ("tiktok_rackets_202", "tiktok_balance", "Balance Point"),
-                "stiffness": ("tiktok_rackets_202", "tiktok_stiffness", "Stiffness"),
-                "maxTension": ("tiktok_rackets_202", "tiktok_max_tension", "Max Tension"),
-                "weightClass": ("tiktok_rackets_202", "tiktok_weight_class", "Weight Class"),
-                "thickness": ("tiktok_rackets_202", "tiktok_thickness", "Line Thickness"),
-                "material": ("tiktok_rackets_202", "tiktok_material", "Material"),
-                "size": ("tiktok_shoes_205", "tiktok_size", "Shoe Size")
-            }
-            for attr_code, (cat_code, chan_code, chan_name) in tiktok_attr_mappings.items():
-                attr = db.query(models.Attribute).filter(models.Attribute.code == attr_code).first()
-                if attr:
-                    exists = db.query(models.ChannelAttributeMapping).filter(
-                        models.ChannelAttributeMapping.channel_id == chan.id,
-                        models.ChannelAttributeMapping.pim_attribute_id == attr.id
-                    ).first()
-                    if not exists:
-                        db.add(models.ChannelAttributeMapping(
-                            channel_id=chan.id,
-                            pim_attribute_id=attr.id,
-                            channel_category_code=cat_code,
-                            channel_attribute_code=chan_code,
-                            channel_attribute_name=chan_name
-                        ))
-
-        for chan in lazada_channels:
-            if db.query(models.ChannelCategoryMapping).filter(models.ChannelCategoryMapping.channel_id == chan.id).count() == 0:
-                print(f"Seeding Lazada category mappings for channel {chan.code}...")
-                if rackets_cat:
-                    db.add(models.ChannelCategoryMapping(
-                        channel_id=chan.id,
-                        pim_category_id=rackets_cat.id,
-                        channel_category_code="lazada_rackets_302",
-                        channel_category_name="Sports > Badminton > Rackets"
-                    ))
-                if shoes_cat:
-                    db.add(models.ChannelCategoryMapping(
-                        channel_id=chan.id,
-                        pim_category_id=shoes_cat.id,
-                        channel_category_code="lazada_shoes_305",
-                        channel_category_name="Mens Shoes > Sneakers"
-                    ))
-                db.flush()
-
-            lazada_attr_mappings = {
-                "brand": (None, "lazada_brand", "Brand"),
-                "balance": ("lazada_rackets_302", "lazada_balance", "Balance"),
-                "stiffness": ("lazada_rackets_302", "lazada_stiffness", "Flex"),
-                "maxTension": ("lazada_rackets_302", "lazada_max_tension", "Max Tension"),
-                "weightClass": ("lazada_rackets_302", "lazada_weight_class", "Weight Class"),
-                "thickness": ("lazada_rackets_302", "lazada_thickness", "Gauge"),
-                "material": ("lazada_rackets_302", "lazada_material", "Material"),
-                "size": ("lazada_shoes_305", "lazada_size", "Size")
-            }
-            for attr_code, (cat_code, chan_code, chan_name) in lazada_attr_mappings.items():
-                attr = db.query(models.Attribute).filter(models.Attribute.code == attr_code).first()
-                if attr:
-                    exists = db.query(models.ChannelAttributeMapping).filter(
-                        models.ChannelAttributeMapping.channel_id == chan.id,
-                        models.ChannelAttributeMapping.pim_attribute_id == attr.id
-                    ).first()
-                    if not exists:
-                        db.add(models.ChannelAttributeMapping(
-                            channel_id=chan.id,
-                            pim_attribute_id=attr.id,
-                            channel_category_code=cat_code,
-                            channel_attribute_code=chan_code,
-                            channel_attribute_name=chan_name
-                        ))
+        # Seed Category & Attribute Mappings using extracted helper
+        _seed_channel_mappings(db)
         db.flush()
 
         db.commit()
@@ -901,6 +953,15 @@ def update_product(product_id: int, product_in: schemas.ProductUpdate, db: Sessi
         raise HTTPException(status_code=404, detail="Product not found")
         
     try:
+        # Pre-load existing variant overrides map before they are cleared
+        existing_vos = db.query(models.VariantChannelListing).filter(
+            models.VariantChannelListing.product_id == product_id
+        ).all()
+        existing_vo_map = {}
+        for vo in existing_vos:
+            if vo.variant and vo.variant.sku_code:
+                existing_vo_map[(vo.channel_id, vo.variant.sku_code)] = vo.channel_variant_id
+
         # 1. Update basic fields
         db_product.product_code = product_in.product_code
         db_product.name = product_in.name
@@ -921,7 +982,6 @@ def update_product(product_id: int, product_in: schemas.ProductUpdate, db: Sessi
         db_product.tier_variations.clear()
         db_product.variants.clear()
         db_product.media.clear()
-        db_product.channel_listings.clear()
         db.flush()
         
         # 3. Save new Tier Variations
@@ -972,7 +1032,7 @@ def update_product(product_id: int, product_in: schemas.ProductUpdate, db: Sessi
         _upsert_product_attribute_values(db, product_id, product_in.attributes)
             
         # Save new channel listings
-        _save_product_channel_listings(db, product_id, product_in.channel_listings, db_variants)
+        _save_product_channel_listings(db, product_id, product_in.channel_listings, db_variants, existing_vo_map)
 
         db.commit()
         db.refresh(db_product)
@@ -1289,5 +1349,3 @@ def delete_attribute_family(family_id: int, db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Database transaction failed: {str(e)}")
-
-app.include_router(channels_router)

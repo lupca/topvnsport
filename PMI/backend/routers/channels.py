@@ -273,7 +273,7 @@ def export_shopee(status: str = "Published", product_ids: Optional[str] = None, 
                 "product_name": listing.title_override or product.name,
                 "product_description": listing.description_override or product.description or "",
                 "sku_code": var.sku_code,
-                "price": float(price),
+                "price": price,
                 "stock": var.stock,
                 "weight": product.weight,
                 "length": product.length or "",
@@ -352,7 +352,9 @@ def export_tiktok(status: str = "Published", product_ids: Optional[str] = None, 
         "tax_code"
     ]
     for am in attr_mappings:
-        col_name = f"product_property/{am.channel_attribute_code}"
+        col_name = am.channel_attribute_code
+        if not col_name.startswith("product_property/"):
+            col_name = f"product_property/{col_name}"
         if col_name not in headers:
             headers.append(col_name)
 
@@ -385,7 +387,9 @@ def export_tiktok(status: str = "Published", product_ids: Optional[str] = None, 
                 cav = core_attr_map[am.pim_attribute_id]
                 val_str = str(cav.value_string) if cav.value_string is not None else (str(cav.value_decimal) if cav.value_decimal is not None else "")
             
-            col_name = f"product_property/{am.channel_attribute_code}"
+            col_name = am.channel_attribute_code
+            if not col_name.startswith("product_property/"):
+                col_name = f"product_property/{col_name}"
             attr_data[col_name] = val_str or ""
 
         shipping_data = {}
@@ -414,7 +418,7 @@ def export_tiktok(status: str = "Published", product_ids: Optional[str] = None, 
                 "category_name": category_name,
                 "product_description": listing.description_override or product.description or "",
                 "sku_code": var.sku_code,
-                "price": float(price),
+                "price": price,
                 "stock": var.stock,
                 "weight": product.weight,
                 "length": product.length or "",
