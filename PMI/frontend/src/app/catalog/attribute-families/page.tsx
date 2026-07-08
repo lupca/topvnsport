@@ -6,10 +6,17 @@ import { FolderTree, X, AlertCircle } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
 import { popupService, showConfirm } from "@/components/ui/popupService";
 
+interface Attribute {
+  id: number;
+  code: string;
+  name: string;
+}
+
 interface AttributeFamily {
   id: number;
   code: string;
   name: string;
+  attributes?: Attribute[];
   created_at: string;
 }
 
@@ -27,6 +34,9 @@ export default function AttributeFamiliesPage() {
   const [editingFamily, setEditingFamily] = useState<AttributeFamily | null>(null);
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
+  const [selectedAttributeIds, setSelectedAttributeIds] = useState<number[]>([]);
+  
+  const [allAttributes, setAllAttributes] = useState<Attribute[]>([]);
   
   const [errorMsg, setErrorMsg] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -34,13 +44,21 @@ export default function AttributeFamiliesPage() {
   const fetchFamilies = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/attribute-families`);
-      if (res.ok) {
-        const data = await res.json();
+      const [resFam, resAttr] = await Promise.all([
+        fetch(`${API_BASE}/attribute-families`),
+        fetch(`${API_BASE}/attributes`)
+      ]);
+      
+      if (resFam.ok) {
+        const data = await resFam.json();
         setFamilies(data);
       }
+      if (resAttr.ok) {
+        const dataAttr = await resAttr.json();
+        setAllAttributes(dataAttr);
+      }
     } catch (err) {
-      console.error("Failed to fetch attribute families:", err);
+      console.error("Failed to fetch data:", err);
     } finally {
       setLoading(false);
     }
@@ -54,6 +72,7 @@ export default function AttributeFamiliesPage() {
     setEditingFamily(null);
     setCode("");
     setName("");
+    setSelectedAttributeIds([]);
     setErrorMsg("");
     setIsOpen(true);
   };
@@ -62,6 +81,7 @@ export default function AttributeFamiliesPage() {
     setEditingFamily(family);
     setCode(family.code);
     setName(family.name);
+    setSelectedAttributeIds(family.attributes?.map(a => a.id) || []);
     setErrorMsg("");
     setIsOpen(true);
   };
@@ -112,6 +132,22 @@ export default function AttributeFamiliesPage() {
       });
 
       if (res.ok) {
+        const savedFamily = await res.json();
+        
+        // Sync attributes
+        const syncRes = await fetch(`${API_BASE}/attribute-families/${savedFamily.id}/attributes`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ attribute_ids: selectedAttributeIds }),
+        });
+        
+        if (!syncRes.ok) {
+           const errData = await syncRes.json();
+           console.error("Sync failed", errData);
+           setErrorMsg("Đã lưu Họ thuộc tính nhưng lỗi khi đồng bộ Thuộc tính.");
+           return;
+        }
+
         setIsOpen(false);
         fetchFamilies();
       } else {
@@ -161,6 +197,23 @@ export default function AttributeFamiliesPage() {
       label: "Tên họ thuộc tính (Family Name)",
       render: (item: AttributeFamily) => (
         <span className="font-semibold text-gray-900">{item.name}</span>
+      ),
+    },
+    {
+      key: "attributes",
+      label: "Thuộc tính được gán",
+      render: (item: AttributeFamily) => (
+        <div className="flex flex-wrap gap-1">
+          {item.attributes && item.attributes.length > 0 ? (
+            item.attributes.map(attr => (
+              <span key={attr.id} className="text-[10px] bg-gray-100 border border-gray-200 text-gray-600 px-1.5 py-0.5 rounded">
+                {attr.name}
+              </span>
+            ))
+          ) : (
+            <span className="text-gray-400 text-xs italic">Chưa gán</span>
+          )}
+        </div>
       ),
     },
     {
@@ -273,6 +326,41 @@ export default function AttributeFamiliesPage() {
                     onChange={(e) => setName(e.target.value)}
                     className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:border-brand-primary transition-colors"
                   />
+                </div>
+
+                {/* Attributes Selection */}
+                <div className="space-y-2 mt-2">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">
+                    Các thuộc tính được gán
+                  </label>
+                  <div className="border border-gray-200 bg-gray-50 rounded-lg max-h-48 overflow-y-auto p-2">
+                    {allAttributes.length === 0 ? (
+                      <div className="text-xs text-gray-500 p-2 italic">Chưa có thuộc tính nào trong hệ thống.</div>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-2">
+                        {allAttributes.map((attr) => (
+                          <label key={attr.id} className="flex items-center gap-2 p-1.5 hover:bg-gray-100 rounded cursor-pointer select-none">
+                            <input
+                              type="checkbox"
+                              checked={selectedAttributeIds.includes(attr.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedAttributeIds([...selectedAttributeIds, attr.id]);
+                                } else {
+                                  setSelectedAttributeIds(selectedAttributeIds.filter((id) => id !== attr.id));
+                                }
+                              }}
+                              className="w-3.5 h-3.5 rounded border-gray-300 text-brand-primary focus:ring-0"
+                            />
+                            <div className="flex flex-col">
+                              <span className="text-xs font-medium text-gray-700">{attr.name}</span>
+                              <span className="text-[10px] text-gray-400 font-mono">{attr.code}</span>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 

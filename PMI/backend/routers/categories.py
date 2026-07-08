@@ -5,9 +5,9 @@ from database import get_db
 import models
 import schemas
 
-router = APIRouter(prefix='/categories', tags=['Categories'])
+router = APIRouter(tags=['Categories'])
 
-@router.get("/", response_model=List[schemas.CategoryResponse])
+@router.get("/categories", response_model=List[schemas.CategoryResponse])
 def get_categories(db: Session = Depends(get_db)):
     categories = db.query(models.Category).all()
     cat_dict = {c.id: c for c in categories}
@@ -34,7 +34,7 @@ def get_categories(db: Session = Depends(get_db)):
         ))
     return response
 
-@router.get("/{category_id}", response_model=schemas.CategoryResponse)
+@router.get("/categories/{category_id}", response_model=schemas.CategoryResponse)
 def get_category(category_id: int, db: Session = Depends(get_db)):
     cat = db.query(models.Category).filter(models.Category.id == category_id).first()
     if not cat:
@@ -59,7 +59,7 @@ def get_category(category_id: int, db: Session = Depends(get_db)):
         display_name=display_name
     )
 
-@router.post("/", response_model=schemas.CategoryResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/categories", response_model=schemas.CategoryResponse, status_code=status.HTTP_201_CREATED)
 def create_category(category: schemas.CategoryCreate, db: Session = Depends(get_db)):
     db_cat = db.query(models.Category).filter(models.Category.code == category.code).first()
     if db_cat:
@@ -97,7 +97,7 @@ def create_category(category: schemas.CategoryCreate, db: Session = Depends(get_
         display_name=display_name
     )
 
-@router.put("/{category_id}", response_model=schemas.CategoryResponse)
+@router.put("/categories/{category_id}", response_model=schemas.CategoryResponse)
 def update_category(category_id: int, category_in: schemas.CategoryUpdate, db: Session = Depends(get_db)):
     db_cat = db.query(models.Category).filter(models.Category.id == category_id).first()
     if not db_cat:
@@ -139,7 +139,7 @@ def update_category(category_id: int, category_in: schemas.CategoryUpdate, db: S
         display_name=display_name
     )
 
-@router.delete("/{category_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/categories/{category_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_category(category_id: int, db: Session = Depends(get_db)):
     db_cat = db.query(models.Category).filter(models.Category.id == category_id).first()
     if not db_cat:

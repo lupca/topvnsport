@@ -144,6 +144,46 @@ def delete_attribute_group(group_id: int, db: Session = Depends(get_db)):
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Database transaction failed: {str(e)}")
 
+@router.put("/attribute-groups/{group_id}/attributes", response_model=List[schemas.AttributeResponse])
+def sync_attributes_for_group(group_id: int, payload: schemas.AttributeSyncRequest, db: Session = Depends(get_db)):
+    grp = db.query(models.AttributeGroup).filter(models.AttributeGroup.id == group_id).first()
+    if not grp:
+        raise HTTPException(status_code=404, detail="Attribute Group not found")
+        
+    # Clear existing links
+    db.query(models.AttributeGroupAttribute).filter(models.AttributeGroupAttribute.group_id == group_id).delete()
+    
+    new_attrs = []
+    if payload.attribute_ids:
+        # Get valid attributes
+        valid_attrs = db.query(models.Attribute).filter(models.Attribute.id.in_(payload.attribute_ids)).all()
+        valid_ids = {a.id for a in valid_attrs}
+        
+        # Add new links
+        for idx, attr_id in enumerate(payload.attribute_ids):
+            if attr_id in valid_ids:
+                new_link = models.AttributeGroupAttribute(
+                    group_id=group_id,
+                    attribute_id=attr_id,
+                    display_order=idx + 1
+                )
+                db.add(new_link)
+    
+    try:
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database transaction failed: {str(e)}")
+        
+    # Fetch and return the updated list
+    return (
+        db.query(models.Attribute)
+        .join(models.AttributeGroupAttribute)
+        .filter(models.AttributeGroupAttribute.group_id == group_id)
+        .order_by(models.AttributeGroupAttribute.display_order)
+        .all()
+    )
+
 # Attribute Family Endpoints
 @router.get("/attribute-families", response_model=List[schemas.AttributeFamilyResponse])
 def get_attribute_families(db: Session = Depends(get_db)):
@@ -256,3 +296,42 @@ def delete_attribute_family(family_id: int, db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Database transaction failed: {str(e)}")
+
+@router.put("/attribute-families/{family_id}/attributes", response_model=List[schemas.AttributeResponse])
+def sync_attributes_for_family(family_id: int, payload: schemas.AttributeSyncRequest, db: Session = Depends(get_db)):
+    fam = db.query(models.AttributeFamily).filter(models.AttributeFamily.id == family_id).first()
+    if not fam:
+        raise HTTPException(status_code=404, detail="Attribute Family not found")
+        
+    # Clear existing links
+    db.query(models.AttributeFamilyAttribute).filter(models.AttributeFamilyAttribute.family_id == family_id).delete()
+    
+    if payload.attribute_ids:
+        # Get valid attributes
+        valid_attrs = db.query(models.Attribute).filter(models.Attribute.id.in_(payload.attribute_ids)).all()
+        valid_ids = {a.id for a in valid_attrs}
+        
+        # Add new links
+        for idx, attr_id in enumerate(payload.attribute_ids):
+            if attr_id in valid_ids:
+                new_link = models.AttributeFamilyAttribute(
+                    family_id=family_id,
+                    attribute_id=attr_id,
+                    display_order=idx + 1
+                )
+                db.add(new_link)
+    
+    try:
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database transaction failed: {str(e)}")
+        
+    # Fetch and return the updated list
+    return (
+        db.query(models.Attribute)
+        .join(models.AttributeFamilyAttribute)
+        .filter(models.AttributeFamilyAttribute.family_id == family_id)
+        .order_by(models.AttributeFamilyAttribute.display_order)
+        .all()
+    )

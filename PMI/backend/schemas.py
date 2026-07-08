@@ -255,6 +255,7 @@ class AttributeGroupUpdate(AttributeGroupBase):
 
 class AttributeGroupResponse(AttributeGroupBase):
     id: int
+    attributes: List[AttributeResponse] = []
     created_at: Optional[Any] = None
     model_config = ConfigDict(from_attributes=True)
 
@@ -271,8 +272,12 @@ class AttributeFamilyUpdate(AttributeFamilyBase):
 
 class AttributeFamilyResponse(AttributeFamilyBase):
     id: int
+    attributes: List[AttributeResponse] = []
     created_at: Optional[Any] = None
     model_config = ConfigDict(from_attributes=True)
+
+class AttributeSyncRequest(BaseModel):
+    attribute_ids: List[int]
 
 class AttributeFamilyLinkCreate(BaseModel):
     attribute_id: int

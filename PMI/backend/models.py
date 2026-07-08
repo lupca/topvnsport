@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, Boolean, Float, ForeignKey, JSON, Text, DateTime, UniqueConstraint, Numeric
 from sqlalchemy.orm import relationship, backref
+from sqlalchemy.ext.associationproxy import association_proxy
 from database import Base
 import datetime
 
@@ -117,6 +118,7 @@ class AttributeGroup(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
 
     group_attributes = relationship("AttributeGroupAttribute", back_populates="group", cascade="all, delete-orphan")
+    attributes = association_proxy("group_attributes", "attribute")
 
 class AttributeFamily(Base):
     __tablename__ = "attribute_families"
@@ -128,6 +130,7 @@ class AttributeFamily(Base):
 
     products = relationship("Product", back_populates="family")
     family_attributes = relationship("AttributeFamilyAttribute", back_populates="family", cascade="all, delete-orphan")
+    attributes = association_proxy("family_attributes", "attribute")
 
 
 class AttributeFamilyAttribute(Base):

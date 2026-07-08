@@ -6,10 +6,17 @@ import { Layers, X, AlertCircle } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
 import { popupService, showConfirm } from "@/components/ui/popupService";
 
+interface Attribute {
+  id: number;
+  code: string;
+  name: string;
+}
+
 interface AttributeGroup {
   id: number;
   code: string;
   name: string;
+  attributes?: Attribute[];
   created_at: string;
 }
 
@@ -27,6 +34,9 @@ export default function AttributeGroupsPage() {
   const [editingGroup, setEditingGroup] = useState<AttributeGroup | null>(null);
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
+  const [selectedAttributeIds, setSelectedAttributeIds] = useState<number[]>([]);
+  
+  const [allAttributes, setAllAttributes] = useState<Attribute[]>([]);
   
   const [errorMsg, setErrorMsg] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -34,13 +44,21 @@ export default function AttributeGroupsPage() {
   const fetchGroups = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/attribute-groups`);
-      if (res.ok) {
-        const data = await res.json();
+      const [resGrp, resAttr] = await Promise.all([
+        fetch(`${API_BASE}/attribute-groups`),
+        fetch(`${API_BASE}/attributes`)
+      ]);
+      
+      if (resGrp.ok) {
+        const data = await resGrp.json();
         setGroups(data);
       }
+      if (resAttr.ok) {
+        const dataAttr = await resAttr.json();
+        setAllAttributes(dataAttr);
+      }
     } catch (err) {
-      console.error("Failed to fetch attribute groups:", err);
+      console.error("Failed to fetch data:", err);
     } finally {
       setLoading(false);
     }
@@ -54,6 +72,7 @@ export default function AttributeGroupsPage() {
     setEditingGroup(null);
     setCode("");
     setName("");
+    setSelectedAttributeIds([]);
     setErrorMsg("");
     setIsOpen(true);
   };
@@ -62,6 +81,7 @@ export default function AttributeGroupsPage() {
     setEditingGroup(group);
     setCode(group.code);
     setName(group.name);
+    setSelectedAttributeIds(group.attributes?.map(a => a.id) || []);
     setErrorMsg("");
     setIsOpen(true);
   };
@@ -112,11 +132,27 @@ export default function AttributeGroupsPage() {
       });
 
       if (res.ok) {
+        const savedGroup = await res.json();
+        
+        // Sync attributes
+        const syncRes = await fetch(`${API_BASE}/attribute-groups/${savedGroup.id}/attributes`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ attribute_ids: selectedAttributeIds }),
+        });
+        
+        if (!syncRes.ok) {
+           const errData = await syncRes.json();
+           console.error("Sync failed", errData);
+           setErrorMsg("Đã lưu Nhóm thuộc tính nhưng lỗi khi đồng bộ Thuộc tính.");
+           return;
+        }
+
         setIsOpen(false);
         fetchGroups();
       } else {
         const errData = await res.json();
-        setErrorMsg(errData.detail || "Đã xảy ra lỗi khi lưu nhóm.");
+        setErrorMsg(errData.detail || "Đã xảy ra lỗi khi lưu nhóm thuộc tính.");
       }
     } catch (err) {
       setErrorMsg("Không thể kết nối đến máy chủ.");
@@ -158,9 +194,26 @@ export default function AttributeGroupsPage() {
     },
     {
       key: "name",
-      label: "Tên nhóm thuộc tính",
+      label: "Tên nhóm (Group Name)",
       render: (item: AttributeGroup) => (
         <span className="font-semibold text-gray-900">{item.name}</span>
+      ),
+    },
+    {
+      key: "attributes",
+      label: "Thuộc tính được gán",
+      render: (item: AttributeGroup) => (
+        <div className="flex flex-wrap gap-1">
+          {item.attributes && item.attributes.length > 0 ? (
+            item.attributes.map(attr => (
+              <span key={attr.id} className="text-[10px] bg-gray-100 border border-gray-200 text-gray-600 px-1.5 py-0.5 rounded">
+                {attr.name}
+              </span>
+            ))
+          ) : (
+            <span className="text-gray-400 text-xs italic">Chưa gán</span>
+          )}
+        </div>
       ),
     },
     {
@@ -264,15 +317,50 @@ export default function AttributeGroupsPage() {
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">
-                    Tên nhóm thuộc tính <span className="text-brand-primary">*</span>
+                    Tên nhóm <span className="text-brand-primary">*</span>
                   </label>
                   <input
                     type="text"
-                    placeholder="VD: Thông Tin Chung, Thông Số Kỹ Thuật"
+                    placeholder="VD: Kích thước chung, Giao hàng"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:border-brand-primary transition-colors"
                   />
+                </div>
+
+                {/* Attributes Selection */}
+                <div className="space-y-2 mt-2">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">
+                    Các thuộc tính được gán
+                  </label>
+                  <div className="border border-gray-200 bg-gray-50 rounded-lg max-h-48 overflow-y-auto p-2">
+                    {allAttributes.length === 0 ? (
+                      <div className="text-xs text-gray-500 p-2 italic">Chưa có thuộc tính nào trong hệ thống.</div>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-2">
+                        {allAttributes.map((attr) => (
+                          <label key={attr.id} className="flex items-center gap-2 p-1.5 hover:bg-gray-100 rounded cursor-pointer select-none">
+                            <input
+                              type="checkbox"
+                              checked={selectedAttributeIds.includes(attr.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedAttributeIds([...selectedAttributeIds, attr.id]);
+                                } else {
+                                  setSelectedAttributeIds(selectedAttributeIds.filter((id) => id !== attr.id));
+                                }
+                              }}
+                              className="w-3.5 h-3.5 rounded border-gray-300 text-brand-primary focus:ring-0"
+                            />
+                            <div className="flex flex-col">
+                              <span className="text-xs font-medium text-gray-700">{attr.name}</span>
+                              <span className="text-[10px] text-gray-400 font-mono">{attr.code}</span>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
