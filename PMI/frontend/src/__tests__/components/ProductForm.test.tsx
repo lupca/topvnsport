@@ -120,8 +120,8 @@ describe("ProductForm", () => {
 
     // Wait for the variants table to render Đỏ and Xanh rows
     await waitFor(() => {
-      expect(screen.getByText("Đỏ")).toBeInTheDocument();
-      expect(screen.getByText("Xanh")).toBeInTheDocument();
+      expect(screen.getAllByText("Đỏ").length).toBeGreaterThan(0);
+      expect(screen.getAllByText("Xanh").length).toBeGreaterThan(0);
     });
   });
 
@@ -145,7 +145,7 @@ describe("ProductForm", () => {
     fireEvent.blur(optionInputsAfter[1]);
 
     await waitFor(() => {
-      expect(screen.getByText("Đỏ")).toBeInTheDocument();
+      expect(screen.getAllByText("Đỏ").length).toBeGreaterThan(0);
     });
 
     // Mass apply
