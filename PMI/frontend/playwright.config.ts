@@ -33,13 +33,13 @@ export default defineConfig({
   webServer: (isCI || process.env.START_WEBSERVER) ? [
     {
       command:
-        "docker network inspect pmi_default >/dev/null 2>&1 || docker network create pmi_default && docker compose -f ../docker-compose.yml up api",
-      url: "http://localhost:18100/categories",
+        "docker network inspect pmi_e2e_network >/dev/null 2>&1 || docker network create pmi_e2e_network && docker compose -f ../docker-compose.e2e.yml up api",
+      url: "http://localhost:18101/categories",
       timeout: 180_000,
       reuseExistingServer: !isCI,
     },
     {
-      command: "PMI_API_PROXY_TARGET=http://localhost:18100 npm run dev -- --hostname 127.0.0.1 --port 3000",
+      command: "PMI_API_PROXY_TARGET=http://localhost:18101 npm run dev -- --hostname 127.0.0.1 --port 3000",
       url: "http://localhost:3000",
       timeout: 120_000,
       reuseExistingServer: !isCI,

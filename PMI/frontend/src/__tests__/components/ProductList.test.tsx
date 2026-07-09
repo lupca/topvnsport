@@ -97,10 +97,7 @@ describe("ProductList", () => {
       "fetch",
       vi.fn().mockImplementation((url: string) => {
         if (url.includes("/categories")) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(mockCategories),
-          });
+          return new Promise(() => {}); // never resolves
         }
         return new Promise(() => {}); // never resolves
       })

@@ -1,0 +1,60 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: pim-db-e2e
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=pim_e2e_db
+    ports:
+      - "15434:5432" # Changed port to avoid conflict with dev db
+    # We do NOT mount a volume here to ensure test data is ephemeral.
+    # It will be cleared when the container is removed.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio
+    container_name: pim-minio-e2e
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    ports:
+      - "19007:9000" # Dedicated port for E2E
+      - "19008:9001"
+    # No persistent volume for MinIO in E2E to keep it ephemeral
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pim-api-e2e
+    ports:
+      - "18101:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/pim_e2e_db
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_PUBLIC_BASE_URL=http://localhost:19007
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - MINIO_SECURE=False
+      - MINIO_BUCKET=pim-media
+      - ENV=test # Important to signal test environment
+    depends_on:
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+networks:
+  default:
+    name: pmi_e2e_network

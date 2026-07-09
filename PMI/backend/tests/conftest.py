@@ -6,7 +6,13 @@ from typing import Generator
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy import event
 from testcontainers.postgres import PostgresContainer
+from tests.factories.product import ProductFactory
+
+@pytest.fixture(autouse=True)
+def setup_factories(db_session):
+    ProductFactory._meta.sqlalchemy_session = db_session
 
 
 @pytest.fixture(scope="session")
@@ -49,8 +55,9 @@ def app_module(postgres_container):
     return module
 
 
-@pytest.fixture(autouse=True)
-def reset_database(app_module):
+@pytest.fixture(scope="session", autouse=True)
+def setup_database(app_module):
+    """Create tables once per test session."""
     database_module = importlib.import_module("database")
     database_module.Base.metadata.drop_all(bind=database_module.engine)
     database_module.Base.metadata.create_all(bind=database_module.engine)
@@ -68,20 +75,43 @@ def mock_minio(mocker):
 
 
 @pytest.fixture()
-def client(app_module, mock_minio) -> Generator[TestClient, None, None]:
+def db_session(app_module):
+    """
+    Provide a transactional database session.
+    Rolls back any changes after the test finishes, avoiding expensive drop/create.
+    """
     database_module = importlib.import_module("database")
+    connection = database_module.engine.connect()
+    transaction = connection.begin()
+    
     testing_session_local = sessionmaker(
         autocommit=False,
         autoflush=False,
-        bind=database_module.engine,
+        bind=connection,
     )
+    session = testing_session_local()
+    
+    # We use a nested transaction so that application code can commit
+    # without actually committing to the database.
+    nested = connection.begin_nested()
+    
+    @event.listens_for(session, "after_transaction_end")
+    def end_savepoint(session, transaction):
+        nonlocal nested
+        if not nested.is_active:
+            nested = connection.begin_nested()
 
+    yield session
+    
+    session.close()
+    transaction.rollback()
+    connection.close()
+
+
+@pytest.fixture()
+def client(app_module, mock_minio, db_session) -> Generator[TestClient, None, None]:
     def override_get_db():
-        db = testing_session_local()
-        try:
-            yield db
-        finally:
-            db.close()
+        yield db_session
 
     database_module = importlib.import_module("database")
     app_module.app.dependency_overrides[database_module.get_db] = override_get_db
@@ -90,18 +120,3 @@ def client(app_module, mock_minio) -> Generator[TestClient, None, None]:
         yield test_client
 
     app_module.app.dependency_overrides.clear()
-
-
-@pytest.fixture()
-def db_session(app_module):
-    database_module = importlib.import_module("database")
-    testing_session_local = sessionmaker(
-        autocommit=False,
-        autoflush=False,
-        bind=database_module.engine,
-    )
-    db = testing_session_local()
-    try:
-        yield db
-    finally:
-        db.close()

@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi, beforeEach } from "vitest";
 
@@ -111,10 +111,12 @@ describe("ProductForm", () => {
     await userEvent.type(tierNameInput, "Màu sắc");
 
     const optionInputs = screen.getAllByPlaceholderText("Thêm phân loại");
-    await userEvent.type(optionInputs[0], "Đỏ");
+    fireEvent.change(optionInputs[0], { target: { value: "Đỏ" } });
+    fireEvent.blur(optionInputs[0]);
 
     const optionInputsAfter = screen.getAllByPlaceholderText("Thêm phân loại");
-    await userEvent.type(optionInputsAfter[1], "Xanh");
+    fireEvent.change(optionInputsAfter[1], { target: { value: "Xanh" } });
+    fireEvent.blur(optionInputsAfter[1]);
 
     // Wait for the variants table to render Đỏ and Xanh rows
     await waitFor(() => {
@@ -135,10 +137,12 @@ describe("ProductForm", () => {
     await userEvent.type(screen.getByPlaceholderText("Ví dụ: Màu sắc"), "Màu sắc");
     
     const optionInputs = screen.getAllByPlaceholderText("Thêm phân loại");
-    await userEvent.type(optionInputs[0], "Đỏ");
+    fireEvent.change(optionInputs[0], { target: { value: "Đỏ" } });
+    fireEvent.blur(optionInputs[0]);
     
     const optionInputsAfter = screen.getAllByPlaceholderText("Thêm phân loại");
-    await userEvent.type(optionInputsAfter[1], "Xanh");
+    fireEvent.change(optionInputsAfter[1], { target: { value: "Xanh" } });
+    fireEvent.blur(optionInputsAfter[1]);
 
     await waitFor(() => {
       expect(screen.getByText("Đỏ")).toBeInTheDocument();
