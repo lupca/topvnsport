@@ -303,8 +303,8 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
     const tier1 = watchTiers?.[0];
     const tier2 = watchTiers?.[1];
 
-    const t1_options = tier1?.options?.filter((o: string) => o.trim() !== "") || [];
-    const t2_options = tier2?.options?.filter((o: string) => o.trim() !== "") || [];
+    const t1_options = Array.from(new Set(tier1?.options?.map((o: string) => o.trim()).filter((o: string) => o !== "") || []));
+    const t2_options = Array.from(new Set(tier2?.options?.map((o: string) => o.trim()).filter((o: string) => o !== "") || []));
 
     // Keep map of existing variant values to avoid clearing inputs when adding/removing option characters
     const existingMap = new Map<string, { price: number; stock: number; sku_code: string; barcode: string }>();

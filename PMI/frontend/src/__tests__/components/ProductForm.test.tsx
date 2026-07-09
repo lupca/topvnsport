@@ -110,8 +110,11 @@ describe("ProductForm", () => {
     const tierNameInput = screen.getByPlaceholderText("Ví dụ: Màu sắc");
     await userEvent.type(tierNameInput, "Màu sắc");
 
-    const tierOptionsInput = screen.getByPlaceholderText("Đỏ, Xanh, Vàng");
-    await userEvent.type(tierOptionsInput, "Đỏ, Xanh");
+    const optionInputs = screen.getAllByPlaceholderText("Thêm phân loại");
+    await userEvent.type(optionInputs[0], "Đỏ");
+
+    const optionInputsAfter = screen.getAllByPlaceholderText("Thêm phân loại");
+    await userEvent.type(optionInputsAfter[1], "Xanh");
 
     // Wait for the variants table to render Đỏ and Xanh rows
     await waitFor(() => {
@@ -127,11 +130,15 @@ describe("ProductForm", () => {
       expect(screen.getByText("Thông tin bán hàng")).toBeInTheDocument();
     });
 
-    // Add 1 tier variation with 2 options
     const addTierButton = screen.getByRole("button", { name: "Thêm nhóm phân loại hàng" });
     await userEvent.click(addTierButton);
     await userEvent.type(screen.getByPlaceholderText("Ví dụ: Màu sắc"), "Màu sắc");
-    await userEvent.type(screen.getByPlaceholderText("Đỏ, Xanh, Vàng"), "Đỏ, Xanh");
+    
+    const optionInputs = screen.getAllByPlaceholderText("Thêm phân loại");
+    await userEvent.type(optionInputs[0], "Đỏ");
+    
+    const optionInputsAfter = screen.getAllByPlaceholderText("Thêm phân loại");
+    await userEvent.type(optionInputsAfter[1], "Xanh");
 
     await waitFor(() => {
       expect(screen.getByText("Đỏ")).toBeInTheDocument();

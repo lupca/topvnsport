@@ -29,7 +29,7 @@ export default function ProductVariations({
   setBulkStock
 }: ProductVariationsProps) {
   const { control, register, watch, setValue, formState: { errors } } = useFormContext();
-  const { fields: tierFields, append: appendTier, remove: removeTier } = useFieldArray({
+  const { fields: tierFields, append: appendTier, remove: removeTier, update: updateTier } = useFieldArray({
     control,
     name: "tier_variations"
   });
@@ -120,19 +120,60 @@ export default function ProductVariations({
               </div>
               
               <div className="md:col-span-2 space-y-1.5">
-                <label className="text-sm font-semibold text-gray-600">Phân loại hàng (Các tùy chọn, cách nhau bằng dấu phẩy)</label>
-                <input 
-                  type="text" 
-                  placeholder={tierIndex === 0 ? "Đỏ, Xanh, Vàng" : "M, L, XL"}
-                  className="pim-input"
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    const opts = val.split(",").map(s => s.trim()).filter(s => s !== "");
-                    setValue(`tier_variations.${tierIndex}.options` as const, opts, { shouldValidate: true });
-                    setValue(`tier_variations.${tierIndex}.tier_index` as const, tierIndex + 1);
-                  }}
-                  defaultValue={watchTiers?.[tierIndex]?.options?.join(", ")}
-                />
+                <label className="text-sm font-semibold text-gray-600">Phân loại hàng (Các tùy chọn)</label>
+                <div className="flex flex-wrap gap-3">
+                  {(() => {
+                    const currentOpts = watchTiers?.[tierIndex]?.options || [];
+                    const displayOpts = currentOpts.length > 0 && currentOpts[currentOpts.length - 1] === "" 
+                      ? currentOpts 
+                      : [...currentOpts, ""];
+                    
+                    return displayOpts.map((opt: string, optIndex: number) => (
+                      <div key={optIndex} className="relative w-40">
+                        <input 
+                          type="text" 
+                          placeholder="Thêm phân loại"
+                          className="pim-input pr-8"
+                          value={opt}
+                          onChange={(e) => {
+                            const newOpts = [...currentOpts];
+                            newOpts[optIndex] = e.target.value;
+                            updateTier(tierIndex, {
+                              ...(watchTiers?.[tierIndex] || {}),
+                              options: newOpts,
+                              tier_index: tierIndex + 1
+                            });
+                          }}
+                          onBlur={() => {
+                            const newOpts = (watchTiers?.[tierIndex]?.options || []).filter((o: string) => o.trim() !== "");
+                            updateTier(tierIndex, {
+                              ...(watchTiers?.[tierIndex] || {}),
+                              options: newOpts,
+                              tier_index: tierIndex + 1
+                            });
+                          }}
+                        />
+                        {opt !== "" && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newOpts = [...currentOpts];
+                              newOpts.splice(optIndex, 1);
+                              updateTier(tierIndex, {
+                                ...(watchTiers?.[tierIndex] || {}),
+                                options: newOpts,
+                                tier_index: tierIndex + 1
+                              });
+                            }}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-rose-500 transition-colors"
+                          >
+                            <Trash className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+                    ));
+                  })()}
+                </div>
                 {(errors.tier_variations as any)?.[tierIndex]?.options && (
                   <p className="text-xs text-rose-500 font-medium">{(errors.tier_variations as any)[tierIndex]?.options?.message}</p>
                 )}
@@ -251,14 +292,31 @@ export default function ProductVariations({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {watchVariants?.map((v: any, idx: number) => (
-              <tr key={idx} className="hover:bg-gray-50 transition-colors">
-                {v.tier_1_option !== null && (
-                  <td className="px-6 py-4 font-semibold text-gray-900">{v.tier_1_option}</td>
-                )}
-                {v.tier_2_option !== null && (
-                  <td className="px-6 py-4 text-gray-500">{v.tier_2_option}</td>
-                )}
+            {watchVariants?.map((v: any, idx: number) => {
+              let isFirstInGroup = false;
+              let rowSpan = 1;
+              if (v.tier_1_option !== null) {
+                if (idx === 0 || watchVariants[idx - 1].tier_1_option !== v.tier_1_option) {
+                  isFirstInGroup = true;
+                  let count = 1;
+                  for (let i = idx + 1; i < watchVariants.length; i++) {
+                    if (watchVariants[i].tier_1_option === v.tier_1_option) count++;
+                    else break;
+                  }
+                  rowSpan = count;
+                }
+              }
+
+              return (
+                <tr key={idx} className="hover:bg-gray-50 transition-colors">
+                  {v.tier_1_option !== null && isFirstInGroup && (
+                    <td rowSpan={rowSpan} className="px-6 py-4 font-semibold text-gray-900 border-r border-gray-100 align-middle bg-white">
+                      {v.tier_1_option}
+                    </td>
+                  )}
+                  {v.tier_2_option !== null && (
+                    <td className="px-6 py-4 text-gray-500">{v.tier_2_option}</td>
+                  )}
                 <td className="px-6 py-3">
                   <input 
                     type="text" 
@@ -300,8 +358,9 @@ export default function ProductVariations({
                     <p className="text-[10px] text-rose-500 mt-0.5">{(errors.variants as any)[idx]?.stock?.message}</p>
                   )}
                 </td>
-              </tr>
-            ))}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
