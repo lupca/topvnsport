@@ -159,11 +159,12 @@ describe("ProductForm", () => {
 
     // Verify all variant inputs have these values.
     // There are 2 variants (Đỏ and Xanh), so there should be input elements with value 180000 and 45.
+    // However, the bulk inputs themselves also have these values, making the total 3.
     const prices = screen.getAllByDisplayValue("180000");
     const stocks = screen.getAllByDisplayValue("45");
 
-    expect(prices.length).toBe(2);
-    expect(stocks.length).toBe(2);
+    expect(prices.length).toBe(3);
+    expect(stocks.length).toBe(3);
   });
 
   test("form submit payload is valid", async () => {
