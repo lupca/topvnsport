@@ -33,7 +33,7 @@ export default defineConfig({
   webServer: (isCI || process.env.START_WEBSERVER) ? [
     {
       command:
-        "docker network inspect pmi_e2e_network >/dev/null 2>&1 || docker network create pmi_e2e_network && docker compose -f ../docker-compose.e2e.yml up api",
+        "docker compose -f ../docker-compose.e2e.yml up api",
       url: "http://localhost:18101/categories",
       timeout: 180_000,
       reuseExistingServer: !isCI,
