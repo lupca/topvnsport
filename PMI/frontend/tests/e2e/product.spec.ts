@@ -19,7 +19,7 @@ test("create product with image upload flow", async ({ page }) => {
   const productName = `Ao test e2e ${suffix}`;
   const parentSku = `E2E-${suffix}`;
 
-  const familyResponse = await page.request.get("http://localhost:18100/attribute-families");
+  const familyResponse = await page.request.get("http://localhost:18101/attribute-families");
   expect(familyResponse.ok()).toBeTruthy();
   const families = await familyResponse.json();
   expect(families.length).toBeGreaterThan(0);
@@ -71,19 +71,19 @@ test("edit existing product", async ({ page }) => {
   const originalName = `Ao edit goc ${suffix}`;
   const updatedName = `Ao edit moi ${suffix}`;
 
-  const categoryResponse = await page.request.get("http://localhost:18100/categories");
+  const categoryResponse = await page.request.get("http://localhost:18101/categories");
   expect(categoryResponse.ok()).toBeTruthy();
   const categories = await categoryResponse.json();
   expect(categories.length).toBeGreaterThan(0);
   const categoryId = categories[0].id;
 
-  const familyResponse = await page.request.get("http://localhost:18100/attribute-families");
+  const familyResponse = await page.request.get("http://localhost:18101/attribute-families");
   expect(familyResponse.ok()).toBeTruthy();
   const families = await familyResponse.json();
   expect(families.length).toBeGreaterThan(0);
   const familyId = families[0].id;
 
-  const createResponse = await page.request.post("http://localhost:18100/products", {
+  const createResponse = await page.request.post("http://localhost:18101/products", {
     data: {
       product_code: parentSku,
       name: originalName,
