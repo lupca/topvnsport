@@ -275,7 +275,7 @@ export default function WarehousesPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left: Warehouse List */}
         <div className="lg:col-span-5 space-y-4">
-          <div className="bg-surface border border-gray-200 shadow-sm rounded-2xl p-4 shadow-sm">
+          <div className="bg-surface border border-gray-200 shadow-sm rounded-2xl p-4">
             <h3 className="text-xs font-extrabold text-gray-500 uppercase tracking-widest mb-4">
               Danh sách Kho ({warehouses.length})
             </h3>
@@ -338,7 +338,7 @@ export default function WarehousesPage() {
         {/* Right: Locations Detail Drill-down */}
         <div className="lg:col-span-7 space-y-4">
           {selectedWarehouse ? (
-            <div className="bg-surface border border-gray-200 shadow-sm rounded-2xl p-6 shadow-sm space-y-4">
+            <div className="bg-surface border border-gray-200 shadow-sm rounded-2xl p-6 space-y-4">
               <div className="flex justify-between items-center border-b pb-3 border-gray-200">
                 <div>
                   <h3 className="text-sm font-extrabold text-gray-900 flex items-center gap-2">
@@ -389,17 +389,17 @@ export default function WarehousesPage() {
                           <td className="py-3 text-gray-700">{loc.zone || "-"}</td>
                           <td className="py-3">
                             <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${
-                              loc.type === "STORAGE" ? "bg-blue-50 text-blue-700 border border-blue-200 text-blue-600" :
-                              loc.type === "RECEIVING" ? "bg-amber-50 text-amber-700 border border-amber-200 text-amber-600" :
-                              loc.type === "PACKING" ? "bg-violet-950/50 text-violet-600" :
-                              "bg-emerald-50 text-emerald-700 border border-emerald-200 text-emerald-600"
+                              loc.type === "STORAGE" ? "bg-blue-50 text-blue-700 border border-blue-200" :
+                              loc.type === "RECEIVING" ? "bg-amber-50 text-amber-700 border border-amber-200" :
+                              loc.type === "PACKING" ? "bg-violet-50 text-violet-700 border border-violet-200" :
+                              "bg-emerald-50 text-emerald-700 border border-emerald-200"
                             }`}>
                               {loc.type}
                             </span>
                           </td>
                           <td className="py-3">
                             <span className={`inline-flex items-center gap-1 text-[10px] font-bold ${loc.is_active ? "text-emerald-600" : "text-gray-500"}`}>
-                              <span className={`w-1.5 h-1.5 rounded-full ${loc.is_active ? "bg-emerald-500" : "bg-slate-700"}`}></span>
+                              <span className={`w-1.5 h-1.5 rounded-full ${loc.is_active ? "bg-emerald-500" : "bg-gray-300"}`}></span>
                               {loc.is_active ? "Hoạt động" : "Tạm khóa"}
                             </span>
                           </td>
@@ -425,7 +425,7 @@ export default function WarehousesPage() {
               )}
             </div>
           ) : (
-            <div className="h-full flex items-center justify-center p-8 border border-dashed border-gray-200 rounded-2xl bg-surface text-gray-500 text-xs text-center py-20">
+            <div className="h-full flex items-center justify-center px-8 border border-dashed border-gray-200 rounded-2xl bg-surface text-gray-500 text-xs text-center py-20">
               Vui lòng chọn hoặc thêm kho hàng để xem danh sách vị trí chi tiết.
             </div>
           )}

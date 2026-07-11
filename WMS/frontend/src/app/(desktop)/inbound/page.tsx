@@ -378,7 +378,7 @@ export default function InboundPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left List */}
         <div className="lg:col-span-12 space-y-4">
-          <div className="bg-surface border border-gray-200 shadow-sm rounded-2xl p-4 shadow-sm">
+          <div className="bg-surface border border-gray-200 shadow-sm rounded-2xl p-4">
             <h3 className="text-xs font-extrabold text-gray-500 uppercase tracking-widest mb-4">
               Danh sách Đơn Nhập ({shipments.length})
             </h3>
@@ -470,7 +470,7 @@ export default function InboundPage() {
                 <div className="overflow-x-auto border border-gray-200 rounded-xl">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
-                      <tr className="bg-surface text-gray-500 text-gray-500 font-bold border-b border-gray-200">
+                      <tr className="bg-surface text-gray-500 font-bold border-b border-gray-200">
                         <th className="p-3">SKU</th>
                         <th className="p-3">Tên sản phẩm</th>
                         <th className="p-3 text-right">Dự kiến</th>
@@ -483,7 +483,7 @@ export default function InboundPage() {
                       {selectedShipment.items.map((item) => (
                         <tr key={item.id} className="border-b border-gray-200 hover:bg-gray-50">
                           <td className="p-3 font-bold text-gray-800">{item.sku_code}</td>
-                          <td className="p-3 text-gray-500 text-gray-700 font-semibold">{item.product_name}</td>
+                          <td className="p-3 text-gray-700 font-semibold">{item.product_name}</td>
                           <td className="p-3 text-right font-extrabold text-gray-700">{item.expected_qty}</td>
                           <td className="p-3 text-right font-extrabold text-indigo-600">{item.received_qty}</td>
                           <td className="p-3">
@@ -493,8 +493,8 @@ export default function InboundPage() {
                           </td>
                           <td className="p-3 text-right">
                             <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${
-                              item.status === "put_away" ? "bg-emerald-50 text-emerald-700 border border-emerald-200 text-emerald-600" :
-                              item.status === "received" ? "bg-indigo-950/50 text-indigo-600" :
+                              item.status === "put_away" ? "bg-emerald-50 text-emerald-700 border border-emerald-200" :
+                              item.status === "received" ? "bg-indigo-50 text-indigo-700 border border-indigo-200" :
                               "bg-gray-100 text-gray-500"
                             }`}>
                               {item.status}
@@ -695,7 +695,7 @@ export default function InboundPage() {
                   <button
                     type="button"
                     onClick={handleAddItemRow}
-                    className="px-2.5 py-1 text-[10px] font-bold bg-gray-100 hover:bg-gray-100 text-gray-800 border border-gray-200 rounded-lg"
+                    className="px-2.5 py-1 text-[10px] font-bold bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-200 rounded-lg"
                   >
                     Thêm dòng
                   </button>
@@ -798,7 +798,7 @@ export default function InboundPage() {
                         <button
                           type="button"
                           onClick={() => handleRemoveItemRow(idx)}
-                          className="p-2 border border-rose-900/50 hover:bg-rose-50 text-rose-600 rounded-lg"
+                          className="p-2 border border-rose-200 hover:bg-rose-50 text-rose-600 rounded-lg"
                         >
                           <X className="w-4 h-4" />
                         </button>

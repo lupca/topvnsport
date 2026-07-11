@@ -295,9 +295,9 @@ export default function InventoryPage() {
           <div className="flex items-center justify-between gap-2 text-[10px] uppercase tracking-wider text-gray-500">
             <span>Available</span>
             <span className={`px-2 py-0.5 rounded font-bold text-sm normal-case tracking-normal ${
-              item.qty_on_hand - item.qty_reserved <= 0 ? "bg-rose-50 text-rose-700 border border-rose-200 text-rose-600" :
-              item.qty_on_hand - item.qty_reserved < 10 ? "bg-amber-50 text-amber-700 border border-amber-200 text-amber-600" :
-              "bg-emerald-50 text-emerald-700 border border-emerald-200 text-emerald-600"
+              item.qty_on_hand - item.qty_reserved <= 0 ? "bg-rose-50 text-rose-700 border border-rose-200" :
+              item.qty_on_hand - item.qty_reserved < 10 ? "bg-amber-50 text-amber-700 border border-amber-200" :
+              "bg-emerald-50 text-emerald-700 border border-emerald-200"
             }`}>
               {item.qty_on_hand - item.qty_reserved}
             </span>
@@ -327,7 +327,7 @@ export default function InventoryPage() {
           </button>
           <button
             onClick={() => openTransferModal(item)}
-            className="px-2.5 py-1 text-[10px] font-bold border border-gray-200 hover:border-gray-200 hover:bg-gray-100 hover:text-gray-900 text-gray-700 rounded-lg transition-colors"
+            className="px-2.5 py-1 text-[10px] font-bold border border-gray-200 hover:bg-gray-100 hover:text-gray-900 text-gray-700 rounded-lg transition-colors"
           >
             Chuyển
           </button>

@@ -138,7 +138,7 @@ export default function LookupPage() {
 
       {/* Error Message */}
       {error && (
-        <div className="p-3 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold text-rose-600 flex items-center gap-2">
+        <div className="p-3 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold flex items-center gap-2">
           <AlertCircle className="w-4 h-4" />
           <span>{error}</span>
         </div>
@@ -221,7 +221,7 @@ export default function LookupPage() {
       {/* Quick Mapping Modal */}
       {isMappingModalOpen && (
         <div className="fixed inset-0 bg-surface/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-surface border border-gray-200 shadow-sm rounded-2xl w-full max-w-sm p-5 shadow-2xl space-y-4 text-gray-900 animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-surface border border-gray-200 rounded-2xl w-full max-w-sm p-5 shadow-2xl space-y-4 text-gray-900 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex justify-between items-center border-b pb-3 border-gray-200">
               <h3 className="text-xs font-extrabold text-gray-800 uppercase tracking-wider">Liên kết nhanh SKU</h3>
               <button

@@ -88,7 +88,7 @@ export default function ReceiveListPage() {
             <Link
               key={s.id}
               href={`/m/receive/${s.id}`}
-              className="bg-surface border border-gray-200 shadow-sm rounded-xl p-4 flex flex-col gap-3 transition-colors hover:border-gray-200 block"
+              className="bg-surface border border-gray-200 shadow-sm rounded-xl p-4 flex flex-col gap-3 transition-colors hover:border-gray-200"
             >
               <div className="flex justify-between items-start">
                 <div>
@@ -99,7 +99,7 @@ export default function ReceiveListPage() {
                   className={`px-2 py-0.5 rounded text-[8px] font-extrabold tracking-wide uppercase ${
                     s.status.toUpperCase() === "RECEIVING"
                       ? "bg-amber-50 text-amber-700 border border-amber-200 animate-pulse"
-                      : "bg-blue-50 text-blue-700 border border-blue-200 text-blue-600 border border-blue-900/50"
+                      : "bg-blue-50 text-blue-700 border border-blue-200"
                   }`}
                 >
                   {s.status}

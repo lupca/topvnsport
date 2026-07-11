@@ -79,7 +79,7 @@ export default function PackListPage() {
             <Link
               key={o.id}
               href={`/m/pack/${o.id}`}
-              className="bg-surface border border-gray-200 shadow-sm rounded-xl p-4 flex flex-col gap-3 transition-colors hover:border-gray-200 block"
+              className="bg-surface border border-gray-200 shadow-sm rounded-xl p-4 flex flex-col gap-3 transition-colors hover:border-gray-200"
             >
               <div className="flex justify-between items-start">
                 <div>

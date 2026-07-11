@@ -128,7 +128,7 @@ export default function StockCheckPage() {
 
       {/* Success/Error Banner */}
       {successMessage && (
-        <div className="p-3 bg-emerald-50 text-emerald-700 border border-emerald-200 border border-emerald-900/50 rounded-xl text-xs font-bold text-emerald-600 flex items-center gap-2">
+        <div className="p-3 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold flex items-center gap-2">
           <CheckCircle className="w-4 h-4" />
           <span>{successMessage}</span>
         </div>
@@ -209,7 +209,7 @@ export default function StockCheckPage() {
             </div>
           </div>
         ) : (
-          <div className="p-4 bg-surface/50 border border-gray-200 border-dashed rounded-xl text-center text-xs text-gray-500 py-6">
+          <div className="px-4 bg-surface/50 border border-gray-200 border-dashed rounded-xl text-center text-xs text-gray-500 py-6">
             Hãy quét mã vạch sản phẩm bên dưới để tải thông tin SKU.
           </div>
         )}

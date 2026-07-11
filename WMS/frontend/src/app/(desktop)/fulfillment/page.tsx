@@ -327,10 +327,10 @@ export default function FulfillmentPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Picking Queue (Left column) */}
         <div className="lg:col-span-4 space-y-4">
-          <div className="bg-surface border border-gray-200 shadow-sm rounded-2xl p-4 shadow-sm">
+          <div className="bg-surface border border-gray-200 shadow-sm rounded-2xl p-4">
             <h3 className="text-xs font-extrabold text-gray-500 uppercase tracking-widest mb-4 flex items-center justify-between">
               <span>Hàng chờ Nhặt (Pick Queue)</span>
-              <span className="bg-indigo-950 text-indigo-600 px-2 py-0.5 rounded text-[10px] font-extrabold">{pickQueue.length}</span>
+              <span className="bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded text-[10px] font-extrabold">{pickQueue.length}</span>
             </h3>
             {loading && orders.length === 0 ? (
               <div className="flex justify-center py-8">
@@ -382,10 +382,10 @@ export default function FulfillmentPage() {
 
         {/* Packing & Shipping Queue (Right column) */}
         <div className="lg:col-span-4 space-y-4">
-          <div className="bg-surface border border-gray-200 shadow-sm rounded-2xl p-4 shadow-sm">
+          <div className="bg-surface border border-gray-200 shadow-sm rounded-2xl p-4">
             <h3 className="text-xs font-extrabold text-gray-500 uppercase tracking-widest mb-4 flex items-center justify-between">
               <span>Đóng gói & Xuất hàng (Pack/Ship)</span>
-              <span className="bg-emerald-950 text-emerald-600 px-2 py-0.5 rounded text-[10px] font-extrabold">{packQueue.length}</span>
+              <span className="bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded text-[10px] font-extrabold">{packQueue.length}</span>
             </h3>
             {loading && orders.length === 0 ? (
               <div className="flex justify-center py-8">
@@ -429,7 +429,7 @@ export default function FulfillmentPage() {
         {/* Selected Order detail pane (Middle/Right panel) */}
         <div className="lg:col-span-4 space-y-4">
           {selectedOrder ? (
-            <div className="bg-surface border border-gray-200 shadow-sm rounded-2xl p-4 shadow-sm space-y-5">
+            <div className="bg-surface border border-gray-200 shadow-sm rounded-2xl p-4 space-y-5">
               <div className="flex justify-between items-start border-b pb-3 border-gray-200">
                 <div>
                   <h3 className="text-xs font-extrabold text-gray-900">{selectedOrder.fulfillment_number}</h3>
@@ -438,7 +438,7 @@ export default function FulfillmentPage() {
                 {["PENDING", "PICKING"].includes(selectedOrder.status.toUpperCase()) && (
                   <button
                     onClick={() => handleCancelOrder(selectedOrder.id)}
-                    className="p-1 text-[9px] font-bold text-rose-600 hover:bg-rose-50 border border-rose-900/50 rounded"
+                    className="p-1 text-[9px] font-bold text-rose-600 hover:bg-rose-50 border border-rose-200 rounded"
                   >
                     Hủy đơn
                   </button>
@@ -588,7 +588,7 @@ export default function FulfillmentPage() {
               )}
 
               {selectedOrder.status.toUpperCase() === "SHIPPED" && (
-                <div className="bg-emerald-50 text-emerald-700 border border-emerald-200 border border-emerald-900/50 p-3.5 rounded-xl text-center text-emerald-600">
+                <div className="bg-emerald-50 text-emerald-700 border border-emerald-200 p-3.5 rounded-xl text-center">
                   <Truck className="w-8 h-8 mx-auto mb-1.5" />
                   <h4 className="text-xs font-bold">Đã Bàn Giao Vận Chuyển</h4>
                   <p className="text-[9px] mt-0.5 font-semibold text-emerald-600">
@@ -598,7 +598,7 @@ export default function FulfillmentPage() {
               )}
             </div>
           ) : (
-            <div className="h-full flex items-center justify-center p-8 border border-dashed border-gray-200 rounded-2xl bg-surface text-gray-500 text-xs text-center py-24">
+            <div className="h-full flex items-center justify-center px-8 border border-dashed border-gray-200 rounded-2xl bg-surface text-gray-500 text-xs text-center py-24">
               Vui lòng chọn một đơn hàng để xử lý picking / packing / shipping.
             </div>
           )}
