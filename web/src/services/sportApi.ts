@@ -8,17 +8,21 @@ import rawData from '../data.json';
 
 // Simulated latency to mimic a real-world server roundtrip (e.g. 300ms)
 const SIMULATED_LATENCY = 200;
-const PMI_API_URL = import.meta.env.VITE_PMI_API_URL || 'http://localhost:18100';
-const OMS_API_URL = import.meta.env.VITE_OMS_API_URL || 'http://localhost:18101';
+const PMI_API_URL = (import.meta as any).env?.VITE_PMI_API_URL || 'http://localhost:18100';
+const OMS_API_URL = (import.meta as any).env?.VITE_OMS_API_URL || 'http://localhost:18101';
 const NO_IMAGE_URL = 'https://via.placeholder.com/300?text=No+Image';
 
 type PmiVariant = {
+  id?: number;
+  product_id?: number;
   price?: number;
   stock?: number;
   tier_1_option?: string | null;
   tier_2_option?: string | null;
   sku_code?: string;
+  barcode?: string | null;
 };
+
 
 type PmiMedia = {
   image_url?: string;
@@ -38,6 +42,14 @@ type PmiAttributeValue = {
   attribute?: PmiAttribute | null;
 };
 
+type PmiTierVariation = {
+  id?: number;
+  product_id?: number;
+  tier_index: number;
+  name: string;
+  options: string[];
+};
+
 type PmiProduct = {
   id: string | number;
   name?: string;
@@ -48,7 +60,9 @@ type PmiProduct = {
   attribute_values?: PmiAttributeValue[];
   variants?: PmiVariant[];
   media?: PmiMedia[];
+  tier_variations?: PmiTierVariation[];
 };
+
 
 type CreateOrderItem = {
   sku_code: string;
@@ -203,7 +217,18 @@ function mapPmiProduct(pmiProduct: PmiProduct, categories: Category[]): Product 
     defaultSku,
     skuByColor,
     skuByVariant,
-    colors: colors.length > 0 ? colors : ['Tiêu chuẩn']
+    colors: colors.length > 0 ? colors : ['Tiêu chuẩn'],
+    tier_variations: pmiProduct.tier_variations || [],
+    variants: (pmiProduct.variants || []).map(v => ({
+      id: v.id,
+      product_id: Number(pmiProduct.id),
+      tier_1_option: v.tier_1_option || null,
+      tier_2_option: v.tier_2_option || null,
+      sku_code: v.sku_code || '',
+      price: Number(v.price || 0),
+      barcode: v.barcode || null,
+      stock: Number(v.stock || 0)
+    }))
   };
 }
 
@@ -315,8 +340,42 @@ export const sportApi = {
    * Fetch premium badminton string options & specs
    */
   async getStringOptions(): Promise<StringOption[]> {
+    await delay(SIMULATED_LATENCY);
+    try {
+      const products = await this.getProducts();
+      const stringProducts = products.filter(p => p.category === 'Cước');
+      if (stringProducts.length > 0) {
+        return stringProducts.map(p => {
+          const thicknessAttr = p.attributes?.find(a => a.code === 'thickness')?.value || '0.65mm';
+          let type: StringOption['type'] = 'Trợ lực / Âm thanh';
+          const stiffnessLower = p.specs.stiffness?.toLowerCase() || '';
+          if (stiffnessLower.includes('bền')) {
+            type = 'Độ bền';
+          } else if (stiffnessLower.includes('kiểm soát')) {
+            type = 'Kiểm soát';
+          }
+          
+          let brand: StringOption['brand'] = 'Yonex';
+          if (p.brand === 'Lining') brand = 'Lining';
+          else if (p.brand === 'Victor') brand = 'Victor';
+
+          return {
+            id: p.id,
+            name: p.name,
+            brand,
+            type,
+            thickness: thicknessAttr,
+            price: p.price,
+            colors: p.colors || []
+          };
+        });
+      }
+    } catch (e) {
+      console.warn('Failed to fetch dynamic string options from API:', e);
+    }
     return JSON.parse(JSON.stringify(rawData.stringOptions)) as StringOption[];
   },
+
 
   /**
    * Fetch global constants (shipping, default config, regions)

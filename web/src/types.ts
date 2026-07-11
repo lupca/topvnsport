@@ -57,10 +57,32 @@ export interface Product {
   defaultSku?: string;
   skuByColor?: Record<string, string>;
   skuByVariant?: Record<string, string>;
+  tier_variations?: TierVariation[];
+  variants?: ProductVariant[];
   badge?: 'NEW' | 'HOT' | 'SALE' | 'LIMITED' | 'PRO' | 'TOUR' | 'GAME' | 'PLAY';
   isWide?: boolean; // Specially for Shoes wide form
   colors?: string[];
 }
+
+export interface TierVariation {
+  id?: number;
+  product_id?: number;
+  tier_index: number;
+  name: string;
+  options: string[];
+}
+
+export interface ProductVariant {
+  id?: number;
+  product_id?: number;
+  tier_1_option: string | null;
+  tier_2_option: string | null;
+  sku_code: string;
+  price: number;
+  barcode?: string | null;
+  stock: number;
+}
+
 
 export interface Blog {
   id: string;

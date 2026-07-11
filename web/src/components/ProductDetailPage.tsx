@@ -25,6 +25,31 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
     product.colors && product.colors.length > 0 ? product.colors[0] : 'Tiêu chuẩn'
   );
 
+  // Dynamic variations states
+  const [selectedTier1, setSelectedTier1] = useState<string>(() => {
+    const t1 = product.tier_variations?.find(tv => tv.tier_index === 1);
+    return t1 && t1.options.length > 0 ? t1.options[0] : '';
+  });
+  const [selectedTier2, setSelectedTier2] = useState<string>(() => {
+    const t2 = product.tier_variations?.find(tv => tv.tier_index === 2);
+    return t2 && t2.options.length > 0 ? t2.options[0] : '';
+  });
+
+  // Stringing helper checks
+  const stringingVariation = product.tier_variations?.find(
+    (tv) => tv.name === 'Loại cước'
+  );
+  const hasStringingVariation = !!stringingVariation;
+  const stringingTierIndex = stringingVariation?.tier_index;
+
+  const isNoStringOption = (str: string) => {
+    const s = str.toLowerCase();
+    return s.includes('khung') || s.includes('không') || s.includes('no string') || s.includes('không đan');
+  };
+
+  const activeStringValue = stringingTierIndex === 1 ? selectedTier1 : selectedTier2;
+  const isDynamicStringingActive = hasStringingVariation && !isNoStringOption(activeStringValue);
+
   // Virtual Stringing Assistant States
   const [withStringing, setWithStringing] = useState(false);
   const [selectedString, setSelectedString] = useState<StringOption | null>(null);
@@ -34,16 +59,53 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
 
   useEffect(() => {
     setSelectedImage(product.image);
+    
+    // Reset tier variations
+    const t1 = product.tier_variations?.find(tv => tv.tier_index === 1);
+    setSelectedTier1(t1 && t1.options.length > 0 ? t1.options[0] : '');
+
+    const t2 = product.tier_variations?.find(tv => tv.tier_index === 2);
+    setSelectedTier2(t2 && t2.options.length > 0 ? t2.options[0] : '');
+
     // Reset stringing states
     setWithStringing(false);
     setSelectedString(null);
     setTension(10.5);
   }, [product]);
 
+  // Resolve current variant
+  const matchedVariant = product.variants?.find((v) => {
+    const t1Match = !product.tier_variations?.some(tv => tv.tier_index === 1) || v.tier_1_option === selectedTier1;
+    const t2Match = !product.tier_variations?.some(tv => tv.tier_index === 2) || v.tier_2_option === selectedTier2;
+    return t1Match && t2Match;
+  });
+
   // Pricing math
-  const displayBasePrice = product.salePrice || product.price;
-  const stringPrice = withStringing && selectedString ? selectedString.price : 0;
+  const displayBasePrice = matchedVariant ? matchedVariant.price : (product.salePrice || product.price);
+  const stringPrice = (!hasStringingVariation && withStringing && selectedString) ? selectedString.price : 0;
   const totalDisplayPrice = displayBasePrice + stringPrice;
+  const displayOriginalPrice = displayBasePrice * (product.price / (product.salePrice || product.price));
+
+  const resolvedColor = product.tier_variations && product.tier_variations.length > 0
+    ? selectedTier1
+    : selectedColor;
+
+  const resolvedWeight = product.tier_variations && product.tier_variations.length > 0
+    ? selectedTier2
+    : selectedWeight;
+
+  const resolvedStringChoice = hasStringingVariation
+    ? (isDynamicStringingActive ? {
+        id: activeStringValue,
+        name: activeStringValue,
+        brand: product.brand as any,
+        type: 'Trợ lực / Âm thanh' as any,
+        thickness: '0.65mm',
+        price: 0,
+        colors: []
+      } : null)
+    : (withStringing ? selectedString : null);
+
 
   // Custom tooltips & alerts for the Interactive Tension Slider
   const getTensionTooltip = (kg: number) => {
@@ -156,7 +218,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
                 </span>
                 {product.salePrice && (
                   <span className="text-sm text-gray-400 line-through mb-1.5 font-medium">
-                    {(product.price + stringPrice).toLocaleString('vi-VN')}đ
+                    {(displayOriginalPrice + stringPrice).toLocaleString('vi-VN')}đ
                   </span>
                 )}
               </div>
@@ -168,47 +230,74 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
             )}
           </div>
 
-          {/* Racket Attributes Selection (Weight/Color) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Weight select */}
-            {isRacket && (
-              <div>
-                <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">Trọng lượng / Cán cầm</label>
-                <div className="flex gap-2">
-                  {['4U/G5', '3U/G5', '5U/G5'].map(wt => (
-                    <button
-                      key={wt}
-                      onClick={() => setSelectedWeight(wt)}
-                      className={`text-xs px-3.5 py-2 rounded-lg border font-bold transition ${selectedWeight === wt ? 'bg-brand-primary border-brand-primary text-white shadow-md' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'}`}
-                    >
-                      {wt}
-                    </button>
-                  ))}
+          {/* Dynamic / Legacy Attributes Selection */}
+          {product.tier_variations && product.tier_variations.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {product.tier_variations
+                .filter(tv => tv.name !== 'Loại cước')
+                .map(tv => {
+                  const selectedVal = tv.tier_index === 1 ? selectedTier1 : selectedTier2;
+                  const setVal = tv.tier_index === 1 ? setSelectedTier1 : setSelectedTier2;
+                  return (
+                    <div key={tv.tier_index}>
+                      <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">{tv.name}</label>
+                      <div className="flex flex-wrap gap-2">
+                        {tv.options.map(opt => (
+                          <button
+                            key={opt}
+                            onClick={() => setVal(opt)}
+                            className={`text-xs px-3.5 py-2 rounded-lg border font-bold transition ${selectedVal === opt ? 'bg-brand-primary border-brand-primary text-white shadow-md' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'}`}
+                          >
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Weight select */}
+              {isRacket && (
+                <div>
+                  <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">Trọng lượng / Cán cầm</label>
+                  <div className="flex gap-2">
+                    {['4U/G5', '3U/G5', '5U/G5'].map(wt => (
+                      <button
+                        key={wt}
+                        onClick={() => setSelectedWeight(wt)}
+                        className={`text-xs px-3.5 py-2 rounded-lg border font-bold transition ${selectedWeight === wt ? 'bg-brand-primary border-brand-primary text-white shadow-md' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'}`}
+                      >
+                        {wt}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Colors Select */}
-            {product.colors && product.colors.length > 0 && (
-              <div>
-                <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">Phối màu / Phiên bản</label>
-                <div className="flex gap-2">
-                  {product.colors.map(col => (
-                    <button
-                      key={col}
-                      onClick={() => setSelectedColor(col)}
-                      className={`text-xs px-3.5 py-2 rounded-lg border font-bold transition ${selectedColor === col ? 'bg-brand-primary border-brand-primary text-white shadow-md' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'}`}
-                    >
-                      {col}
-                    </button>
-                  ))}
+              {/* Colors Select */}
+              {product.colors && product.colors.length > 0 && (
+                <div>
+                  <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">Phối màu / Phiên bản</label>
+                  <div className="flex gap-2">
+                    {product.colors.map(col => (
+                      <button
+                        key={col}
+                        onClick={() => setSelectedColor(col)}
+                        className={`text-xs px-3.5 py-2 rounded-lg border font-bold transition ${selectedColor === col ? 'bg-brand-primary border-brand-primary text-white shadow-md' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'}`}
+                      >
+                        {col}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
 
           {/* VIRTUAL STRINGING ASSISTANT (Add-on UI Logic) */}
-          {isRacket && (
+          {(hasStringingVariation || isRacket) && (
             <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-xs space-y-4">
               <div className="flex items-center justify-between border-b border-gray-100 pb-3">
                 <div className="flex items-center gap-2">
@@ -221,11 +310,27 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={withStringing}
+                    checked={hasStringingVariation ? isDynamicStringingActive : withStringing}
                     onChange={(e) => {
-                      setWithStringing(e.target.checked);
-                      if (e.target.checked && !selectedString) {
-                        setSelectedString(stringOptions[0]);
+                      const checked = e.target.checked;
+                      if (!hasStringingVariation) {
+                        setWithStringing(checked);
+                        if (checked && !selectedString) {
+                          setSelectedString(stringOptions[0]);
+                        }
+                        return;
+                      }
+
+                      // Find the first option that is NOT a "no string" option
+                      const validOpt = stringingVariation.options.find(opt => !isNoStringOption(opt)) || stringingVariation.options[0];
+                      // Find the first "no string" option
+                      const noStringOpt = stringingVariation.options.find(opt => isNoStringOption(opt)) || stringingVariation.options[0];
+                      const targetOpt = checked ? validOpt : noStringOpt;
+
+                      if (stringingTierIndex === 1) {
+                        setSelectedTier1(targetOpt);
+                      } else {
+                        setSelectedTier2(targetOpt);
                       }
                     }}
                     className="sr-only peer"
@@ -234,25 +339,84 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
                 </label>
               </div>
 
-              {withStringing && (
+              {(hasStringingVariation ? isDynamicStringingActive : withStringing) && (
                 <div className="space-y-4 animate-in slide-in-from-top-3 duration-200">
                   {/* Step 1: Select String */}
                   <div className="space-y-1.5">
                     <label className="block text-xs font-bold uppercase text-gray-500">Bước 1: Chọn mẫu dây cước</label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[160px] overflow-y-auto pr-1">
-                      {stringOptions.map((str) => (
-                        <div
-                          key={str.id}
-                          onClick={() => setSelectedString(str)}
-                          className={`p-2.5 rounded-lg border cursor-pointer transition flex justify-between items-center ${selectedString?.id === str.id ? 'bg-brand-light/50 border-brand-primary' : 'bg-white border-gray-100 hover:border-gray-200'}`}
-                        >
-                          <div>
-                            <p className="font-bold text-xs text-gray-900">{str.name}</p>
-                            <p className="text-[10px] text-gray-400 font-mono">{str.type} • Ø {str.thickness}</p>
+                      {hasStringingVariation ? (
+                        stringingVariation.options
+                          .filter(opt => !isNoStringOption(opt))
+                          .map((optName) => {
+                            const isSelected = activeStringValue === optName;
+                            
+                            // Find the no-string option and variant price difference
+                            const noStringOpt = stringingVariation.options.find(opt => isNoStringOption(opt));
+                            const noStringVariant = noStringOpt ? product.variants?.find(v => {
+                              const t1Match = stringingTierIndex !== 1 || v.tier_1_option === noStringOpt;
+                              const t2Match = stringingTierIndex !== 2 || v.tier_2_option === noStringOpt;
+                              const otherTierIndex = stringingTierIndex === 1 ? 2 : 1;
+                              const otherSelected = otherTierIndex === 1 ? selectedTier1 : selectedTier2;
+                              const otherMatch = !product.tier_variations?.some(tv => tv.tier_index === otherTierIndex) || 
+                                                  (otherTierIndex === 1 ? v.tier_1_option === otherSelected : v.tier_2_option === otherSelected);
+                              return t1Match && t2Match && otherMatch;
+                            }) : null;
+                            const noStringPrice = noStringVariant ? noStringVariant.price : (product.salePrice || product.price);
+
+                            const thisVariant = product.variants?.find(v => {
+                              const t1Match = stringingTierIndex !== 1 || v.tier_1_option === optName;
+                              const t2Match = stringingTierIndex !== 2 || v.tier_2_option === optName;
+                              const otherTierIndex = stringingTierIndex === 1 ? 2 : 1;
+                              const otherSelected = otherTierIndex === 1 ? selectedTier1 : selectedTier2;
+                              const otherMatch = !product.tier_variations?.some(tv => tv.tier_index === otherTierIndex) || 
+                                                  (otherTierIndex === 1 ? v.tier_1_option === otherSelected : v.tier_2_option === otherSelected);
+                              return t1Match && t2Match && otherMatch;
+                            });
+                            const diffPrice = thisVariant ? (thisVariant.price - noStringPrice) : 0;
+
+                            // Determine type and thickness by checking if we have a string option in stringOptions that matches name
+                            const matchingGlobal = stringOptions.find(o => o.name.toLowerCase().includes(optName.toLowerCase()) || optName.toLowerCase().includes(o.name.toLowerCase()));
+                            const type = matchingGlobal?.type || 'Trợ lực / Âm thanh';
+                            const thickness = matchingGlobal?.thickness || '0.65mm';
+
+                            return (
+                              <div
+                                key={optName}
+                                onClick={() => {
+                                  if (stringingTierIndex === 1) {
+                                    setSelectedTier1(optName);
+                                  } else {
+                                    setSelectedTier2(optName);
+                                  }
+                                }}
+                                className={`p-2.5 rounded-lg border cursor-pointer transition flex justify-between items-center ${isSelected ? 'bg-brand-light/50 border-brand-primary' : 'bg-white border-gray-100 hover:border-gray-200'}`}
+                              >
+                                <div>
+                                  <p className="font-bold text-xs text-gray-900">{optName}</p>
+                                  <p className="text-[10px] text-gray-400 font-mono">{type} • Ø {thickness}</p>
+                                </div>
+                                <span className="text-xs font-extrabold text-brand-primary">
+                                  {diffPrice > 0 ? `+${diffPrice.toLocaleString('vi-VN')}đ` : 'Miễn phí'}
+                                </span>
+                              </div>
+                            );
+                          })
+                      ) : (
+                        stringOptions.map((str) => (
+                          <div
+                            key={str.id}
+                            onClick={() => setSelectedString(str)}
+                            className={`p-2.5 rounded-lg border cursor-pointer transition flex justify-between items-center ${selectedString?.id === str.id ? 'bg-brand-light/50 border-brand-primary' : 'bg-white border-gray-100 hover:border-gray-200'}`}
+                          >
+                            <div>
+                              <p className="font-bold text-xs text-gray-900">{str.name}</p>
+                              <p className="text-[10px] text-gray-400 font-mono">{str.type} • Ø {str.thickness}</p>
+                            </div>
+                            <span className="text-xs font-extrabold text-brand-primary">+{str.price.toLocaleString('vi-VN')}đ</span>
                           </div>
-                          <span className="text-xs font-extrabold text-brand-primary">+{str.price.toLocaleString('vi-VN')}đ</span>
-                        </div>
-                      ))}
+                        ))
+                      )}
                     </div>
                   </div>
 
@@ -298,7 +462,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
           <div className="flex flex-col sm:flex-row gap-3 pt-4">
             <button
               onClick={() => {
-                onAddToCartWithSpecs(product, selectedWeight, selectedColor, withStringing ? selectedString : null, tension);
+                onAddToCartWithSpecs(product, resolvedWeight, resolvedColor, resolvedStringChoice, tension);
               }}
               className="flex-1 btn-primary rounded-sm px-6 py-3 uppercase tracking-wider text-xs flex items-center justify-center gap-2 shadow-sm"
             >
@@ -306,7 +470,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
             </button>
 
             <button
-              onClick={() => onBookTestAtStore(product.id)}
+              onClick={() => navigate('/stores')}
               className="btn-outline rounded-sm py-3.5 px-6 text-xs uppercase tracking-wider flex items-center justify-center gap-2"
             >
               <Phone className="w-4.5 h-4.5" /> Trải nghiệm tại cửa hàng
@@ -565,12 +729,12 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
           <img src={product.image} alt={product.name} className="w-10 h-10 object-contain rounded-lg bg-gray-50 border border-gray-100 shrink-0" referrerPolicy="no-referrer" />
           <div className="min-w-0">
             <h4 className="font-bold text-xs text-gray-900 truncate">{product.name}</h4>
-            <p className="text-brand-primary font-bold text-xs font-mono">{(product.salePrice || product.price).toLocaleString('vi-VN')}đ</p>
+            <p className="text-brand-primary font-bold text-xs font-mono">{totalDisplayPrice.toLocaleString('vi-VN')}đ</p>
           </div>
         </div>
         <button
           onClick={async () => {
-            onAddToCartWithSpecs(product, selectedWeight, selectedColor, withStringing ? selectedString : null, tension);
+            onAddToCartWithSpecs(product, resolvedWeight, resolvedColor, resolvedStringChoice, tension);
           }}
           className="btn-primary text-xs px-4 py-2.5 rounded-sm flex items-center gap-1.5 shrink-0 shadow-sm"
         >
