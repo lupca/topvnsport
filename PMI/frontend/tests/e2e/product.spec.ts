@@ -155,5 +155,11 @@ test("edit existing product", async ({ page }) => {
   await page.getByRole("button", { name: "Áp dụng" }).click();
   await finalFilterResponsePromise;
 
-  await expect(page.getByText(updatedName)).toBeVisible();
+  try {
+    await expect(page.getByText(updatedName)).toBeVisible();
+  } catch (error) {
+    const tableText = await page.locator("table").innerText().catch(() => "no table");
+    console.log("DEBUG TABLE CONTENT:\n", tableText);
+    throw error;
+  }
 });
