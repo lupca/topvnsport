@@ -16,7 +16,7 @@ import ScrollToTop from './components/ScrollToTop';
 import StoreLocator from './components/StoreLocator';
 import { fetchAppData } from './features/appData/appDataSlice';
 import CatalogPage from './features/catalog/CatalogPage';
-import { setSelectedCategory } from './features/catalog/catalogSlice';
+import { setSearchQuery, setSelectedCategory } from './features/catalog/catalogSlice';
 import {
   addCartItem,
   buildDefaultCartItem,
@@ -50,7 +50,9 @@ export default function App() {
     if (location.pathname !== '/catalog') return;
 
     const categoryParam = searchParams.get('category');
+    const searchParam = searchParams.get('search');
     dispatch(setSelectedCategory(categoryParam ? decodeURIComponent(categoryParam) : 'Tất cả'));
+    dispatch(setSearchQuery(searchParam ? decodeURIComponent(searchParam) : ''));
   }, [dispatch, location.pathname, searchParams]);
 
   const handleAddToCart = (product: (typeof products)[number], e?: MouseEvent) => {

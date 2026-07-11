@@ -6,6 +6,24 @@ import { Category, Product } from '../types';
 import { getTopLevelProductCategories } from '../utils/categories';
 import { getProductPath } from '../utils/productSlug';
 
+export const normalizeSearchText = (value: string) =>
+  value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+
+export const buildSearchIndex = (product: Product) =>
+  normalizeSearchText([
+    product.name,
+    product.brand,
+    product.series || '',
+    product.category,
+    product.description || '',
+    ...(product.features || [])
+  ].join(' '));
+
 interface HeaderProps {
   cartCount: number;
   openCart: () => void;
@@ -36,12 +54,14 @@ export default function Header({ cartCount, openCart, products, categories }: He
 
   // AJAX search emulation
   useEffect(() => {
-    if (searchQuery.trim().length >= 2) {
-      const filtered = products.filter(p =>
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (p.series && p.series.toLowerCase().includes(searchQuery.toLowerCase()))
-      );
+    const normalizedQuery = normalizeSearchText(searchQuery);
+
+    if (normalizedQuery.length >= 2) {
+      const tokens = normalizedQuery.split(' ').filter(Boolean);
+      const filtered = products.filter(product => {
+        const searchIndex = buildSearchIndex(product);
+        return tokens.every(token => searchIndex.includes(token));
+      });
       setSearchResults(filtered.slice(0, 5));
       setShowSearchDropdown(true);
     } else {
@@ -57,8 +77,7 @@ export default function Header({ cartCount, openCart, products, categories }: He
   };
 
   const topLevelCategories = getTopLevelProductCategories(categories);
-
-  const trendKeywords = ['Yonex Astrox', 'Giày Lining', 'Balo cầu lông', 'Cước đan vợt'];
+  const trendKeywords = topLevelCategories.slice(0, 4).map(category => category.name);
 
   return (
     <header className="w-full bg-white border-b border-gray-100 sticky top-0 z-50 shadow-xs" id="topvnsport-header">
@@ -157,7 +176,7 @@ export default function Header({ cartCount, openCart, products, categories }: He
                 key={idx}
                 onClick={() => {
                   setSearchQuery(kw);
-                  navigate(`/catalog?search={kw }`);
+                  navigate(`/catalog?category=${encodeURIComponent(kw)}`);
                 }}
                 className="hover:text-brand-primary hover:underline transition"
               >
@@ -198,7 +217,7 @@ export default function Header({ cartCount, openCart, products, categories }: He
               )}
               <div 
                 onClick={() => {
-                  navigate(`/catalog?search={searchQuery }`);
+                    navigate(`/catalog?search=${encodeURIComponent(searchQuery)}`);
                   setShowSearchDropdown(false);
                 }} 
                 className="p-2.5 bg-brand-light text-center text-xs font-semibold text-brand-primary hover:bg-brand-light cursor-pointer transition"
