@@ -3,6 +3,7 @@ import { Product, StringOption } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Star, ShoppingCart, ShieldCheck, Heart, Sparkles, Check, Phone, ArrowLeft, Trophy, Calendar, MapPin, Gauge } from 'lucide-react';
+import ProductMediaGallery from './ProductMediaGallery';
 
 interface ProductDetailPageProps {
   product: Product;
@@ -15,7 +16,6 @@ interface ProductDetailPageProps {
 export default function ProductDetailPage({ product, stringOptions, onAddToCartWithSpecs }: Omit<ProductDetailPageProps, 'onBackToCatalog'|'onBookTestAtStore'>) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'details' | 'tech' | 'reviews'>('details');
-  const [selectedImage, setSelectedImage] = useState(product.image);
   
   // Custom Variants Configuration
   const [selectedWeight, setSelectedWeight] = useState(
@@ -58,8 +58,6 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
   const technicalAttributes = product.attributes || [];
 
   useEffect(() => {
-    setSelectedImage(product.image);
-    
     // Reset tier variations
     const t1 = product.tier_variations?.find(tv => tv.tier_index === 1);
     setSelectedTier1(t1 && t1.options.length > 0 ? t1.options[0] : '');
@@ -129,35 +127,11 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
         
         {/* Left Column: Media Gallery (5 cols) */}
         <div className="lg:col-span-5 space-y-4">
-          <div className="bg-gray-50 rounded-2xl border border-gray-100 p-6 flex items-center justify-center relative aspect-square group overflow-hidden shadow-xs">
-            <img
-              src={selectedImage}
-              alt={product.name}
-              className="max-h-full max-w-full object-contain transition duration-500 hover:scale-105"
-              referrerPolicy="no-referrer"
-            />
-          </div>
-          
-          {/* Gallery Thumbnails */}
-          {product.gallery && product.gallery.length > 0 && (
-            <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-hide">
-              <button
-                onClick={() => setSelectedImage(product.image)}
-                className={`w-16 h-16 p-1 bg-white rounded-lg border flex items-center justify-center overflow-hidden shrink-0 transition-all ${selectedImage === product.image ? 'border-brand-primary ring-2 ring-blue-100' : 'border-gray-200 hover:border-gray-300'}`}
-              >
-                <img src={product.image} alt={product.name} className="max-h-full object-contain" referrerPolicy="no-referrer" />
-              </button>
-              {product.gallery.map((img, i) => (
-                <button
-                  key={i}
-                  onClick={() => setSelectedImage(img)}
-                  className={`w-16 h-16 p-1 bg-white rounded-lg border flex items-center justify-center overflow-hidden shrink-0 transition-all ${selectedImage === img ? 'border-brand-primary ring-2 ring-blue-100' : 'border-gray-200 hover:border-gray-300'}`}
-                >
-                  <img src={img} alt={`${product.name} gallery ${i}`} className="max-h-full object-contain" referrerPolicy="no-referrer" />
-                </button>
-              ))}
-            </div>
-          )}
+          <ProductMediaGallery
+            productName={product.name}
+            image={product.image}
+            gallery={product.gallery}
+          />
 
           {/* Core Trust Seals Panel */}
           <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 grid grid-cols-2 gap-3 text-xs text-gray-600">
@@ -741,6 +715,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
           <ShoppingCart className="w-4 h-4" /> Mua ngay
         </button>
       </div>
+
     </div>
   );
 }
