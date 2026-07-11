@@ -97,7 +97,7 @@ export default function ProductMediaGallery({ productName, image, gallery }: Pro
           referrerPolicy="no-referrer"
         />
         <div className="pointer-events-none absolute left-3 bottom-3 rounded-full bg-black/65 px-2.5 py-1 text-[10px] font-semibold text-white">
-          Di chuot de zoom • Cham de phong to
+          Di chuột để zoom • Chạm để phóng to
         </div>
       </div>
 
@@ -107,7 +107,7 @@ export default function ProductMediaGallery({ productName, image, gallery }: Pro
             type="button"
             onClick={() => scrollThumbRail('prev')}
             className="absolute left-2 top-1/2 z-20 -translate-y-1/2 rounded-full border border-gray-200 bg-white/95 p-1.5 text-gray-600 shadow-sm transition hover:text-brand-primary"
-            aria-label="Cuon danh sach anh sang trai"
+            aria-label="Cuộn danh sách ảnh sang trái"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
@@ -115,7 +115,7 @@ export default function ProductMediaGallery({ productName, image, gallery }: Pro
             type="button"
             onClick={() => scrollThumbRail('next')}
             className="absolute right-2 top-1/2 z-20 -translate-y-1/2 rounded-full border border-gray-200 bg-white/95 p-1.5 text-gray-600 shadow-sm transition hover:text-brand-primary"
-            aria-label="Cuon danh sach anh sang phai"
+            aria-label="Cuộn danh sách ảnh sang phải"
           >
             <ChevronRight className="h-4 w-4" />
           </button>
@@ -130,7 +130,7 @@ export default function ProductMediaGallery({ productName, image, gallery }: Pro
                 type="button"
                 onClick={() => handleSelectImage(img, i)}
                 className={`w-16 h-16 p-1 bg-white rounded-lg border flex items-center justify-center overflow-hidden shrink-0 snap-start transition-all ${selectedImage === img ? 'border-brand-primary ring-2 ring-blue-100' : 'border-gray-200 hover:border-gray-300'}`}
-                aria-label={`Xem anh ${i + 1} cua ${productName}`}
+                aria-label={`Xem ảnh ${i + 1} của ${productName}`}
                 aria-pressed={selectedImage === img}
               >
                 <img src={img} alt={`${productName} gallery ${i + 1}`} className="max-h-full object-contain" referrerPolicy="no-referrer" />
@@ -145,7 +145,7 @@ export default function ProductMediaGallery({ productName, image, gallery }: Pro
           className="fixed inset-0 z-[60] bg-black/85 p-4 md:p-8"
           role="dialog"
           aria-modal="true"
-          aria-label="Xem anh san pham chi tiet"
+          aria-label="Xem ảnh sản phẩm chi tiết"
           onClick={() => setIsZoomModalOpen(false)}
         >
           <div className="relative flex h-full w-full items-center justify-center">
@@ -157,7 +157,7 @@ export default function ProductMediaGallery({ productName, image, gallery }: Pro
                   decreaseModalZoom();
                 }}
                 className="rounded-full bg-white/90 p-2 text-gray-700 transition hover:bg-white"
-                aria-label="Thu nho anh"
+                aria-label="Thu nhỏ ảnh"
               >
                 <ZoomOut className="h-4 w-4" />
               </button>
@@ -168,7 +168,7 @@ export default function ProductMediaGallery({ productName, image, gallery }: Pro
                   increaseModalZoom();
                 }}
                 className="rounded-full bg-white/90 p-2 text-gray-700 transition hover:bg-white"
-                aria-label="Phong to anh"
+                aria-label="Phóng to ảnh"
               >
                 <ZoomIn className="h-4 w-4" />
               </button>
@@ -179,7 +179,7 @@ export default function ProductMediaGallery({ productName, image, gallery }: Pro
                   setIsZoomModalOpen(false);
                 }}
                 className="rounded-full bg-white/90 p-2 text-gray-700 transition hover:bg-white"
-                aria-label="Dong anh chi tiet"
+                aria-label="Đóng ảnh chi tiết"
               >
                 <X className="h-4 w-4" />
               </button>
