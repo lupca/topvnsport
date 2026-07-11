@@ -212,7 +212,7 @@ export default function ReceiveDetailPage() {
         <button
           onClick={() => setActiveTab("scan")}
           className={`py-2 rounded-lg transition-all ${
-            activeTab === "scan" ? "bg-indigo-650 bg-indigo-600 text-white shadow" : "text-gray-500 hover:text-gray-800"
+            activeTab === "scan" ? "bg-indigo-600 text-white shadow" : "text-gray-500 hover:text-gray-800"
           }`}
         >
           1. Quét Nhận Hàng
@@ -220,7 +220,7 @@ export default function ReceiveDetailPage() {
         <button
           onClick={() => setActiveTab("putaway")}
           className={`py-2 rounded-lg transition-all ${
-            activeTab === "putaway" ? "bg-indigo-650 bg-indigo-600 text-white shadow" : "text-gray-500 hover:text-gray-800"
+            activeTab === "putaway" ? "bg-indigo-600 text-white shadow" : "text-gray-500 hover:text-gray-800"
           }`}
         >
           2. Cất Hàng (Put-away)
@@ -271,8 +271,8 @@ export default function ReceiveDetailPage() {
             <div
               className={`p-3 rounded-xl text-xs font-bold flex items-center gap-2 border ${
                 scanMessage.type === "success"
-                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200 text-emerald-600 border-emerald-900/50"
-                  : "bg-rose-50 text-rose-700 border border-rose-200 text-rose-600 border-rose-900/50"
+                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                  : "bg-rose-50 text-rose-700 border border-rose-200"
               }`}
             >
               {scanMessage.type === "success" ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
@@ -339,8 +339,8 @@ export default function ReceiveDetailPage() {
             <div
               className={`p-3 rounded-xl text-xs font-bold flex items-center gap-2 border ${
                 putAwayMessage.type === "success"
-                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200 text-emerald-600 border-emerald-900/50"
-                  : "bg-rose-50 text-rose-700 border border-rose-200 text-rose-600 border-rose-900/50"
+                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                  : "bg-rose-50 text-rose-700 border border-rose-200"
               }`}
             >
               {putAwayMessage.type === "success" ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}

@@ -89,8 +89,8 @@ export default function PackListPage() {
                 <span
                   className={`px-2 py-0.5 rounded text-[8px] font-extrabold tracking-wide uppercase ${
                     o.status.toUpperCase() === "PACKING"
-                      ? "bg-amber-50 text-amber-700 border border-amber-200 text-amber-600 border border-amber-900/50"
-                      : "bg-emerald-50 text-emerald-700 border border-emerald-200 text-emerald-600 border border-emerald-900/50"
+                      ? "bg-amber-50 text-amber-700 border border-amber-200"
+                      : "bg-emerald-50 text-emerald-700 border border-emerald-200"
                   }`}
                 >
                   {o.status}

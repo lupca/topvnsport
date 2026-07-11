@@ -115,10 +115,10 @@ export default function TransactionsPage() {
       label: "Loại giao dịch",
       render: (tx: StockTransaction) => (
         <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-          tx.transaction_type === "INBOUND" ? "bg-emerald-50 text-emerald-700 border border-emerald-200 text-emerald-600 border border-emerald-900/50" :
-          tx.transaction_type === "OUTBOUND" ? "bg-rose-50 text-rose-700 border border-rose-200 text-rose-600 border border-rose-900/50" :
-          tx.transaction_type === "ADJUST" ? "bg-amber-50 text-amber-700 border border-amber-200 text-amber-600 border border-amber-900/50" :
-          tx.transaction_type === "TRANSFER" ? "bg-blue-50 text-blue-700 border border-blue-200 text-blue-600 border border-blue-900/50" :
+          tx.transaction_type === "INBOUND" ? "bg-emerald-50 text-emerald-700 border border-emerald-200" :
+          tx.transaction_type === "OUTBOUND" ? "bg-rose-50 text-rose-700 border border-rose-200" :
+          tx.transaction_type === "ADJUST" ? "bg-amber-50 text-amber-700 border border-amber-200" :
+          tx.transaction_type === "TRANSFER" ? "bg-blue-50 text-blue-700 border border-blue-200" :
           "bg-gray-100 text-gray-700"
         }`}>
           {tx.transaction_type}
@@ -225,7 +225,7 @@ export default function TransactionsPage() {
       </div>
 
       {error && (
-        <div className="p-4 bg-rose-50 text-rose-700 border border-rose-200 border border-rose-900/50 rounded-2xl text-xs font-semibold text-rose-600">
+        <div className="p-4 bg-rose-50 text-rose-700 border border-rose-200 rounded-2xl text-xs font-semibold">
           {error}
         </div>
       )}

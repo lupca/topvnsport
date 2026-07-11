@@ -134,7 +134,7 @@ export default function StockCheckPage() {
         </div>
       )}
       {error && (
-        <div className="p-3 bg-rose-50 text-rose-700 border border-rose-200 border border-rose-900/50 rounded-xl text-xs font-bold text-rose-600 flex items-center gap-2">
+        <div className="p-3 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold flex items-center gap-2">
           <AlertCircle className="w-4 h-4" />
           <span>{error}</span>
         </div>

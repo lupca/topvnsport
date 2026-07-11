@@ -420,7 +420,7 @@ export default function InventoryPage() {
       </div>
 
       {error && (
-        <div className="p-4 bg-rose-50 text-rose-700 border border-rose-200 border border-rose-900/50 rounded-2xl text-xs font-semibold text-rose-600">
+        <div className="p-4 bg-rose-50 text-rose-700 border border-rose-200 rounded-2xl text-xs font-semibold">
           {error}
         </div>
       )}

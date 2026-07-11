@@ -210,7 +210,7 @@ export default function DashboardPage() {
             <span className="text-[11px] font-extrabold uppercase tracking-widest text-indigo-100">
               Tổng số lượng tồn kho (On Hand)
             </span>
-            <div className="w-8 h-8 rounded-lg bg-slate-900/10 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-indigo-600/10 flex items-center justify-center">
               <Package className="w-4 h-4 text-indigo-100" />
             </div>
           </div>

@@ -247,7 +247,7 @@ export default function ProductList({
             <span className="text-xs bg-gray-100 text-gray-700 px-2.5 py-1 rounded-full font-medium">
               Hạn mức đăng bán: 5000
             </span>
-            <HelpCircle className="h-4 w-4 text-slate-400 cursor-pointer" />
+            <HelpCircle className="h-4 w-4 text-gray-400 cursor-pointer" />
           </div>
         </div>
         <button 
@@ -276,7 +276,7 @@ export default function ProductList({
           {/* Category Select */}
           <div>
             <select
-              className="w-full px-4 py-2.5 text-sm rounded-xl border border-gray-305 border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white transition-all text-gray-700"
+              className="w-full px-4 py-2.5 text-sm rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white transition-all text-gray-700"
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
             >
@@ -290,7 +290,7 @@ export default function ProductList({
           {/* Product Type Select */}
           <div>
             <select
-              className="w-full px-4 py-2.5 text-sm rounded-xl border border-gray-305 border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white transition-all text-gray-700"
+              className="w-full px-4 py-2.5 text-sm rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white transition-all text-gray-700"
               value={productType}
               onChange={(e) => setProductType(e.target.value)}
             >
@@ -365,7 +365,7 @@ export default function ProductList({
             onClick={() => { setSortBy("id"); setSortOrder("desc"); }}
             className={`px-3 py-1.5 rounded-lg transition-colors ${
               sortBy === "id" 
-                ? "bg-white text-primary-600 shadow-sm border border-gray-250 border-gray-200" 
+                ? "bg-white text-primary-600 shadow-sm border border-gray-200" 
                 : "hover:bg-gray-100"
             }`}
           >
@@ -376,7 +376,7 @@ export default function ProductList({
             onClick={() => { setSortBy("name"); toggleSort("name"); }}
             className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 ${
               sortBy === "name" 
-                ? "bg-white text-primary-600 shadow-sm border border-gray-250 border-gray-200" 
+                ? "bg-white text-primary-600 shadow-sm border border-gray-200" 
                 : "hover:bg-gray-100"
             }`}
           >
@@ -388,7 +388,7 @@ export default function ProductList({
             onClick={() => { setSortBy("price"); toggleSort("price"); }}
             className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 ${
               sortBy === "price" 
-                ? "bg-white text-primary-600 shadow-sm border border-gray-250 border-gray-200" 
+                ? "bg-white text-primary-600 shadow-sm border border-gray-200" 
                 : "hover:bg-gray-100"
             }`}
           >
@@ -400,7 +400,7 @@ export default function ProductList({
             onClick={() => { setSortBy("stock"); toggleSort("stock"); }}
             className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 ${
               sortBy === "stock" 
-                ? "bg-white text-primary-600 shadow-sm border border-gray-250 border-gray-200" 
+                ? "bg-white text-primary-600 shadow-sm border border-gray-200" 
                 : "hover:bg-gray-100"
             }`}
           >
@@ -414,7 +414,7 @@ export default function ProductList({
       <div className="bg-surface rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-left text-sm text-gray-700">
-            <thead className="bg-gray-100 border-b border-gray-200 text-xs font-bold uppercase text-gray-605 text-gray-600">
+            <thead className="bg-gray-100 border-b border-gray-200 text-xs font-bold uppercase text-gray-600">
               <tr>
                 <th className="px-6 py-4 w-12"><input type="checkbox" className="rounded text-primary-500" /></th>
                 <th className="px-6 py-4 cursor-pointer hover:bg-gray-200" onClick={() => toggleSort("name")}>
@@ -597,7 +597,7 @@ export default function ProductList({
                       {/* Expanded Sub-table */}
                       {isExpanded && hasVariants && (
                         <tr>
-                          <td colSpan={7} className="p-0 bg-gray-50/55 bg-gray-50">
+                          <td colSpan={7} className="p-0 bg-gray-50">
                             <div className="px-16 py-4 border-t border-b border-gray-200">
                               <table className="w-full text-left text-xs text-gray-500 border-collapse bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                                 <thead className="bg-gray-50 text-[10px] uppercase font-bold text-gray-600 border-b border-gray-200">

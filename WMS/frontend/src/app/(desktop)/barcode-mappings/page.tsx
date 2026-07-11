@@ -234,7 +234,7 @@ export default function BarcodeMappingsPage() {
         </div>
         <button
           onClick={() => setIsScanOpen(true)}
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-650 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md transition-colors"
+          className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md transition-colors"
         >
           <Scan className="w-4 h-4" />
           <span>Quét Barcode (Camera)</span>
@@ -242,7 +242,7 @@ export default function BarcodeMappingsPage() {
       </div>
 
       {error && (
-        <div className="p-4 bg-rose-50 text-rose-700 border border-rose-200 border border-rose-900/50 rounded-2xl text-xs font-semibold text-rose-600">
+        <div className="p-4 bg-rose-50 text-rose-700 border border-rose-200 rounded-2xl text-xs font-semibold">
           {error}
         </div>
       )}

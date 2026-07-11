@@ -561,7 +561,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                     <input 
                       type="text" 
                       placeholder={tierIndex === 0 ? "Ví dụ: Màu sắc" : "Ví dụ: Kích cỡ"}
-                      className="w-full bg-white px-4 py-2 rounded-xl border border-gray-305 border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-gray-900"
+                      className="w-full bg-white px-4 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-gray-900"
                       {...register(`tier_variations.${tierIndex}.name` as const)}
                     />
                     {errors.tier_variations?.[tierIndex]?.name && (
@@ -575,7 +575,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                     <input 
                       type="text" 
                       placeholder={tierIndex === 0 ? "Đỏ, Xanh, Vàng" : "M, L, XL"}
-                      className="w-full bg-white px-4 py-2 rounded-xl border border-gray-305 border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-gray-900"
+                      className="w-full bg-white px-4 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-gray-900"
                       onChange={(e) => {
                         const val = e.target.value;
                         const opts = val.split(",").map(s => s.trim()).filter(s => s !== "");
@@ -712,7 +712,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                     <td className="px-6 py-3">
                       <input 
                         type="text" 
-                        className="px-3 py-1.5 border border-gray-305 border-gray-300 rounded-lg w-full focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 text-gray-900 bg-white"
+                        className="px-3 py-1.5 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 text-gray-900 bg-white"
                         {...register(`variants.${idx}.sku_code` as const)}
                       />
                       {errors.variants?.[idx]?.sku_code && (
@@ -724,7 +724,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                         <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs">₫</span>
                         <input 
                           type="number" 
-                          className="pl-6 pr-3 py-1.5 border border-gray-305 border-gray-300 rounded-lg w-32 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 text-gray-900 bg-white"
+                          className="pl-6 pr-3 py-1.5 border border-gray-300 rounded-lg w-32 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 text-gray-900 bg-white"
                           {...register(`variants.${idx}.price` as const)}
                         />
                       </div>
@@ -735,7 +735,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                     <td className="px-6 py-3">
                       <input 
                         type="number" 
-                        className="px-3 py-1.5 border border-gray-305 border-gray-300 rounded-lg w-24 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 text-gray-900 bg-white"
+                        className="px-3 py-1.5 border border-gray-300 rounded-lg w-24 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 text-gray-900 bg-white"
                         {...register(`variants.${idx}.stock` as const)}
                       />
                       {errors.variants?.[idx]?.stock && (

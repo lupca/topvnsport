@@ -112,8 +112,8 @@ export default function PickListPage() {
                 <span
                   className={`px-2 py-0.5 rounded text-[8px] font-extrabold tracking-wide uppercase ${
                     o.status.toUpperCase() === "PICKING"
-                      ? "bg-amber-50 text-amber-700 border border-amber-200 text-amber-600 border border-amber-900/50 animate-pulse"
-                      : "bg-blue-50 text-blue-700 border border-blue-200 text-blue-600 border border-blue-900/50"
+                      ? "bg-amber-50 text-amber-700 border border-amber-200 animate-pulse"
+                      : "bg-blue-50 text-blue-700 border border-blue-200"
                   }`}
                 >
                   {o.status}
@@ -128,7 +128,7 @@ export default function PickListPage() {
               {o.status.toUpperCase() === "PENDING" ? (
                 <button
                   onClick={() => handleStartPick(o.id)}
-                  className="w-full py-2 bg-indigo-650 hover:bg-indigo-700 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm transition-colors"
+                  className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm transition-colors"
                 >
                   Bắt đầu nhặt hàng
                 </button>

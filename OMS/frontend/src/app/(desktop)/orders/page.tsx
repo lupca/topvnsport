@@ -1286,7 +1286,7 @@ function OrdersPageContent() {
                           setSelectedOrderId(currentOrder.id);
                           updateURL("edit", currentOrder.id);
                         }}
-                        className="w-full py-2 bg-indigo-50 hover:bg-indigo-105 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5"
+                        className="w-full py-2 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5"
                       >
                         <Edit className="w-4 h-4" />
                         <span>Chỉnh sửa đơn hàng</span>
@@ -1306,7 +1306,7 @@ function OrdersPageContent() {
                     {currentOrder.status === "DRAFT" && (
                       <button
                         onClick={() => handleDeleteOrder(currentOrder.id)}
-                        className="w-full py-2 bg-white border border-gray-200 text-rose-600 hover:text-rose-750 hover:text-rose-700 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5"
+                        className="w-full py-2 bg-white border border-gray-200 text-rose-600 hover:text-rose-700 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5"
                       >
                         <Trash2 className="w-4 h-4" />
                         <span>Xóa vĩnh viễn đơn nháp</span>
@@ -1351,7 +1351,7 @@ function OrdersPageContent() {
                 <button
                   type="button"
                   onClick={() => setIsNewCustomerModalOpen(true)}
-                  className="px-3.5 bg-indigo-650 text-white font-bold text-xs rounded-xl hover:bg-indigo-700"
+                  className="px-3.5 bg-indigo-600 text-white font-bold text-xs rounded-xl hover:bg-indigo-700"
                 >
                   Tạo mới KH
                 </button>
@@ -1456,7 +1456,7 @@ function OrdersPageContent() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-indigo-650 text-white rounded-xl font-bold hover:bg-indigo-700"
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700"
                 >
                   Lưu & Chọn
                 </button>
@@ -1495,7 +1495,7 @@ function OrdersPageContent() {
                 </div>
                 <button
                   type="submit"
-                  className="px-4 bg-indigo-650 text-white font-bold text-xs rounded-xl hover:bg-indigo-700"
+                  className="px-4 bg-indigo-600 text-white font-bold text-xs rounded-xl hover:bg-indigo-700"
                 >
                   Tìm kiếm
                 </button>
@@ -1568,7 +1568,7 @@ function OrdersPageContent() {
 
 export default function OrdersPage() {
   return (
-    <React.Suspense fallback={<div className="p-8 text-xs text-gray-450 font-semibold">Đang đồng bộ tuyến đường...</div>}>
+    <React.Suspense fallback={<div className="p-8 text-xs text-gray-500 font-semibold">Đang đồng bộ tuyến đường...</div>}>
       <OrdersPageContent />
     </React.Suspense>
   );

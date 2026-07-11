@@ -389,14 +389,14 @@ export default function InboundPage() {
             ) : shipments.length === 0 ? (
               <div className="text-xs text-gray-500 text-center py-8">Chưa có lô hàng nhập kho nào.</div>
             ) : (
-              <div className="divide-y divide-slate-800 max-h-[600px] overflow-y-auto pr-1">
+              <div className="divide-y divide-gray-200 max-h-[600px] overflow-y-auto pr-1">
                 {shipments.map((s) => (
                   <div
                     key={s.id}
                     onClick={() => handleSelectShipment(s)}
                     className={`p-3.5 rounded-xl cursor-pointer transition-all flex flex-col gap-2 ${
                       selectedShipment?.id === s.id
-                        ? "bg-indigo-950/30 border border-indigo-900/50 shadow-sm"
+                        ? "bg-indigo-50 border border-indigo-200 shadow-sm"
                         : "hover:bg-gray-50 border border-transparent"
                     }`}
                   >
@@ -406,9 +406,9 @@ export default function InboundPage() {
                         <p className="text-[10px] text-gray-500 font-semibold mt-0.5">Nhà cung cấp: {s.supplier_name}</p>
                       </div>
                       <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase ${
-                        s.status === "COMPLETED" ? "bg-emerald-50 text-emerald-700 border border-emerald-200 text-emerald-405 text-emerald-600 border border-emerald-900/50" :
-                        s.status === "receiving" ? "bg-amber-50 text-amber-700 border border-amber-200 text-amber-600 border border-amber-900/50 animate-pulse" :
-                        "bg-blue-50 text-blue-700 border border-blue-200 text-blue-600 border border-blue-900/50"
+                        s.status === "COMPLETED" ? "bg-emerald-50 text-emerald-700 border border-emerald-200" :
+                        s.status === "receiving" ? "bg-amber-50 text-amber-700 border border-amber-200 animate-pulse" :
+                        "bg-blue-50 text-blue-700 border border-blue-200"
                       }`}>
                         {s.status}
                       </span>
@@ -798,7 +798,7 @@ export default function InboundPage() {
                         <button
                           type="button"
                           onClick={() => handleRemoveItemRow(idx)}
-                          className="p-2 border border-rose-900/50 hover:bg-rose-950 text-rose-600 rounded-lg"
+                          className="p-2 border border-rose-900/50 hover:bg-rose-50 text-rose-600 rounded-lg"
                         >
                           <X className="w-4 h-4" />
                         </button>

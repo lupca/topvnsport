@@ -346,14 +346,14 @@ export default function FulfillmentPage() {
                     onClick={() => handleSelectOrder(o)}
                     className={`p-3.5 border rounded-xl cursor-pointer transition-all flex flex-col gap-2 ${
                       selectedOrder?.id === o.id
-                        ? "bg-indigo-950/30 border-indigo-900/50 shadow-sm"
+                        ? "bg-indigo-50 border-indigo-200 shadow-sm"
                         : "hover:bg-gray-50 border-gray-200"
                     }`}
                   >
                     <div className="flex justify-between items-start">
                       <span className="text-xs font-bold text-gray-800">{o.fulfillment_number}</span>
                       <span className={`px-2 py-0.5 rounded text-[8px] font-extrabold uppercase ${
-                        o.status.toUpperCase() === "PICKING" ? "bg-amber-50 text-amber-700 border border-amber-200 text-amber-600 border border-amber-900/50 animate-pulse" : "bg-blue-50 text-blue-700 border border-blue-200 text-blue-600 border border-blue-900/50"
+                        o.status.toUpperCase() === "PICKING" ? "bg-amber-50 text-amber-700 border border-amber-200 animate-pulse" : "bg-blue-50 text-blue-700 border border-blue-200"
                       }`}>
                         {o.status}
                       </span>
@@ -401,7 +401,7 @@ export default function FulfillmentPage() {
                     onClick={() => handleSelectOrder(o)}
                     className={`p-3.5 border rounded-xl cursor-pointer transition-all flex flex-col gap-2 ${
                       selectedOrder?.id === o.id
-                        ? "bg-indigo-950/30 border-indigo-900/50 shadow-sm"
+                        ? "bg-indigo-50 border-indigo-200 shadow-sm"
                         : "hover:bg-gray-50 border-gray-200"
                     }`}
                   >
@@ -409,8 +409,8 @@ export default function FulfillmentPage() {
                       <span className="text-xs font-bold text-gray-800">{o.fulfillment_number}</span>
                       <span className={`px-2 py-0.5 rounded text-[8px] font-extrabold uppercase ${
                         o.status.toUpperCase() === "SHIPPED" ? "bg-gray-100 text-gray-500 border border-gray-200" :
-                        o.status.toUpperCase() === "PACKED" ? "bg-emerald-50 text-emerald-700 border border-emerald-200 text-emerald-600 border border-emerald-900/50" :
-                        "bg-amber-50 text-amber-700 border border-amber-200 text-amber-600 border border-amber-900/50 animate-pulse"
+                        o.status.toUpperCase() === "PACKED" ? "bg-emerald-50 text-emerald-700 border border-emerald-200" :
+                        "bg-amber-50 text-amber-700 border border-amber-200 animate-pulse"
                       }`}>
                         {o.status}
                       </span>
@@ -438,7 +438,7 @@ export default function FulfillmentPage() {
                 {["PENDING", "PICKING"].includes(selectedOrder.status.toUpperCase()) && (
                   <button
                     onClick={() => handleCancelOrder(selectedOrder.id)}
-                    className="p-1 text-[9px] font-bold text-rose-600 hover:bg-rose-950 border border-rose-900/50 rounded"
+                    className="p-1 text-[9px] font-bold text-rose-600 hover:bg-rose-50 border border-rose-900/50 rounded"
                   >
                     Hủy đơn
                   </button>
@@ -472,7 +472,7 @@ export default function FulfillmentPage() {
                         </button>
                       )}
                       {item.picked_qty >= item.quantity && (
-                        <div className="absolute top-2 right-2 px-2 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 text-emerald-600 border border-emerald-900/50 font-bold rounded text-[9px] flex items-center gap-1">
+                        <div className="absolute top-2 right-2 px-2 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold rounded text-[9px] flex items-center gap-1">
                           <CheckCircle className="w-3 h-3" /> Đã đủ
                         </div>
                       )}
@@ -509,7 +509,7 @@ export default function FulfillmentPage() {
                       />
                       <button
                         type="submit"
-                        className="flex-1 py-2 bg-indigo-650 hover:bg-indigo-755 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg shadow-sm"
+                        className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg shadow-sm"
                       >
                         Quét
                       </button>
@@ -523,7 +523,7 @@ export default function FulfillmentPage() {
                   </button>
                   {pickMessage && (
                     <div className={`p-2 rounded text-[10px] font-bold ${
-                      pickMessage.type === "success" ? "bg-emerald-50 text-emerald-700 border border-emerald-200 text-emerald-600 border border-emerald-900/50" : "bg-rose-50 text-rose-700 border border-rose-200 text-rose-600 border border-rose-900/50"
+                      pickMessage.type === "success" ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-rose-50 text-rose-700 border border-rose-200"
                     }`}>
                       {pickMessage.text}
                     </div>
@@ -573,7 +573,7 @@ export default function FulfillmentPage() {
 
               {selectedOrder.status.toUpperCase() === "PACKED" && (
                 <div className="bg-surface border border-gray-200 p-3 rounded-xl space-y-3 text-center">
-                  <div className="flex justify-center text-emerald-450 text-emerald-600 mb-1">
+                  <div className="flex justify-center text-emerald-600 mb-1">
                     <CheckCircle className="w-8 h-8" />
                   </div>
                   <h4 className="text-xs font-bold text-gray-800">Sẵn sàng xuất kho</h4>

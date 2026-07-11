@@ -162,7 +162,7 @@ export default function PickDetailPage() {
                 key={item.id}
                 className={`p-3 rounded-xl border text-xs flex flex-col gap-1 ${
                   finished
-                    ? "bg-emerald-50 border border-emerald-200 border-emerald-900/40 text-emerald-600"
+                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                     : "bg-surface border-gray-200 text-gray-800"
                 }`}
               >
@@ -188,8 +188,8 @@ export default function PickDetailPage() {
         <div
           className={`p-3 rounded-xl text-xs font-bold flex items-center gap-2 border ${
             scanMessage.type === "success"
-              ? "bg-emerald-50 text-emerald-700 border border-emerald-200 text-emerald-600 border-emerald-900/50"
-              : "bg-rose-50 text-rose-700 border border-rose-200 text-rose-600 border-rose-900/50"
+              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+              : "bg-rose-50 text-rose-700 border border-rose-200"
           }`}
         >
           {scanMessage.type === "success" ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
@@ -201,7 +201,7 @@ export default function PickDetailPage() {
       {!isAllPicked ? (
         <MobileScanner onScanSuccess={handleScanSuccess} placeholder="Quét mã vạch (EAN-13)..." scanType="product" />
       ) : (
-        <div className="bg-emerald-950/40 border border-emerald-900/50 rounded-2xl p-6 text-center space-y-3">
+        <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-2xl p-6 text-center space-y-3">
           <CheckCircle className="w-10 h-10 text-emerald-600 mx-auto" />
           <div className="text-xs font-bold text-emerald-600">Đã Nhặt Đầy Đủ Sản Phẩm!</div>
           <button

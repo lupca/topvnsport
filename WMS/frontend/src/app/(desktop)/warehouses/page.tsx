@@ -286,14 +286,14 @@ export default function WarehousesPage() {
             ) : warehouses.length === 0 ? (
               <div className="text-xs text-gray-500 text-center py-8">Chưa có kho hàng nào.</div>
             ) : (
-              <div className="divide-y divide-slate-800 max-h-[500px] overflow-y-auto">
+              <div className="divide-y divide-gray-200 max-h-[500px] overflow-y-auto">
                 {warehouses.map((wh) => (
                   <div
                     key={wh.id}
                     onClick={() => handleSelectWarehouse(wh)}
                     className={`p-3 rounded-xl cursor-pointer transition-all flex items-center justify-between group ${
                       selectedWarehouse?.id === wh.id
-                        ? "bg-indigo-950/30 border border-indigo-900/50"
+                        ? "bg-indigo-50 border border-indigo-200"
                         : "hover:bg-gray-50 border border-transparent"
                     }`}
                   >

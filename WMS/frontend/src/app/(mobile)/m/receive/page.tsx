@@ -98,7 +98,7 @@ export default function ReceiveListPage() {
                 <span
                   className={`px-2 py-0.5 rounded text-[8px] font-extrabold tracking-wide uppercase ${
                     s.status.toUpperCase() === "RECEIVING"
-                      ? "bg-amber-50 text-amber-700 border border-amber-200 text-amber-600 border border-amber-900/50 animate-pulse"
+                      ? "bg-amber-50 text-amber-700 border border-amber-200 animate-pulse"
                       : "bg-blue-50 text-blue-700 border border-blue-200 text-blue-600 border border-blue-900/50"
                   }`}
                 >

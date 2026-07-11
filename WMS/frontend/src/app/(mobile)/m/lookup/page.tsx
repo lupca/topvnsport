@@ -138,7 +138,7 @@ export default function LookupPage() {
 
       {/* Error Message */}
       {error && (
-        <div className="p-3 bg-rose-50 text-rose-700 border border-rose-200 border border-rose-900/50 rounded-xl text-xs font-bold text-rose-450 text-rose-600 flex items-center gap-2">
+        <div className="p-3 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold text-rose-600 flex items-center gap-2">
           <AlertCircle className="w-4 h-4" />
           <span>{error}</span>
         </div>
@@ -288,7 +288,7 @@ export default function LookupPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-indigo-650 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md"
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md"
                 >
                   Xác nhận liên kết
                 </button>

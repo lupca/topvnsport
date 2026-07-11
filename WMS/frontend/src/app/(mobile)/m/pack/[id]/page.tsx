@@ -174,8 +174,8 @@ export default function PackDetailPage() {
         <div
           className={`p-3 rounded-xl text-xs font-bold flex items-center gap-2 border ${
             packMessage.type === "success"
-              ? "bg-emerald-50 text-emerald-700 border border-emerald-200 text-emerald-600 border-emerald-900/50"
-              : "bg-rose-50 text-rose-700 border border-rose-200 text-rose-600 border-rose-900/50"
+              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+              : "bg-rose-50 text-rose-700 border border-rose-200"
           }`}
         >
           {packMessage.type === "success" ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
@@ -193,12 +193,12 @@ export default function PackDetailPage() {
           <p className="text-[10px] text-gray-500">Đơn hàng này đã hoàn tất xuất kho.</p>
         </div>
       ) : (
-        <div className="bg-emerald-950/40 border border-emerald-900/50 rounded-2xl p-6 text-center space-y-4">
+        <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-2xl p-6 text-center space-y-4">
           <CheckCircle className="w-10 h-10 text-emerald-600 mx-auto" />
           <div className="text-xs font-bold text-emerald-600">Đã đóng gói xong!</div>
           <button
             onClick={handleShipOrder}
-            className="w-full py-3 bg-indigo-650 hover:bg-indigo-700 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm transition-colors flex items-center justify-center gap-2"
+            className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm transition-colors flex items-center justify-center gap-2"
           >
             <Truck className="w-4 h-4" /> Xác nhận xuất kho (Ship)
           </button>
