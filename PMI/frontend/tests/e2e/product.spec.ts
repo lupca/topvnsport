@@ -65,7 +65,7 @@ test("create product with image upload flow", async ({ page }) => {
   await expect(page.getByText(parentSku)).toBeVisible();
 });
 
-test.skip("edit existing product", async ({ page }) => {
+test("edit existing product", async ({ page }) => {
   const suffix = Date.now();
   const parentSku = `EDIT-${suffix}`;
   const originalName = `Ao edit goc ${suffix}`;
