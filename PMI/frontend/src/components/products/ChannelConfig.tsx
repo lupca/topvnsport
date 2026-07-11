@@ -24,7 +24,7 @@ export default function ChannelConfig({ channelCode, channelName }: ChannelConfi
 
   const watchOverrides = watch(`channel_listings.${listingIndex}.variant_overrides`) || [];
   const watchAttrValues = watch(`channel_listings.${listingIndex}.attribute_values`) || [];
-  const listingErrors = errors?.channel_listings?.[listingIndex];
+  const listingErrors = (errors?.channel_listings as any)?.[listingIndex];
 
   // 1. Fetch channel metadata, mappings, and config on mount / channelCode change
   useEffect(() => {
