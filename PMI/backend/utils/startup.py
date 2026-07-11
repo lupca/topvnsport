@@ -12,8 +12,14 @@ def run_migrations():
     with engine.begin() as conn:
         try:
             conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"))
+            conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS slug VARCHAR(255)"))
+            conn.execute(text("CREATE INDEX IF NOT EXISTS ix_products_slug ON products (slug)"))
         except Exception as e:
-            print(f"Migration error (created_at): {e}")
+            print(f"Migration error (created_at/slug): {e}")
+        try:
+            conn.execute(text("ALTER TABLE product_variants ADD COLUMN IF NOT EXISTS barcode VARCHAR(255)"))
+        except Exception as e:
+            print(f"Migration error (product_variants barcode): {e}")
         try:
             conn.execute(text("ALTER TABLE attributes ADD COLUMN IF NOT EXISTS is_required BOOLEAN DEFAULT FALSE"))
             conn.execute(text("ALTER TABLE attributes ADD COLUMN IF NOT EXISTS is_unique BOOLEAN DEFAULT FALSE"))
