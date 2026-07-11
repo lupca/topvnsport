@@ -1,34 +1,46 @@
-import { ChevronRight, RefreshCw, Sparkles } from 'lucide-react';
-import { NavigateFunction } from 'react-router-dom';
-import BlogSection from '../../components/BlogSection';
+import { ChevronRight, Sparkles } from 'lucide-react';
+import { MouseEvent, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import HeroSlider from '../../components/HeroSlider';
 import ProductCard from '../../components/ProductCard';
 import RacketFinder from '../../components/RacketFinder';
 import TrustBadges from '../../components/TrustBadges';
-import { Blog, Category, Product } from '../../types';
+import { getProductCategoryCounts, getTopLevelProductCategories } from '../../utils/categories';
+import { addCartItem, buildDefaultCartItem, openCart, setQuickViewProduct } from '../cart/cartSlice';
 import { categoryTileThemes, getCategoryMonogram, getCategorySubtitle } from './categoryTileThemes';
 
-type HomePageProps = {
-  navigate: NavigateFunction;
-  products: Product[];
-  blogs: Blog[];
-  topLevelCategories: Category[];
-  categoryCounts: Record<string, number>;
-  timeLeft: { hours: number; minutes: number; seconds: number };
-  onQuickView: (product: Product) => void;
-  onAddToCart: (product: Product, e?: React.MouseEvent) => void;
-};
+export default function HomePage() {
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const products = useAppSelector(state => state.appData.products);
+  const blogs = useAppSelector(state => state.appData.blogs);
+  const categories = useAppSelector(state => state.appData.categories);
 
-export default function HomePage({
-  navigate,
-  products,
-  blogs,
-  topLevelCategories,
-  categoryCounts,
-  timeLeft,
-  onQuickView,
-  onAddToCart
-}: HomePageProps) {
+  const topLevelCategories = getTopLevelProductCategories(categories);
+  const categoryCounts = getProductCategoryCounts(products);
+
+  const [timeLeft, setTimeLeft] = useState({ hours: 12, minutes: 45, seconds: 30 });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 };
+        if (prev.minutes > 0) return { hours: prev.hours, minutes: prev.minutes - 1, seconds: 59 };
+        if (prev.hours > 0) return { hours: prev.hours - 1, minutes: 59, seconds: 59 };
+        return { hours: 12, minutes: 45, seconds: 30 };
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleAddToCart = (product: (typeof products)[number], e?: MouseEvent) => {
+    if (e) e.stopPropagation();
+    dispatch(addCartItem(buildDefaultCartItem(product)));
+    dispatch(openCart());
+  };
+
   return (
     <div className="space-y-12 animate-in fade-in duration-300">
       <HeroSlider />
@@ -130,8 +142,8 @@ export default function HomePage({
               <ProductCard
                 key={p.id}
                 product={p}
-                onQuickView={(prod) => onQuickView(prod)}
-                onAddToCart={(prod, e) => onAddToCart(prod, e)}
+                onQuickView={prod => dispatch(setQuickViewProduct(prod))}
+                onAddToCart={(prod, e) => handleAddToCart(prod, e)}
               />
             ))}
         </div>
