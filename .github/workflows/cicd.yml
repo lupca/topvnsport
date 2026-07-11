@@ -40,11 +40,11 @@ jobs:
           docker compose -f WMS/docker-compose.prod.yml config >/tmp/wms-config.out
           docker compose -f web/docker-compose.prod.yml config >/tmp/web-config.out
 
-      - name: Build PMI frontend
-        run: |
-          cd PMI/frontend
-          npm install
-          npm run build
+#      - name: Build PMI frontend
+#        run: |
+#          cd PMI/frontend
+#          npm install
+#          npm run build
 
       - name: Build OMS frontend
         run: |
