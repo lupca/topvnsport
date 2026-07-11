@@ -109,7 +109,114 @@ type OmsPaginatedChannels = {
   items?: OmsChannel[];
 };
 
+type ApiListResponse<T> = {
+  items?: T[];
+};
+
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+function extractItems<T>(data: unknown): T[] {
+  if (Array.isArray(data)) {
+    return data as T[];
+  }
+
+  if (typeof data === 'object' && data !== null && Array.isArray((data as ApiListResponse<T>).items)) {
+    return (data as ApiListResponse<T>).items as T[];
+  }
+
+  return [];
+}
+
+function inferBrandFromName(nameLower: string): Product['brand'] {
+  if (nameLower.includes('yonex')) return 'Yonex';
+  if (nameLower.includes('lining') || nameLower.includes('li-ning')) return 'Lining';
+  if (nameLower.includes('victor')) return 'Victor';
+  if (nameLower.includes('kumpoo')) return 'Kumpoo';
+  return 'Other';
+}
+
+function inferCategoryFromSignals(
+  nameLower: string,
+  mappedCategoryName: string | undefined,
+  attrByCode: Record<string, string>
+): string {
+  if (mappedCategoryName) {
+    return mappedCategoryName;
+  }
+
+  if (nameLower.includes('vợt') || nameLower.includes('racket')) {
+    return 'Vợt';
+  }
+
+  if (nameLower.includes('giày') || nameLower.includes('shoes')) {
+    return 'Giày';
+  }
+
+  if (nameLower.includes('cước') || nameLower.includes('string') || attrByCode.thickness) {
+    return 'Cước';
+  }
+
+  if (nameLower.includes('túi') || nameLower.includes('balo')) {
+    return 'Túi xách';
+  }
+
+  if (nameLower.includes('cầu') || nameLower.includes('shuttlecock')) {
+    return 'Quả cầu';
+  }
+
+  return 'Phụ kiện';
+}
+
+function mapPmiAttributes(values: PmiAttributeValue[]): ProductAttribute[] {
+  return values
+    .map((item): ProductAttribute | null => {
+      if (!item.attribute || !item.attribute.code || !item.attribute.name) {
+        return null;
+      }
+
+      const rawValue = item.value_string ?? item.value_decimal;
+      if (rawValue === null || rawValue === undefined) {
+        return null;
+      }
+
+      return {
+        id: String(item.id || `${item.attribute_id || item.attribute.code}`),
+        code: item.attribute.code,
+        name: item.attribute.name,
+        value: String(rawValue)
+      };
+    })
+    .filter((item): item is ProductAttribute => Boolean(item));
+}
+
+function buildAttrByCode(attributes: ProductAttribute[]): Record<string, string> {
+  return attributes.reduce<Record<string, string>>((accumulator, attribute) => {
+    accumulator[attribute.code] = attribute.value;
+    return accumulator;
+  }, {});
+}
+
+function mapSkuByColor(variants: PmiVariant[]): Record<string, string> {
+  return variants.reduce<Record<string, string>>((accumulator, variant) => {
+    if (variant.sku_code && variant.tier_1_option) {
+      accumulator[variant.tier_1_option] = variant.sku_code;
+    }
+    return accumulator;
+  }, {});
+}
+
+function mapSkuByVariant(variants: PmiVariant[]): Record<string, string> {
+  return variants.reduce<Record<string, string>>((accumulator, variant) => {
+    if (!variant.sku_code) {
+      return accumulator;
+    }
+
+    const tier1 = variant.tier_1_option || 'Tiêu chuẩn';
+    const tier2 = variant.tier_2_option || 'Tiêu chuẩn';
+    accumulator[`${tier1}||${tier2}`] = variant.sku_code;
+    return accumulator;
+  }, {});
+}
 
 function mapPmiProduct(pmiProduct: PmiProduct, categories: Category[]): Product {
   const variants = pmiProduct.variants || [];
@@ -125,76 +232,22 @@ function mapPmiProduct(pmiProduct: PmiProduct, categories: Category[]): Product 
   const name = (pmiProduct.name || 'Sản phẩm').trim();
   const nameLower = name.toLowerCase();
 
-  const attributes: ProductAttribute[] = (pmiProduct.attribute_values || [])
-    .map((item): ProductAttribute | null => {
-      if (!item.attribute || !item.attribute.code || !item.attribute.name) {
-        return null;
-      }
-      const rawValue = item.value_string ?? item.value_decimal;
-      if (rawValue === null || rawValue === undefined) {
-        return null;
-      }
-      return {
-        id: String(item.id || `${item.attribute_id || item.attribute.code}`),
-        code: item.attribute.code,
-        name: item.attribute.name,
-        value: String(rawValue)
-      };
-    })
-    .filter((item): item is ProductAttribute => Boolean(item));
-
-  const attrByCode = attributes.reduce<Record<string, string>>((acc, attr) => {
-    acc[attr.code] = attr.value;
-    return acc;
-  }, {});
-
-  let brand: Product['brand'] = 'Other';
-  if (nameLower.includes('yonex')) brand = 'Yonex';
-  else if (nameLower.includes('lining') || nameLower.includes('li-ning')) brand = 'Lining';
-  else if (nameLower.includes('victor')) brand = 'Victor';
-  else if (nameLower.includes('kumpoo')) brand = 'Kumpoo';
-
-  let category: string = 'Phụ kiện';
-  const categoryMatch = categories.find(c => c.id === pmiProduct.category_id);
-  if (categoryMatch) {
-    category = categoryMatch.name;
-  } else {
-    if (nameLower.includes('vợt') || nameLower.includes('racket')) {
-      category = 'Vợt';
-    } else if (nameLower.includes('giày') || nameLower.includes('shoes')) {
-      category = 'Giày';
-    } else if (nameLower.includes('cước') || nameLower.includes('string')) {
-      category = 'Cước';
-    } else if (nameLower.includes('túi') || nameLower.includes('balo')) {
-      category = 'Túi xách';
-    } else if (nameLower.includes('cầu') || nameLower.includes('shuttlecock')) {
-      category = 'Quả cầu';
-    }
-
-    if (attrByCode.thickness) {
-      category = 'Cước';
-    }
-  }
+  const attributes = mapPmiAttributes(pmiProduct.attribute_values || []);
+  const attrByCode = buildAttrByCode(attributes);
+  const brand = inferBrandFromName(nameLower);
+  const category = inferCategoryFromSignals(
+    nameLower,
+    categories.find(c => c.id === pmiProduct.category_id)?.name,
+    attrByCode
+  );
 
   const parsedBalance = Number(attrByCode.balance);
   const parsedMaxTension = Number(attrByCode.maxTension);
 
   const resolvedPrice = minPrice > 0 ? minPrice : 100000;
   const defaultSku = variants.find(v => Boolean(v.sku_code))?.sku_code;
-  const skuByColor = variants.reduce<Record<string, string>>((acc, v) => {
-    if (v.sku_code && v.tier_1_option) {
-      acc[v.tier_1_option] = v.sku_code;
-    }
-    return acc;
-  }, {});
-  const skuByVariant = variants.reduce<Record<string, string>>((acc, v) => {
-    if (v.sku_code) {
-      const t1 = v.tier_1_option || 'Tiêu chuẩn';
-      const t2 = v.tier_2_option || 'Tiêu chuẩn';
-      acc[`${t1}||${t2}`] = v.sku_code;
-    }
-    return acc;
-  }, {});
+  const skuByColor = mapSkuByColor(variants);
+  const skuByVariant = mapSkuByVariant(variants);
 
   return {
     id: String(pmiProduct.id),
@@ -238,6 +291,37 @@ function normalizePhone(value: string): string {
   return value.replace(/\D/g, '');
 }
 
+async function findExistingCustomerIdByPhone(phone: string): Promise<number | null> {
+  const normalizedPhone = normalizePhone(phone);
+  const searchRes = await fetch(
+    `${OMS_API_URL}/customers?search=${encodeURIComponent(phone)}&limit=100`
+  );
+
+  if (!searchRes.ok) {
+    return null;
+  }
+
+  const data = (await searchRes.json()) as OmsPaginatedCustomers;
+  const existing = (data.items || []).find(
+    customer => normalizePhone(customer.phone || '') === normalizedPhone
+  );
+
+  return existing ? existing.id : null;
+}
+
+async function getChannels(search?: string): Promise<OmsChannel[]> {
+  const query = search
+    ? `?search=${encodeURIComponent(search)}&limit=100`
+    : '?limit=100';
+  const response = await fetch(`${OMS_API_URL}/channels${query}`);
+  if (!response.ok) {
+    return [];
+  }
+
+  const data = (await response.json()) as OmsPaginatedChannels;
+  return data.items || [];
+}
+
 function findManualChannel(channels: OmsChannel[]): OmsChannel | undefined {
   return channels.find(c => c.is_active && c.code?.toUpperCase() === 'MANUAL');
 }
@@ -262,14 +346,11 @@ export const sportApi = {
         throw new Error(`PMI getProducts failed with status ${res.status}`);
       }
       const data: unknown = await res.json();
-      const pmiProducts = Array.isArray(data)
-        ? data
-        : (typeof data === 'object' && data !== null && Array.isArray((data as { items?: unknown[] }).items)
-          ? (data as { items: unknown[] }).items
-          : []);
+      const pmiProducts = extractItems<PmiProduct>(data);
 
       return pmiProducts.map(product => mapPmiProduct(product as PmiProduct, categories));
-    } catch (e) {
+    } catch (error) {
+      console.warn('Failed to fetch products:', error);
       return [];
     }
   },
@@ -291,8 +372,8 @@ export const sportApi = {
       if (res.status !== 404) {
         throw new Error(`PMI getProductById failed with status ${res.status}`);
       }
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error(error);
     }
 
     const products = await this.getProducts();
@@ -314,7 +395,8 @@ export const sportApi = {
     try {
       const res = await fetch(`${PMI_API_URL}/categories`);
       if (res.ok) {
-        return await res.json();
+        const data = await res.json();
+        return Array.isArray(data) ? data : [];
       }
       return [];
     } catch (error) {
@@ -372,8 +454,8 @@ export const sportApi = {
           };
         });
       }
-    } catch (e) {
-      console.warn('Failed to fetch dynamic string options from API:', e);
+    } catch (error) {
+      console.warn('Failed to fetch dynamic string options from API:', error);
     }
     return JSON.parse(JSON.stringify(rawData.stringOptions)) as StringOption[];
   },
@@ -400,19 +482,9 @@ export const sportApi = {
   },
 
   async findOrCreateCustomer(customer: OmsCustomerInput): Promise<number> {
-    const normalizedPhone = normalizePhone(customer.phone);
-    const searchRes = await fetch(
-      `${OMS_API_URL}/customers?search=${encodeURIComponent(customer.phone)}&limit=100`
-    );
-
-    if (searchRes.ok) {
-      const data = (await searchRes.json()) as OmsPaginatedCustomers;
-      const existing = (data.items || []).find(
-        c => normalizePhone(c.phone || '') === normalizedPhone
-      );
-      if (existing) {
-        return existing.id;
-      }
+    const existingCustomerId = await findExistingCustomerIdByPhone(customer.phone);
+    if (existingCustomerId !== null) {
+      return existingCustomerId;
     }
 
     const createRes = await fetch(`${OMS_API_URL}/customers`, {
@@ -426,18 +498,9 @@ export const sportApi = {
       return created.id;
     }
 
-    // If another request already created this customer, fetch again and reuse it.
-    const fallbackSearchRes = await fetch(
-      `${OMS_API_URL}/customers?search=${encodeURIComponent(customer.phone)}&limit=100`
-    );
-    if (fallbackSearchRes.ok) {
-      const data = (await fallbackSearchRes.json()) as OmsPaginatedCustomers;
-      const existing = (data.items || []).find(
-        c => normalizePhone(c.phone || '') === normalizedPhone
-      );
-      if (existing) {
-        return existing.id;
-      }
+    const fallbackCustomerId = await findExistingCustomerIdByPhone(customer.phone);
+    if (fallbackCustomerId !== null) {
+      return fallbackCustomerId;
     }
 
     const errorText = await createRes.text();
@@ -445,29 +508,21 @@ export const sportApi = {
   },
 
   async getOrCreateManualChannelId(): Promise<number> {
-    const searchRes = await fetch(
-      `${OMS_API_URL}/channels?search=${encodeURIComponent('MANUAL')}&limit=100`
-    );
-    if (searchRes.ok) {
-      const data = (await searchRes.json()) as OmsPaginatedChannels;
-      const manual = findManualChannel(data.items || []);
-      if (manual) {
-        return manual.id;
-      }
+    const searchedChannels = await getChannels('MANUAL');
+    const searchedManual = findManualChannel(searchedChannels);
+    if (searchedManual) {
+      return searchedManual.id;
     }
 
-    const listRes = await fetch(`${OMS_API_URL}/channels?limit=100`);
-    if (listRes.ok) {
-      const data = (await listRes.json()) as OmsPaginatedChannels;
-      const manual = findManualChannel(data.items || []);
-      if (manual) {
-        return manual.id;
-      }
+    const channels = await getChannels();
+    const manual = findManualChannel(channels);
+    if (manual) {
+      return manual.id;
+    }
 
-      const activeChannel = (data.items || []).find(c => c.is_active);
-      if (activeChannel) {
-        return activeChannel.id;
-      }
+    const activeChannel = channels.find(channel => channel.is_active);
+    if (activeChannel) {
+      return activeChannel.id;
     }
 
     const createRes = await fetch(`${OMS_API_URL}/channels`, {
