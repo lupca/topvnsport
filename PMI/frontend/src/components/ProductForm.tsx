@@ -26,7 +26,7 @@ const tierVariationSchema = z.object({
 const variantSchema = z.object({
   tier_1_option: z.string().nullable(),
   tier_2_option: z.string().nullable(),
-  sku_code: z.string().min(1, "SKU không được để trống"),
+  sku_code: z.string().optional().nullable().or(z.literal("")),
   price: z.coerce.number().min(0, "Giá trị phải >= 0"),
   barcode: z.string().optional().nullable(),
   stock: z.coerce.number().min(0, "Kho hàng phải >= 0")
@@ -326,7 +326,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
       newVariants = [{
         tier_1_option: null,
         tier_2_option: null,
-        sku_code: existing?.sku_code || (watchParentSku ? watchParentSku : ""),
+        sku_code: existing?.sku_code || "",
         barcode: existing?.barcode || "",
         price: existing?.price ?? 0,
         stock: existing?.stock ?? 0
@@ -339,7 +339,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
         newVariants.push({
           tier_1_option: opt1,
           tier_2_option: null,
-          sku_code: existing?.sku_code || (watchParentSku ? `${watchParentSku}-${opt1.replace(/\s+/g, "")}` : ""),
+          sku_code: existing?.sku_code || "",
           barcode: existing?.barcode || "",
           price: existing?.price ?? 0,
           stock: existing?.stock ?? 0
@@ -354,7 +354,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
           newVariants.push({
             tier_1_option: opt1,
             tier_2_option: opt2,
-            sku_code: existing?.sku_code || (watchParentSku ? `${watchParentSku}-${opt1.replace(/\s+/g, "")}-${opt2.replace(/\s+/g, "")}` : ""),
+            sku_code: existing?.sku_code || "",
             barcode: existing?.barcode || "",
             price: existing?.price ?? 0,
             stock: existing?.stock ?? 0

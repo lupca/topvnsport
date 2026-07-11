@@ -38,7 +38,7 @@ class TierVariationResponse(TierVariationBase):
 class ProductVariantBase(BaseModel):
     tier_1_option: Optional[str] = Field(None, max_length=100)
     tier_2_option: Optional[str] = Field(None, max_length=100)
-    sku_code: str = Field(..., max_length=100)
+    sku_code: Optional[str] = Field(None, max_length=100)
     price: Decimal = Field(..., ge=0)
     barcode: Optional[str] = Field(None, max_length=255)
     stock: int = Field(..., ge=0)
@@ -175,7 +175,7 @@ class ProductCreate(ProductBase):
             )
 
         # Ensure SKU codes are unique within the payload
-        sku_codes = [variant.sku_code for variant in v]
+        sku_codes = [variant.sku_code for variant in v if variant.sku_code]
         if len(sku_codes) != len(set(sku_codes)):
             raise ValueError("SKU codes must be unique across all variants")
 

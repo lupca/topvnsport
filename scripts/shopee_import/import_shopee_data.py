@@ -3,6 +3,7 @@ import sys
 import re
 from bs4 import BeautifulSoup
 import uuid
+import itertools
 
 # Setup database connection
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../PMI/backend'))
@@ -288,13 +289,55 @@ def parse_shopee_html(filepath, valid_labels):
         if valid_prices:
             base_price = min(valid_prices)
                 
+    # 5.5. Extract Tier Variations
+    v1_name = None
+    v1_options = []
+    v2_name = None
+    v2_options = []
+    
+    rows = soup.find_all(class_='varaition-edit-row')
+    current_tier = None
+    for r in rows:
+        label = r.find(class_='variation-edit-label')
+        if label and ('Phân loại1' in label.text or 'Phân loại2' in label.text):
+            label_text = label.text.strip()
+            if 'Phân loại1' in label_text:
+                current_tier = 1
+                inp = r.find('input')
+                if inp:
+                    v1_name = inp.get('modelvalue', '').strip()
+            elif 'Phân loại2' in label_text:
+                current_tier = 2
+                inp = r.find('input')
+                if inp:
+                    v2_name = inp.get('modelvalue', '').strip()
+        else:
+            inputs = r.find_all('input')
+            options = []
+            for inp in inputs:
+                ph = inp.get('placeholder', '')
+                val = inp.get('modelvalue', '').strip()
+                if ph != 'Thêm mô tả' and val:
+                    options.append(val)
+            if current_tier == 1:
+                v1_options = options
+            elif current_tier == 2:
+                v2_options = options
+                
+    tier_variations = []
+    if v1_name:
+        tier_variations.append({"tier_index": 1, "name": v1_name, "options": v1_options})
+    if v2_name:
+        tier_variations.append({"tier_index": 2, "name": v2_name, "options": v2_options})
+
     return {
         "name": product_name,
         "category_str": category_str,
         "description": description,
         "images": images,
         "attributes": parsed_attrs,
-        "price": base_price
+        "price": base_price,
+        "tier_variations": tier_variations
     }
 
 def main():
@@ -344,14 +387,36 @@ def main():
         db.commit()
         db.refresh(product)
         
-        # Default variant
-        variant = models.ProductVariant(
-            product_id=product.id,
-            sku_code=product_code + "-V1",
-            price=data["price"],
-            stock=100
-        )
-        db.add(variant)
+        # Save Tier Variations and prepare options lists
+        t1_options = [None]
+        t2_options = [None]
+        
+        if "tier_variations" in data and data["tier_variations"]:
+            for tv in data["tier_variations"]:
+                db_tv = models.TierVariation(
+                    product_id=product.id,
+                    tier_index=tv["tier_index"],
+                    name=tv["name"],
+                    options=tv["options"]
+                )
+                db.add(db_tv)
+                if tv["tier_index"] == 1:
+                    t1_options = tv["options"]
+                elif tv["tier_index"] == 2:
+                    t2_options = tv["options"]
+            db.commit()
+            
+        # Generate variants using cartesian product
+        for t1, t2 in itertools.product(t1_options, t2_options):
+            variant = models.ProductVariant(
+                product_id=product.id,
+                tier_1_option=t1,
+                tier_2_option=t2,
+                sku_code=None,  # Backend event listener will auto-generate SKU
+                price=data["price"],
+                stock=100
+            )
+            db.add(variant)
         db.commit()
         
         # Media

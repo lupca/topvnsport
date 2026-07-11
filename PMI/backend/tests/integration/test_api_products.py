@@ -190,3 +190,117 @@ def test_upload_endpoint_uses_mocked_minio(client):
 
     assert response.status_code == 200
     assert response.json()["image_url"].endswith("/pim-media/test-image.jpg")
+
+
+def test_create_product_without_sku_code_auto_generates(client):
+    category_id = _first_category_id(client)
+    family_id = _first_family_id(client)
+    attribute_id = _first_attribute_id(client)
+    
+    # Payload with sku_code set to None or missing
+    payload = {
+        "product_code": "AUTO-SKU-PARENT",
+        "name": "Vot cau long Yonex",
+        "description": "Vot cau long cao cap",
+        "category_id": category_id,
+        "family_id": family_id,
+        "weight": 85,
+        "status": "Draft",
+        "tier_variations": [
+            {
+                "tier_index": 1,
+                "name": "Mau sac",
+                "options": ["Do", "Xanh Lam"],
+            },
+            {
+                "tier_index": 2,
+                "name": "Trong luong",
+                "options": ["3U", "4U"],
+            }
+        ],
+        "variants": [
+            {
+                "tier_1_option": "Do",
+                "tier_2_option": "3U",
+                "sku_code": None,  # test auto-generation
+                "price": 1200000,
+                "stock": 10,
+            },
+            {
+                "tier_1_option": "Do",
+                "tier_2_option": "4U",
+                "sku_code": "",  # test empty string handling
+                "price": 1250000,
+                "stock": 15,
+            },
+            {
+                "tier_1_option": "Xanh Lam",
+                "tier_2_option": "3U",
+                "sku_code": None,
+                "price": 1200000,
+                "stock": 8,
+            },
+            {
+                "tier_1_option": "Xanh Lam",
+                "tier_2_option": "4U",
+                "sku_code": None,
+                "price": 1250000,
+                "stock": 12,
+            }
+        ],
+        "media": [],
+        "attributes": [],
+    }
+
+    resp = client.post("/products", json=payload)
+    assert resp.status_code == 201, resp.text
+    data = resp.json()
+    assert len(data["variants"]) == 4
+    
+    # Verify the auto-generated SKUs
+    # Format should be: AUTO-SKU-PARENT-[TIER_1_OPTION]-[TIER_2_OPTION]
+    expected_skus = {
+        ("Do", "3U"): "AUTO-SKU-PARENT-DO-3U",
+        ("Do", "4U"): "AUTO-SKU-PARENT-DO-4U",
+        ("Xanh Lam", "3U"): "AUTO-SKU-PARENT-XANH-LAM-3U",
+        ("Xanh Lam", "4U"): "AUTO-SKU-PARENT-XANH-LAM-4U",
+    }
+    
+    for var in data["variants"]:
+        key = (var["tier_1_option"], var["tier_2_option"])
+        assert key in expected_skus
+        assert var["sku_code"] == expected_skus[key]
+
+
+def test_create_product_no_variations_auto_generates_default_sku(client):
+    category_id = _first_category_id(client)
+    family_id = _first_family_id(client)
+    attribute_id = _first_attribute_id(client)
+    
+    payload = {
+        "product_code": "AUTO-SKU-NOVAR",
+        "name": "Balo don gian",
+        "description": "Balo the thao",
+        "category_id": category_id,
+        "family_id": family_id,
+        "weight": 300,
+        "status": "Draft",
+        "tier_variations": [],
+        "variants": [
+            {
+                "tier_1_option": None,
+                "tier_2_option": None,
+                "sku_code": None,
+                "price": 500000,
+                "stock": 50,
+            }
+        ],
+        "media": [],
+        "attributes": [],
+    }
+    
+    resp = client.post("/products", json=payload)
+    assert resp.status_code == 201, resp.text
+    data = resp.json()
+    assert len(data["variants"]) == 1
+    assert data["variants"][0]["sku_code"] == "AUTO-SKU-NOVAR-DEFAULT"

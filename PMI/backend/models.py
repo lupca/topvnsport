@@ -322,3 +322,38 @@ class ChannelConfig(Base):
     channel = relationship("Channel", backref=backref("config", uselist=False, cascade="all, delete-orphan"))
 
 
+from sqlalchemy import event, select
+from utils.sku_helper import clean_option_for_sku
+
+@event.listens_for(ProductVariant, 'before_insert')
+def receive_before_insert(mapper, connection, target):
+    if not target.sku_code:
+        product_code = None
+        if target.product:
+            product_code = target.product.product_code
+        elif target.product_id:
+            # Query the product code using select
+            result = connection.execute(
+                select(Product.product_code).where(Product.id == target.product_id)
+            ).scalar()
+            product_code = result
+
+        if not product_code:
+            product_code = "UNKNOWN"
+
+        parts = [product_code.upper()]
+        if target.tier_1_option:
+            c1 = clean_option_for_sku(target.tier_1_option)
+            if c1:
+                parts.append(c1)
+        if target.tier_2_option:
+            c2 = clean_option_for_sku(target.tier_2_option)
+            if c2:
+                parts.append(c2)
+        if len(parts) == 1:
+            parts.append("DEFAULT")
+        
+        target.sku_code = "-".join(parts)
+
+
+

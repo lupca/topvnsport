@@ -69,14 +69,6 @@ export default function ProductVariations({
       const val = { ...v };
       if (!isNaN(price)) val.price = price;
       if (!isNaN(stock)) val.stock = stock;
-      
-      // Auto-regenerate SKU if empty or currently matching old parent SKU
-      if (watchParentSku) {
-        let suffix = "";
-        if (v.tier_1_option) suffix += `-${v.tier_1_option.replace(/\s+/g, "")}`;
-        if (v.tier_2_option) suffix += `-${v.tier_2_option.replace(/\s+/g, "")}`;
-        val.sku_code = `${watchParentSku}${suffix}`;
-      }
       return val;
     });
 
@@ -265,7 +257,6 @@ export default function ProductVariations({
               Áp dụng cho tất cả
             </button>
           </div>
-          <span className="text-xs text-gray-500">Tự động cấu hình SKU dựa trên SKU cha</span>
         </div>
       )}
 
@@ -276,7 +267,6 @@ export default function ProductVariations({
             <tr>
               {watchTiers?.[0]?.name && <th className="px-6 py-4">{watchTiers[0].name}</th>}
               {watchTiers?.[1]?.name && <th className="px-6 py-4">{watchTiers[1].name}</th>}
-              <th className="px-6 py-4">Mã SKU phân loại *</th>
               <th className="px-6 py-4">Mã vạch (Barcode)</th>
               <th className="px-6 py-4">Giá bán *</th>
               <th className="px-6 py-4">Kho hàng *</th>
@@ -308,16 +298,7 @@ export default function ProductVariations({
                   {v.tier_2_option !== null && (
                     <td className="px-6 py-4 text-gray-500">{v.tier_2_option}</td>
                   )}
-                <td className="px-6 py-3">
-                  <input 
-                    type="text" 
-                    className="px-3 py-1.5 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-primary-500"
-                    {...register(`variants.${idx}.sku_code` as const)}
-                  />
-                  {(errors.variants as any)?.[idx]?.sku_code && (
-                    <p className="text-[10px] text-rose-500 mt-0.5">{(errors.variants as any)[idx]?.sku_code?.message}</p>
-                  )}
-                </td>
+
                 <td className="px-6 py-3">
                   <input 
                     type="text" 

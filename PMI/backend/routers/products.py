@@ -20,6 +20,8 @@ def slugify(text: str) -> str:
     text = re.sub(r'[^a-z0-9]+', '-', text)
     return text.strip('-')
 
+from utils.sku_helper import clean_option_for_sku, generate_sku_code
+
 @router.post("/products", response_model=schemas.ProductResponse, status_code=status.HTTP_201_CREATED)
 def create_product(product_in: schemas.ProductCreate, db: Session = Depends(get_db)):
     try:
@@ -62,11 +64,14 @@ def create_product(product_in: schemas.ProductCreate, db: Session = Depends(get_
         # 3. Save Product Variants / SKUs
         db_variants = []
         for v in product_in.variants:
+            sku = v.sku_code
+            if not sku:
+                sku = generate_sku_code(product_in.product_code, v.tier_1_option, v.tier_2_option)
             db_var = models.ProductVariant(
                 product_id=db_product.id,
                 tier_1_option=v.tier_1_option,
                 tier_2_option=v.tier_2_option,
-                sku_code=v.sku_code,
+                sku_code=sku,
                 price=v.price,
                 barcode=v.barcode,
                 stock=v.stock
@@ -261,11 +266,14 @@ def update_product(product_id: int, product_in: schemas.ProductUpdate, db: Sessi
         # 4. Save new Product Variants
         db_variants = []
         for v in product_in.variants:
+            sku = v.sku_code
+            if not sku:
+                sku = generate_sku_code(product_in.product_code, v.tier_1_option, v.tier_2_option)
             db_var = models.ProductVariant(
                 product_id=product_id,
                 tier_1_option=v.tier_1_option,
                 tier_2_option=v.tier_2_option,
-                sku_code=v.sku_code,
+                sku_code=sku,
                 price=v.price,
                 barcode=v.barcode,
                 stock=v.stock
