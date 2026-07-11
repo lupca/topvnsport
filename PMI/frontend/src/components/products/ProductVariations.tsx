@@ -138,19 +138,14 @@ export default function ProductVariations({
                           onChange={(e) => {
                             const newOpts = [...currentOpts];
                             newOpts[optIndex] = e.target.value;
-                            updateTier(tierIndex, {
-                              ...(watchTiers?.[tierIndex] || {}),
-                              options: newOpts,
-                              tier_index: tierIndex + 1
-                            });
+                            setValue(`tier_variations.${tierIndex}.options`, newOpts, { shouldDirty: true, shouldValidate: true });
+                            if (!watchTiers?.[tierIndex]?.tier_index) {
+                               setValue(`tier_variations.${tierIndex}.tier_index`, tierIndex + 1);
+                            }
                           }}
                           onBlur={() => {
                             const newOpts = (watchTiers?.[tierIndex]?.options || []).filter((o: string) => o.trim() !== "");
-                            updateTier(tierIndex, {
-                              ...(watchTiers?.[tierIndex] || {}),
-                              options: newOpts,
-                              tier_index: tierIndex + 1
-                            });
+                            setValue(`tier_variations.${tierIndex}.options`, newOpts, { shouldDirty: true, shouldValidate: true });
                           }}
                         />
                         {opt !== "" && (
@@ -159,11 +154,7 @@ export default function ProductVariations({
                             onClick={() => {
                               const newOpts = [...currentOpts];
                               newOpts.splice(optIndex, 1);
-                              updateTier(tierIndex, {
-                                ...(watchTiers?.[tierIndex] || {}),
-                                options: newOpts,
-                                tier_index: tierIndex + 1
-                              });
+                              setValue(`tier_variations.${tierIndex}.options`, newOpts, { shouldDirty: true, shouldValidate: true });
                             }}
                             className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-rose-500 transition-colors"
                           >

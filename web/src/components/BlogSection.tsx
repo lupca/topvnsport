@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Blog } from '../types';
 import { ArrowLeft, BookOpen, Calendar, User, Tag, ChevronRight, Activity, MapPin, Trophy } from 'lucide-react';
 
@@ -9,7 +10,9 @@ interface BlogSectionProps {
   onBackToBlogs: () => void;
 }
 
-export default function BlogSection({ blogs, selectedBlogId, onBlogClick, onBackToBlogs }: BlogSectionProps) {
+export default function BlogSection({ blogs }: { blogs: Blog[] }) {
+  const navigate = useNavigate();
+  const { id: selectedBlogId } = useParams<{id: string}>();
   const [activeCategory, setActiveCategory] = useState<'Tất cả' | 'Đánh giá thiết bị' | 'Hướng dẫn kỹ thuật' | 'Đánh giá sân bãi' | 'Tin tức'>('Tất cả');
 
   const filteredBlogs = activeCategory === 'Tất cả'
@@ -31,7 +34,7 @@ export default function BlogSection({ blogs, selectedBlogId, onBlogClick, onBack
     return (
       <div className="max-w-4xl mx-auto px-4 py-8 animate-in fade-in duration-300" id="blog-reader-view">
         <button
-          onClick={onBackToBlogs}
+          onClick={() => navigate('/blog')}
           className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-brand-primary font-medium mb-6 transition"
         >
           <ArrowLeft className="w-4 h-4" /> Quay lại danh mục tin tức
@@ -117,7 +120,7 @@ export default function BlogSection({ blogs, selectedBlogId, onBlogClick, onBack
         {filteredBlogs.map(blog => (
           <div
             key={blog.id}
-            onClick={() => onBlogClick(blog.id)}
+            onClick={() => navigate(`/blog/${blog.id}`)}
             className="group bg-white rounded-xl border border-gray-100 overflow-hidden shadow-xs hover:shadow-sm transition cursor-pointer flex flex-col justify-between"
           >
             <div>

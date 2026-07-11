@@ -4,6 +4,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { Routes, Route, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import ScrollToTop from './components/ScrollToTop';
 import Header from './components/Header';
 import HeroSlider from './components/HeroSlider';
 import ProductCard from './components/ProductCard';
@@ -20,7 +22,19 @@ import { motion, AnimatePresence } from 'motion/react';
 import QuickViewModal from './components/QuickViewModal';
 import TrustBadges from './components/TrustBadges';
 
+import { useParams } from 'react-router-dom';
+
+function ProductDetailPageRouterWrapper({ products, stringOptions, handleAddToCartWithSpecs }: any) {
+  const { id } = useParams<{id: string}>();
+  const product = products.find((p: any) => p.id === id) || products[0];
+  if (!product) return <div>Not Found</div>;
+  return <ProductDetailPage product={product} stringOptions={stringOptions} onAddToCartWithSpecs={handleAddToCartWithSpecs} />;
+}
+
 export default function App() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
   // API Dynamic States
   const [products, setProducts] = useState<Product[]>([]);
   const [blogs, setBlogs] = useState<Blog[]>([]);
@@ -29,9 +43,6 @@ export default function App() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Navigation & State management
-  const [currentView, setCurrentView] = useState<'home' | 'catalog' | 'product-detail' | 'blog-list' | 'blog-detail' | 'store-locator'>('home');
-  const [selectedProductId, setSelectedProductId] = useState<string>('');
-  const [selectedBlogId, setSelectedBlogId] = useState<string>('');
   
   // Shopping Cart state
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -94,48 +105,6 @@ export default function App() {
       isMounted = false;
     };
   }, []);
-
-  // View Switcher Router
-  const setView = (view: string, extra?: any) => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    
-    // Parse filters / options if passed
-    if (view === 'catalog') {
-      if (extra?.category) setSelectedCategory(extra.category);
-      else setSelectedCategory('Tất cả');
-
-      if (extra?.brand) {
-        setSelectedBrand([extra.brand]);
-      } else {
-        setSelectedBrand([]);
-      }
-
-      if (extra?.characteristics) {
-        // Find matching products or query characteristics
-        // (will filter characteristics)
-      }
-
-      if (extra?.search) {
-        setSearchQuery(extra.search);
-      } else {
-        setSearchQuery('');
-      }
-
-      setCurrentView('catalog');
-    } else if (view === 'product-detail') {
-      if (extra?.productId) {
-        setSelectedProductId(extra.productId);
-        setCurrentView('product-detail');
-      }
-    } else if (view === 'blog-detail') {
-      if (extra?.blogId) {
-        setSelectedBlogId(extra.blogId);
-        setCurrentView('blog-detail');
-      }
-    } else {
-      setCurrentView(view as any);
-    }
-  };
 
   // Cart operations
   const resolveSkuCode = (product: Product, color: string, weight: string) => {
@@ -279,8 +248,6 @@ export default function App() {
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans selection:bg-brand-primary selection:text-white antialiased pb-16 md:pb-0">
       {/* Header element */}
       <Header
-        currentView={currentView}
-        setView={setView}
         cartCount={cartItems.reduce((acc, i) => acc + i.quantity, 0)}
         openCart={() => setIsCartOpen(true)}
         products={products}
@@ -288,12 +255,14 @@ export default function App() {
 
       {/* Primary content router block */}
       <main className="flex-1">
+        <ScrollToTop />
+        <Routes>
         
         {/* VIEW: HOME */}
-        {currentView === 'home' && (
+        <Route path="/" element={
           <div className="space-y-12 animate-in fade-in duration-300">
             {/* Top promotional carousel slider */}
-            <HeroSlider onCtaClick={setView} />
+            <HeroSlider  />
 
             {/* Core trust tags ribbons (Thanh niềm tin) */}
             <TrustBadges />
@@ -314,7 +283,7 @@ export default function App() {
                 ].map(cat => (
                   <div
                     key={cat.id}
-                    onClick={() => setView('catalog', { category: cat.id })}
+                    onClick={() => navigate(`/catalog?category=${cat.id}`)}
                     className="group relative bg-white border border-gray-100 rounded-xl overflow-hidden p-4 text-center cursor-pointer hover:shadow-md transition-all duration-300 flex flex-col items-center justify-between"
                   >
                     <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center overflow-hidden mb-3">
@@ -366,7 +335,7 @@ export default function App() {
                   <ProductCard
                     key={p.id}
                     product={p}
-                    onViewDetails={(id) => setView('product-detail', { productId: id })}
+                    
                     onQuickView={(prod) => setQuickViewProduct(prod)}
                     onAddToCart={(prod, e) => handleAddToCart(prod, e)}
                   />
@@ -376,7 +345,7 @@ export default function App() {
 
             {/* Racket Finder Wizard element */}
             <section className="max-w-7xl mx-auto px-4 md:px-8">
-              <RacketFinder products={products} onProductClick={(id) => setView('product-detail', { productId: id })} />
+              <RacketFinder products={products}  />
             </section>
 
             {/* Knowledge Base Blog previews */}
@@ -389,7 +358,7 @@ export default function App() {
                   </h2>
                 </div>
                 <button
-                  onClick={() => setView('blog-list')}
+                  onClick={() => navigate('/blog')}
                   className="text-xs font-bold text-brand-primary hover:underline flex items-center gap-0.5"
                 >
                   Xem tất cả bài viết <ChevronRight className="w-4 h-4" />
@@ -400,7 +369,7 @@ export default function App() {
                 {blogs.slice(0, 3).map(blog => (
                   <div
                     key={blog.id}
-                    onClick={() => setView('blog-detail', { blogId: blog.id })}
+                    onClick={() => navigate(`/blog/${blog.id}`)}
                     className="bg-white rounded-xl border border-gray-100 overflow-hidden cursor-pointer hover:shadow-md transition flex flex-col justify-between"
                   >
                     <div>
@@ -420,10 +389,10 @@ export default function App() {
               </div>
             </section>
           </div>
-        )}
+          } />
 
         {/* VIEW: CATALOG (Product Listing Page - PLP) */}
-        {currentView === 'catalog' && (
+        <Route path="/catalog" element={
           <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 animate-in fade-in duration-300">
             {/* Title banner */}
             <div className="text-center mb-10">
@@ -590,7 +559,7 @@ export default function App() {
                       <ProductCard
                         key={p.id}
                         product={p}
-                        onViewDetails={(id) => setView('product-detail', { productId: id })}
+                        
                         onQuickView={(prod) => setQuickViewProduct(prod)}
                         onAddToCart={(prod, e) => handleAddToCart(prod, e)}
                       />
@@ -608,41 +577,30 @@ export default function App() {
 
             </div>
           </div>
-        )}
+          } />
 
         {/* VIEW: PRODUCT DETAIL (PDP) */}
-        {currentView === 'product-detail' && selectedProductId && (
-          <ProductDetailPage
-            product={products.find(p => p.id === selectedProductId) || products[0]}
-            stringOptions={stringOptions}
-            onAddToCartWithSpecs={handleAddToCartWithSpecs}
-            onBackToCatalog={() => setView('catalog')}
-            onBookTestAtStore={() => setView('store-locator')}
-          />
-        )}
+                  <Route path="/product/:id" element={
+            
+          <ProductDetailPageRouterWrapper products={products} stringOptions={stringOptions} handleAddToCartWithSpecs={handleAddToCartWithSpecs} />
+          } />
 
         {/* VIEW: BLOG SECTIONS (Directory / Reader) */}
-        {(currentView === 'blog-list' || currentView === 'blog-detail') && (
-          <BlogSection
-            blogs={blogs}
-            selectedBlogId={currentView === 'blog-detail' ? selectedBlogId : undefined}
-            onBlogClick={(id) => setView('blog-detail', { blogId: id })}
-            onBackToBlogs={() => setView('blog-list')}
-          />
-        )}
+                  <Route path="/blog/*" element={
+            
+          <BlogSection blogs={blogs} />
+          } />
 
         {/* VIEW: STORE LOCATOR (O2O Booking) */}
-        {currentView === 'store-locator' && (
-          <StoreLocator
-            branches={branches}
-            products={products}
-          />
-        )}
+        <Route path="/stores" element={
+          <StoreLocator branches={branches} products={products} />
+          } />
 
+        </Routes>
       </main>
 
       {/* FOOTER widget */}
-      <Footer setView={setView} />
+      <Footer />
 
       {/* SHOPPING CART / CHECKOUT SLIDE DRAWER MODAL */}
       <CartModal
@@ -663,16 +621,16 @@ export default function App() {
       {/* MOBILE APP-LIKE BOTTOM TAB NAVIGATION BAR */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-100 flex justify-around items-center py-2 px-2 shadow-sm rounded-t-2xl">
         <button
-          onClick={() => setView('home')}
-          className={`flex flex-col items-center gap-1 p-1 transition ${currentView === 'home' ? 'text-brand-primary font-bold' : 'text-gray-400'}`}
+          onClick={() => navigate('/')}
+          className={`flex flex-col items-center gap-1 p-1 transition ${location.pathname === '/' ? 'text-brand-primary font-bold' : 'text-gray-400'}`}
         >
           <Home className="w-5 h-5" />
           <span className="text-[10px]">Trang chủ</span>
         </button>
 
         <button
-          onClick={() => setView('catalog')}
-          className={`flex flex-col items-center gap-1 p-1 transition ${currentView === 'catalog' ? 'text-brand-primary font-bold' : 'text-gray-400'}`}
+          onClick={() => navigate('/catalog')}
+          className={`flex flex-col items-center gap-1 p-1 transition ${location.pathname === '/catalog' ? 'text-brand-primary font-bold' : 'text-gray-400'}`}
         >
           <Trophy className="w-5 h-5" />
           <span className="text-[10px]">Sản phẩm</span>
@@ -680,7 +638,7 @@ export default function App() {
 
         <button
           onClick={() => {
-            setView('home');
+            navigate('/');
             setTimeout(() => {
               const el = document.getElementById('racket-finder-section');
               if (el) el.scrollIntoView({ behavior: 'smooth' });
@@ -693,8 +651,8 @@ export default function App() {
         </button>
 
         <button
-          onClick={() => setView('store-locator')}
-          className={`flex flex-col items-center gap-1 p-1 transition ${currentView === 'store-locator' ? 'text-brand-primary font-bold' : 'text-gray-400'}`}
+          onClick={() => navigate('/stores')}
+          className={`flex flex-col items-center gap-1 p-1 transition ${location.pathname === '/stores' ? 'text-brand-primary font-bold' : 'text-gray-400'}`}
         >
           <MapPin className="w-5 h-5" />
           <span className="text-[10px]">Cửa hàng</span>

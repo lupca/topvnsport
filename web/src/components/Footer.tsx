@@ -1,11 +1,11 @@
 import React from 'react';
 import { Trophy, Phone, MapPin, Mail, ShieldCheck, Heart, Sparkles, Facebook, Youtube, Share2 } from 'lucide-react';
 
-interface FooterProps {
-  setView: (view: string, extra?: any) => void;
-}
+import { Link } from 'react-router-dom';
 
-export default function Footer({ setView }: FooterProps) {
+interface FooterProps {}
+
+export default function Footer({}: FooterProps) {
   return (
     <footer className="bg-gray-950 text-gray-400 text-xs md:text-sm border-t border-gray-900 mt-20" id="topvnsport-footer">
       
@@ -84,10 +84,10 @@ export default function Footer({ setView }: FooterProps) {
         <div className="space-y-3">
           <h4 className="font-bold text-white text-xs uppercase tracking-wider">Sản phẩm cốt lõi</h4>
           <ul className="space-y-1.5 text-xs text-gray-500">
-            <li><button onClick={() => setView('catalog', { category: 'Vợt' })} className="hover:text-white transition">Vợt Cầu Lông Yonex Nhật Bản</button></li>
-            <li><button onClick={() => setView('catalog', { category: 'Vợt' })} className="hover:text-white transition">Vợt Cầu Lông Lining Chuyên Công</button></li>
-            <li><button onClick={() => setView('catalog', { category: 'Giày' })} className="hover:text-white transition">Giày Cầu Lông Chống Lật Cổ Chân</button></li>
-            <li><button onClick={() => setView('catalog', { category: 'Cước' })} className="hover:text-white transition">Dây Cước Đan Exbolt Đanh Tiếng</button></li>
+            <li><Link to="/catalog?category=Vợt" className="hover:text-white transition">Vợt Cầu Lông Yonex Nhật Bản</Link></li>
+            <li><Link to="/catalog?category=Vợt" className="hover:text-white transition">Vợt Cầu Lông Lining Chuyên Công</Link></li>
+            <li><Link to="/catalog?category=Giày" className="hover:text-white transition">Giày Cầu Lông Chống Lật Cổ Chân</Link></li>
+            <li><Link to="/catalog?category=Cước" className="hover:text-white transition">Dây Cước Đan Exbolt Đanh Tiếng</Link></li>
           </ul>
         </div>
 
@@ -95,10 +95,10 @@ export default function Footer({ setView }: FooterProps) {
         <div className="space-y-3">
           <h4 className="font-bold text-white text-xs uppercase tracking-wider">Dịch vụ & Hậu mãi</h4>
           <ul className="space-y-1.5 text-xs">
-            <li><button onClick={() => setView('store-locator')} className="hover:text-white transition">Cửa hàng trải nghiệm trực tiếp</button></li>
+            <li><Link to="/stores" className="hover:text-white transition">Cửa hàng trải nghiệm trực tiếp</Link></li>
             <li><button className="hover:text-white transition">Chính sách bảo hành 90 ngày</button></li>
             <li><button className="hover:text-white transition">Đặt lịch đan cước lấy ngay</button></li>
-            <li><button onClick={() => setView('blog-list')} className="hover:text-white transition">Đánh giá chất lượng sân đấu</button></li>
+            <li><Link to="/blog" className="hover:text-white transition">Đánh giá chất lượng sân đấu</Link></li>
             <li><button className="hover:text-white transition">Hướng dẫn chọn vợt theo lực cổ tay</button></li>
           </ul>
         </div>

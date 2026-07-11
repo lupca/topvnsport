@@ -11,7 +11,7 @@ interface ChannelConfigProps {
 }
 
 export default function ChannelConfig({ channelCode, channelName }: ChannelConfigProps) {
-  const { register, watch, setValue } = useFormContext();
+  const { register, watch, setValue, formState: { errors } } = useFormContext<any>();
   const [channelId, setChannelId] = useState<number | null>(null);
   const [categoryMapping, setCategoryMapping] = useState<any | null>(null);
   const [attributeMappings, setAttributeMappings] = useState<any[]>([]);
@@ -24,6 +24,7 @@ export default function ChannelConfig({ channelCode, channelName }: ChannelConfi
 
   const watchOverrides = watch(`channel_listings.${listingIndex}.variant_overrides`) || [];
   const watchAttrValues = watch(`channel_listings.${listingIndex}.attribute_values`) || [];
+  const listingErrors = errors?.channel_listings?.[listingIndex];
 
   // 1. Fetch channel metadata, mappings, and config on mount / channelCode change
   useEffect(() => {
@@ -169,6 +170,9 @@ export default function ChannelConfig({ channelCode, channelName }: ChannelConfi
                   className="pim-input"
                   {...register(`channel_listings.${listingIndex}.title_override`)}
                 />
+                {listingErrors?.title_override && (
+                  <p className="text-[10px] text-rose-500 mt-0.5">{listingErrors.title_override.message}</p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <label className="text-sm font-semibold text-gray-700">Mã sản phẩm trên sàn (Marketplace ID)</label>
@@ -178,6 +182,9 @@ export default function ChannelConfig({ channelCode, channelName }: ChannelConfi
                   className="pim-input"
                   {...register(`channel_listings.${listingIndex}.channel_product_id`)}
                 />
+                {listingErrors?.channel_product_id && (
+                  <p className="text-[10px] text-rose-500 mt-0.5">{listingErrors.channel_product_id.message}</p>
+                )}
               </div>
               <div className="md:col-span-2 space-y-1.5">
                 <label className="text-sm font-semibold text-gray-700">Mô tả chi tiết ghi đè</label>
@@ -187,6 +194,9 @@ export default function ChannelConfig({ channelCode, channelName }: ChannelConfi
                   className="pim-input"
                   {...register(`channel_listings.${listingIndex}.description_override`)}
                 />
+                {listingErrors?.description_override && (
+                  <p className="text-[10px] text-rose-500 mt-0.5">{listingErrors.description_override.message}</p>
+                )}
               </div>
             </div>
           </div>
@@ -227,10 +237,13 @@ export default function ChannelConfig({ channelCode, channelName }: ChannelConfi
                 <tbody className="divide-y divide-gray-100">
                   {watchVariants.map((v: any, vIdx: number) => {
                     const optText = [v.tier_1_option, v.tier_2_option].filter(Boolean).join(" / ") || "Mặc định";
+                    const variantError = listingErrors?.variant_overrides?.[vIdx];
                     return (
                       <tr key={vIdx} className="hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-3 font-semibold text-gray-900">{optText}</td>
-                        <td className="px-6 py-3 text-xs"><code>{v.sku_code}</code></td>
+                        <td className="px-6 py-3 text-xs"><code>{v.sku_code}</code>
+                          {variantError?.sku_code && <p className="text-[10px] text-rose-500 mt-0.5">{variantError.sku_code.message}</p>}
+                        </td>
                         <td className="px-6 py-3 text-gray-500">₫{Number(v.price).toLocaleString()}</td>
                         <td className="px-6 py-2">
                           <div className="relative">
@@ -242,6 +255,7 @@ export default function ChannelConfig({ channelCode, channelName }: ChannelConfi
                               {...register(`channel_listings.${listingIndex}.variant_overrides.${vIdx}.price_override` as const)}
                             />
                           </div>
+                          {variantError?.price_override && <p className="text-[10px] text-rose-500 mt-0.5">{variantError.price_override.message}</p>}
                         </td>
                       </tr>
                     );
@@ -274,6 +288,9 @@ export default function ChannelConfig({ channelCode, channelName }: ChannelConfi
                         className="pim-input"
                         {...register(`channel_listings.${listingIndex}.attribute_values.${amValueIdx}.value_string`)}
                       />
+                      {listingErrors?.attribute_values?.[amValueIdx]?.value_string && (
+                        <p className="text-[10px] text-rose-500 mt-0.5">{listingErrors.attribute_values[amValueIdx].value_string.message}</p>
+                      )}
                     </div>
                   );
                 })}

@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, Trophy, ShieldCheck, DollarSign, RefreshCw, ChevronRight, Check } from 'lucide-react';
 import { Product } from '../types';
 
 interface RacketFinderProps {
   products: Product[];
-  onProductClick: (productId: string) => void;
+  
 }
 
-export default function RacketFinder({ products, onProductClick }: RacketFinderProps) {
+export default function RacketFinder({ products }: RacketFinderProps) {
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [answers, setAnswers] = useState({
     skill: '',
@@ -243,7 +245,7 @@ export default function RacketFinder({ products, onProductClick }: RacketFinderP
                 {recommendations.map((p) => (
                   <div
                     key={p.id}
-                    onClick={() => onProductClick(p.id)}
+                    onClick={() => navigate(`/product/${p.id}`)}
                     className="bg-gray-850 border border-gray-800 hover:border-brand-primary/50 rounded-xl p-4 cursor-pointer transition-all duration-300 group flex flex-col justify-between"
                   >
                     <div>

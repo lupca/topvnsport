@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Product, StringOption } from '../types';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Star, ShoppingCart, ShieldCheck, Heart, Sparkles, Check, Phone, ArrowLeft, Trophy, Calendar, MapPin, Gauge } from 'lucide-react';
 
@@ -8,10 +9,11 @@ interface ProductDetailPageProps {
   stringOptions: StringOption[];
   onAddToCartWithSpecs: (product: Product, selectedWeight: string, selectedColor: string, stringChoice: StringOption | null, tension: number) => void;
   onBackToCatalog: () => void;
-  onBookTestAtStore: (branchId: string) => void;
+  
 }
 
-export default function ProductDetailPage({ product, stringOptions, onAddToCartWithSpecs, onBackToCatalog, onBookTestAtStore }: ProductDetailPageProps) {
+export default function ProductDetailPage({ product, stringOptions, onAddToCartWithSpecs }: Omit<ProductDetailPageProps, 'onBackToCatalog'|'onBookTestAtStore'>) {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'details' | 'tech' | 'reviews'>('details');
   const [selectedImage, setSelectedImage] = useState(product.image);
   
@@ -54,7 +56,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
     <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 animate-in fade-in duration-300" id="product-detail-page">
       {/* Breadcrumb / Back button */}
       <button
-        onClick={onBackToCatalog}
+        onClick={() => navigate(-1)}
         className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-brand-primary font-medium mb-6 transition"
       >
         <ArrowLeft className="w-4 h-4" /> Quay lại danh mục sản phẩm

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Trophy, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 
@@ -13,9 +14,7 @@ interface Slide {
   productId?: string;
 }
 
-interface HeroSliderProps {
-  onCtaClick: (view: string, extra?: any) => void;
-}
+interface HeroSliderProps {}
 
 const slides: Slide[] = [
   {
@@ -50,7 +49,8 @@ const slides: Slide[] = [
   }
 ];
 
-export default function HeroSlider({ onCtaClick }: HeroSliderProps) {
+export default function HeroSlider() {
+  const navigate = useNavigate();
   const [current, setCurrent] = useState(0);
 
   useEffect(() => {
@@ -124,9 +124,9 @@ export default function HeroSlider({ onCtaClick }: HeroSliderProps) {
                   <button
                     onClick={() => {
                       if (slides[current].productId) {
-                        onCtaClick('product-detail', { productId: slides[current].productId });
+                        navigate(`/product/${slides[current].productId}`);
                       } else {
-                        onCtaClick('catalog', { category: slides[current].category });
+                        navigate(`/catalog?category=${slides[current].category}`);
                       }
                     }}
                     className="bg-brand-primary hover:bg-brand-secondary text-white text-xs md:text-sm font-bold px-6 py-3 rounded-full transition-all duration-300 shadow-sm hover:shadow-brand-primary/20 "

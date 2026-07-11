@@ -298,10 +298,12 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
       });
   }, [targetId, duplicateProductId, reset]);
 
+  const watchTiersJson = JSON.stringify(watchTiers);
   // Update variants combination matrix when tier variations configuration changes
   useEffect(() => {
-    const tier1 = watchTiers?.[0];
-    const tier2 = watchTiers?.[1];
+    const parsedTiers = watchTiersJson ? JSON.parse(watchTiersJson) : [];
+    const tier1 = parsedTiers?.[0];
+    const tier2 = parsedTiers?.[1];
 
     const t1_options = Array.from(new Set(tier1?.options?.map((o: string) => o.trim()).filter((o: string) => o !== "") || []));
     const t2_options = Array.from(new Set(tier2?.options?.map((o: string) => o.trim()).filter((o: string) => o !== "") || []));
@@ -363,7 +365,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
 
     // Set the state in hook form
     setValue("variants", newVariants);
-  }, [watchTiers, watchParentSku, setValue]);
+  }, [watchTiersJson, watchParentSku, setValue]);
 
   // Submit Product Form
   const onSubmit = async (values: ProductFormValues) => {
@@ -441,7 +443,13 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.detail || `Đã xảy ra lỗi khi ${productId ? "cập nhật" : "tạo"} sản phẩm`);
+        let errMsg = `Đã xảy ra lỗi khi ${productId ? "cập nhật" : "tạo"} sản phẩm`;
+        if (typeof data.detail === "string") {
+            errMsg = data.detail;
+        } else if (Array.isArray(data.detail)) {
+            errMsg = data.detail.map((err: any) => `${err.loc?.join(".") || ""}: ${err.msg}`).join(", ");
+        }
+        throw new Error(errMsg);
       }
 
       setSubmitSuccess(true);
@@ -497,7 +505,23 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
       )}
 
       <FormProvider {...methods}>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+        <form onSubmit={handleSubmit(onSubmit, (errors) => {
+          console.error("Form validation errors", errors);
+          const errorPaths: string[] = [];
+          const extractErrors = (obj: any, path: string) => {
+            if (obj && obj.message && typeof obj.message === 'string') {
+              errorPaths.push(`${path}: ${obj.message}`);
+            } else if (typeof obj === 'object' && obj !== null) {
+              for (const key in obj) {
+                if (key !== 'ref' && key !== 'type') {
+                  extractErrors(obj[key], path ? `${path}.${key}` : key);
+                }
+              }
+            }
+          };
+          extractErrors(errors, "");
+          setSubmitError(`Lỗi điền form (chưa hợp lệ): ${errorPaths.join(" | ")}`);
+        })} className="space-y-8">
           
           {/* SECTION 1: BASIC INFORMATION */}
           <ProductBasicInfo
@@ -568,11 +592,12 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
             </div>
 
             <div className="py-4">
-              {activeTab === "shopee" ? (
+              <div className={activeTab === "shopee" ? "block" : "hidden"}>
                 <ChannelConfig channelCode="shopee_vn" channelName="Shopee Việt Nam" />
-              ) : (
+              </div>
+              <div className={activeTab === "tiktok" ? "block" : "hidden"}>
                 <ChannelConfig channelCode="tiktok_shop" channelName="TikTok Shop" />
-              )}
+              </div>
             </div>
           </div>
 

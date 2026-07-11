@@ -1,16 +1,18 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Product } from '../types';
 import { Eye, ShoppingCart, Star, Zap, Activity } from 'lucide-react';
 
 interface ProductCardProps {
   key?: string;
   product: Product;
-  onViewDetails: (productId: string) => void;
+  
   onQuickView: (product: Product) => void;
   onAddToCart: (product: Product, e: React.MouseEvent) => void;
 }
 
-export default function ProductCard({ product, onViewDetails, onQuickView, onAddToCart }: ProductCardProps) {
+export default function ProductCard({ product, onQuickView, onAddToCart }: ProductCardProps) {
+  const navigate = useNavigate();
   const displayPrice = product.salePrice || product.price;
   const discountPercent = product.salePrice ? Math.round(((product.price - product.salePrice) / product.price) * 100) : 0;
 
@@ -80,7 +82,7 @@ export default function ProductCard({ product, onViewDetails, onQuickView, onAdd
       </div>
 
       {/* Content details block */}
-      <div className="p-4 flex-1 flex flex-col justify-between" onClick={() => onViewDetails(product.id)}>
+      <div className="p-4 flex-1 flex flex-col justify-between" onClick={() => navigate(`/product/${product.id}`)}>
         <div className="space-y-1.5 cursor-pointer">
           {/* Brand & category */}
           <div className="flex items-center justify-between text-[11px] font-mono font-bold text-gray-400">
@@ -145,7 +147,7 @@ export default function ProductCard({ product, onViewDetails, onQuickView, onAdd
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onViewDetails(product.id);
+              navigate(`/product/${product.id}`);
             }}
             className="text-xs font-bold text-gray-900 group-hover:text-brand-primary hover:underline transition"
           >
