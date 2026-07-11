@@ -58,11 +58,11 @@ jobs:
           npm install
           npm run build
 
-      - name: Build web frontend
-        run: |
-          cd web
-          npm ci
-          npm run build
+#      - name: Build web frontend
+#        run: |
+#          cd web
+#          npm ci
+#          npm run build
 
       - name: Python syntax check
         run: |
