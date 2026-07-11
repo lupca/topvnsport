@@ -8,6 +8,7 @@ DEPLOY_REVISION="$(git -C "$ROOT_DIR" rev-parse --short=12 HEAD 2>/dev/null || e
 EC2_USER="${EC2_USER:-ec2-user}"
 DEPLOY_PATH="${DEPLOY_PATH:-~/topvnsport}"
 PUBLIC_HOST="${PUBLIC_HOST:-$EC2_HOST}"
+DOMAIN_NAME="${DOMAIN_NAME:-topvnsport.com}"
 SSH_KEY_PATH="${SSH_KEY_PATH:-$HOME/.ssh/id_ed25519}"
 SSH_KEY_PATH="${SSH_KEY_PATH/#\~/$HOME}"
 SSH_KEY_PATH="${SSH_KEY_PATH//\$HOME/$HOME}"
@@ -73,19 +74,20 @@ ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "
   sudo -E docker compose -f OMS/docker-compose.prod.yml up -d --build
   sudo -E docker compose -f WMS/docker-compose.prod.yml up -d --build
   sudo -E docker compose -f web/docker-compose.prod.yml up -d --build
+  sudo -E docker compose -f nginx/docker-compose.yml up -d --build
 "
 
 echo "[4/5] Health checks"
 ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "
   set -euo pipefail
   for u in \
-    http://localhost:18100/docs \
-    http://localhost:18101/docs \
-    http://localhost:18102/docs \
-    http://localhost:13100 \
-    http://localhost:13101 \
-    http://localhost:13102 \
-    http://localhost:13103; do
+    http://api-pmi.$DOMAIN_NAME/docs \
+    http://api-oms.$DOMAIN_NAME/docs \
+    http://api-wms.$DOMAIN_NAME/docs \
+    http://pmi.$DOMAIN_NAME \
+    http://oms.$DOMAIN_NAME \
+    http://wms.$DOMAIN_NAME \
+    http://$DOMAIN_NAME; do
     code=\$(curl -s -o /dev/null -w '%{http_code}' \"\$u\")
     echo \"\$code \$u\"
     [[ \"\$code\" == \"200\" ]] || exit 1

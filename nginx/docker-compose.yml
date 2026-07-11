@@ -1,0 +1,22 @@
+services:
+  reverse-proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: reverse-proxy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - pmi_default
+      - oms_default
+      - wms_default
+
+networks:
+  pmi_default:
+    external: true
+  oms_default:
+    external: true
+  wms_default:
+    external: true

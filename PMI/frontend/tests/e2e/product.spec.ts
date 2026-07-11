@@ -42,7 +42,7 @@ test("create product with image upload flow", async ({ page }) => {
     .fill("Mo ta san pham e2e dai hon 10 ky tu");
 
   await page.locator('input[name="weight"]').fill("500");
-  await page.locator('input[name="variants.0.sku_code"]').fill(`${parentSku}-BASE`);
+  await page.locator('input[name="variants.0.barcode"]').fill(`${parentSku}-BARCODE`);
   await page.locator('input[name="variants.0.price"]').fill("150000");
   await page.locator('input[name="variants.0.stock"]').fill("9");
 

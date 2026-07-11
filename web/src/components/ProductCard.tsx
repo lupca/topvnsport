@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Product } from '../types';
 import { Eye, ShoppingCart, Star, Zap, Activity } from 'lucide-react';
+import { getProductPath } from '../utils/productSlug';
 
 interface ProductCardProps {
   key?: string;
@@ -82,7 +83,7 @@ export default function ProductCard({ product, onQuickView, onAddToCart }: Produ
       </div>
 
       {/* Content details block */}
-      <div className="p-4 flex-1 flex flex-col justify-between" onClick={() => navigate(`/product/${product.id}`)}>
+      <div className="p-4 flex-1 flex flex-col justify-between" onClick={() => navigate(getProductPath(product))}>
         <div className="space-y-1.5 cursor-pointer">
           {/* Brand & category */}
           <div className="flex items-center justify-between text-[11px] font-mono font-bold text-gray-400">
@@ -147,7 +148,7 @@ export default function ProductCard({ product, onQuickView, onAddToCart }: Produ
           <button
             onClick={(e) => {
               e.stopPropagation();
-              navigate(`/product/${product.id}`);
+              navigate(getProductPath(product));
             }}
             className="text-xs font-bold text-gray-900 group-hover:text-brand-primary hover:underline transition"
           >

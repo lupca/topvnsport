@@ -42,12 +42,10 @@ services:
       dockerfile: Dockerfile.prod
     container_name: pim-api
     restart: always
-    ports:
-      - "18100:8000"
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/pim_db
       - MINIO_ENDPOINT=minio:9000
-      - MINIO_PUBLIC_BASE_URL=http://${PUBLIC_HOST:-localhost}:19005
+      - MINIO_PUBLIC_BASE_URL=http://media.topvnsport.com
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
       - MINIO_SECURE=False
@@ -64,11 +62,9 @@ services:
       dockerfile: Dockerfile.prod
     container_name: pim-frontend
     restart: always
-    ports:
-      - "13100:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://${PUBLIC_HOST:-localhost}:18100
-      - NEXT_PUBLIC_WMS_API_URL=http://${PUBLIC_HOST:-localhost}:18102
+      - NEXT_PUBLIC_API_URL=http://api-pmi.topvnsport.com
+      - NEXT_PUBLIC_WMS_API_URL=http://api-wms.topvnsport.com
     depends_on:
       - api
     networks:

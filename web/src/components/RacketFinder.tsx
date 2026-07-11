@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, Trophy, ShieldCheck, DollarSign, RefreshCw, ChevronRight, Check } from 'lucide-react';
 import { Product } from '../types';
+import { getProductPath } from '../utils/productSlug';
 
 interface RacketFinderProps {
   products: Product[];
@@ -245,7 +246,7 @@ export default function RacketFinder({ products }: RacketFinderProps) {
                 {recommendations.map((p) => (
                   <div
                     key={p.id}
-                    onClick={() => navigate(`/product/${p.id}`)}
+                    onClick={() => navigate(getProductPath(p))}
                     className="bg-gray-850 border border-gray-800 hover:border-brand-primary/50 rounded-xl p-4 cursor-pointer transition-all duration-300 group flex flex-col justify-between"
                   >
                     <div>

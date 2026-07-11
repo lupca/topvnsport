@@ -5,6 +5,7 @@
 
 import { Product, Blog, Branch, StringOption, ProductAttribute, Category } from '../types';
 import rawData from '../data.json';
+import { slugifyProductName } from '../utils/productSlug';
 
 // Simulated latency to mimic a real-world server roundtrip (e.g. 300ms)
 const SIMULATED_LATENCY = 200;
@@ -197,6 +198,7 @@ function mapPmiProduct(pmiProduct: PmiProduct, categories: Category[]): Product 
 
   return {
     id: String(pmiProduct.id),
+    slug: slugifyProductName(name),
     name,
     brand,
     image,

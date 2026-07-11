@@ -4,9 +4,13 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        VITE_PMI_API_URL: http://${PUBLIC_HOST:-localhost}:18100
-        VITE_OMS_API_URL: http://${PUBLIC_HOST:-localhost}:18101
+        VITE_PMI_API_URL: http://api-pmi.topvnsport.com
+        VITE_OMS_API_URL: http://api-oms.topvnsport.com
     container_name: web_frontend
     restart: always
-    ports:
-      - "13103:80"
+    networks:
+      - pmi_default
+
+networks:
+  pmi_default:
+    external: true

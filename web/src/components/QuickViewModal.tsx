@@ -18,7 +18,7 @@ export default function QuickViewModal({ product, onClose, onAddToCart }: QuickV
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
-            className="bg-white rounded-2xl w-full max-w-2xl overflow-hidden relative border border-gray-100 shadow-2xl p-6"
+            className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden relative border border-gray-100 shadow-2xl p-6"
             id="quick-view-modal-content"
           >
             {/* Close button */}
@@ -30,18 +30,22 @@ export default function QuickViewModal({ product, onClose, onAddToCart }: QuickV
               <X className="w-5 h-5" />
             </button>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start h-full overflow-hidden">
               <div className="aspect-square bg-gray-50 rounded-xl p-4 flex items-center justify-center overflow-hidden">
                 <img src={product.image} alt={product.name} className="max-h-full object-contain" referrerPolicy="no-referrer" />
               </div>
               
-              <div className="space-y-4">
+              <div className="space-y-4 min-h-0 overflow-y-auto pr-1">
                 <div className="space-y-1">
                   <span className="text-[10px] bg-brand-primary text-white font-extrabold uppercase px-2 py-0.5 rounded-sm">{product.brand}</span>
                   <h3 className="font-display font-black text-lg text-gray-900 leading-snug">{product.name}</h3>
                 </div>
 
-                <p className="text-xs text-gray-500 leading-relaxed font-light">{product.description}</p>
+                <div className="max-h-56 overflow-y-auto pr-1 border border-gray-100 rounded-xl bg-gray-50/70 p-3">
+                  <p className="text-xs text-gray-600 leading-relaxed font-light whitespace-pre-line break-words">
+                    {product.description}
+                  </p>
+                </div>
 
                 {/* Spec Sheet block */}
                 <div className="space-y-1.5 text-xs text-gray-600 font-mono py-3 border-t border-b border-gray-100">
@@ -70,7 +74,7 @@ export default function QuickViewModal({ product, onClose, onAddToCart }: QuickV
                       onAddToCart(product);
                       onClose();
                     }}
-                    className="bg-brand-light hover:bg-brand-secondary text-white text-xs font-bold uppercase tracking-wider px-6 py-2.5 rounded-full flex items-center gap-1.5 transition "
+                    className="bg-brand-primary hover:bg-brand-secondary text-white text-xs font-bold uppercase tracking-wider px-6 py-2.5 rounded-full flex items-center gap-1.5 transition shadow-sm hover:shadow-md focus:outline-hidden focus:ring-2 focus:ring-brand-primary/30"
                     id="add-to-cart-quickview"
                   >
                     <ShoppingBag className="w-4 h-4" /> Thêm vào giỏ

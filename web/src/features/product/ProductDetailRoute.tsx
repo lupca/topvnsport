@@ -3,13 +3,14 @@ import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import ProductDetailPage from '../../components/ProductDetailPage';
 import { addCartItem, buildConfiguredCartItem, openCart } from '../cart/cartSlice';
 import { StringOption } from '../../types';
+import { findProductBySlug } from '../../utils/productSlug';
 
 export default function ProductDetailRoute() {
   const dispatch = useAppDispatch();
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const products = useAppSelector(state => state.appData.products);
   const stringOptions = useAppSelector(state => state.appData.stringOptions);
-  const product = products.find(p => p.id === id) || products[0];
+  const product = findProductBySlug(products, slug);
 
   if (!product) return <div>Not Found</div>;
 

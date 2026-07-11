@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Category, Product } from '../types';
 import { getTopLevelProductCategories } from '../utils/categories';
+import { getProductPath } from '../utils/productSlug';
 
 interface HeaderProps {
   cartCount: number;
@@ -49,8 +50,8 @@ export default function Header({ cartCount, openCart, products, categories }: He
     }
   }, [searchQuery, products]);
 
-  const handleSearchSelect = (productId: string) => {
-    navigate(`/product/${productId}`);
+  const handleSearchSelect = (product: Product) => {
+    navigate(getProductPath(product));
     setSearchQuery('');
     setShowSearchDropdown(false);
   };
@@ -173,7 +174,7 @@ export default function Header({ cartCount, openCart, products, categories }: He
                 searchResults.map(p => (
                   <div
                     key={p.id}
-                    onClick={() => handleSearchSelect(p.id)}
+                    onClick={() => handleSearchSelect(p)}
                     className="p-3 hover:bg-brand-light/50 cursor-pointer flex items-center gap-3 transition"
                   >
                     <img src={p.image} alt={p.name} className="w-10 h-10 object-cover rounded-md border border-gray-100" referrerPolicy="no-referrer" />

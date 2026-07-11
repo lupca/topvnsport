@@ -38,6 +38,7 @@ export interface ProductReview {
 
 export interface Product {
   id: string;
+  slug?: string;
   name: string;
   brand: 'Yonex' | 'Lining' | 'Victor' | 'Kumpoo' | 'Other';
   image: string;

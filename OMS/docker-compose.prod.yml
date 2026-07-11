@@ -20,8 +20,6 @@ services:
       dockerfile: Dockerfile
     container_name: oms_backend
     restart: always
-    ports:
-      - "18101:8001"
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@oms_db:5432/oms_db
     depends_on:
@@ -37,10 +35,10 @@ services:
       dockerfile: Dockerfile
     container_name: oms_frontend
     restart: always
-    ports:
-      - "13101:3001"
     environment:
-      - NEXT_PUBLIC_OMS_API_URL=http://${PUBLIC_HOST:-localhost}:18101
+      - NEXT_PUBLIC_API_URL=http://api-oms.topvnsport.com
+      - NEXT_PUBLIC_OMS_API_URL=http://api-oms.topvnsport.com
+      - NEXT_PUBLIC_WMS_API_URL=http://api-wms.topvnsport.com
     depends_on:
       - oms_backend
     networks:

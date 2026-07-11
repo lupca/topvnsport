@@ -11,7 +11,7 @@ interface Slide {
   image: string;
   ctaText: string;
   category: string;
-  productId?: string;
+  productSlug?: string;
 }
 
 interface HeroSliderProps {}
@@ -25,7 +25,7 @@ const slides: Slide[] = [
     image: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1200&q=80',
     ctaText: 'Khám Phá Siêu Phẩm',
     category: 'Vợt',
-    productId: 'yonex-astrox-100zz'
+    productSlug: 'yonex-astrox-100zz'
   },
   {
     id: 2,
@@ -35,7 +35,7 @@ const slides: Slide[] = [
     image: 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=1200&q=80',
     ctaText: 'Mua Ngay Chỉ 850K',
     category: 'Vợt',
-    productId: 'lining-gforce-x5'
+    productSlug: 'lining-gforce-x5'
   },
   {
     id: 3,
@@ -45,7 +45,7 @@ const slides: Slide[] = [
     image: 'https://images.unsplash.com/photo-1613531415875-161a5622c5b7?auto=format&fit=crop&w=1200&q=80',
     ctaText: 'Xem Ngay Ưu Đãi',
     category: 'Cước',
-    productId: 'yonex-exbolt-68'
+    productSlug: 'yonex-exbolt-68'
   }
 ];
 
@@ -123,8 +123,8 @@ export default function HeroSlider() {
                 >
                   <button
                     onClick={() => {
-                      if (slides[current].productId) {
-                        navigate(`/product/${slides[current].productId}`);
+                      if (slides[current].productSlug) {
+                        navigate(`/product/${slides[current].productSlug}`);
                       } else {
                         navigate(`/catalog?category=${slides[current].category}`);
                       }
