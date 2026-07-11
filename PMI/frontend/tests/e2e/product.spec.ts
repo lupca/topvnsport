@@ -137,5 +137,6 @@ test("edit existing product", async ({ page }) => {
   expect(updateResponse.ok()).toBeTruthy();
 
   await expect(page.getByRole("heading", { name: "Danh Sách Sản Phẩm", exact: true })).toBeVisible({ timeout: 20000 });
+  await expect(page.getByText("Đang tải danh sách sản phẩm...")).not.toBeVisible({ timeout: 60000 });
   await expect(page.getByText(updatedName)).toBeVisible();
 });

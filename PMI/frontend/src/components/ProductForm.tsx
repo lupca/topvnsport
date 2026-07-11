@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Check, Loader2, AlertCircle, Sparkles, ChevronRight } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
 import { normalizeImageUrl } from "@/utils/imageUrl";
+import { generateSkuCode } from "@/utils/skuHelper";
 
 import ProductBasicInfo, { Category, AttributeFamily } from "./products/ProductBasicInfo";
 import ProductTechSpecs, { Attribute } from "./products/ProductTechSpecs";
@@ -405,11 +406,22 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
       });
     });
 
+    const updatedVariants = values.variants.map((v: any) => {
+      if (!v.sku_code) {
+        return {
+          ...v,
+          sku_code: generateSkuCode(values.product_code, v.tier_1_option, v.tier_2_option)
+        };
+      }
+      return v;
+    });
+
     const finalPayload = {
       ...values,
+      variants: updatedVariants,
       channel_listings: values.channel_listings?.map((cl: any) => ({
         ...cl,
-        variant_overrides: values.variants.map((v: any, idx: number) => {
+        variant_overrides: updatedVariants.map((v: any, idx: number) => {
           const existing = cl.variant_overrides?.find((vo: any) => vo.sku_code === v.sku_code) || cl.variant_overrides?.[idx];
           return {
             sku_code: v.sku_code,
