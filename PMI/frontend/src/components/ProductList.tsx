@@ -194,7 +194,7 @@ export default function ProductList({
   // Fetch products based on filters, sorting, tab, and pagination
   useEffect(() => {
     setLoading(true);
-    let url = `${API_BASE_URL}/products?page=${currentPage}&limit=${pageSize}&sort_by=${sortBy}&sort_order=${sortOrder}&`;
+    let url = `${API_BASE_URL}/products?page=${currentPage}&limit=${pageSize}&sort_by=${sortBy}&sort_order=${sortOrder}&_t=${Date.now()}&`;
     
     if (appliedSearch) {
       url += `q=${encodeURIComponent(appliedSearch)}&`;
