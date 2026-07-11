@@ -118,7 +118,10 @@ test("edit existing product", async ({ page }) => {
   await page.getByPlaceholder("Tìm Tên sản phẩm, SKU sản phẩm, SKU phân loại...").fill(parentSku);
 
   const filterResponsePromise = page.waitForResponse(
-    (response) => response.url().includes("/products") && response.request().method() === "GET"
+    (response) =>
+      response.url().includes("/products") &&
+      response.url().includes("q=") &&
+      response.request().method() === "GET"
   );
   await page.getByRole("button", { name: "Áp dụng" }).click();
   await filterResponsePromise;
@@ -144,7 +147,10 @@ test("edit existing product", async ({ page }) => {
   await expect(searchInput).toHaveValue(parentSku);
 
   const finalFilterResponsePromise = page.waitForResponse(
-    (response) => response.url().includes("/products") && response.request().method() === "GET"
+    (response) =>
+      response.url().includes("/products") &&
+      response.url().includes("q=") &&
+      response.request().method() === "GET"
   );
   await page.getByRole("button", { name: "Áp dụng" }).click();
   await finalFilterResponsePromise;

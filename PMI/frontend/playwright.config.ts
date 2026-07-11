@@ -19,11 +19,24 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      use: { 
+        ...devices["Desktop Chrome"],
+        launchOptions: {
+          executablePath: process.env.CHROMIUM_PATH || undefined,
+        },
+      },
     },
     {
       name: "firefox",
-      use: { ...devices["Desktop Firefox"] },
+      use: { 
+        ...devices["Desktop Firefox"],
+        launchOptions: {
+          executablePath: process.env.FIREFOX_PATH || undefined,
+          firefoxUserPrefs: {
+            "security.sandbox.content.level": 0,
+          },
+        },
+      },
     },
     {
       name: "webkit",
