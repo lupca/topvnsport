@@ -139,7 +139,10 @@ test("edit existing product", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Danh Sách Sản Phẩm", exact: true })).toBeVisible({ timeout: 20000 });
   await expect(page.getByText("Đang tải danh sách sản phẩm...")).not.toBeVisible({ timeout: 60000 });
 
-  await page.getByPlaceholder("Tìm Tên sản phẩm, SKU sản phẩm, SKU phân loại...").fill(updatedName);
+  const searchInput = page.getByPlaceholder("Tìm Tên sản phẩm, SKU sản phẩm, SKU phân loại...");
+  await searchInput.fill(parentSku);
+  await expect(searchInput).toHaveValue(parentSku);
+
   const finalFilterResponsePromise = page.waitForResponse(
     (response) => response.url().includes("/products") && response.request().method() === "GET"
   );
