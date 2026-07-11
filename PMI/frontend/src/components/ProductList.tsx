@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Plus, HelpCircle, Sparkles, List, Grid, Download, ChevronDown, Trash2 } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
 
@@ -182,6 +182,17 @@ export default function ProductList({
   // Applied filter states for query execution
   const [appliedSearch, setAppliedSearch] = useState("");
   const [appliedCategory, setAppliedCategory] = useState("0");
+  const didMountRef = useRef(false);
+
+  useEffect(() => {
+    if (!didMountRef.current) {
+      didMountRef.current = true;
+      return;
+    }
+
+    setAppliedSearch(searchQuery);
+    setAppliedCategory(selectedCategory);
+  }, [searchQuery, selectedCategory]);
 
   // Fetch categories
   useEffect(() => {

@@ -208,6 +208,43 @@ describe("ProductList", () => {
     );
   });
 
+  test("applies search and category changes immediately", async () => {
+    render(
+      <ProductList
+        onAddProductClick={onAddProductClick}
+        onEditProductClick={onEditProductClick}
+        onCopyProductClick={onCopyProductClick}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Áo Polo thể thao nam thoáng khí")).toBeInTheDocument();
+    });
+
+    const categorySelect = screen.getAllByRole("combobox")[0];
+    await userEvent.selectOptions(categorySelect, "2");
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenLastCalledWith(
+        expect.stringContaining("category_id=2")
+      );
+    });
+
+    const searchInput = screen.getByPlaceholderText("Tìm Tên sản phẩm, SKU sản phẩm, SKU phân loại...");
+    await userEvent.clear(searchInput);
+    await userEvent.type(searchInput, "Polo");
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenLastCalledWith(
+        expect.stringContaining("q=Polo")
+      );
+    });
+
+    expect(global.fetch).toHaveBeenLastCalledWith(
+      expect.stringContaining("category_id=2")
+    );
+  });
+
   test("opens preview modal when clicked and shows details", async () => {
     render(
       <ProductList
