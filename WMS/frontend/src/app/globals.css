@@ -2,19 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 248, 250, 252; /* slate-50 */
-  --background-start-rgb: 9, 13, 22; /* slate-950 */
-  --background-end-rgb: 2, 6, 12;
+@import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Montserrat:wght@500;600;700;800&display=swap");
+
+@import "./styles/layout.css";
+@import "./styles/card.css";
+@import "./styles/button.css";
+@import "./styles/form.css";
+@import "./styles/table.css";
+@import "./styles/modal.css";
+
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  button {
+    @apply font-display;
+  }
+
+  body {
+    @apply bg-brand-light text-gray-600 font-sans min-h-screen;
+  }
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
-  min-height: 100vh;
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Plus, HelpCircle, Sparkles, List, Grid, Download, ChevronDown, Trash2 } from "lucide-react";
+import { Plus, HelpCircle, List, Grid, Download, ChevronDown, Trash2 } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
 
 import ProductFilterBar, { Category } from "./products/ProductFilterBar";
@@ -306,7 +306,7 @@ export default function ProductList({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight flex items-center gap-2">
-            Danh Sách Sản Phẩm <Sparkles className="h-5 w-5 text-brand-primary fill-blue-100" />
+            Danh Sách Sản Phẩm
           </h1>
           <div className="flex items-center gap-2 mt-1.5">
             <span className="pim-muted-chip">

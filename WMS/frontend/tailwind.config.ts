@@ -8,19 +8,37 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["Be Vietnam Pro", "ui-sans-serif", "system-ui", "sans-serif"],
+        display: ["Montserrat", "ui-sans-serif", "system-ui", "sans-serif"],
+        mono: ["JetBrains Mono", "ui-monospace", "SFMono-Regular", "monospace"],
+      },
       colors: {
-        primary: {
-          50: '#eef2ff',
-          100: '#e0e7ff',
-          200: '#c7d2fe',
-          300: '#a5b4fc',
-          400: '#818cf8',
-          500: '#6366f1',
-          600: '#4f46e5',
-          700: '#4338ca',
-          800: '#3730a3',
-          900: '#312e81',
+        brand: {
+          primary: "#005eb8",
+          secondary: "#003a70",
+          accent: "#000000",
+          light: "#f5f7fa",
         },
+        surface: {
+          DEFAULT: "#ffffff",
+          hover: "#f9f9f9",
+        },
+        primary: {
+          50: "#e8f2ff",
+          100: "#d1e4ff",
+          200: "#a8cbff",
+          300: "#78adff",
+          400: "#488eff",
+          500: "#246fe8",
+          600: "#005eb8",
+          700: "#003a70",
+          800: "#0a315d",
+          900: "#102f4f",
+        },
+      },
+      boxShadow: {
+        soft: "0 8px 24px rgba(15, 23, 42, 0.06)",
       },
     },
   },

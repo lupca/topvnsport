@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { 
   Search, RotateCcw, ChevronDown, ChevronUp, 
-  Plus, Grid, List, HelpCircle, Star, Sparkles, TrendingUp,
+  Plus, Grid, List, HelpCircle, Star, TrendingUp,
   Image as ImageIcon, ChevronLeft, ChevronRight, ArrowUpDown,
   Eye, Copy, Trash2, X, ExternalLink
 } from "lucide-react";
@@ -241,7 +241,7 @@ export default function ProductList({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-            Danh Sách Sản Phẩm <Sparkles className="h-5 w-5 text-primary-500 fill-primary-100" />
+            Danh Sách Sản Phẩm
           </h1>
           <div className="flex items-center gap-2 mt-1.5">
             <span className="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-full font-medium">

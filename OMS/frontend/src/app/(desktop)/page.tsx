@@ -11,7 +11,6 @@ import {
   DollarSign,
   AlertCircle,
   ArrowRight,
-  Sparkles,
   CheckCircle2,
   XCircle,
   TrendingUp,
@@ -162,7 +161,6 @@ export default function DashboardPage() {
         <div>
           <h2 className="text-xl font-extrabold text-slate-100 flex items-center gap-2">
             <span>OMS Dashboard</span>
-            <Sparkles className="w-5 h-5 text-indigo-500 animate-spin" style={{ animationDuration: '3s' }} />
           </h2>
           <p className="text-xs text-slate-400 mt-1">
             Tổng quan hiệu suất hệ thống quản lý đơn hàng chuyên sâu.

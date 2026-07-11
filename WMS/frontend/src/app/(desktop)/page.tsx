@@ -9,7 +9,6 @@ import {
   MapPin,
   AlertCircle,
   ArrowRight,
-  Sparkles,
   ArrowDownLeft,
   ArrowUpRight,
   Activity,
@@ -187,7 +186,6 @@ export default function DashboardPage() {
         <div>
           <h2 className="text-xl font-extrabold text-slate-100 flex items-center gap-2">
             <span>WMS Dashboard</span>
-            <Sparkles className="w-5 h-5 text-indigo-500 animate-spin" style={{ animationDuration: '3s' }} />
           </h2>
           <p className="text-xs text-slate-400 mt-1">
             Hệ thống quản lý kho hàng chuyên sâu - Theo dõi tồn kho thực tế, vị trí ô kệ và các giao dịch kho.

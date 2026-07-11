@@ -6,7 +6,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { 
   Plus, Trash, Upload, Check, Loader2, 
-  HelpCircle, AlertCircle, Sparkles, Image as ImageIcon, ChevronRight 
+  HelpCircle, AlertCircle, Image as ImageIcon, ChevronRight 
 } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
 import { popupService } from "@/components/ui/popupService";
@@ -402,7 +402,7 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
-            {productId ? "Cập Nhật Sản Phẩm" : duplicateProductId ? "Sao Chép Sản Phẩm" : "Thêm Sản Phẩm Mới"} <Sparkles className="h-6 w-6 text-primary-500 fill-primary-100" />
+            {productId ? "Cập Nhật Sản Phẩm" : duplicateProductId ? "Sao Chép Sản Phẩm" : "Thêm Sản Phẩm Mới"}
           </h1>
           <p className="text-slate-500 mt-1">
             {productId ? "Chỉnh sửa thông tin chi tiết của sản phẩm" : duplicateProductId ? "Tạo sản phẩm mới bằng cách sao chép thông tin" : "Đăng tải sản phẩm mới lên hệ thống Shopee PIM"}

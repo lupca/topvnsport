@@ -14,7 +14,6 @@ import {
   TrendingUp,
   AlertCircle,
   ArrowRight,
-  Sparkles,
   PieChart as PieIcon
 } from "lucide-react";
 import {
@@ -134,7 +133,6 @@ export default function DashboardPage() {
         <div>
           <h2 className="text-xl font-extrabold text-brand-accent flex items-center gap-2">
             <span>Catalog Dashboard</span>
-            <Sparkles className="w-5 h-5 text-brand-primary animate-spin" style={{ animationDuration: "3s" }} />
           </h2>
           <p className="text-xs text-gray-500 mt-1">
             Quản lý tổng quan cấu trúc catalog, phân tích mức độ hoàn thiện dữ liệu và kênh bán hàng.

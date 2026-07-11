@@ -1,0 +1,15 @@
+.pim-page {
+  @apply max-w-7xl mx-auto px-4 py-8 space-y-6;
+}
+
+.pim-header-title {
+  @apply text-2xl font-extrabold tracking-tight text-brand-accent;
+}
+
+.pim-muted-chip {
+  @apply text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full font-medium;
+}
+
+.pim-toolbar {
+  @apply bg-surface border border-gray-200 rounded-2xl p-3 text-xs font-semibold text-gray-600;
+}
