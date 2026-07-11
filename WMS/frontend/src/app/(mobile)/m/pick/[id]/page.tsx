@@ -121,14 +121,14 @@ export default function PickDetailPage() {
   if (loading) {
     return (
       <div className="flex justify-center py-24">
-        <Loader2 className="w-8 h-8 animate-spin text-slate-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-gray-500" />
       </div>
     );
   }
 
   if (!order) {
     return (
-      <div className="text-center py-24 text-rose-400 text-xs">
+      <div className="text-center py-24 text-rose-600 text-xs">
         Không tìm thấy thông tin đơn nhặt hàng.
       </div>
     );
@@ -140,18 +140,18 @@ export default function PickDetailPage() {
     <div className="space-y-4 max-w-md mx-auto">
       {/* Header */}
       <div className="flex items-center gap-2">
-        <Link href="/m/pick" className="p-1 hover:bg-slate-900 rounded-lg">
-          <ArrowLeft className="w-5 h-5 text-slate-400" />
+        <Link href="/m/pick" className="p-1 hover:bg-surface rounded-lg">
+          <ArrowLeft className="w-5 h-5 text-gray-500" />
         </Link>
         <div>
-          <h1 className="text-xs font-bold text-slate-400">CHI TIẾT NHẶT HÀNG</h1>
-          <h2 className="text-sm font-extrabold text-slate-200">{order.fulfillment_number}</h2>
+          <h1 className="text-xs font-bold text-gray-500">CHI TIẾT NHẶT HÀNG</h1>
+          <h2 className="text-sm font-extrabold text-gray-800">{order.fulfillment_number}</h2>
         </div>
       </div>
 
       {/* Target Items List */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
-        <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-850 pb-2">
+      <div className="bg-surface border border-gray-200 shadow-sm rounded-2xl p-4 space-y-3">
+        <h3 className="text-xs font-extrabold text-gray-500 uppercase tracking-wider border-b border-gray-200 pb-2">
           Danh sách sản phẩm
         </h3>
         <div className="space-y-2">
@@ -162,8 +162,8 @@ export default function PickDetailPage() {
                 key={item.id}
                 className={`p-3 rounded-xl border text-xs flex flex-col gap-1 ${
                   finished
-                    ? "bg-emerald-950/20 border-emerald-900/40 text-emerald-400"
-                    : "bg-slate-950 border-slate-850 text-slate-200"
+                    ? "bg-emerald-50 border border-emerald-200 border-emerald-900/40 text-emerald-600"
+                    : "bg-surface border-gray-200 text-gray-800"
                 }`}
               >
                 <div className="flex justify-between font-bold">
@@ -172,8 +172,8 @@ export default function PickDetailPage() {
                     {item.picked_qty} / {item.quantity}
                   </span>
                 </div>
-                <div className="text-[10px] text-slate-400 font-semibold">{item.product_name}</div>
-                <div className="flex items-center gap-1 text-[9px] text-indigo-400 font-bold mt-1">
+                <div className="text-[10px] text-gray-500 font-semibold">{item.product_name}</div>
+                <div className="flex items-center gap-1 text-[9px] text-indigo-600 font-bold mt-1">
                   <MapPin className="w-3.5 h-3.5" />
                   <span>Vị trí: {getLocationCode(item.location_id)}</span>
                 </div>
@@ -188,8 +188,8 @@ export default function PickDetailPage() {
         <div
           className={`p-3 rounded-xl text-xs font-bold flex items-center gap-2 border ${
             scanMessage.type === "success"
-              ? "bg-emerald-950/50 text-emerald-400 border-emerald-900/50"
-              : "bg-rose-950/50 text-rose-400 border-rose-900/50"
+              ? "bg-emerald-50 text-emerald-700 border border-emerald-200 text-emerald-600 border-emerald-900/50"
+              : "bg-rose-50 text-rose-700 border border-rose-200 text-rose-600 border-rose-900/50"
           }`}
         >
           {scanMessage.type === "success" ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
@@ -202,8 +202,8 @@ export default function PickDetailPage() {
         <MobileScanner onScanSuccess={handleScanSuccess} placeholder="Quét mã vạch (EAN-13)..." scanType="product" />
       ) : (
         <div className="bg-emerald-950/40 border border-emerald-900/50 rounded-2xl p-6 text-center space-y-3">
-          <CheckCircle className="w-10 h-10 text-emerald-400 mx-auto" />
-          <div className="text-xs font-bold text-emerald-400">Đã Nhặt Đầy Đủ Sản Phẩm!</div>
+          <CheckCircle className="w-10 h-10 text-emerald-600 mx-auto" />
+          <div className="text-xs font-bold text-emerald-600">Đã Nhặt Đầy Đủ Sản Phẩm!</div>
           <button
             onClick={handleCompletePick}
             className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition-colors"

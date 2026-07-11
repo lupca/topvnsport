@@ -254,11 +254,11 @@ export default function WarehousesPage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-xl font-extrabold text-slate-100 flex items-center gap-2">
-            <Home className="w-5 h-5 text-indigo-500" />
+          <h2 className="text-xl font-extrabold text-gray-900 flex items-center gap-2">
+            <Home className="w-5 h-5 text-indigo-600" />
             <span>Kho hàng & Vị trí</span>
           </h2>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-gray-500 mt-1">
             Quản lý danh sách kho và các ô kệ lưu trữ chi tiết (STORAGE, RECEIVING, PACKING, SHIPPING)
           </p>
         </div>
@@ -275,16 +275,16 @@ export default function WarehousesPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left: Warehouse List */}
         <div className="lg:col-span-5 space-y-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-sm">
-            <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-widest mb-4">
+          <div className="bg-surface border border-gray-200 shadow-sm rounded-2xl p-4 shadow-sm">
+            <h3 className="text-xs font-extrabold text-gray-500 uppercase tracking-widest mb-4">
               Danh sách Kho ({warehouses.length})
             </h3>
             {loadingWh ? (
               <div className="flex justify-center py-8">
-                <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+                <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
               </div>
             ) : warehouses.length === 0 ? (
-              <div className="text-xs text-slate-400 text-center py-8">Chưa có kho hàng nào.</div>
+              <div className="text-xs text-gray-500 text-center py-8">Chưa có kho hàng nào.</div>
             ) : (
               <div className="divide-y divide-slate-800 max-h-[500px] overflow-y-auto">
                 {warehouses.map((wh) => (
@@ -294,17 +294,17 @@ export default function WarehousesPage() {
                     className={`p-3 rounded-xl cursor-pointer transition-all flex items-center justify-between group ${
                       selectedWarehouse?.id === wh.id
                         ? "bg-indigo-950/30 border border-indigo-900/50"
-                        : "hover:bg-slate-850/50 border border-transparent"
+                        : "hover:bg-gray-50 border border-transparent"
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${wh.is_active ? "bg-emerald-950/30 text-emerald-400" : "bg-slate-800 text-slate-400"}`}>
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${wh.is_active ? "bg-emerald-50 border border-emerald-200 text-emerald-600" : "bg-gray-100 text-gray-500"}`}>
                         <Home className="w-4.5 h-4.5" />
                       </div>
                       <div>
-                        <h4 className="text-xs font-bold text-slate-200">{wh.name}</h4>
-                        <p className="text-[10px] text-slate-400">Mã: {wh.code} • Created: {new Date(wh.created_at).toLocaleDateString()}</p>
-                        {wh.address && <p className="text-[9px] text-slate-400 mt-0.5">{wh.address}</p>}
+                        <h4 className="text-xs font-bold text-gray-800">{wh.name}</h4>
+                        <p className="text-[10px] text-gray-500">Mã: {wh.code} • Created: {new Date(wh.created_at).toLocaleDateString()}</p>
+                        {wh.address && <p className="text-[9px] text-gray-500 mt-0.5">{wh.address}</p>}
                       </div>
                     </div>
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -313,7 +313,7 @@ export default function WarehousesPage() {
                           e.stopPropagation();
                           openWhModal(wh);
                         }}
-                        className="p-1 hover:bg-slate-850 text-slate-400 hover:text-indigo-400 rounded"
+                        className="p-1 hover:bg-gray-100 text-gray-500 hover:text-indigo-600 rounded"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
@@ -322,11 +322,11 @@ export default function WarehousesPage() {
                           e.stopPropagation();
                           handleWhDelete(wh.id);
                         }}
-                        className="p-1 hover:bg-slate-850 text-slate-400 hover:text-rose-400 rounded"
+                        className="p-1 hover:bg-gray-100 text-gray-500 hover:text-rose-600 rounded"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
-                      <ChevronRight className="w-4 h-4 text-slate-500" />
+                      <ChevronRight className="w-4 h-4 text-gray-500" />
                     </div>
                   </div>
                 ))}
@@ -338,14 +338,14 @@ export default function WarehousesPage() {
         {/* Right: Locations Detail Drill-down */}
         <div className="lg:col-span-7 space-y-4">
           {selectedWarehouse ? (
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
-              <div className="flex justify-between items-center border-b pb-3 border-slate-800">
+            <div className="bg-surface border border-gray-200 shadow-sm rounded-2xl p-6 shadow-sm space-y-4">
+              <div className="flex justify-between items-center border-b pb-3 border-gray-200">
                 <div>
-                  <h3 className="text-sm font-extrabold text-slate-100 flex items-center gap-2">
-                    <MapPin className="w-4.5 h-4.5 text-indigo-400" />
+                  <h3 className="text-sm font-extrabold text-gray-900 flex items-center gap-2">
+                    <MapPin className="w-4.5 h-4.5 text-indigo-600" />
                     <span>Vị trí thuộc: {selectedWarehouse.name}</span>
                   </h3>
-                  <p className="text-[10px] text-slate-400 mt-0.5">Quản lý sơ đồ ô kệ lưu trữ chi tiết</p>
+                  <p className="text-[10px] text-gray-500 mt-0.5">Quản lý sơ đồ ô kệ lưu trữ chi tiết</p>
                 </div>
                 <button
                   onClick={() => openLocModal()}
@@ -358,14 +358,14 @@ export default function WarehousesPage() {
 
               {loadingLoc ? (
                 <div className="flex justify-center py-12">
-                  <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
+                  <Loader2 className="w-8 h-8 animate-spin text-gray-500" />
                 </div>
               ) : locations.length === 0 ? (
-                <div className="text-center py-12 border-2 border-dashed border-slate-800 rounded-xl">
-                  <p className="text-xs text-slate-400">Kho hàng này chưa được định hình vị trí.</p>
+                <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-xl">
+                  <p className="text-xs text-gray-500">Kho hàng này chưa được định hình vị trí.</p>
                   <button
                     onClick={() => openLocModal()}
-                    className="mt-3 text-xs font-bold text-indigo-400 hover:text-indigo-300"
+                    className="mt-3 text-xs font-bold text-indigo-600 hover:text-indigo-300"
                   >
                     Tạo vị trí đầu tiên ngay
                   </button>
@@ -374,7 +374,7 @@ export default function WarehousesPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
-                      <tr className="border-b border-slate-800 text-slate-400 font-bold">
+                      <tr className="border-b border-gray-200 text-gray-500 font-bold">
                         <th className="py-2">Mã Vị trí</th>
                         <th className="py-2">Khu vực (Zone)</th>
                         <th className="py-2">Loại Vị trí</th>
@@ -384,21 +384,21 @@ export default function WarehousesPage() {
                     </thead>
                     <tbody>
                       {locations.map((loc) => (
-                        <tr key={loc.id} className="border-b border-slate-800 hover:bg-slate-800/30">
-                          <td className="py-3 font-semibold text-slate-200">{loc.location_code}</td>
-                          <td className="py-3 text-slate-300">{loc.zone || "-"}</td>
+                        <tr key={loc.id} className="border-b border-gray-200 hover:bg-gray-50">
+                          <td className="py-3 font-semibold text-gray-800">{loc.location_code}</td>
+                          <td className="py-3 text-gray-700">{loc.zone || "-"}</td>
                           <td className="py-3">
                             <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${
-                              loc.type === "STORAGE" ? "bg-blue-950/50 text-blue-400" :
-                              loc.type === "RECEIVING" ? "bg-amber-950/50 text-amber-400" :
-                              loc.type === "PACKING" ? "bg-violet-950/50 text-violet-400" :
-                              "bg-emerald-950/50 text-emerald-400"
+                              loc.type === "STORAGE" ? "bg-blue-50 text-blue-700 border border-blue-200 text-blue-600" :
+                              loc.type === "RECEIVING" ? "bg-amber-50 text-amber-700 border border-amber-200 text-amber-600" :
+                              loc.type === "PACKING" ? "bg-violet-950/50 text-violet-600" :
+                              "bg-emerald-50 text-emerald-700 border border-emerald-200 text-emerald-600"
                             }`}>
                               {loc.type}
                             </span>
                           </td>
                           <td className="py-3">
-                            <span className={`inline-flex items-center gap-1 text-[10px] font-bold ${loc.is_active ? "text-emerald-400" : "text-slate-400"}`}>
+                            <span className={`inline-flex items-center gap-1 text-[10px] font-bold ${loc.is_active ? "text-emerald-600" : "text-gray-500"}`}>
                               <span className={`w-1.5 h-1.5 rounded-full ${loc.is_active ? "bg-emerald-500" : "bg-slate-700"}`}></span>
                               {loc.is_active ? "Hoạt động" : "Tạm khóa"}
                             </span>
@@ -406,13 +406,13 @@ export default function WarehousesPage() {
                           <td className="py-3 text-right space-x-1.5">
                             <button
                               onClick={() => openLocModal(loc)}
-                              className="p-1 hover:bg-slate-850 text-slate-400 hover:text-indigo-400 rounded inline-block"
+                              className="p-1 hover:bg-gray-100 text-gray-500 hover:text-indigo-600 rounded inline-block"
                             >
                               <Edit2 className="w-3.5 h-3.5" />
                             </button>
                             <button
                               onClick={() => handleLocDelete(loc.id)}
-                              className="p-1 hover:bg-slate-850 text-slate-400 hover:text-rose-400 rounded inline-block"
+                              className="p-1 hover:bg-gray-100 text-gray-500 hover:text-rose-600 rounded inline-block"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -425,7 +425,7 @@ export default function WarehousesPage() {
               )}
             </div>
           ) : (
-            <div className="h-full flex items-center justify-center p-8 border border-dashed border-slate-800 rounded-2xl bg-slate-900 text-slate-400 text-xs text-center py-20">
+            <div className="h-full flex items-center justify-center p-8 border border-dashed border-gray-200 rounded-2xl bg-surface text-gray-500 text-xs text-center py-20">
               Vui lòng chọn hoặc thêm kho hàng để xem danh sách vị trí chi tiết.
             </div>
           )}
@@ -434,48 +434,48 @@ export default function WarehousesPage() {
 
       {/* --- Warehouse Create/Edit Modal --- */}
       {isWhModalOpen && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 rounded-2xl w-full max-w-md p-6 shadow-xl border border-slate-800 space-y-4">
-            <div className="flex justify-between items-center border-b pb-3 border-slate-800">
-              <h3 className="text-sm font-extrabold text-slate-100">
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-surface rounded-2xl w-full max-w-md p-6 shadow-xl border border-gray-200 space-y-4">
+            <div className="flex justify-between items-center border-b pb-3 border-gray-200">
+              <h3 className="text-sm font-extrabold text-gray-900">
                 {editingWh ? "Cập nhật Kho Hàng" : "Thêm Kho Hàng Mới"}
               </h3>
-              <button onClick={() => setIsWhModalOpen(false)} className="text-slate-400 hover:text-slate-200">
+              <button onClick={() => setIsWhModalOpen(false)} className="text-gray-500 hover:text-gray-800">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleWhSubmit} className="space-y-4 text-xs">
               <div className="space-y-1">
-                <label className="font-semibold text-slate-300 block">Mã Kho (Code) *</label>
+                <label className="font-semibold text-gray-700 block">Mã Kho (Code) *</label>
                 <input
                   type="text"
                   value={whCode}
                   onChange={(e) => setWhCode(e.target.value.toUpperCase())}
                   disabled={!!editingWh}
                   placeholder="VD: WH-HCM, WH-HN"
-                  className="w-full p-2.5 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:bg-slate-800 disabled:text-slate-400 bg-slate-950 text-slate-100"
+                  className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:bg-gray-100 disabled:text-gray-500 bg-surface text-gray-900"
                   required
                 />
               </div>
               <div className="space-y-1">
-                <label className="font-semibold text-slate-300 block">Tên Kho *</label>
+                <label className="font-semibold text-gray-700 block">Tên Kho *</label>
                 <input
                   type="text"
                   value={whName}
                   onChange={(e) => setWhName(e.target.value)}
                   placeholder="VD: Kho HCM Quận 9"
-                  className="w-full p-2.5 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-950 text-slate-100"
+                  className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-surface text-gray-900"
                   required
                 />
               </div>
               <div className="space-y-1">
-                <label className="font-semibold text-slate-300 block">Địa chỉ</label>
+                <label className="font-semibold text-gray-700 block">Địa chỉ</label>
                 <input
                   type="text"
                   value={whAddress}
                   onChange={(e) => setWhAddress(e.target.value)}
                   placeholder="Đường, Phường, Quận, Thành phố..."
-                  className="w-full p-2.5 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-950 text-slate-100"
+                  className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-surface text-gray-900"
                 />
               </div>
               <div className="flex items-center gap-2 py-1">
@@ -484,15 +484,15 @@ export default function WarehousesPage() {
                   id="whActive"
                   checked={whActive}
                   onChange={(e) => setWhActive(e.target.checked)}
-                  className="w-4 h-4 text-indigo-600 border-slate-800 rounded focus:ring-indigo-500 bg-slate-950"
+                  className="w-4 h-4 text-indigo-600 border-gray-200 rounded focus:ring-indigo-500 bg-surface"
                 />
-                <label htmlFor="whActive" className="font-semibold text-slate-300 cursor-pointer">Hoạt động</label>
+                <label htmlFor="whActive" className="font-semibold text-gray-700 cursor-pointer">Hoạt động</label>
               </div>
-              <div className="flex justify-end gap-2 border-t pt-4 border-slate-800 bg-transparent">
+              <div className="flex justify-end gap-2 border-t pt-4 border-gray-200 bg-transparent">
                 <button
                   type="button"
                   onClick={() => setIsWhModalOpen(false)}
-                  className="px-4 py-2 border border-slate-800 text-slate-400 font-bold rounded-lg hover:bg-slate-800 bg-transparent"
+                  className="px-4 py-2 border border-gray-200 text-gray-500 font-bold rounded-lg hover:bg-gray-100 bg-transparent"
                 >
                   Hủy
                 </button>
@@ -510,44 +510,44 @@ export default function WarehousesPage() {
 
       {/* --- Location Create/Edit Modal --- */}
       {isLocModalOpen && selectedWarehouse && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 rounded-2xl w-full max-w-md p-6 shadow-xl border border-slate-800 space-y-4">
-            <div className="flex justify-between items-center border-b pb-3 border-slate-800">
-              <h3 className="text-sm font-extrabold text-slate-100">
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-surface rounded-2xl w-full max-w-md p-6 shadow-xl border border-gray-200 space-y-4">
+            <div className="flex justify-between items-center border-b pb-3 border-gray-200">
+              <h3 className="text-sm font-extrabold text-gray-900">
                 {editingLoc ? "Cập nhật Vị trí" : `Thêm Vị trí cho ${selectedWarehouse.name}`}
               </h3>
-              <button onClick={() => setIsLocModalOpen(false)} className="text-slate-400 hover:text-slate-200">
+              <button onClick={() => setIsLocModalOpen(false)} className="text-gray-500 hover:text-gray-800">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleLocSubmit} className="space-y-4 text-xs">
               <div className="space-y-1">
-                <label className="font-semibold text-slate-300 block">Mã Vị trí / Ô kệ (Location Code) *</label>
+                <label className="font-semibold text-gray-700 block">Mã Vị trí / Ô kệ (Location Code) *</label>
                 <input
                   type="text"
                   value={locCode}
                   onChange={(e) => setLocCode(e.target.value.toUpperCase())}
                   placeholder="VD: HCM-ZONEA-ROW1-SHELF2"
-                  className="w-full p-2.5 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-950 text-slate-100"
+                  className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-surface text-gray-900"
                   required
                 />
               </div>
               <div className="space-y-1">
-                <label className="font-semibold text-slate-300 block">Khu vực (Zone)</label>
+                <label className="font-semibold text-gray-700 block">Khu vực (Zone)</label>
                 <input
                   type="text"
                   value={locZone}
                   onChange={(e) => setLocZone(e.target.value)}
                   placeholder="VD: ZONE-A, ZONE-B"
-                  className="w-full p-2.5 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-950 text-slate-100"
+                  className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-surface text-gray-900"
                 />
               </div>
               <div className="space-y-1">
-                <label className="font-semibold text-slate-300 block">Loại Vị trí (Location Type)</label>
+                <label className="font-semibold text-gray-700 block">Loại Vị trí (Location Type)</label>
                 <select
                   value={locType}
                   onChange={(e) => setLocType(e.target.value)}
-                  className="w-full p-2.5 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-950 text-slate-100"
+                  className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-surface text-gray-900"
                 >
                   <option value="STORAGE">STORAGE (Lưu kho tiêu chuẩn)</option>
                   <option value="RECEIVING">RECEIVING (Khu vực nhận hàng)</option>
@@ -561,15 +561,15 @@ export default function WarehousesPage() {
                   id="locActive"
                   checked={locActive}
                   onChange={(e) => setLocActive(e.target.checked)}
-                  className="w-4 h-4 text-indigo-600 border-slate-800 rounded focus:ring-indigo-500 bg-slate-950"
+                  className="w-4 h-4 text-indigo-600 border-gray-200 rounded focus:ring-indigo-500 bg-surface"
                 />
-                <label htmlFor="locActive" className="font-semibold text-slate-300 cursor-pointer">Hoạt động</label>
+                <label htmlFor="locActive" className="font-semibold text-gray-700 cursor-pointer">Hoạt động</label>
               </div>
-              <div className="flex justify-end gap-2 border-t pt-4 border-slate-800 bg-transparent">
+              <div className="flex justify-end gap-2 border-t pt-4 border-gray-200 bg-transparent">
                 <button
                   type="button"
                   onClick={() => setIsLocModalOpen(false)}
-                  className="px-4 py-2 border border-slate-800 text-slate-400 font-bold rounded-lg hover:bg-slate-800 bg-transparent"
+                  className="px-4 py-2 border border-gray-200 text-gray-500 font-bold rounded-lg hover:bg-gray-100 bg-transparent"
                 >
                   Hủy
                 </button>

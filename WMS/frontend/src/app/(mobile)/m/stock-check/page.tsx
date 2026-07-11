@@ -115,44 +115,44 @@ export default function StockCheckPage() {
     <div className="space-y-4 max-w-md mx-auto">
       {/* Header */}
       <div className="flex items-center gap-2">
-        <Link href="/m" className="p-1 hover:bg-slate-900 rounded-lg">
-          <ArrowLeft className="w-5 h-5 text-slate-400" />
+        <Link href="/m" className="p-1 hover:bg-surface rounded-lg">
+          <ArrowLeft className="w-5 h-5 text-gray-500" />
         </Link>
         <div>
-          <h1 className="text-xs font-bold text-slate-400 uppercase">Tác vụ Scanner</h1>
-          <h2 className="text-sm font-extrabold text-slate-200 flex items-center gap-1.5">
-            <Sliders className="w-4.5 h-4.5 text-indigo-400" /> Kiểm Kho (Stock Check)
+          <h1 className="text-xs font-bold text-gray-500 uppercase">Tác vụ Scanner</h1>
+          <h2 className="text-sm font-extrabold text-gray-800 flex items-center gap-1.5">
+            <Sliders className="w-4.5 h-4.5 text-indigo-600" /> Kiểm Kho (Stock Check)
           </h2>
         </div>
       </div>
 
       {/* Success/Error Banner */}
       {successMessage && (
-        <div className="p-3 bg-emerald-950/50 border border-emerald-900/50 rounded-xl text-xs font-bold text-emerald-400 flex items-center gap-2">
+        <div className="p-3 bg-emerald-50 text-emerald-700 border border-emerald-200 border border-emerald-900/50 rounded-xl text-xs font-bold text-emerald-600 flex items-center gap-2">
           <CheckCircle className="w-4 h-4" />
           <span>{successMessage}</span>
         </div>
       )}
       {error && (
-        <div className="p-3 bg-rose-950/50 border border-rose-900/50 rounded-xl text-xs font-bold text-rose-400 flex items-center gap-2">
+        <div className="p-3 bg-rose-50 text-rose-700 border border-rose-200 border border-rose-900/50 rounded-xl text-xs font-bold text-rose-600 flex items-center gap-2">
           <AlertCircle className="w-4 h-4" />
           <span>{error}</span>
         </div>
       )}
 
       {/* Settings Form */}
-      <form onSubmit={handleAdjustSubmit} className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-4">
-        <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-850 pb-2">
+      <form onSubmit={handleAdjustSubmit} className="bg-surface border border-gray-200 shadow-sm rounded-2xl p-4 space-y-4">
+        <h3 className="text-xs font-extrabold text-gray-500 uppercase tracking-wider border-b border-gray-200 pb-2">
           Thông tin kiểm kho
         </h3>
 
         {/* Vị trí ô kệ */}
         <div className="space-y-1">
-          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">Chọn Vị trí Ô kệ *</label>
+          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wide">Chọn Vị trí Ô kệ *</label>
           <select
             value={selectedLocId}
             onChange={(e) => setSelectedLocId(e.target.value)}
-            className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+            className="w-full p-3 bg-surface border border-gray-200 rounded-xl text-xs text-gray-800 focus:outline-none focus:border-indigo-500"
             required
           >
             {locations.map((loc) => (
@@ -165,35 +165,35 @@ export default function StockCheckPage() {
 
         {/* Scanned Sku Display */}
         {skuInfo ? (
-          <div className="p-3 bg-slate-950 border border-slate-850 rounded-xl text-xs space-y-2">
-            <div className="font-bold text-slate-200">{skuInfo.product_name}</div>
-            {skuInfo.variant_name && <p className="text-[10px] text-slate-400 font-semibold">Variant: {skuInfo.variant_name}</p>}
-            <div className="flex items-center gap-1.5 text-[10px] text-indigo-400 font-bold">
+          <div className="p-3 bg-surface border border-gray-200 rounded-xl text-xs space-y-2">
+            <div className="font-bold text-gray-800">{skuInfo.product_name}</div>
+            {skuInfo.variant_name && <p className="text-[10px] text-gray-500 font-semibold">Variant: {skuInfo.variant_name}</p>}
+            <div className="flex items-center gap-1.5 text-[10px] text-indigo-600 font-bold">
               <Tag className="w-3.5 h-3.5" />
               <span>SKU: {skuInfo.sku_code}</span>
             </div>
 
             {/* Adjust Quantities & Note */}
-            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-850">
+            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-gray-200">
               <div className="space-y-1">
-                <label className="block text-[9px] font-bold text-slate-400">SL chênh lệch (Delta) *</label>
+                <label className="block text-[9px] font-bold text-gray-500">SL chênh lệch (Delta) *</label>
                 <input
                   type="number"
                   placeholder="Ví dụ: +2, -1"
                   value={adjustQty || ""}
                   onChange={(e) => setAdjustQty(parseInt(e.target.value) || 0)}
-                  className="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-slate-100 font-bold focus:outline-none text-center"
+                  className="w-full p-2 bg-surface border border-gray-200 shadow-sm rounded-lg text-gray-900 font-bold focus:outline-none text-center"
                   required
                 />
               </div>
               <div className="space-y-1">
-                <label className="block text-[9px] font-bold text-slate-400">Ghi chú kiểm kho</label>
+                <label className="block text-[9px] font-bold text-gray-500">Ghi chú kiểm kho</label>
                 <input
                   type="text"
                   placeholder="Lý do..."
                   value={adjustNote}
                   onChange={(e) => setAdjustNote(e.target.value)}
-                  className="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-slate-100 focus:outline-none"
+                  className="w-full p-2 bg-surface border border-gray-200 shadow-sm rounded-lg text-gray-900 focus:outline-none"
                 />
               </div>
             </div>
@@ -209,7 +209,7 @@ export default function StockCheckPage() {
             </div>
           </div>
         ) : (
-          <div className="p-4 bg-slate-950/50 border border-slate-850 border-dashed rounded-xl text-center text-xs text-slate-500 py-6">
+          <div className="p-4 bg-surface/50 border border-gray-200 border-dashed rounded-xl text-center text-xs text-gray-500 py-6">
             Hãy quét mã vạch sản phẩm bên dưới để tải thông tin SKU.
           </div>
         )}

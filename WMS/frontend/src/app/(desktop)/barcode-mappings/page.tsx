@@ -173,10 +173,10 @@ export default function BarcodeMappingsPage() {
           <img
             src={bm.image_url}
             alt={bm.product_name}
-            className="w-10 h-10 object-contain rounded-lg border border-slate-800"
+            className="w-10 h-10 object-contain rounded-lg border border-gray-200"
           />
         ) : (
-          <div className="w-10 h-10 rounded-lg bg-slate-850 flex items-center justify-center text-slate-400 border border-slate-800">
+          <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500 border border-gray-200">
             <ImageIcon className="w-5 h-5" />
           </div>
         )
@@ -186,49 +186,49 @@ export default function BarcodeMappingsPage() {
       key: "barcode",
       label: "Mã Vạch (Barcode)",
       render: (bm: BarcodeMapping) => (
-        <span className="font-bold text-slate-200 tracking-wider text-xs">{bm.barcode}</span>
+        <span className="font-bold text-gray-800 tracking-wider text-xs">{bm.barcode}</span>
       )
     },
     {
       key: "barcode_type",
       label: "Loại mã",
       render: (bm: BarcodeMapping) => (
-        <span className="text-slate-400 font-semibold">{bm.barcode_type || "N/A"}</span>
+        <span className="text-gray-500 font-semibold">{bm.barcode_type || "N/A"}</span>
       )
     },
     {
       key: "sku_code",
       label: "Mã SKU",
       render: (bm: BarcodeMapping) => (
-        <span className="font-bold text-indigo-400">{bm.sku_code}</span>
+        <span className="font-bold text-indigo-600">{bm.sku_code}</span>
       )
     },
     {
       key: "product_name",
       label: "Sản Phẩm",
       render: (bm: BarcodeMapping) => (
-        <span className="font-semibold text-slate-200">{bm.product_name}</span>
+        <span className="font-semibold text-gray-800">{bm.product_name}</span>
       )
     },
     {
       key: "variant_name",
       label: "Biến Thể",
       render: (bm: BarcodeMapping) => (
-        <span className="text-slate-400 font-medium">{bm.variant_name || "-"}</span>
+        <span className="text-gray-500 font-medium">{bm.variant_name || "-"}</span>
       )
     }
   ];
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8 text-slate-100">
+    <div className="p-8 max-w-7xl mx-auto space-y-8 text-gray-900">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-xl font-extrabold text-slate-100 flex items-center gap-2">
-            <Barcode className="w-5 h-5 text-indigo-500" />
+          <h2 className="text-xl font-extrabold text-gray-900 flex items-center gap-2">
+            <Barcode className="w-5 h-5 text-indigo-600" />
             <span>Liên kết Mã vạch (Barcode Mappings)</span>
           </h2>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-gray-500 mt-1">
             Định nghĩa liên kết giữa mã vạch quét từ máy quét (EAN-13, Code 128, etc.) với mã SKU của sản phẩm
           </p>
         </div>
@@ -242,7 +242,7 @@ export default function BarcodeMappingsPage() {
       </div>
 
       {error && (
-        <div className="p-4 bg-rose-950/50 border border-rose-900/50 rounded-2xl text-xs font-semibold text-rose-400">
+        <div className="p-4 bg-rose-50 text-rose-700 border border-rose-200 border border-rose-900/50 rounded-2xl text-xs font-semibold text-rose-600">
           {error}
         </div>
       )}
@@ -264,85 +264,85 @@ export default function BarcodeMappingsPage() {
 
       {/* --- Create/Edit Mapping Modal --- */}
       {isOpen && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 rounded-2xl w-full max-w-md p-6 shadow-xl border border-slate-800 space-y-4">
-            <div className="flex justify-between items-center border-b pb-3 border-slate-800">
-              <h3 className="text-sm font-extrabold text-slate-100">
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-surface rounded-2xl w-full max-w-md p-6 shadow-xl border border-gray-200 space-y-4">
+            <div className="flex justify-between items-center border-b pb-3 border-gray-200">
+              <h3 className="text-sm font-extrabold text-gray-900">
                 {editingMapping ? "Cập nhật mã vạch" : "Tạo liên kết mã vạch mới"}
               </h3>
-              <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-slate-200">
+              <button onClick={() => setIsOpen(false)} className="text-gray-500 hover:text-gray-800">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4 text-xs">
               <div className="space-y-1">
-                <label className="font-semibold text-slate-300 block">Mã Vạch (Barcode) *</label>
+                <label className="font-semibold text-gray-700 block">Mã Vạch (Barcode) *</label>
                 <input
                   type="text"
                   value={barcode}
                   onChange={(e) => setBarcode(e.target.value)}
                   placeholder="VD: 8931234567890"
-                  className="w-full p-2.5 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-950 text-slate-100"
+                  className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-surface text-gray-900"
                   required
                 />
               </div>
               <div className="space-y-1">
-                <label className="font-semibold text-slate-300 block">Loại mã vạch (Barcode Type)</label>
+                <label className="font-semibold text-gray-700 block">Loại mã vạch (Barcode Type)</label>
                 <input
                   type="text"
                   value={barcodeType}
                   onChange={(e) => setBarcodeType(e.target.value)}
                   placeholder="EAN-13, CODE-128, etc."
-                  className="w-full p-2.5 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-950 text-slate-100"
+                  className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-surface text-gray-900"
                 />
               </div>
               <div className="space-y-1">
-                <label className="font-semibold text-slate-300 block">Mã SKU của sản phẩm *</label>
+                <label className="font-semibold text-gray-700 block">Mã SKU của sản phẩm *</label>
                 <input
                   type="text"
                   value={skuCode}
                   onChange={(e) => setSkuCode(e.target.value)}
                   placeholder="VD: SKU-SPORTS-BLUE-M"
-                  className="w-full p-2.5 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-950 text-slate-100"
+                  className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-surface text-gray-900"
                   required
                 />
               </div>
               <div className="space-y-1">
-                <label className="font-semibold text-slate-300 block">Tên sản phẩm *</label>
+                <label className="font-semibold text-gray-700 block">Tên sản phẩm *</label>
                 <input
                   type="text"
                   value={productName}
                   onChange={(e) => setProductName(e.target.value)}
                   placeholder="VD: Áo thun thể thao nam thoáng khí"
-                  className="w-full p-2.5 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-950 text-slate-100"
+                  className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-surface text-gray-900"
                   required
                 />
               </div>
               <div className="space-y-1">
-                <label className="font-semibold text-slate-300 block">Tên biến thể (Kích thước, Màu sắc)</label>
+                <label className="font-semibold text-gray-700 block">Tên biến thể (Kích thước, Màu sắc)</label>
                 <input
                   type="text"
                   value={variantName}
                   onChange={(e) => setVariantName(e.target.value)}
                   placeholder="VD: Xanh dương / Size M"
-                  className="w-full p-2.5 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-950 text-slate-100"
+                  className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-surface text-gray-900"
                 />
               </div>
               <div className="space-y-1">
-                <label className="font-semibold text-slate-300 block">Đường dẫn ảnh sản phẩm (URL)</label>
+                <label className="font-semibold text-gray-700 block">Đường dẫn ảnh sản phẩm (URL)</label>
                 <input
                   type="text"
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
                   placeholder="https://example.com/image.jpg"
-                  className="w-full p-2.5 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-950 text-slate-100"
+                  className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-surface text-gray-900"
                 />
               </div>
-              <div className="flex justify-end gap-2 border-t pt-4 border-slate-800 bg-transparent">
+              <div className="flex justify-end gap-2 border-t pt-4 border-gray-200 bg-transparent">
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="px-4 py-2 border border-slate-800 text-slate-400 font-bold rounded-lg hover:bg-slate-800 bg-transparent"
+                  className="px-4 py-2 border border-gray-200 text-gray-500 font-bold rounded-lg hover:bg-gray-100 bg-transparent"
                 >
                   Hủy
                 </button>
@@ -360,18 +360,18 @@ export default function BarcodeMappingsPage() {
 
       {/* --- Camera Scanner Modal --- */}
       {isScanOpen && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 rounded-2xl w-full max-w-md p-6 shadow-xl border border-slate-800 space-y-4">
-            <div className="flex justify-between items-center border-b pb-3 border-slate-800">
-              <h3 className="text-sm font-extrabold text-slate-100 flex items-center gap-2">
-                <Scan className="w-5 h-5 text-indigo-500" />
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-surface rounded-2xl w-full max-w-md p-6 shadow-xl border border-gray-200 space-y-4">
+            <div className="flex justify-between items-center border-b pb-3 border-gray-200">
+              <h3 className="text-sm font-extrabold text-gray-900 flex items-center gap-2">
+                <Scan className="w-5 h-5 text-indigo-600" />
                 <span>Quét Barcode Sản Phẩm</span>
               </h3>
-              <button onClick={() => setIsScanOpen(false)} className="text-slate-400 hover:text-slate-200">
+              <button onClick={() => setIsScanOpen(false)} className="text-gray-500 hover:text-gray-800">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="text-slate-350 text-xs">
+            <div className="text-gray-500 text-xs">
               Sử dụng webcam của bạn hoặc dùng phần Giả lập nhập mã thủ công ở dưới để quét mã vạch (EAN-13).
             </div>
             <MobileScanner onScanSuccess={handleScanSuccess} placeholder="Nhập/quét mã EAN-13 sản phẩm..." scanType="product" />

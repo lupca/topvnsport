@@ -98,7 +98,7 @@ export default function TransactionsPage() {
       key: "created_at",
       label: "Thời gian",
       render: (tx: StockTransaction) => (
-        <span className="text-slate-450 text-slate-400 font-medium">
+        <span className="text-gray-500 text-gray-500 font-medium">
           {new Date(tx.created_at).toLocaleString("vi-VN")}
         </span>
       )
@@ -107,7 +107,7 @@ export default function TransactionsPage() {
       key: "sku_code",
       label: "Mã SKU",
       render: (tx: StockTransaction) => (
-        <span className="font-bold text-slate-200">{tx.sku_code}</span>
+        <span className="font-bold text-gray-800">{tx.sku_code}</span>
       )
     },
     {
@@ -115,11 +115,11 @@ export default function TransactionsPage() {
       label: "Loại giao dịch",
       render: (tx: StockTransaction) => (
         <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-          tx.transaction_type === "INBOUND" ? "bg-emerald-950/50 text-emerald-400 border border-emerald-900/50" :
-          tx.transaction_type === "OUTBOUND" ? "bg-rose-950/50 text-rose-400 border border-rose-900/50" :
-          tx.transaction_type === "ADJUST" ? "bg-amber-950/50 text-amber-400 border border-amber-900/50" :
-          tx.transaction_type === "TRANSFER" ? "bg-blue-950/50 text-blue-400 border border-blue-900/50" :
-          "bg-slate-800 text-slate-300"
+          tx.transaction_type === "INBOUND" ? "bg-emerald-50 text-emerald-700 border border-emerald-200 text-emerald-600 border border-emerald-900/50" :
+          tx.transaction_type === "OUTBOUND" ? "bg-rose-50 text-rose-700 border border-rose-200 text-rose-600 border border-rose-900/50" :
+          tx.transaction_type === "ADJUST" ? "bg-amber-50 text-amber-700 border border-amber-200 text-amber-600 border border-amber-900/50" :
+          tx.transaction_type === "TRANSFER" ? "bg-blue-50 text-blue-700 border border-blue-200 text-blue-600 border border-blue-900/50" :
+          "bg-gray-100 text-gray-700"
         }`}>
           {tx.transaction_type}
         </span>
@@ -129,7 +129,7 @@ export default function TransactionsPage() {
       key: "quantity",
       label: "Số lượng (Delta)",
       render: (tx: StockTransaction) => (
-        <span className={`font-extrabold ${tx.quantity >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+        <span className={`font-extrabold ${tx.quantity >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
           {tx.quantity >= 0 ? `+${tx.quantity}` : tx.quantity}
         </span>
       )
@@ -138,7 +138,7 @@ export default function TransactionsPage() {
       key: "location_id",
       label: "Vị trí (Location)",
       render: (tx: StockTransaction) => (
-        <span className="bg-slate-850 text-slate-300 px-2 py-0.5 rounded font-bold border border-slate-800">
+        <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded font-bold border border-gray-200">
           {getLocationCode(tx.location_id)}
         </span>
       )
@@ -147,76 +147,76 @@ export default function TransactionsPage() {
       key: "note",
       label: "Chi tiết ghi chú / Ref",
       render: (tx: StockTransaction) => (
-        <span className="text-slate-450 text-slate-400 font-medium italic">{tx.note || "-"}</span>
+        <span className="text-gray-500 text-gray-500 font-medium italic">{tx.note || "-"}</span>
       )
     }
   ];
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8 text-slate-100">
+    <div className="p-8 max-w-7xl mx-auto space-y-8 text-gray-900">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-xl font-extrabold text-slate-100 flex items-center gap-2">
-            <History className="w-5 h-5 text-indigo-500" />
+          <h2 className="text-xl font-extrabold text-gray-900 flex items-center gap-2">
+            <History className="w-5 h-5 text-indigo-600" />
             <span>Nhật ký Giao dịch Kho (Transactions Ledger)</span>
           </h2>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-gray-500 mt-1">
             Tra cứu toàn bộ lịch sử biến động số lượng tồn kho (Nhập kho, xuất kho, điều chỉnh vật lý, dịch chuyển vị trí)
           </p>
         </div>
         <button
           onClick={fetchData}
-          className="p-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl transition-colors inline-flex items-center gap-1.5 font-bold text-xs text-slate-200"
+          className="p-2.5 bg-surface hover:bg-gray-100 border border-gray-200 rounded-xl transition-colors inline-flex items-center gap-1.5 font-bold text-xs text-gray-800"
         >
-          <RefreshCw className="w-4 h-4 text-slate-400" />
+          <RefreshCw className="w-4 h-4 text-gray-500" />
           <span>Làm mới</span>
         </button>
       </div>
 
       {/* Toolbar Filter */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-900 p-4 border border-slate-800 rounded-2xl shadow-sm">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-surface p-4 border border-gray-200 rounded-2xl shadow-sm">
         {/* Search SKU */}
         <div className="relative">
-          <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" />
+          <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-gray-500" />
           <input
             type="text"
             placeholder="Lọc theo mã SKU sản phẩm..."
             value={skuFilter}
             onChange={(e) => setSkuFilter(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 text-slate-100"
+            className="w-full pl-10 pr-4 py-2.5 bg-surface border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-900"
           />
         </div>
 
         {/* Filter Type */}
-        <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 px-3 py-2 rounded-xl">
-          <Filter className="w-4 h-4 text-slate-400" />
+        <div className="flex items-center gap-2 bg-surface border border-gray-200 px-3 py-2 rounded-xl">
+          <Filter className="w-4 h-4 text-gray-500" />
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="bg-transparent text-xs font-bold text-slate-200 focus:outline-none w-full"
+            className="bg-transparent text-xs font-bold text-gray-800 focus:outline-none w-full"
           >
-            <option value="ALL" className="bg-slate-900">Tất cả loại giao dịch</option>
-            <option value="INBOUND" className="bg-slate-900">INBOUND (Nhập kho)</option>
-            <option value="OUTBOUND" className="bg-slate-900">OUTBOUND (Xuất kho)</option>
-            <option value="ADJUST" className="bg-slate-900">ADJUST (Điều chỉnh số lượng)</option>
-            <option value="TRANSFER" className="bg-slate-900">TRANSFER (Dịch chuyển ô kệ)</option>
-            <option value="RESERVE" className="bg-slate-900">RESERVE (Giữ hàng xuất)</option>
-            <option value="UNRESERVE" className="bg-slate-900">UNRESERVE (Hủy giữ hàng)</option>
+            <option value="ALL" className="bg-surface">Tất cả loại giao dịch</option>
+            <option value="INBOUND" className="bg-surface">INBOUND (Nhập kho)</option>
+            <option value="OUTBOUND" className="bg-surface">OUTBOUND (Xuất kho)</option>
+            <option value="ADJUST" className="bg-surface">ADJUST (Điều chỉnh số lượng)</option>
+            <option value="TRANSFER" className="bg-surface">TRANSFER (Dịch chuyển ô kệ)</option>
+            <option value="RESERVE" className="bg-surface">RESERVE (Giữ hàng xuất)</option>
+            <option value="UNRESERVE" className="bg-surface">UNRESERVE (Hủy giữ hàng)</option>
           </select>
         </div>
 
         {/* Filter Location */}
-        <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 px-3 py-2 rounded-xl">
-          <MapPin className="w-4 h-4 text-slate-400" />
+        <div className="flex items-center gap-2 bg-surface border border-gray-200 px-3 py-2 rounded-xl">
+          <MapPin className="w-4 h-4 text-gray-500" />
           <select
             value={locationFilter}
             onChange={(e) => setLocationFilter(e.target.value)}
-            className="bg-transparent text-xs font-bold text-slate-200 focus:outline-none w-full"
+            className="bg-transparent text-xs font-bold text-gray-800 focus:outline-none w-full"
           >
-            <option value="ALL" className="bg-slate-900">Tất cả vị trí</option>
+            <option value="ALL" className="bg-surface">Tất cả vị trí</option>
             {locations.map((loc) => (
-              <option key={loc.id} value={loc.id.toString()} className="bg-slate-900">
+              <option key={loc.id} value={loc.id.toString()} className="bg-surface">
                 {getLocationCode(loc.id)}
               </option>
             ))}
@@ -225,7 +225,7 @@ export default function TransactionsPage() {
       </div>
 
       {error && (
-        <div className="p-4 bg-rose-950/50 border border-rose-900/50 rounded-2xl text-xs font-semibold text-rose-400">
+        <div className="p-4 bg-rose-50 text-rose-700 border border-rose-200 border border-rose-900/50 rounded-2xl text-xs font-semibold text-rose-600">
           {error}
         </div>
       )}

@@ -311,14 +311,14 @@ export default function FulfillmentPage() {
     .sort((a, b) => b.id - a.id);
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8 text-slate-100">
+    <div className="p-8 max-w-7xl mx-auto space-y-8 text-gray-900">
       {/* Header */}
       <div>
-        <h2 className="text-xl font-extrabold text-slate-100 flex items-center gap-2">
-          <ArrowUpRight className="w-5 h-5 text-indigo-500" />
+        <h2 className="text-xl font-extrabold text-gray-900 flex items-center gap-2">
+          <ArrowUpRight className="w-5 h-5 text-indigo-600" />
           <span>Xuất Kho (Fulfillment Orders)</span>
         </h2>
-        <p className="text-xs text-slate-400 mt-1">
+        <p className="text-xs text-gray-500 mt-1">
           Xử lý đơn hàng xuất kho theo quy trình nhặt hàng (Picking), đóng gói (Packing) và bàn giao vận chuyển (Shipping)
         </p>
       </div>
@@ -327,17 +327,17 @@ export default function FulfillmentPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Picking Queue (Left column) */}
         <div className="lg:col-span-4 space-y-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-sm">
-            <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-widest mb-4 flex items-center justify-between">
+          <div className="bg-surface border border-gray-200 shadow-sm rounded-2xl p-4 shadow-sm">
+            <h3 className="text-xs font-extrabold text-gray-500 uppercase tracking-widest mb-4 flex items-center justify-between">
               <span>Hàng chờ Nhặt (Pick Queue)</span>
-              <span className="bg-indigo-950 text-indigo-400 px-2 py-0.5 rounded text-[10px] font-extrabold">{pickQueue.length}</span>
+              <span className="bg-indigo-950 text-indigo-600 px-2 py-0.5 rounded text-[10px] font-extrabold">{pickQueue.length}</span>
             </h3>
             {loading && orders.length === 0 ? (
               <div className="flex justify-center py-8">
-                <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+                <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
               </div>
             ) : pickQueue.length === 0 ? (
-              <div className="text-xs text-slate-400 text-center py-8">Không có đơn hàng chờ nhặt.</div>
+              <div className="text-xs text-gray-500 text-center py-8">Không có đơn hàng chờ nhặt.</div>
             ) : (
               <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
                 {pickQueue.map((o) => (
@@ -347,18 +347,18 @@ export default function FulfillmentPage() {
                     className={`p-3.5 border rounded-xl cursor-pointer transition-all flex flex-col gap-2 ${
                       selectedOrder?.id === o.id
                         ? "bg-indigo-950/30 border-indigo-900/50 shadow-sm"
-                        : "hover:bg-slate-850/50 border-slate-800"
+                        : "hover:bg-gray-50 border-gray-200"
                     }`}
                   >
                     <div className="flex justify-between items-start">
-                      <span className="text-xs font-bold text-slate-200">{o.fulfillment_number}</span>
+                      <span className="text-xs font-bold text-gray-800">{o.fulfillment_number}</span>
                       <span className={`px-2 py-0.5 rounded text-[8px] font-extrabold uppercase ${
-                        o.status.toUpperCase() === "PICKING" ? "bg-amber-950/50 text-amber-400 border border-amber-900/50 animate-pulse" : "bg-blue-950/50 text-blue-400 border border-blue-900/50"
+                        o.status.toUpperCase() === "PICKING" ? "bg-amber-50 text-amber-700 border border-amber-200 text-amber-600 border border-amber-900/50 animate-pulse" : "bg-blue-50 text-blue-700 border border-blue-200 text-blue-600 border border-blue-900/50"
                       }`}>
                         {o.status}
                       </span>
                     </div>
-                    <div className="flex justify-between text-[10px] text-slate-400">
+                    <div className="flex justify-between text-[10px] text-gray-500">
                       <span>Đơn hàng OMS: #{o.oms_order_number}</span>
                       <span>{new Date(o.created_at).toLocaleDateString()}</span>
                     </div>
@@ -382,17 +382,17 @@ export default function FulfillmentPage() {
 
         {/* Packing & Shipping Queue (Right column) */}
         <div className="lg:col-span-4 space-y-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-sm">
-            <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-widest mb-4 flex items-center justify-between">
+          <div className="bg-surface border border-gray-200 shadow-sm rounded-2xl p-4 shadow-sm">
+            <h3 className="text-xs font-extrabold text-gray-500 uppercase tracking-widest mb-4 flex items-center justify-between">
               <span>Đóng gói & Xuất hàng (Pack/Ship)</span>
-              <span className="bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded text-[10px] font-extrabold">{packQueue.length}</span>
+              <span className="bg-emerald-950 text-emerald-600 px-2 py-0.5 rounded text-[10px] font-extrabold">{packQueue.length}</span>
             </h3>
             {loading && orders.length === 0 ? (
               <div className="flex justify-center py-8">
-                <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+                <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
               </div>
             ) : packQueue.length === 0 ? (
-              <div className="text-xs text-slate-400 text-center py-8">Không có đơn hàng chờ đóng gói.</div>
+              <div className="text-xs text-gray-500 text-center py-8">Không có đơn hàng chờ đóng gói.</div>
             ) : (
               <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
                 {packQueue.map((o) => (
@@ -402,20 +402,20 @@ export default function FulfillmentPage() {
                     className={`p-3.5 border rounded-xl cursor-pointer transition-all flex flex-col gap-2 ${
                       selectedOrder?.id === o.id
                         ? "bg-indigo-950/30 border-indigo-900/50 shadow-sm"
-                        : "hover:bg-slate-850/50 border-slate-800"
+                        : "hover:bg-gray-50 border-gray-200"
                     }`}
                   >
                     <div className="flex justify-between items-start">
-                      <span className="text-xs font-bold text-slate-200">{o.fulfillment_number}</span>
+                      <span className="text-xs font-bold text-gray-800">{o.fulfillment_number}</span>
                       <span className={`px-2 py-0.5 rounded text-[8px] font-extrabold uppercase ${
-                        o.status.toUpperCase() === "SHIPPED" ? "bg-slate-800 text-slate-400 border border-slate-700" :
-                        o.status.toUpperCase() === "PACKED" ? "bg-emerald-950/50 text-emerald-400 border border-emerald-900/50" :
-                        "bg-amber-950/50 text-amber-400 border border-amber-900/50 animate-pulse"
+                        o.status.toUpperCase() === "SHIPPED" ? "bg-gray-100 text-gray-500 border border-gray-200" :
+                        o.status.toUpperCase() === "PACKED" ? "bg-emerald-50 text-emerald-700 border border-emerald-200 text-emerald-600 border border-emerald-900/50" :
+                        "bg-amber-50 text-amber-700 border border-amber-200 text-amber-600 border border-amber-900/50 animate-pulse"
                       }`}>
                         {o.status}
                       </span>
                     </div>
-                    <div className="flex justify-between text-[10px] text-slate-400">
+                    <div className="flex justify-between text-[10px] text-gray-500">
                       <span>Đơn hàng OMS: #{o.oms_order_number}</span>
                       <span>{new Date(o.created_at).toLocaleDateString()}</span>
                     </div>
@@ -429,16 +429,16 @@ export default function FulfillmentPage() {
         {/* Selected Order detail pane (Middle/Right panel) */}
         <div className="lg:col-span-4 space-y-4">
           {selectedOrder ? (
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-sm space-y-5">
-              <div className="flex justify-between items-start border-b pb-3 border-slate-800">
+            <div className="bg-surface border border-gray-200 shadow-sm rounded-2xl p-4 shadow-sm space-y-5">
+              <div className="flex justify-between items-start border-b pb-3 border-gray-200">
                 <div>
-                  <h3 className="text-xs font-extrabold text-slate-100">{selectedOrder.fulfillment_number}</h3>
-                  <p className="text-[10px] text-slate-400 mt-0.5">Trạng thái: {selectedOrder.status}</p>
+                  <h3 className="text-xs font-extrabold text-gray-900">{selectedOrder.fulfillment_number}</h3>
+                  <p className="text-[10px] text-gray-500 mt-0.5">Trạng thái: {selectedOrder.status}</p>
                 </div>
                 {["PENDING", "PICKING"].includes(selectedOrder.status.toUpperCase()) && (
                   <button
                     onClick={() => handleCancelOrder(selectedOrder.id)}
-                    className="p-1 text-[9px] font-bold text-rose-400 hover:bg-rose-950 border border-rose-900/50 rounded"
+                    className="p-1 text-[9px] font-bold text-rose-600 hover:bg-rose-950 border border-rose-900/50 rounded"
                   >
                     Hủy đơn
                   </button>
@@ -447,19 +447,19 @@ export default function FulfillmentPage() {
 
               {/* Items Detail */}
               <div className="space-y-2">
-                <h4 className="text-[11px] font-bold text-slate-400 uppercase flex items-center gap-1">
-                  <ClipboardList className="w-3.5 h-3.5 text-slate-500" />
+                <h4 className="text-[11px] font-bold text-gray-500 uppercase flex items-center gap-1">
+                  <ClipboardList className="w-3.5 h-3.5 text-gray-500" />
                   <span>Sản phẩm nhặt hàng</span>
                 </h4>
                 <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
                   {selectedOrder.pick_list_items.map((item) => (
-                    <div key={item.id} className="p-2 bg-slate-950 rounded-lg text-[11px] border border-slate-800 space-y-1 relative">
-                      <div className="flex justify-between font-bold text-slate-200 pr-16">
+                    <div key={item.id} className="p-2 bg-surface rounded-lg text-[11px] border border-gray-200 shadow-sm space-y-1 relative">
+                      <div className="flex justify-between font-bold text-gray-800 pr-16">
                         <span>{item.sku_code}</span>
                         <span>{item.picked_qty}/{item.quantity}</span>
                       </div>
-                      <p className="text-[10px] text-slate-400 font-semibold pr-16">{item.product_name}</p>
-                      <div className="flex items-center gap-1 text-[9px] text-indigo-400 font-bold">
+                      <p className="text-[10px] text-gray-500 font-semibold pr-16">{item.product_name}</p>
+                      <div className="flex items-center gap-1 text-[9px] text-indigo-600 font-bold">
                         <MapPin className="w-3 h-3" />
                         <span>Vị trí nhặt: {getLocationCode(item.location_id)}</span>
                       </div>
@@ -472,7 +472,7 @@ export default function FulfillmentPage() {
                         </button>
                       )}
                       {item.picked_qty >= item.quantity && (
-                        <div className="absolute top-2 right-2 px-2 py-1 bg-emerald-950/50 text-emerald-400 border border-emerald-900/50 font-bold rounded text-[9px] flex items-center gap-1">
+                        <div className="absolute top-2 right-2 px-2 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 text-emerald-600 border border-emerald-900/50 font-bold rounded text-[9px] flex items-center gap-1">
                           <CheckCircle className="w-3 h-3" /> Đã đủ
                         </div>
                       )}
@@ -483,9 +483,9 @@ export default function FulfillmentPage() {
 
               {/* Interactive flow states */}
               {selectedOrder.status.toUpperCase() === "PICKING" && (
-                <div className="bg-slate-950 border border-slate-800 p-3 rounded-xl space-y-3">
-                  <h4 className="text-xs font-bold text-slate-200 flex items-center gap-1">
-                    <Scan className="w-3.5 h-3.5 text-indigo-400" />
+                <div className="bg-surface border border-gray-200 p-3 rounded-xl space-y-3">
+                  <h4 className="text-xs font-bold text-gray-800 flex items-center gap-1">
+                    <Scan className="w-3.5 h-3.5 text-indigo-600" />
                     <span>Xác nhận Nhặt Hàng (Scan / Quick Pick)</span>
                   </h4>
                   <form onSubmit={handleScanPick} className="space-y-2 text-xs">
@@ -495,7 +495,7 @@ export default function FulfillmentPage() {
                       placeholder="Quét mã vạch hoặc nhập SKU..."
                       value={pickBarcode}
                       onChange={(e) => setPickBarcode(e.target.value)}
-                      className="w-full p-2 border border-slate-800 rounded-lg focus:outline-none bg-slate-900 text-slate-100"
+                      className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none bg-surface text-gray-900"
                       required
                     />
                     <div className="flex gap-2">
@@ -503,7 +503,7 @@ export default function FulfillmentPage() {
                         type="number"
                         value={pickQty}
                         onChange={(e) => setPickQty(parseInt(e.target.value))}
-                        className="w-20 p-2 border border-slate-800 rounded-lg focus:outline-none bg-slate-900 text-slate-100 text-right"
+                        className="w-20 p-2 border border-gray-200 rounded-lg focus:outline-none bg-surface text-gray-900 text-right"
                         min="1"
                         required
                       />
@@ -523,7 +523,7 @@ export default function FulfillmentPage() {
                   </button>
                   {pickMessage && (
                     <div className={`p-2 rounded text-[10px] font-bold ${
-                      pickMessage.type === "success" ? "bg-emerald-950/50 text-emerald-400 border border-emerald-900/50" : "bg-rose-950/50 text-rose-400 border border-rose-900/50"
+                      pickMessage.type === "success" ? "bg-emerald-50 text-emerald-700 border border-emerald-200 text-emerald-600 border border-emerald-900/50" : "bg-rose-50 text-rose-700 border border-rose-200 text-rose-600 border border-rose-900/50"
                     }`}>
                       {pickMessage.text}
                     </div>
@@ -532,33 +532,33 @@ export default function FulfillmentPage() {
               )}
 
               {selectedOrder.status.toUpperCase() === "PICKED" && (
-                <div className="bg-slate-950 border border-slate-800 p-3 rounded-xl space-y-3">
-                  <h4 className="text-xs font-bold text-slate-200 flex items-center gap-1">
-                    <PackageCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <div className="bg-surface border border-gray-200 p-3 rounded-xl space-y-3">
+                  <h4 className="text-xs font-bold text-gray-800 flex items-center gap-1">
+                    <PackageCheck className="w-3.5 h-3.5 text-emerald-600" />
                     <span>Đóng Gói (Packing & Labeling)</span>
                   </h4>
                   <form onSubmit={handleScanPack} className="space-y-2 text-xs">
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400">Mã vận đơn (Tracking Number) *</label>
+                      <label className="text-[10px] font-semibold text-gray-500">Mã vận đơn (Tracking Number) *</label>
                       <input
                         type="text"
                         placeholder="Nhập mã vận đơn của hãng vận chuyển"
                         value={trackingNumber}
                         onChange={(e) => setTrackingNumber(e.target.value.toUpperCase())}
-                        className="w-full p-2 border border-slate-800 rounded-lg focus:outline-none bg-slate-900 text-slate-100"
+                        className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none bg-surface text-gray-900"
                         required
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400">Hãng vận chuyển</label>
+                      <label className="text-[10px] font-semibold text-gray-500">Hãng vận chuyển</label>
                       <select
                         value={carrierName}
                         onChange={(e) => setCarrierName(e.target.value)}
-                        className="w-full p-2 border border-slate-800 rounded-lg focus:outline-none bg-slate-900 text-slate-100"
+                        className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none bg-surface text-gray-900"
                       >
-                        <option value="Giao Hàng Nhanh" className="bg-slate-900">Giao Hàng Nhanh</option>
-                        <option value="Giao Hàng Tiết Kiệm" className="bg-slate-900">Giao Hàng Tiết Kiệm</option>
-                        <option value="Viettel Post" className="bg-slate-900">Viettel Post</option>
+                        <option value="Giao Hàng Nhanh" className="bg-surface">Giao Hàng Nhanh</option>
+                        <option value="Giao Hàng Tiết Kiệm" className="bg-surface">Giao Hàng Tiết Kiệm</option>
+                        <option value="Viettel Post" className="bg-surface">Viettel Post</option>
                       </select>
                     </div>
                     <button
@@ -572,12 +572,12 @@ export default function FulfillmentPage() {
               )}
 
               {selectedOrder.status.toUpperCase() === "PACKED" && (
-                <div className="bg-slate-950 border border-slate-800 p-3 rounded-xl space-y-3 text-center">
-                  <div className="flex justify-center text-emerald-450 text-emerald-400 mb-1">
+                <div className="bg-surface border border-gray-200 p-3 rounded-xl space-y-3 text-center">
+                  <div className="flex justify-center text-emerald-450 text-emerald-600 mb-1">
                     <CheckCircle className="w-8 h-8" />
                   </div>
-                  <h4 className="text-xs font-bold text-slate-200">Sẵn sàng xuất kho</h4>
-                  <p className="text-[10px] text-slate-400">Đơn hàng đã được đóng gói và dán mã vận đơn. Vui lòng bàn giao cho đơn vị vận chuyển.</p>
+                  <h4 className="text-xs font-bold text-gray-800">Sẵn sàng xuất kho</h4>
+                  <p className="text-[10px] text-gray-500">Đơn hàng đã được đóng gói và dán mã vận đơn. Vui lòng bàn giao cho đơn vị vận chuyển.</p>
                   <button
                     onClick={() => handleShipOrder(selectedOrder.id)}
                     className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg shadow-sm"
@@ -588,17 +588,17 @@ export default function FulfillmentPage() {
               )}
 
               {selectedOrder.status.toUpperCase() === "SHIPPED" && (
-                <div className="bg-emerald-950/50 border border-emerald-900/50 p-3.5 rounded-xl text-center text-emerald-400">
+                <div className="bg-emerald-50 text-emerald-700 border border-emerald-200 border border-emerald-900/50 p-3.5 rounded-xl text-center text-emerald-600">
                   <Truck className="w-8 h-8 mx-auto mb-1.5" />
                   <h4 className="text-xs font-bold">Đã Bàn Giao Vận Chuyển</h4>
-                  <p className="text-[9px] mt-0.5 font-semibold text-emerald-400">
+                  <p className="text-[9px] mt-0.5 font-semibold text-emerald-600">
                     Đơn hàng đã xuất kho hoàn thành chu trình fulfillment!
                   </p>
                 </div>
               )}
             </div>
           ) : (
-            <div className="h-full flex items-center justify-center p-8 border border-dashed border-slate-800 rounded-2xl bg-slate-900 text-slate-400 text-xs text-center py-24">
+            <div className="h-full flex items-center justify-center p-8 border border-dashed border-gray-200 rounded-2xl bg-surface text-gray-500 text-xs text-center py-24">
               Vui lòng chọn một đơn hàng để xử lý picking / packing / shipping.
             </div>
           )}

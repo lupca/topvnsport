@@ -46,10 +46,10 @@ export default function PackListPage() {
     <div className="space-y-4 max-w-md mx-auto">
       {/* Header */}
       <div>
-        <h1 className="text-base font-bold text-slate-100 flex items-center gap-1.5">
-          <Scan className="w-5 h-5 text-emerald-400" /> Đóng gói (Packing)
+        <h1 className="text-base font-bold text-gray-900 flex items-center gap-1.5">
+          <Scan className="w-5 h-5 text-emerald-600" /> Đóng gói (Packing)
         </h1>
-        <p className="text-[10px] text-slate-400">Danh sách yêu cầu xuất kho đã nhặt xong chờ đóng gói</p>
+        <p className="text-[10px] text-gray-500">Danh sách yêu cầu xuất kho đã nhặt xong chờ đóng gói</p>
       </div>
 
       {/* Search */}
@@ -59,18 +59,18 @@ export default function PackListPage() {
           placeholder="Tìm theo mã FM hoặc mã đơn OMS..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full p-3 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+          className="w-full p-3 bg-surface border border-gray-200 shadow-sm rounded-xl text-xs text-gray-900 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
         />
-        <Search className="w-4 h-4 text-slate-500 absolute right-3 top-3.5" />
+        <Search className="w-4 h-4 text-gray-500 absolute right-3 top-3.5" />
       </div>
 
       {/* List */}
       {loading ? (
         <div className="flex justify-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin text-slate-500" />
+          <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
         </div>
       ) : activeOrders.length === 0 ? (
-        <div className="text-center py-12 bg-slate-900 border border-slate-850 rounded-2xl text-xs text-slate-400">
+        <div className="text-center py-12 bg-surface border border-gray-200 rounded-2xl text-xs text-gray-500">
           Không có yêu cầu đóng gói nào.
         </div>
       ) : (
@@ -79,27 +79,27 @@ export default function PackListPage() {
             <Link
               key={o.id}
               href={`/m/pack/${o.id}`}
-              className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col gap-3 transition-colors hover:border-slate-700 block"
+              className="bg-surface border border-gray-200 shadow-sm rounded-xl p-4 flex flex-col gap-3 transition-colors hover:border-gray-200 block"
             >
               <div className="flex justify-between items-start">
                 <div>
-                  <span className="text-xs font-bold text-slate-200">{o.fulfillment_number}</span>
-                  <div className="text-[10px] text-slate-400 mt-0.5">OMS Order: #{o.oms_order_number}</div>
+                  <span className="text-xs font-bold text-gray-800">{o.fulfillment_number}</span>
+                  <div className="text-[10px] text-gray-500 mt-0.5">OMS Order: #{o.oms_order_number}</div>
                 </div>
                 <span
                   className={`px-2 py-0.5 rounded text-[8px] font-extrabold tracking-wide uppercase ${
                     o.status.toUpperCase() === "PACKING"
-                      ? "bg-amber-950/50 text-amber-400 border border-amber-900/50"
-                      : "bg-emerald-950/50 text-emerald-400 border border-emerald-900/50"
+                      ? "bg-amber-50 text-amber-700 border border-amber-200 text-amber-600 border border-amber-900/50"
+                      : "bg-emerald-50 text-emerald-700 border border-emerald-200 text-emerald-600 border border-emerald-900/50"
                   }`}
                 >
                   {o.status}
                 </span>
               </div>
 
-              <div className="flex justify-between items-center text-[10px] text-slate-400 border-t border-slate-850 pt-2">
+              <div className="flex justify-between items-center text-[10px] text-gray-500 border-t border-gray-200 pt-2">
                 <span>Ngày tạo: {new Date(o.created_at).toLocaleDateString()}</span>
-                <span className="flex items-center gap-1 text-indigo-400 font-bold">
+                <span className="flex items-center gap-1 text-indigo-600 font-bold">
                   Bắt đầu đóng gói <ArrowRight className="w-3.5 h-3.5" />
                 </span>
               </div>

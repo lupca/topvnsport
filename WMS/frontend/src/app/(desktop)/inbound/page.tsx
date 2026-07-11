@@ -352,17 +352,17 @@ export default function InboundPage() {
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8 bg-transparent text-slate-100">
+    <div className="p-8 max-w-7xl mx-auto space-y-8 bg-transparent text-gray-900">
       <audio ref={successAudioRef} preload="auto" src="data:audio/wav;base64,UklGRlQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YTAAAAAAAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8AAP8=" />
       <audio ref={errorAudioRef} preload="auto" src="data:audio/wav;base64,UklGRmQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YUAAAAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////AAAA////" />
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-xl font-extrabold text-slate-100 flex items-center gap-2">
-            <ArrowDownLeft className="w-5 h-5 text-indigo-500" />
+          <h2 className="text-xl font-extrabold text-gray-900 flex items-center gap-2">
+            <ArrowDownLeft className="w-5 h-5 text-indigo-600" />
             <span>Nhập Kho (Inbound Shipments)</span>
           </h2>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-gray-500 mt-1">
             Quản lý quy trình nhận hàng, quét barcode và cất hàng vào vị trí ô kệ (Put-away)
           </p>
         </div>
@@ -378,16 +378,16 @@ export default function InboundPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left List */}
         <div className="lg:col-span-12 space-y-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-sm">
-            <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-widest mb-4">
+          <div className="bg-surface border border-gray-200 shadow-sm rounded-2xl p-4 shadow-sm">
+            <h3 className="text-xs font-extrabold text-gray-500 uppercase tracking-widest mb-4">
               Danh sách Đơn Nhập ({shipments.length})
             </h3>
             {loading && shipments.length === 0 ? (
               <div className="flex justify-center py-8">
-                <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+                <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
               </div>
             ) : shipments.length === 0 ? (
-              <div className="text-xs text-slate-400 text-center py-8">Chưa có lô hàng nhập kho nào.</div>
+              <div className="text-xs text-gray-500 text-center py-8">Chưa có lô hàng nhập kho nào.</div>
             ) : (
               <div className="divide-y divide-slate-800 max-h-[600px] overflow-y-auto pr-1">
                 {shipments.map((s) => (
@@ -397,23 +397,23 @@ export default function InboundPage() {
                     className={`p-3.5 rounded-xl cursor-pointer transition-all flex flex-col gap-2 ${
                       selectedShipment?.id === s.id
                         ? "bg-indigo-950/30 border border-indigo-900/50 shadow-sm"
-                        : "hover:bg-slate-850/50 border border-transparent"
+                        : "hover:bg-gray-50 border border-transparent"
                     }`}
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <h4 className="text-xs font-bold text-slate-200">{s.inbound_number}</h4>
-                        <p className="text-[10px] text-slate-400 font-semibold mt-0.5">Nhà cung cấp: {s.supplier_name}</p>
+                        <h4 className="text-xs font-bold text-gray-800">{s.inbound_number}</h4>
+                        <p className="text-[10px] text-gray-500 font-semibold mt-0.5">Nhà cung cấp: {s.supplier_name}</p>
                       </div>
                       <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase ${
-                        s.status === "COMPLETED" ? "bg-emerald-950/50 text-emerald-405 text-emerald-400 border border-emerald-900/50" :
-                        s.status === "receiving" ? "bg-amber-950/50 text-amber-400 border border-amber-900/50 animate-pulse" :
-                        "bg-blue-950/50 text-blue-400 border border-blue-900/50"
+                        s.status === "COMPLETED" ? "bg-emerald-50 text-emerald-700 border border-emerald-200 text-emerald-405 text-emerald-600 border border-emerald-900/50" :
+                        s.status === "receiving" ? "bg-amber-50 text-amber-700 border border-amber-200 text-amber-600 border border-amber-900/50 animate-pulse" :
+                        "bg-blue-50 text-blue-700 border border-blue-200 text-blue-600 border border-blue-900/50"
                       }`}>
                         {s.status}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between text-[9px] text-slate-400 border-t pt-2 border-slate-800">
+                    <div className="flex items-center justify-between text-[9px] text-gray-500 border-t pt-2 border-gray-200">
                       <span>Kho: {getWarehouseName(s.warehouse_id)}</span>
                       <span className="flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
@@ -430,15 +430,15 @@ export default function InboundPage() {
         {/* Right Details & Scanner Drawer */}
         {selectedShipment && (
           <div className="fixed inset-0 z-40 bg-gray-900/30 backdrop-blur-[1px]">
-            <div className="absolute inset-y-0 right-0 w-full max-w-6xl bg-slate-900 border-l border-slate-800 rounded-l-2xl p-6 shadow-2xl overflow-y-auto space-y-6">
-              <div className="flex justify-between items-start border-b pb-4 border-slate-800">
+            <div className="absolute inset-y-0 right-0 w-full max-w-6xl bg-surface border-l border-gray-200 rounded-l-2xl p-6 shadow-2xl overflow-y-auto space-y-6">
+              <div className="flex justify-between items-start border-b pb-4 border-gray-200">
                 <div>
                   <div className="flex items-center gap-2">
-                    <Truck className="w-5 h-5 text-indigo-500" />
-                    <h3 className="text-sm font-extrabold text-slate-100">{selectedShipment.inbound_number}</h3>
+                    <Truck className="w-5 h-5 text-indigo-600" />
+                    <h3 className="text-sm font-extrabold text-gray-900">{selectedShipment.inbound_number}</h3>
                   </div>
-                  <p className="text-sm text-slate-400 mt-1">
-                    Trạng thái: <span className="font-bold uppercase text-slate-100">{selectedShipment.status}</span> • Kho: {getWarehouseName(selectedShipment.warehouse_id)}
+                  <p className="text-sm text-gray-500 mt-1">
+                    Trạng thái: <span className="font-bold uppercase text-gray-900">{selectedShipment.status}</span> • Kho: {getWarehouseName(selectedShipment.warehouse_id)}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -453,7 +453,7 @@ export default function InboundPage() {
                   )}
                   <button
                     onClick={() => setSelectedShipment(null)}
-                    className="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-slate-700 text-slate-400 hover:bg-slate-800"
+                    className="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100"
                     aria-label="Đóng drawer"
                   >
                     <X className="w-4 h-4" />
@@ -463,14 +463,14 @@ export default function InboundPage() {
 
               {/* Items List */}
               <div className="space-y-2">
-                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <Layers className="w-3.5 h-3.5 text-slate-500" />
+                <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+                  <Layers className="w-3.5 h-3.5 text-gray-500" />
                   <span>Danh sách sản phẩm trong đơn</span>
                 </h4>
-                <div className="overflow-x-auto border border-slate-800 rounded-xl">
+                <div className="overflow-x-auto border border-gray-200 rounded-xl">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
-                      <tr className="bg-slate-950 text-slate-450 text-slate-400 font-bold border-b border-slate-800">
+                      <tr className="bg-surface text-gray-500 text-gray-500 font-bold border-b border-gray-200">
                         <th className="p-3">SKU</th>
                         <th className="p-3">Tên sản phẩm</th>
                         <th className="p-3 text-right">Dự kiến</th>
@@ -481,21 +481,21 @@ export default function InboundPage() {
                     </thead>
                     <tbody>
                       {selectedShipment.items.map((item) => (
-                        <tr key={item.id} className="border-b border-slate-800 hover:bg-slate-800/30">
-                          <td className="p-3 font-bold text-slate-200">{item.sku_code}</td>
-                          <td className="p-3 text-slate-350 text-slate-300 font-semibold">{item.product_name}</td>
-                          <td className="p-3 text-right font-extrabold text-slate-300">{item.expected_qty}</td>
-                          <td className="p-3 text-right font-extrabold text-indigo-400">{item.received_qty}</td>
+                        <tr key={item.id} className="border-b border-gray-200 hover:bg-gray-50">
+                          <td className="p-3 font-bold text-gray-800">{item.sku_code}</td>
+                          <td className="p-3 text-gray-500 text-gray-700 font-semibold">{item.product_name}</td>
+                          <td className="p-3 text-right font-extrabold text-gray-700">{item.expected_qty}</td>
+                          <td className="p-3 text-right font-extrabold text-indigo-600">{item.received_qty}</td>
                           <td className="p-3">
-                            <span className="bg-slate-850 text-slate-300 px-1.5 py-0.5 rounded text-[10px] font-bold border border-slate-850">
+                            <span className="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded text-[10px] font-bold border border-gray-200">
                               {getLocationCode(item.location_id)}
                             </span>
                           </td>
                           <td className="p-3 text-right">
                             <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${
-                              item.status === "put_away" ? "bg-emerald-950/50 text-emerald-400" :
-                              item.status === "received" ? "bg-indigo-950/50 text-indigo-400" :
-                              "bg-slate-850 text-slate-400"
+                              item.status === "put_away" ? "bg-emerald-50 text-emerald-700 border border-emerald-200 text-emerald-600" :
+                              item.status === "received" ? "bg-indigo-950/50 text-indigo-600" :
+                              "bg-gray-100 text-gray-500"
                             }`}>
                               {item.status}
                             </span>
@@ -508,18 +508,18 @@ export default function InboundPage() {
               </div>
 
               {selectedShipment.status !== "COMPLETED" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t pt-6 border-slate-800">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t pt-6 border-gray-200">
                   {/* Scanner Simulator */}
-                  <div className="bg-slate-950 border border-slate-800 p-4 rounded-2xl space-y-3">
-                    <h4 className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-                      <Scan className="w-4 h-4 text-indigo-400" />
+                  <div className="bg-surface border border-gray-200 p-4 rounded-2xl space-y-3">
+                    <h4 className="text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                      <Scan className="w-4 h-4 text-indigo-600" />
                       <span>Giả lập máy quét nhận hàng (Receive Scan)</span>
                     </h4>
                     <form onSubmit={handleScanReceive} className="space-y-3 text-xs">
                       <div className="space-y-1">
-                        <label className="font-semibold text-slate-400 block">Quét Barcode sản phẩm *</label>
+                        <label className="font-semibold text-gray-500 block">Quét Barcode sản phẩm *</label>
                         <div className="relative">
-                          <Barcode className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+                          <Barcode className="w-4 h-4 absolute left-3 top-3 text-gray-500" />
                           <input
                             ref={scanInputRef}
                             type="text"
@@ -527,18 +527,18 @@ export default function InboundPage() {
                             placeholder="Nhập mã barcode (VD: BAR-SKU-SPORTS-BLUE-M)"
                             value={scanBarcode}
                             onChange={(e) => setScanBarcode(e.target.value)}
-                            className="w-full pl-10 pr-3 py-3 bg-slate-900 border-2 border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-100 text-lg font-semibold"
+                            className="w-full pl-10 pr-3 py-3 bg-surface border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 text-lg font-semibold"
                             required
                           />
                         </div>
                       </div>
                       <div className="space-y-1">
-                        <label className="font-semibold text-slate-400 block">Số lượng quét nhận</label>
+                        <label className="font-semibold text-gray-500 block">Số lượng quét nhận</label>
                         <input
                           type="number"
                           value={scanQty}
                           onChange={(e) => setScanQty(parseInt(e.target.value))}
-                          className="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 text-slate-100"
+                          className="w-full p-2 bg-surface border border-gray-200 shadow-sm rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-900"
                           min="1"
                           required
                         />
@@ -561,41 +561,41 @@ export default function InboundPage() {
                   </div>
 
                   {/* Putaway Action */}
-                  <div className="bg-slate-950 border border-slate-800 p-4 rounded-2xl space-y-3">
-                    <h4 className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-                      <MapPin className="w-4 h-4 text-emerald-400" />
+                  <div className="bg-surface border border-gray-200 p-4 rounded-2xl space-y-3">
+                    <h4 className="text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                      <MapPin className="w-4 h-4 text-emerald-600" />
                       <span>Cất hàng vào vị trí (Put-away)</span>
                     </h4>
                     <form onSubmit={handlePutAway} className="space-y-3 text-xs">
                       <div className="space-y-1">
-                        <label className="font-semibold text-slate-400 block">Chọn SKU đã nhận *</label>
+                        <label className="font-semibold text-gray-500 block">Chọn SKU đã nhận *</label>
                         <select
                           value={putAwaySku}
                           onChange={(e) => setPutAwaySku(e.target.value)}
-                          className="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 text-slate-100"
+                          className="w-full p-2 bg-surface border border-gray-200 shadow-sm rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-900"
                           required
                         >
-                          <option value="" className="bg-slate-900">-- Chọn sản phẩm --</option>
+                          <option value="" className="bg-surface">-- Chọn sản phẩm --</option>
                           {selectedShipment.items
                             .filter(item => item.received_qty > 0)
                             .map(item => (
-                              <option key={item.id} value={item.sku_code} className="bg-slate-900">
+                              <option key={item.id} value={item.sku_code} className="bg-surface">
                                 {item.sku_code} (Đã nhận: {item.received_qty})
                               </option>
                             ))}
                         </select>
                       </div>
                       <div className="space-y-1">
-                        <label className="font-semibold text-slate-400 block">Chọn Ô kệ cất hàng *</label>
+                        <label className="font-semibold text-gray-500 block">Chọn Ô kệ cất hàng *</label>
                         <select
                           value={putAwayLocId}
                           onChange={(e) => setPutAwayLocId(e.target.value)}
-                          className="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 text-slate-100"
+                          className="w-full p-2 bg-surface border border-gray-200 shadow-sm rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-900"
                           required
                         >
-                          <option value="" className="bg-slate-900">-- Chọn vị trí ô kệ --</option>
+                          <option value="" className="bg-surface">-- Chọn vị trí ô kệ --</option>
                           {getFilteredLocations().map(loc => (
-                            <option key={loc.id} value={loc.id.toString()} className="bg-slate-900">
+                            <option key={loc.id} value={loc.id.toString()} className="bg-surface">
                               {loc.location_code} ({loc.zone || "No Zone"})
                             </option>
                           ))}
@@ -618,84 +618,84 @@ export default function InboundPage() {
 
       {/* Create Inbound Shipment Modal */}
       {isCreateOpen && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 rounded-2xl w-full max-w-2xl p-6 shadow-xl border border-slate-800 space-y-4 max-h-[90vh] overflow-y-auto text-slate-100">
-            <div className="flex justify-between items-center border-b pb-3 border-slate-800">
-              <h3 className="text-sm font-extrabold text-slate-100">Tạo Mới Đơn Nhập Kho</h3>
-              <button onClick={() => setIsCreateOpen(false)} className="text-slate-400 hover:text-slate-200">
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-surface rounded-2xl w-full max-w-2xl p-6 shadow-xl border border-gray-200 space-y-4 max-h-[90vh] overflow-y-auto text-gray-900">
+            <div className="flex justify-between items-center border-b pb-3 border-gray-200">
+              <h3 className="text-sm font-extrabold text-gray-900">Tạo Mới Đơn Nhập Kho</h3>
+              <button onClick={() => setIsCreateOpen(false)} className="text-gray-500 hover:text-gray-800">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleCreateShipment} className="space-y-4 text-xs">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="font-semibold text-slate-300 block">Số Đơn Nhập (Inbound Number) *</label>
+                  <label className="font-semibold text-gray-700 block">Số Đơn Nhập (Inbound Number) *</label>
                   <input
                     type="text"
                     value={inboundNumber}
                     onChange={(e) => setInboundNumber(e.target.value.toUpperCase())}
                     placeholder="VD: INB-2026-001"
-                    className="w-full p-2.5 border border-slate-800 rounded-lg focus:outline-none bg-slate-950 text-slate-100"
+                    className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none bg-surface text-gray-900"
                     required
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="font-semibold text-slate-300 block">Chọn Kho Hàng Nhận *</label>
+                  <label className="font-semibold text-gray-700 block">Chọn Kho Hàng Nhận *</label>
                   <select
                     value={selectedWhId}
                     onChange={(e) => setSelectedWhId(e.target.value)}
-                    className="w-full p-2.5 border border-slate-800 rounded-lg focus:outline-none bg-slate-950 text-slate-100"
+                    className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none bg-surface text-gray-900"
                     required
                   >
-                    <option value="" className="bg-slate-900">Chọn Kho</option>
+                    <option value="" className="bg-surface">Chọn Kho</option>
                     {warehouses.map(wh => (
-                      <option key={wh.id} value={wh.id.toString()} className="bg-slate-900">
+                      <option key={wh.id} value={wh.id.toString()} className="bg-surface">
                         {wh.name} ({wh.code})
                       </option>
                     ))}
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <label className="font-semibold text-slate-300 block">Nhà Cung Cấp (Supplier) *</label>
+                  <label className="font-semibold text-gray-700 block">Nhà Cung Cấp (Supplier) *</label>
                   <input
                     type="text"
                     value={supplierName}
                     onChange={(e) => setSupplierName(e.target.value)}
                     placeholder="VD: Tổng kho phân phối Unilever"
-                    className="w-full p-2.5 border border-slate-800 rounded-lg focus:outline-none bg-slate-950 text-slate-100"
+                    className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none bg-surface text-gray-900"
                     required
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="font-semibold text-slate-300 block">Ngày dự kiến giao hàng</label>
+                  <label className="font-semibold text-gray-700 block">Ngày dự kiến giao hàng</label>
                   <input
                     type="date"
                     value={expectedDate}
                     onChange={(e) => setExpectedDate(e.target.value)}
-                    className="w-full p-2.5 border border-slate-800 rounded-lg focus:outline-none bg-slate-950 text-slate-100"
+                    className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none bg-surface text-gray-900"
                   />
                 </div>
               </div>
 
               <div className="space-y-1">
-                <label className="font-semibold text-slate-300 block">Ghi chú</label>
+                <label className="font-semibold text-gray-700 block">Ghi chú</label>
                 <textarea
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   placeholder="Thông tin ghi chú thêm..."
-                  className="w-full p-2.5 border border-slate-800 rounded-lg focus:outline-none bg-slate-950 text-slate-100"
+                  className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none bg-surface text-gray-900"
                   rows={2}
                 />
               </div>
 
               {/* Items Section */}
-              <div className="space-y-2 border-t pt-4 border-slate-800">
+              <div className="space-y-2 border-t pt-4 border-gray-200">
                 <div className="flex justify-between items-center">
-                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wide">Chi tiết mặt hàng</h4>
+                  <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wide">Chi tiết mặt hàng</h4>
                   <button
                     type="button"
                     onClick={handleAddItemRow}
-                    className="px-2.5 py-1 text-[10px] font-bold bg-slate-850 hover:bg-slate-800 text-slate-200 border border-slate-800 rounded-lg"
+                    className="px-2.5 py-1 text-[10px] font-bold bg-gray-100 hover:bg-gray-100 text-gray-800 border border-gray-200 rounded-lg"
                   >
                     Thêm dòng
                   </button>
@@ -707,7 +707,7 @@ export default function InboundPage() {
                       {!row.isManual ? (
                         <div className="flex-1 flex gap-2">
                           <div className="flex-1 space-y-1">
-                            {idx === 0 && <label className="font-semibold text-slate-300">Chọn sản phẩm (SKU) *</label>}
+                            {idx === 0 && <label className="font-semibold text-gray-700">Chọn sản phẩm (SKU) *</label>}
                             <select
                               value={row.sku_code}
                               onChange={(e) => {
@@ -722,7 +722,7 @@ export default function InboundPage() {
                                   handleItemInputChange(idx, "product_name", match ? match.product_name + (match.variant_name ? ` (${match.variant_name})` : "") : "");
                                 }
                               }}
-                              className="w-full p-2.5 border border-slate-800 rounded-lg focus:outline-none bg-slate-950 text-slate-100"
+                              className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none bg-surface text-gray-900"
                               required
                             >
                               <option value="">-- Chọn sản phẩm --</option>
@@ -736,12 +736,12 @@ export default function InboundPage() {
                           </div>
                           {row.sku_code && (
                             <div className="flex-[1.5] space-y-1">
-                              {idx === 0 && <label className="font-semibold text-slate-400">Tên Sản phẩm</label>}
+                              {idx === 0 && <label className="font-semibold text-gray-500">Tên Sản phẩm</label>}
                               <input
                                 type="text"
                                 value={row.product_name}
                                 disabled
-                                className="w-full p-2.5 border border-slate-800 rounded-lg bg-slate-900 text-slate-400 font-semibold"
+                                className="w-full p-2.5 border border-gray-200 rounded-lg bg-surface text-gray-500 font-semibold"
                               />
                             </div>
                           )}
@@ -751,11 +751,11 @@ export default function InboundPage() {
                           <div className="flex-1 space-y-1">
                             {idx === 0 && (
                               <div className="flex justify-between items-center">
-                                <label className="font-semibold text-slate-300">Mã SKU *</label>
+                                <label className="font-semibold text-gray-700">Mã SKU *</label>
                                 <button
                                   type="button"
                                   onClick={() => handleItemInputChange(idx, "isManual", false)}
-                                  className="text-[9px] text-indigo-400 hover:underline"
+                                  className="text-[9px] text-indigo-600 hover:underline"
                                 >
                                   Chọn sẵn
                                 </button>
@@ -766,30 +766,30 @@ export default function InboundPage() {
                               value={row.sku_code}
                               onChange={(e) => handleItemInputChange(idx, "sku_code", e.target.value)}
                               placeholder="VD: SKU-SPORTS-BLUE-M"
-                              className="w-full p-2 border border-slate-800 rounded-lg focus:outline-none bg-slate-950 text-slate-100 font-bold"
+                              className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none bg-surface text-gray-900 font-bold"
                               required
                             />
                           </div>
                           <div className="flex-[1.5] space-y-1">
-                            {idx === 0 && <label className="font-semibold text-slate-300">Tên Sản phẩm *</label>}
+                            {idx === 0 && <label className="font-semibold text-gray-700">Tên Sản phẩm *</label>}
                             <input
                               type="text"
                               value={row.product_name}
                               onChange={(e) => handleItemInputChange(idx, "product_name", e.target.value)}
                               placeholder="VD: Áo thun nam size M"
-                              className="w-full p-2 border border-slate-800 rounded-lg focus:outline-none bg-slate-950 text-slate-100"
+                              className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none bg-surface text-gray-900"
                               required
                             />
                           </div>
                         </div>
                       )}
                       <div className="w-24 space-y-1">
-                        {idx === 0 && <label className="font-semibold text-slate-300 block text-right">SL dự kiến *</label>}
+                        {idx === 0 && <label className="font-semibold text-gray-700 block text-right">SL dự kiến *</label>}
                         <input
                           type="number"
                           value={row.expected_qty}
                           onChange={(e) => handleItemInputChange(idx, "expected_qty", parseInt(e.target.value))}
-                          className="w-full p-2 border border-slate-800 rounded-lg focus:outline-none text-right bg-slate-950 text-slate-100"
+                          className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none text-right bg-surface text-gray-900"
                           min="1"
                           required
                         />
@@ -798,7 +798,7 @@ export default function InboundPage() {
                         <button
                           type="button"
                           onClick={() => handleRemoveItemRow(idx)}
-                          className="p-2 border border-rose-900/50 hover:bg-rose-950 text-rose-400 rounded-lg"
+                          className="p-2 border border-rose-900/50 hover:bg-rose-950 text-rose-600 rounded-lg"
                         >
                           <X className="w-4 h-4" />
                         </button>
@@ -808,11 +808,11 @@ export default function InboundPage() {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 border-t pt-4 border-slate-800 bg-transparent">
+              <div className="flex justify-end gap-2 border-t pt-4 border-gray-200 bg-transparent">
                 <button
                   type="button"
                   onClick={() => setIsCreateOpen(false)}
-                  className="px-4 py-2 border border-slate-800 text-slate-400 font-bold rounded-lg hover:bg-slate-800 bg-transparent"
+                  className="px-4 py-2 border border-gray-200 text-gray-500 font-bold rounded-lg hover:bg-gray-100 bg-transparent"
                 >
                   Hủy
                 </button>

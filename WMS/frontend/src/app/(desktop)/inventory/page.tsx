@@ -253,28 +253,28 @@ export default function InventoryPage() {
       key: "sku_code",
       label: "SKU",
       render: (item: InventoryItem) => (
-        <span className="block max-w-[140px] truncate font-bold text-slate-200">{item.sku_code}</span>
+        <span className="block max-w-[140px] truncate font-bold text-gray-800">{item.sku_code}</span>
       )
     },
     {
       key: "product_name",
       label: "Tên Sản Phẩm",
       render: (item: InventoryItem) => (
-        <span className="block max-w-[280px] truncate font-semibold text-slate-300">{item.product_name}</span>
+        <span className="block max-w-[280px] truncate font-semibold text-gray-700">{item.product_name}</span>
       )
     },
     {
       key: "warehouse",
       label: "Kho Hàng",
       render: (item: InventoryItem) => (
-        <span className="block max-w-[180px] truncate text-slate-400 font-medium">{getWarehouseName(item.location_id)}</span>
+        <span className="block max-w-[180px] truncate text-gray-500 font-medium">{getWarehouseName(item.location_id)}</span>
       )
     },
     {
       key: "location",
       label: "Vị trí (Location)",
       render: (item: InventoryItem) => (
-        <span className="inline-block max-w-[220px] truncate bg-slate-850 text-slate-300 px-2 py-0.5 rounded font-bold border border-slate-850">
+        <span className="inline-block max-w-[220px] truncate bg-gray-100 text-gray-700 px-2 py-0.5 rounded font-bold border border-gray-200">
           {getLocationCode(item.location_id)}
         </span>
       )
@@ -284,20 +284,20 @@ export default function InventoryPage() {
       label: "Số lượng",
       render: (item: InventoryItem) => (
         <div className="space-y-1 min-w-[132px]">
-          <div className="flex items-center justify-between gap-2 text-[10px] uppercase tracking-wider text-slate-500">
+          <div className="flex items-center justify-between gap-2 text-[10px] uppercase tracking-wider text-gray-500">
             <span>On-hand</span>
-            <span className="font-extrabold text-slate-100 text-sm normal-case tracking-normal">{item.qty_on_hand}</span>
+            <span className="font-extrabold text-gray-900 text-sm normal-case tracking-normal">{item.qty_on_hand}</span>
           </div>
-          <div className="flex items-center justify-between gap-2 text-[10px] uppercase tracking-wider text-slate-500">
+          <div className="flex items-center justify-between gap-2 text-[10px] uppercase tracking-wider text-gray-500">
             <span>Reserved</span>
-            <span className="font-bold text-slate-300 text-sm normal-case tracking-normal">{item.qty_reserved}</span>
+            <span className="font-bold text-gray-700 text-sm normal-case tracking-normal">{item.qty_reserved}</span>
           </div>
-          <div className="flex items-center justify-between gap-2 text-[10px] uppercase tracking-wider text-slate-500">
+          <div className="flex items-center justify-between gap-2 text-[10px] uppercase tracking-wider text-gray-500">
             <span>Available</span>
             <span className={`px-2 py-0.5 rounded font-bold text-sm normal-case tracking-normal ${
-              item.qty_on_hand - item.qty_reserved <= 0 ? "bg-rose-950/50 text-rose-400" :
-              item.qty_on_hand - item.qty_reserved < 10 ? "bg-amber-950/50 text-amber-400" :
-              "bg-emerald-950/50 text-emerald-400"
+              item.qty_on_hand - item.qty_reserved <= 0 ? "bg-rose-50 text-rose-700 border border-rose-200 text-rose-600" :
+              item.qty_on_hand - item.qty_reserved < 10 ? "bg-amber-50 text-amber-700 border border-amber-200 text-amber-600" :
+              "bg-emerald-50 text-emerald-700 border border-emerald-200 text-emerald-600"
             }`}>
               {item.qty_on_hand - item.qty_reserved}
             </span>
@@ -309,7 +309,7 @@ export default function InventoryPage() {
       key: "updated_at",
       label: "Cập nhật",
       render: (item: InventoryItem) => (
-        <span className="block max-w-[170px] truncate text-slate-400 font-medium">
+        <span className="block max-w-[170px] truncate text-gray-500 font-medium">
           {formatDateTime(item.updated_at)}
         </span>
       )
@@ -321,13 +321,13 @@ export default function InventoryPage() {
         <div className="space-x-1">
           <button
             onClick={() => openAdjustModal(item)}
-            className="px-2.5 py-1 text-[10px] font-bold border border-slate-800 hover:border-indigo-500 hover:text-indigo-400 text-slate-300 rounded-lg transition-colors"
+            className="px-2.5 py-1 text-[10px] font-bold border border-gray-200 hover:border-indigo-500 hover:text-indigo-600 text-gray-700 rounded-lg transition-colors"
           >
             Chỉnh
           </button>
           <button
             onClick={() => openTransferModal(item)}
-            className="px-2.5 py-1 text-[10px] font-bold border border-slate-800 hover:border-slate-700 hover:bg-slate-800 hover:text-white text-slate-300 rounded-lg transition-colors"
+            className="px-2.5 py-1 text-[10px] font-bold border border-gray-200 hover:border-gray-200 hover:bg-gray-100 hover:text-white text-gray-700 rounded-lg transition-colors"
           >
             Chuyển
           </button>
@@ -337,15 +337,15 @@ export default function InventoryPage() {
   ];
 
   return (
-    <div className="w-full max-w-none px-4 md:px-6 py-8 space-y-8 text-slate-100">
+    <div className="w-full max-w-none px-4 md:px-6 py-8 space-y-8 text-gray-900">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-extrabold text-slate-100 flex items-center gap-2">
-            <Package className="w-5 h-5 text-indigo-500" />
+          <h2 className="text-xl font-extrabold text-gray-900 flex items-center gap-2">
+            <Package className="w-5 h-5 text-indigo-600" />
             <span>Tồn kho thực tế (Inventory)</span>
           </h2>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-gray-500 mt-1">
             Quản lý số lượng tồn kho (On Hand, Reserved, Available) và dịch chuyển ô kệ
           </p>
         </div>
@@ -359,7 +359,7 @@ export default function InventoryPage() {
           </button>
           <button
             onClick={() => openTransferModal()}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-xl shadow-md transition-colors"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 hover:bg-surface text-white text-xs font-bold rounded-xl shadow-md transition-colors"
           >
             <Move className="w-4 h-4" />
             <span>Dịch chuyển hàng</span>
@@ -368,28 +368,28 @@ export default function InventoryPage() {
       </div>
 
       {/* Toolbar Filter */}
-      <div className="flex flex-col md:flex-row gap-4 bg-slate-900 p-4 border border-slate-800 rounded-2xl shadow-sm">
+      <div className="flex flex-col md:flex-row gap-4 bg-surface p-4 border border-gray-200 rounded-2xl shadow-sm">
         <div className="flex-1 relative">
-          <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" />
+          <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-gray-500" />
           <input
             type="text"
             placeholder="Tìm kiếm theo SKU, Tên sản phẩm..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full pl-10 pr-4 py-2.5 bg-surface border border-gray-200 rounded-xl text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           />
         </div>
         <div className="flex gap-2">
-          <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-xl">
-            <Filter className="w-4 h-4 text-slate-400" />
+          <div className="flex items-center gap-2 bg-surface border border-gray-200 px-3 py-1.5 rounded-xl">
+            <Filter className="w-4 h-4 text-gray-500" />
             <select
               value={selectedWarehouseId}
               onChange={(e) => setSelectedWarehouseId(e.target.value)}
-              className="bg-transparent text-xs font-bold text-slate-200 focus:outline-none"
+              className="bg-transparent text-xs font-bold text-gray-800 focus:outline-none"
             >
-              <option value="ALL" className="bg-slate-900">Tất cả kho hàng</option>
+              <option value="ALL" className="bg-surface">Tất cả kho hàng</option>
               {warehouses.map((wh) => (
-                <option key={wh.id} value={wh.id.toString()} className="bg-slate-900">
+                <option key={wh.id} value={wh.id.toString()} className="bg-surface">
                   {wh.name}
                 </option>
               ))}
@@ -397,30 +397,30 @@ export default function InventoryPage() {
           </div>
           <button
             onClick={fetchData}
-            className="p-2.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl transition-colors"
+            className="p-2.5 bg-surface hover:bg-gray-100 border border-gray-200 rounded-xl transition-colors"
           >
-            <RefreshCw className="w-4 h-4 text-slate-400" />
+            <RefreshCw className="w-4 h-4 text-gray-500" />
           </button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900 px-4 py-3">
-          <div className="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-bold">Tồn thực tế</div>
-          <div className="mt-1 text-2xl font-extrabold text-slate-100">{inventoryTotals.onHand}</div>
+        <div className="rounded-2xl border border-gray-200 bg-surface px-4 py-3">
+          <div className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold">Tồn thực tế</div>
+          <div className="mt-1 text-2xl font-extrabold text-gray-900">{inventoryTotals.onHand}</div>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900 px-4 py-3">
-          <div className="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-bold">Đã giữ chỗ</div>
-          <div className="mt-1 text-2xl font-extrabold text-slate-100">{inventoryTotals.reserved}</div>
+        <div className="rounded-2xl border border-gray-200 bg-surface px-4 py-3">
+          <div className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold">Đã giữ chỗ</div>
+          <div className="mt-1 text-2xl font-extrabold text-gray-900">{inventoryTotals.reserved}</div>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900 px-4 py-3">
-          <div className="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-bold">Khả dụng</div>
-          <div className="mt-1 text-2xl font-extrabold text-slate-100">{inventoryTotals.available}</div>
+        <div className="rounded-2xl border border-gray-200 bg-surface px-4 py-3">
+          <div className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold">Khả dụng</div>
+          <div className="mt-1 text-2xl font-extrabold text-gray-900">{inventoryTotals.available}</div>
         </div>
       </div>
 
       {error && (
-        <div className="p-4 bg-rose-950/50 border border-rose-900/50 rounded-2xl text-xs font-semibold text-rose-400">
+        <div className="p-4 bg-rose-50 text-rose-700 border border-rose-200 border border-rose-900/50 rounded-2xl text-xs font-semibold text-rose-600">
           {error}
         </div>
       )}
@@ -436,73 +436,73 @@ export default function InventoryPage() {
 
       {/* --- Adjust Quantity Modal --- */}
       {isAdjustOpen && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 rounded-2xl w-full max-w-md p-6 shadow-xl border border-slate-800 space-y-4">
-            <div className="flex justify-between items-center border-b pb-3 border-slate-800">
-              <h3 className="text-sm font-extrabold text-slate-100">
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-surface rounded-2xl w-full max-w-md p-6 shadow-xl border border-gray-200 space-y-4">
+            <div className="flex justify-between items-center border-b pb-3 border-gray-200">
+              <h3 className="text-sm font-extrabold text-gray-900">
                 Điều chỉnh tồn kho (Adjust Stock)
               </h3>
-              <button onClick={() => setIsAdjustOpen(false)} className="text-slate-400 hover:text-slate-200">
+              <button onClick={() => setIsAdjustOpen(false)} className="text-gray-500 hover:text-gray-800">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleAdjustSubmit} className="space-y-4 text-xs">
               <div className="space-y-1">
-                <label className="font-semibold text-slate-300 block">Mã SKU *</label>
+                <label className="font-semibold text-gray-700 block">Mã SKU *</label>
                 <input
                   type="text"
                   value={adjustSku}
                   onChange={(e) => setAdjustSku(e.target.value)}
                   placeholder="VD: SKU-SPORTS-BLUE-M"
-                  className="w-full p-2.5 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-950 text-slate-100"
+                  className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-surface text-gray-900"
                   required
                 />
               </div>
               <div className="space-y-1">
-                <label className="font-semibold text-slate-300 block">Vị trí Ô kệ (Location) *</label>
+                <label className="font-semibold text-gray-700 block">Vị trí Ô kệ (Location) *</label>
                 <select
                   value={adjustLocId}
                   onChange={(e) => setAdjustLocId(e.target.value)}
-                  className="w-full p-2.5 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-950 text-slate-100"
+                  className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-surface text-gray-900"
                   required
                 >
-                  <option value="" className="bg-slate-900">Chọn Vị trí</option>
+                  <option value="" className="bg-surface">Chọn Vị trí</option>
                   {locations.map((loc) => (
-                    <option key={loc.id} value={loc.id.toString()} className="bg-slate-900">
+                    <option key={loc.id} value={loc.id.toString()} className="bg-surface">
                       {getLocationCode(loc.id)}
                     </option>
                   ))}
                 </select>
               </div>
               <div className="space-y-1">
-                <label className="font-semibold text-slate-300 block">Số lượng điều chỉnh (Delta) *</label>
+                <label className="font-semibold text-gray-700 block">Số lượng điều chỉnh (Delta) *</label>
                 <input
                   type="number"
                   value={adjustQty}
                   onChange={(e) => setAdjustQty(parseInt(e.target.value))}
                   placeholder="Ví dụ: +5 để nhập thêm, -3 để giảm bớt"
-                  className="w-full p-2.5 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-950 text-slate-100"
+                  className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-surface text-gray-900"
                   required
                 />
-                <span className="text-[10px] text-slate-400 mt-1 block">
+                <span className="text-[10px] text-gray-500 mt-1 block">
                   Nhập số dương để Tăng tồn kho; Số âm để Giảm tồn kho.
                 </span>
               </div>
               <div className="space-y-1">
-                <label className="font-semibold text-slate-300 block">Ghi chú / Lý do điều chỉnh</label>
+                <label className="font-semibold text-gray-700 block">Ghi chú / Lý do điều chỉnh</label>
                 <input
                   type="text"
                   value={adjustNote}
                   onChange={(e) => setAdjustNote(e.target.value)}
                   placeholder="VD: Kiểm kho định kỳ phát hiện thừa/thiếu"
-                  className="w-full p-2.5 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-950 text-slate-100"
+                  className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-surface text-gray-900"
                 />
               </div>
-              <div className="flex justify-end gap-2 border-t pt-4 border-slate-800 bg-transparent">
+              <div className="flex justify-end gap-2 border-t pt-4 border-gray-200 bg-transparent">
                 <button
                   type="button"
                   onClick={() => setIsAdjustOpen(false)}
-                  className="px-4 py-2 border border-slate-800 text-slate-400 font-bold rounded-lg hover:bg-slate-800 bg-transparent"
+                  className="px-4 py-2 border border-gray-200 text-gray-500 font-bold rounded-lg hover:bg-gray-100 bg-transparent"
                 >
                   Hủy
                 </button>
@@ -520,87 +520,87 @@ export default function InventoryPage() {
 
       {/* --- Transfer Stock Modal --- */}
       {isTransferOpen && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 rounded-2xl w-full max-w-md p-6 shadow-xl border border-slate-800 space-y-4">
-            <div className="flex justify-between items-center border-b pb-3 border-slate-800">
-              <h3 className="text-sm font-extrabold text-slate-100">
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-surface rounded-2xl w-full max-w-md p-6 shadow-xl border border-gray-200 space-y-4">
+            <div className="flex justify-between items-center border-b pb-3 border-gray-200">
+              <h3 className="text-sm font-extrabold text-gray-900">
                 Dịch chuyển hàng (Transfer Stock)
               </h3>
-              <button onClick={() => setIsTransferOpen(false)} className="text-slate-400 hover:text-slate-200">
+              <button onClick={() => setIsTransferOpen(false)} className="text-gray-500 hover:text-gray-800">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleTransferSubmit} className="space-y-4 text-xs">
               <div className="space-y-1">
-                <label className="font-semibold text-slate-300 block">Mã SKU *</label>
+                <label className="font-semibold text-gray-700 block">Mã SKU *</label>
                 <input
                   type="text"
                   value={transferSku}
                   onChange={(e) => setTransferSku(e.target.value)}
                   placeholder="VD: SKU-SPORTS-BLUE-M"
-                  className="w-full p-2.5 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-950 text-slate-100"
+                  className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-surface text-gray-900"
                   required
                 />
               </div>
               <div className="space-y-1">
-                <label className="font-semibold text-slate-300 block">Từ vị trí nguồn *</label>
+                <label className="font-semibold text-gray-700 block">Từ vị trí nguồn *</label>
                 <select
                   value={transferFromLocId}
                   onChange={(e) => setTransferFromLocId(e.target.value)}
-                  className="w-full p-2.5 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-950 text-slate-100"
+                  className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-surface text-gray-900"
                   required
                 >
-                  <option value="" className="bg-slate-900">Chọn Vị trí Nguồn</option>
+                  <option value="" className="bg-surface">Chọn Vị trí Nguồn</option>
                   {locations.map((loc) => (
-                    <option key={loc.id} value={loc.id.toString()} className="bg-slate-900">
+                    <option key={loc.id} value={loc.id.toString()} className="bg-surface">
                       {getLocationCode(loc.id)}
                     </option>
                   ))}
                 </select>
               </div>
               <div className="space-y-1">
-                <label className="font-semibold text-slate-300 block">Đến vị trí đích *</label>
+                <label className="font-semibold text-gray-700 block">Đến vị trí đích *</label>
                 <select
                   value={transferToLocId}
                   onChange={(e) => setTransferToLocId(e.target.value)}
-                  className="w-full p-2.5 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-950 text-slate-100"
+                  className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-surface text-gray-900"
                   required
                 >
-                  <option value="" className="bg-slate-900">Chọn Vị trí Đích</option>
+                  <option value="" className="bg-surface">Chọn Vị trí Đích</option>
                   {locations.map((loc) => (
-                    <option key={loc.id} value={loc.id.toString()} className="bg-slate-900">
+                    <option key={loc.id} value={loc.id.toString()} className="bg-surface">
                       {getLocationCode(loc.id)}
                     </option>
                   ))}
                 </select>
               </div>
               <div className="space-y-1">
-                <label className="font-semibold text-slate-300 block">Số lượng dịch chuyển *</label>
+                <label className="font-semibold text-gray-700 block">Số lượng dịch chuyển *</label>
                 <input
                   type="number"
                   value={transferQty}
                   onChange={(e) => setTransferQty(parseInt(e.target.value))}
                   placeholder="Số lượng sản phẩm"
-                  className="w-full p-2.5 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-950 text-slate-100"
+                  className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-surface text-gray-900"
                   min="1"
                   required
                 />
               </div>
               <div className="space-y-1">
-                <label className="font-semibold text-slate-300 block">Ghi chú</label>
+                <label className="font-semibold text-gray-700 block">Ghi chú</label>
                 <input
                   type="text"
                   value={transferNote}
                   onChange={(e) => setTransferNote(e.target.value)}
                   placeholder="Lý do chuyển vị trí..."
-                  className="w-full p-2.5 border border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-950 text-slate-100"
+                  className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-surface text-gray-900"
                 />
               </div>
-              <div className="flex justify-end gap-2 border-t pt-4 border-slate-800 bg-transparent">
+              <div className="flex justify-end gap-2 border-t pt-4 border-gray-200 bg-transparent">
                 <button
                   type="button"
                   onClick={() => setIsTransferOpen(false)}
-                  className="px-4 py-2 border border-slate-800 text-slate-400 font-bold rounded-lg hover:bg-slate-800 bg-transparent"
+                  className="px-4 py-2 border border-gray-200 text-gray-500 font-bold rounded-lg hover:bg-gray-100 bg-transparent"
                 >
                   Hủy
                 </button>

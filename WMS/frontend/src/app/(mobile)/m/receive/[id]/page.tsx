@@ -181,14 +181,14 @@ export default function ReceiveDetailPage() {
   if (loading) {
     return (
       <div className="flex justify-center py-24">
-        <Loader2 className="w-8 h-8 animate-spin text-slate-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-gray-500" />
       </div>
     );
   }
 
   if (!shipment) {
     return (
-      <div className="text-center py-24 text-rose-400 text-xs">
+      <div className="text-center py-24 text-rose-600 text-xs">
         Không tìm thấy thông tin lô hàng nhập.
       </div>
     );
@@ -198,21 +198,21 @@ export default function ReceiveDetailPage() {
     <div className="space-y-4 max-w-md mx-auto">
       {/* Header */}
       <div className="flex items-center gap-2">
-        <Link href="/m/receive" className="p-1 hover:bg-slate-900 rounded-lg">
-          <ArrowLeft className="w-5 h-5 text-slate-400" />
+        <Link href="/m/receive" className="p-1 hover:bg-surface rounded-lg">
+          <ArrowLeft className="w-5 h-5 text-gray-500" />
         </Link>
         <div>
-          <h1 className="text-xs font-bold text-slate-400">CHI TIẾT NHẬP KHO</h1>
-          <h2 className="text-sm font-extrabold text-slate-200">{shipment.inbound_number}</h2>
+          <h1 className="text-xs font-bold text-gray-500">CHI TIẾT NHẬP KHO</h1>
+          <h2 className="text-sm font-extrabold text-gray-800">{shipment.inbound_number}</h2>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="grid grid-cols-2 gap-2 bg-slate-900 p-1.5 rounded-xl border border-slate-800 text-xs font-bold">
+      <div className="grid grid-cols-2 gap-2 bg-surface p-1.5 rounded-xl border border-gray-200 text-xs font-bold">
         <button
           onClick={() => setActiveTab("scan")}
           className={`py-2 rounded-lg transition-all ${
-            activeTab === "scan" ? "bg-indigo-650 bg-indigo-600 text-white shadow" : "text-slate-400 hover:text-slate-200"
+            activeTab === "scan" ? "bg-indigo-650 bg-indigo-600 text-white shadow" : "text-gray-500 hover:text-gray-800"
           }`}
         >
           1. Quét Nhận Hàng
@@ -220,7 +220,7 @@ export default function ReceiveDetailPage() {
         <button
           onClick={() => setActiveTab("putaway")}
           className={`py-2 rounded-lg transition-all ${
-            activeTab === "putaway" ? "bg-indigo-650 bg-indigo-600 text-white shadow" : "text-slate-400 hover:text-slate-200"
+            activeTab === "putaway" ? "bg-indigo-650 bg-indigo-600 text-white shadow" : "text-gray-500 hover:text-gray-800"
           }`}
         >
           2. Cất Hàng (Put-away)
@@ -231,8 +231,8 @@ export default function ReceiveDetailPage() {
       {activeTab === "scan" && (
         <div className="space-y-4">
           {/* Target List */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
-            <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-850 pb-2">
+          <div className="bg-surface border border-gray-200 shadow-sm rounded-2xl p-4 space-y-3">
+            <h3 className="text-xs font-extrabold text-gray-500 uppercase tracking-wider border-b border-gray-200 pb-2">
               Sản phẩm dự kiến nhận
             </h3>
             <div className="space-y-2">
@@ -243,8 +243,8 @@ export default function ReceiveDetailPage() {
                     key={item.id}
                     className={`p-3 rounded-xl border text-xs flex flex-col gap-1 ${
                       finished
-                        ? "bg-emerald-950/20 border-emerald-900/40 text-emerald-400"
-                        : "bg-slate-950 border-slate-850 text-slate-200"
+                        ? "bg-emerald-50 border border-emerald-200 border-emerald-900/40 text-emerald-600"
+                        : "bg-surface border-gray-200 text-gray-800"
                     }`}
                   >
                     <div className="flex justify-between font-bold">
@@ -253,10 +253,10 @@ export default function ReceiveDetailPage() {
                         {item.received_qty} / {item.expected_qty}
                       </span>
                     </div>
-                    <div className="text-[10px] text-slate-400 font-semibold">{item.product_name}</div>
-                    <div className="flex items-center justify-between text-[9px] mt-1 text-slate-500 font-semibold">
+                    <div className="text-[10px] text-gray-500 font-semibold">{item.product_name}</div>
+                    <div className="flex items-center justify-between text-[9px] mt-1 text-gray-500 font-semibold">
                       <span>Vị trí cất: {getLocationCode(item.location_id)}</span>
-                      <span className="uppercase tracking-wide font-extrabold text-[8px] bg-slate-900 px-1.5 py-0.5 rounded text-indigo-400">
+                      <span className="uppercase tracking-wide font-extrabold text-[8px] bg-surface px-1.5 py-0.5 rounded text-indigo-600">
                         {item.status}
                       </span>
                     </div>
@@ -271,8 +271,8 @@ export default function ReceiveDetailPage() {
             <div
               className={`p-3 rounded-xl text-xs font-bold flex items-center gap-2 border ${
                 scanMessage.type === "success"
-                  ? "bg-emerald-950/50 text-emerald-400 border-emerald-900/50"
-                  : "bg-rose-950/50 text-rose-400 border-rose-900/50"
+                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200 text-emerald-600 border-emerald-900/50"
+                  : "bg-rose-50 text-rose-700 border border-rose-200 text-rose-600 border-rose-900/50"
               }`}
             >
               {scanMessage.type === "success" ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
@@ -288,18 +288,18 @@ export default function ReceiveDetailPage() {
       {/* Tab: Put Away */}
       {activeTab === "putaway" && (
         <div className="space-y-4">
-          <form onSubmit={handlePutAwaySubmit} className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-4">
-            <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-850 pb-2">
+          <form onSubmit={handlePutAwaySubmit} className="bg-surface border border-gray-200 shadow-sm rounded-2xl p-4 space-y-4">
+            <h3 className="text-xs font-extrabold text-gray-500 uppercase tracking-wider border-b border-gray-200 pb-2">
               Gán vị trí cất hàng (Put-away)
             </h3>
 
             {/* Select SKU */}
             <div className="space-y-1">
-              <label className="block text-[10px] font-bold text-slate-400">SẢN PHẨM (SKU)</label>
+              <label className="block text-[10px] font-bold text-gray-500">SẢN PHẨM (SKU)</label>
               <select
                 value={putAwaySku}
                 onChange={(e) => setPutAwaySku(e.target.value)}
-                className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                className="w-full p-3 bg-surface border border-gray-200 rounded-xl text-xs text-gray-800 focus:outline-none focus:border-indigo-500"
               >
                 {shipment.items.map((item) => (
                   <option key={item.id} value={item.sku_code}>
@@ -311,11 +311,11 @@ export default function ReceiveDetailPage() {
 
             {/* Select Location */}
             <div className="space-y-1">
-              <label className="block text-[10px] font-bold text-slate-400">VỊ TRÍ CẤT HÀNG (LOCATION)</label>
+              <label className="block text-[10px] font-bold text-gray-500">VỊ TRÍ CẤT HÀNG (LOCATION)</label>
               <select
                 value={putAwayLocId}
                 onChange={(e) => setPutAwayLocId(e.target.value)}
-                className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                className="w-full p-3 bg-surface border border-gray-200 rounded-xl text-xs text-gray-800 focus:outline-none focus:border-indigo-500"
               >
                 {locations.map((loc) => (
                   <option key={loc.id} value={loc.id}>
@@ -339,8 +339,8 @@ export default function ReceiveDetailPage() {
             <div
               className={`p-3 rounded-xl text-xs font-bold flex items-center gap-2 border ${
                 putAwayMessage.type === "success"
-                  ? "bg-emerald-950/50 text-emerald-400 border-emerald-900/50"
-                  : "bg-rose-950/50 text-rose-400 border-rose-900/50"
+                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200 text-emerald-600 border-emerald-900/50"
+                  : "bg-rose-50 text-rose-700 border border-rose-200 text-rose-600 border-rose-900/50"
               }`}
             >
               {putAwayMessage.type === "success" ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
@@ -349,15 +349,15 @@ export default function ReceiveDetailPage() {
           )}
 
           {/* Current location mappings info */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-2 text-xs">
-            <h4 className="font-bold text-slate-400 border-b border-slate-850 pb-2 mb-2">Vị trí hiện tại đã gán</h4>
+          <div className="bg-surface border border-gray-200 shadow-sm rounded-2xl p-4 space-y-2 text-xs">
+            <h4 className="font-bold text-gray-500 border-b border-gray-200 pb-2 mb-2">Vị trí hiện tại đã gán</h4>
             {shipment.items.map((item) => (
-              <div key={item.id} className="flex justify-between py-1 border-b border-slate-850/50 text-slate-300">
+              <div key={item.id} className="flex justify-between py-1 border-b border-gray-200/50 text-gray-700">
                 <span className="flex items-center gap-1.5">
-                  <Tag className="w-3.5 h-3.5 text-slate-500" /> {item.sku_code}
+                  <Tag className="w-3.5 h-3.5 text-gray-500" /> {item.sku_code}
                 </span>
-                <span className="flex items-center gap-1 font-bold text-indigo-400">
-                  <MapPin className="w-3.5 h-3.5 text-indigo-400" /> {getLocationCode(item.location_id)}
+                <span className="flex items-center gap-1 font-bold text-indigo-600">
+                  <MapPin className="w-3.5 h-3.5 text-indigo-600" /> {getLocationCode(item.location_id)}
                 </span>
               </div>
             ))}

@@ -219,24 +219,24 @@ export default function MobileScanner({
   return (
     <div className="space-y-4">
       {/* Scanner Box */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden p-4">
+      <div className="bg-surface border border-gray-200 shadow-sm rounded-2xl overflow-hidden p-4">
         <div className="flex items-center justify-between mb-3">
-          <span className="text-xs font-bold text-slate-400 flex items-center gap-1.5">
-            <Scan className="w-4 h-4 text-indigo-400" /> Camera Scanner
+          <span className="text-xs font-bold text-gray-500 flex items-center gap-1.5">
+            <Scan className="w-4 h-4 text-indigo-600" /> Camera Scanner
           </span>
-          <span className="text-[10px] bg-slate-800 text-indigo-400 px-2 py-0.5 rounded font-medium">Ready</span>
+          <span className="text-[10px] bg-gray-100 text-indigo-600 px-2 py-0.5 rounded font-medium">Ready</span>
         </div>
-        <div id="qr-reader" className="w-full bg-slate-950 rounded-xl overflow-hidden border border-slate-850" />
+        <div id="qr-reader" className="w-full bg-surface rounded-xl overflow-hidden border border-gray-200" />
         <div id="qr-file-reader" className="hidden" />
       </div>
 
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+      <div className="bg-surface border border-gray-200 shadow-sm rounded-2xl p-4 space-y-3">
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400">
-            <ImageIcon className="w-4 h-4 text-indigo-400" />
+          <div className="flex items-center gap-1.5 text-xs font-bold text-gray-500">
+            <ImageIcon className="w-4 h-4 text-indigo-600" />
             <span>Scan from image</span>
           </div>
-          <label className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white text-[10px] font-bold rounded-xl cursor-pointer transition-colors">
+          <label className="px-3 py-1.5 bg-gray-100 hover:bg-slate-700 text-white text-[10px] font-bold rounded-xl cursor-pointer transition-colors">
             Chọn ảnh
             <input
               type="file"
@@ -253,16 +253,16 @@ export default function MobileScanner({
           </label>
         </div>
         {fileScanError && (
-          <div className="text-[10px] text-amber-400 bg-amber-950/30 border border-amber-900/40 rounded-lg px-3 py-2">
+          <div className="text-[10px] text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
             {fileScanError}
           </div>
         )}
       </div>
 
       {/* Manual Input form */}
-      <form onSubmit={handleManualSubmit} className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
-        <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400">
-          <Keyboard className="w-4 h-4 text-indigo-400" />
+      <form onSubmit={handleManualSubmit} className="bg-surface border border-gray-200 shadow-sm rounded-2xl p-4 space-y-3">
+        <div className="flex items-center gap-1.5 text-xs font-bold text-gray-500">
+          <Keyboard className="w-4 h-4 text-indigo-600" />
           <span>Manual Input (Simulation / E2E)</span>
         </div>
         <div className="flex gap-2">
@@ -272,7 +272,7 @@ export default function MobileScanner({
             placeholder={placeholder}
             value={manualInput}
             onChange={(e) => setManualInput(e.target.value)}
-            className="flex-1 p-3 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+            className="flex-1 p-3 bg-surface border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
           />
           <button
             type="submit"
