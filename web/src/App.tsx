@@ -92,7 +92,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/catalog" element={<CatalogPage />} />
-          <Route path="/product/:id" element={<ProductDetailRoute />} />
+          <Route path="/product/:slug" element={<ProductDetailRoute />} />
           <Route path="/blog/*" element={<BlogSection blogs={blogs} />} />
           <Route path="/stores" element={<StoreLocator branches={branches} products={products} />} />
         </Routes>
