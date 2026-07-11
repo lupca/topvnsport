@@ -236,7 +236,7 @@ export default function MobileScanner({
             <ImageIcon className="w-4 h-4 text-indigo-600" />
             <span>Scan from image</span>
           </div>
-          <label className="px-3 py-1.5 bg-gray-100 hover:bg-slate-700 text-white text-[10px] font-bold rounded-xl cursor-pointer transition-colors">
+          <label className="px-3 py-1.5 bg-gray-100 hover:bg-slate-200 text-gray-700 hover:text-gray-900 text-[10px] font-bold rounded-xl cursor-pointer border border-gray-200 transition-colors">
             Chọn ảnh
             <input
               type="file"

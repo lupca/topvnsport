@@ -223,10 +223,10 @@ export default function LookupPage() {
         <div className="fixed inset-0 bg-surface/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-surface border border-gray-200 shadow-sm rounded-2xl w-full max-w-sm p-5 shadow-2xl space-y-4 text-gray-900 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex justify-between items-center border-b pb-3 border-gray-200">
-              <h3 className="text-xs font-extrabold text-slate-250 text-gray-800 uppercase tracking-wider">Liên kết nhanh SKU</h3>
+              <h3 className="text-xs font-extrabold text-gray-800 uppercase tracking-wider">Liên kết nhanh SKU</h3>
               <button
                 onClick={() => setIsMappingModalOpen(false)}
-                className="p-1 rounded-lg text-gray-500 hover:text-white"
+                className="p-1 rounded-lg text-gray-500 hover:text-gray-800 hover:bg-gray-100"
               >
                 <X className="w-4 h-4" />
               </button>

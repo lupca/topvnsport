@@ -327,7 +327,7 @@ export default function InventoryPage() {
           </button>
           <button
             onClick={() => openTransferModal(item)}
-            className="px-2.5 py-1 text-[10px] font-bold border border-gray-200 hover:border-gray-200 hover:bg-gray-100 hover:text-white text-gray-700 rounded-lg transition-colors"
+            className="px-2.5 py-1 text-[10px] font-bold border border-gray-200 hover:border-gray-200 hover:bg-gray-100 hover:text-gray-900 text-gray-700 rounded-lg transition-colors"
           >
             Chuyển
           </button>
@@ -359,7 +359,7 @@ export default function InventoryPage() {
           </button>
           <button
             onClick={() => openTransferModal()}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 hover:bg-surface text-white text-xs font-bold rounded-xl shadow-md transition-colors"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 text-xs font-bold rounded-xl shadow-sm border border-gray-200 transition-colors"
           >
             <Move className="w-4 h-4" />
             <span>Dịch chuyển hàng</span>
