@@ -32,6 +32,71 @@ function ProductDetailPageRouterWrapper({ products, stringOptions, handleAddToCa
   return <ProductDetailPage product={product} stringOptions={stringOptions} onAddToCartWithSpecs={handleAddToCartWithSpecs} />;
 }
 
+const categoryTileThemes = [
+  {
+    shell: 'from-slate-950 via-slate-900 to-slate-800',
+    accent: 'from-white/10 to-white/0',
+    chip: 'bg-white/10 text-white/85 border-white/10',
+    badge: 'text-white/80',
+    monogram: 'bg-white/10 text-white'
+  },
+  {
+    shell: 'from-brand-primary via-sky-600 to-cyan-600',
+    accent: 'from-white/20 to-white/0',
+    chip: 'bg-white/10 text-white border-white/10',
+    badge: 'text-white/75',
+    monogram: 'bg-white/15 text-white'
+  },
+  {
+    shell: 'from-emerald-600 via-teal-600 to-cyan-700',
+    accent: 'from-white/15 to-white/0',
+    chip: 'bg-white/10 text-white border-white/10',
+    badge: 'text-white/75',
+    monogram: 'bg-white/15 text-white'
+  },
+  {
+    shell: 'from-amber-500 via-orange-600 to-rose-600',
+    accent: 'from-white/20 to-white/0',
+    chip: 'bg-black/10 text-white border-white/10',
+    badge: 'text-white/80',
+    monogram: 'bg-white/15 text-white'
+  },
+  {
+    shell: 'from-violet-600 via-fuchsia-600 to-pink-600',
+    accent: 'from-white/20 to-white/0',
+    chip: 'bg-white/10 text-white border-white/10',
+    badge: 'text-white/75',
+    monogram: 'bg-white/15 text-white'
+  }
+];
+
+function getCategoryMonogram(name: string) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(part => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+function getCategoryPitch(category: Category) {
+  switch (category.code) {
+    case 'rackets':
+      return 'Vợt thi đấu, tập luyện và công thủ toàn diện.';
+    case 'shoes':
+      return 'Giày bám sân, ổn định và hỗ trợ di chuyển nhanh.';
+    case 'strings':
+      return 'Cước đan cho cảm giác, trợ lực và kiểm soát.';
+    case 'bags':
+      return 'Túi và balo gọn gàng cho hành lý thi đấu.';
+    case 'shuttlecocks':
+      return 'Quả cầu cho tập luyện và thi đấu đúng nhịp.';
+    default:
+      return 'Khám phá danh mục sản phẩm phù hợp nhất.';
+  }
+}
+
 export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -289,35 +354,55 @@ export default function App() {
                   <Sparkles className="w-5 h-5 text-brand-primary" /> Danh mục trang thiết bị cầu lông
                 </h2>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                  {topLevelCategories.map(cat => (
-                    <div
-                      key={cat.id}
-                      onClick={() => navigate(`/catalog?category=${encodeURIComponent(cat.name)}`)}
-                      className="group relative bg-white border border-gray-100 rounded-xl overflow-hidden p-4 text-center cursor-pointer hover:shadow-md transition-all duration-300 flex flex-col items-center justify-between"
-                    >
-                      <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center overflow-hidden mb-3">
-                        <img
-                          src={cat.code === 'rackets'
-                            ? 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=300&q=80'
-                            : cat.code === 'shoes'
-                              ? 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80'
-                              : cat.code === 'bags'
-                                ? 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=300&q=80'
-                                : cat.code === 'strings'
-                                  ? 'https://images.unsplash.com/photo-1613531415875-161a5622c5b7?auto=format&fit=crop&w=300&q=80'
-                                  : 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=300&q=80'}
-                          alt={cat.name}
-                          className="w-full h-full object-cover group-hover:scale-110 transition duration-300"
-                          referrerPolicy="no-referrer"
-                        />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-xs text-gray-800 group-hover:text-brand-primary transition">{cat.name}</h4>
-                        <p className="text-[10px] text-gray-400 font-mono mt-0.5">{categoryCounts[cat.name] || 0} sản phẩm</p>
-                      </div>
-                    </div>
-                  ))}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+                  {topLevelCategories.map((cat, index) => {
+                    const theme = categoryTileThemes[index % categoryTileThemes.length];
+
+                    return (
+                      <button
+                        type="button"
+                        key={cat.id}
+                        onClick={() => navigate(`/catalog?category=${encodeURIComponent(cat.name)}`)}
+                        aria-label={`Mở danh mục ${cat.name}`}
+                        className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-5 text-left shadow-xs transition-all duration-300 hover:-translate-y-1 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/40"
+                      >
+                        <div className={`absolute inset-0 bg-gradient-to-br ${theme.accent} opacity-0 transition-opacity duration-300 group-hover:opacity-100`} />
+                        <div className={`absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r ${theme.shell}`} />
+
+                        <div className="relative flex h-full min-h-[180px] flex-col gap-5">
+                          <div className="flex items-start justify-between gap-3">
+                            <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.28em] ${theme.chip}`}>
+                              {categoryCounts[cat.name] || 0} sản phẩm
+                            </span>
+                            <ChevronRight className={`w-4 h-4 ${theme.badge} transition-transform duration-300 group-hover:translate-x-1`} />
+                          </div>
+
+                          <div className="flex items-end justify-between gap-4">
+                            <div className="min-w-0">
+                              <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-gray-400 group-hover:text-brand-primary transition">Danh mục</p>
+                              <h3 className="mt-1 font-display text-xl font-black tracking-tight text-gray-900 group-hover:text-brand-primary transition">
+                                {cat.name}
+                              </h3>
+                              <p className="mt-2 text-sm leading-relaxed text-gray-500 line-clamp-3">
+                                {getCategoryPitch(cat)}
+                              </p>
+                            </div>
+
+                            <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-white/20 bg-gradient-to-br ${theme.shell} shadow-inner`}>
+                              <span className={`font-display text-xl font-black tracking-tight ${theme.monogram}`}>
+                                {getCategoryMonogram(cat.name)}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="mt-auto flex items-center justify-between text-[11px] font-medium text-gray-500">
+                            <span>{categoryCounts[cat.name] || 0} sản phẩm</span>
+                            <span className="font-bold text-brand-primary">Khám phá</span>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </section>
             )}

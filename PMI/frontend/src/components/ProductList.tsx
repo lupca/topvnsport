@@ -57,6 +57,7 @@ export default function ProductList({
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [batchDeleteMode, setBatchDeleteMode] = useState(false);
+  const [refreshCount, setRefreshCount] = useState(0);
 
   const handlePreviewClick = (productId: number) => {
     setPreviewLoading(true);
@@ -91,6 +92,17 @@ export default function ProductList({
     setDeleteTarget({ id: -1, name: "Batch Delete", product_code: "BATCH" } as Product);
   };
 
+  const handlePostDelete = (deletedCount: number) => {
+    const newTotal = Math.max(0, totalItems - deletedCount);
+    const newMaxPage = Math.ceil(newTotal / pageSize) || 1;
+    
+    if (currentPage > newMaxPage) {
+      setCurrentPage(newMaxPage);
+    } else {
+      setRefreshCount(prev => prev + 1);
+    }
+  };
+
   const confirmDeleteProduct = async () => {
     if (!deleteTarget || deletingProductId !== null) return;
 
@@ -117,11 +129,11 @@ export default function ProductList({
           return;
         }
 
-        setProducts(prev => prev.filter(p => !selectedProductIds.includes(p.id)));
-        setTotalItems(prev => Math.max(0, prev - selectedProductIds.length));
+        const deletedCount = selectedProductIds.length;
         setSelectedProductIds([]);
         setDeleteTarget(null);
         setDeleteError(null);
+        handlePostDelete(deletedCount);
       } catch (err) {
         console.error("Error batch deleting products:", err);
         setDeleteError("Không thể kết nối tới máy chủ để xóa sản phẩm.");
@@ -148,9 +160,7 @@ export default function ProductList({
           return;
         }
 
-        setProducts(prev => prev.filter(p => p.id !== productId));
         setSelectedProductIds(prev => prev.filter(id => id !== productId));
-        setTotalItems(prev => Math.max(0, prev - 1));
         setDeleteTarget(null);
         setDeleteError(null);
 
@@ -158,6 +168,8 @@ export default function ProductList({
           setShowPreviewModal(false);
           setPreviewProduct(null);
         }
+
+        handlePostDelete(1);
       } catch (err) {
         console.error("Error deleting product:", err);
         setDeleteError("Không thể kết nối tới máy chủ để xóa sản phẩm.");
@@ -208,7 +220,7 @@ export default function ProductList({
         setProducts([]);
         setLoading(false);
       });
-  }, [appliedSearch, appliedCategory, activeTab, sortBy, sortOrder, currentPage, pageSize]);
+  }, [appliedSearch, appliedCategory, activeTab, sortBy, sortOrder, currentPage, pageSize, refreshCount]);
 
   // Reset pagination on filter or tab changes
   useEffect(() => {
