@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Product, StringOption } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Star, ShoppingCart, ShieldCheck, Heart, Sparkles, Check, Phone, ArrowLeft, Trophy, Calendar, MapPin, Gauge } from 'lucide-react';
+import { Star, ShoppingCart, Heart, Sparkles, Check, Phone, ArrowLeft, Calendar, MapPin, Gauge } from 'lucide-react';
 import ProductMediaGallery from './ProductMediaGallery';
+import TrustSealsPanel from './TrustSealsPanel';
 
 interface ProductDetailPageProps {
   product: Product;
@@ -133,17 +134,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
             gallery={product.gallery}
           />
 
-          {/* Core Trust Seals Panel */}
-          <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 grid grid-cols-2 gap-3 text-xs text-gray-600">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-emerald-500 shrink-0" />
-              <span>Cam kết chính hãng 100%</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-brand-primary shrink-0" />
-              <span>Bảo hành lưới gãy 90 ngày</span>
-            </div>
-          </div>
+          <TrustSealsPanel />
         </div>
 
         {/* Right Column: Information, Specs, Assistants (7 cols) */}
