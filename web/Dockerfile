@@ -8,7 +8,7 @@ ENV VITE_PMI_API_URL=$VITE_PMI_API_URL
 ENV VITE_OMS_API_URL=$VITE_OMS_API_URL
 
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
 COPY . .
 RUN npm run build
