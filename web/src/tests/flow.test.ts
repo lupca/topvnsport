@@ -1,6 +1,7 @@
 import { describe, test, expect } from 'vitest';
 import { products, stringOptions } from '../data';
 import { Product } from '../types';
+import { getTopLevelProductCategories } from '../utils/categories';
 
 // Helper matching logic extracted from RacketFinder.tsx for verification
 function calculateRecommendations(answers: { skill: string; style: string; budget: string }): Product[] {
@@ -121,5 +122,21 @@ describe('Automated System Verification Tests', () => {
       expect(product).toHaveProperty('price');
       expect(product).toHaveProperty('specs');
     });
+  });
+
+  test('Top-level category helper keeps actual parent-child catalog categories only', () => {
+    const categories = [
+      { id: 1, name: 'Thiết bị cầu lông', code: 'badminton_equipment', parent_id: null, display_name: '[root] / Thiết bị cầu lông' },
+      { id: 2, name: 'Phụ kiện cầu lông', code: 'badminton_accessories', parent_id: null, display_name: '[root] / Phụ kiện cầu lông' },
+      { id: 3, name: 'Vợt', code: 'rackets', parent_id: 1, display_name: '[root] / Thiết bị cầu lông / Vợt' },
+      { id: 4, name: 'Giày', code: 'shoes', parent_id: 1, display_name: '[root] / Thiết bị cầu lông / Giày' },
+      { id: 5, name: 'Cước', code: 'strings', parent_id: 2, display_name: '[root] / Phụ kiện cầu lông / Cước' },
+      { id: 6, name: 'Túi xách', code: 'bags', parent_id: 2, display_name: '[root] / Phụ kiện cầu lông / Túi xách' },
+      { id: 7, name: 'Quả cầu', code: 'shuttlecocks', parent_id: 2, display_name: '[root] / Phụ kiện cầu lông / Quả cầu' }
+    ];
+
+    const result = getTopLevelProductCategories(categories as any);
+
+    expect(result.map(category => category.code)).toEqual(['rackets', 'shoes', 'strings', 'bags', 'shuttlecocks']);
   });
 });

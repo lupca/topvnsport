@@ -2,10 +2,16 @@ import React from 'react';
 import { Trophy, Phone, MapPin, Mail, ShieldCheck, Heart, Sparkles, Facebook, Youtube, Share2 } from 'lucide-react';
 
 import { Link } from 'react-router-dom';
+import { Category } from '../types';
+import { getTopLevelProductCategories } from '../utils/categories';
 
-interface FooterProps {}
+interface FooterProps {
+  categories: Category[];
+}
 
-export default function Footer({}: FooterProps) {
+export default function Footer({ categories }: FooterProps) {
+  const topLevelCategories = getTopLevelProductCategories(categories);
+
   return (
     <footer className="bg-gray-950 text-gray-400 text-xs md:text-sm border-t border-gray-900 mt-20" id="topvnsport-footer">
       
@@ -81,15 +87,18 @@ export default function Footer({}: FooterProps) {
         </div>
 
         {/* Directory links */}
-        <div className="space-y-3">
-          <h4 className="font-bold text-white text-xs uppercase tracking-wider">Sản phẩm cốt lõi</h4>
-          <ul className="space-y-1.5 text-xs text-gray-500">
-            <li><Link to="/catalog?category=Vợt" className="hover:text-white transition">Vợt Cầu Lông Yonex Nhật Bản</Link></li>
-            <li><Link to="/catalog?category=Vợt" className="hover:text-white transition">Vợt Cầu Lông Lining Chuyên Công</Link></li>
-            <li><Link to="/catalog?category=Giày" className="hover:text-white transition">Giày Cầu Lông Chống Lật Cổ Chân</Link></li>
-            <li><Link to="/catalog?category=Cước" className="hover:text-white transition">Dây Cước Đan Exbolt Đanh Tiếng</Link></li>
-          </ul>
-        </div>
+        {topLevelCategories.length > 0 && (
+          <div className="space-y-3">
+            <h4 className="font-bold text-white text-xs uppercase tracking-wider">Sản phẩm cốt lõi</h4>
+            <ul className="space-y-1.5 text-xs text-gray-500">
+              {topLevelCategories.map(category => (
+                <li key={category.id}>
+                  <Link to={`/catalog?category=${encodeURIComponent(category.name)}`} className="hover:text-white transition">{category.name}</Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* Support links */}
         <div className="space-y-3">

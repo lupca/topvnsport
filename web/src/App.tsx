@@ -16,11 +16,12 @@ import StoreLocator from './components/StoreLocator';
 import CartModal, { CartItem } from './components/CartModal';
 import Footer from './components/Footer';
 import { sportApi } from './services/sportApi';
-import { Product, StringOption, Blog, Branch } from './types';
+import { Product, StringOption, Blog, Branch, Category } from './types';
 import { ShieldCheck, Trophy, Sparkles, MapPin, Phone, Star, ShoppingBag, Eye, X, Filter, SlidersHorizontal, RefreshCw, Calendar, Clock, ChevronRight, Home, BookOpen } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import QuickViewModal from './components/QuickViewModal';
 import TrustBadges from './components/TrustBadges';
+import { getProductCategoryCounts, getTopLevelProductCategories } from './utils/categories';
 
 import { useParams } from 'react-router-dom';
 
@@ -40,6 +41,7 @@ export default function App() {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [stringOptions, setStringOptions] = useState<StringOption[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Navigation & State management
@@ -86,11 +88,13 @@ export default function App() {
           sportApi.getBranches(),
           sportApi.getStringOptions()
         ]);
+        const categoryList = await sportApi.getCategories();
         if (isMounted) {
           setProducts(prodList);
           setBlogs(blogList);
           setBranches(branchList);
           setStringOptions(stringList);
+          setCategories(categoryList);
           setIsLoading(false);
         }
       } catch (error) {
@@ -105,6 +109,13 @@ export default function App() {
       isMounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (location.pathname !== '/catalog') return;
+
+    const categoryParam = searchParams.get('category');
+    setSelectedCategory(categoryParam ? decodeURIComponent(categoryParam) : 'Tất cả');
+  }, [location.pathname, searchParams]);
 
   // Cart operations
   const resolveSkuCode = (product: Product, color: string, weight: string) => {
@@ -225,6 +236,9 @@ export default function App() {
     setSearchQuery('');
   };
 
+  const topLevelCategories = getTopLevelProductCategories(categories);
+  const categoryCounts = getProductCategoryCounts(products);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center font-sans antialiased" id="api-loading-state">
@@ -251,6 +265,7 @@ export default function App() {
         cartCount={cartItems.reduce((acc, i) => acc + i.quantity, 0)}
         openCart={() => setIsCartOpen(true)}
         products={products}
+        categories={categories}
       />
 
       {/* Primary content router block */}
@@ -268,35 +283,44 @@ export default function App() {
             <TrustBadges />
 
             {/* Quick access categories grid */}
-            <section className="max-w-7xl mx-auto px-4 md:px-8">
-              <h2 className="font-display font-black text-lg md:text-2xl text-gray-900 tracking-tight uppercase mb-6 flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-brand-primary" /> Danh mục trang thiết bị cầu lông
-              </h2>
-              
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                {[
-                  { id: 'Vợt', name: 'Vợt Cầu Lông', count: '12 mẫu', img: 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=300&q=80' },
-                  { id: 'Giày', name: 'Giày Chống Lật', count: '8 mẫu', img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80' },
-                  { id: 'Túi xách', name: 'Túi & Balo', count: '5 mẫu', img: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=300&q=80' },
-                  { id: 'Cước', name: 'Cước Đan Vợt', count: '7 loại', img: 'https://images.unsplash.com/photo-1613531415875-161a5622c5b7?auto=format&fit=crop&w=300&q=80' },
-                  { id: 'Quả cầu', name: 'Hộp Quả Cầu', count: '3 loại', img: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=300&q=80' }
-                ].map(cat => (
-                  <div
-                    key={cat.id}
-                    onClick={() => navigate(`/catalog?category=${cat.id}`)}
-                    className="group relative bg-white border border-gray-100 rounded-xl overflow-hidden p-4 text-center cursor-pointer hover:shadow-md transition-all duration-300 flex flex-col items-center justify-between"
-                  >
-                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center overflow-hidden mb-3">
-                      <img src={cat.img} alt={cat.name} className="w-full h-full object-cover group-hover:scale-110 transition duration-300" referrerPolicy="no-referrer" />
+            {topLevelCategories.length > 0 && (
+              <section className="max-w-7xl mx-auto px-4 md:px-8">
+                <h2 className="font-display font-black text-lg md:text-2xl text-gray-900 tracking-tight uppercase mb-6 flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-brand-primary" /> Danh mục trang thiết bị cầu lông
+                </h2>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                  {topLevelCategories.map(cat => (
+                    <div
+                      key={cat.id}
+                      onClick={() => navigate(`/catalog?category=${encodeURIComponent(cat.name)}`)}
+                      className="group relative bg-white border border-gray-100 rounded-xl overflow-hidden p-4 text-center cursor-pointer hover:shadow-md transition-all duration-300 flex flex-col items-center justify-between"
+                    >
+                      <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center overflow-hidden mb-3">
+                        <img
+                          src={cat.code === 'rackets'
+                            ? 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=300&q=80'
+                            : cat.code === 'shoes'
+                              ? 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80'
+                              : cat.code === 'bags'
+                                ? 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=300&q=80'
+                                : cat.code === 'strings'
+                                  ? 'https://images.unsplash.com/photo-1613531415875-161a5622c5b7?auto=format&fit=crop&w=300&q=80'
+                                  : 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=300&q=80'}
+                          alt={cat.name}
+                          className="w-full h-full object-cover group-hover:scale-110 transition duration-300"
+                          referrerPolicy="no-referrer"
+                        />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-xs text-gray-800 group-hover:text-brand-primary transition">{cat.name}</h4>
+                        <p className="text-[10px] text-gray-400 font-mono mt-0.5">{categoryCounts[cat.name] || 0} sản phẩm</p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-bold text-xs text-gray-800 group-hover:text-brand-primary transition">{cat.name}</h4>
-                      <p className="text-[10px] text-gray-400 font-mono mt-0.5">{cat.count}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {/* Flash Sale Widget Section with countdown clock */}
             <section className="max-w-7xl mx-auto px-4 md:px-8">
@@ -600,7 +624,7 @@ export default function App() {
       </main>
 
       {/* FOOTER widget */}
-      <Footer />
+      <Footer categories={categories} />
 
       {/* SHOPPING CART / CHECKOUT SLIDE DRAWER MODAL */}
       <CartModal

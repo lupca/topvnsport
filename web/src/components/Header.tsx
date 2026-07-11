@@ -2,17 +2,17 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search, ShoppingBag, MapPin, Phone, ShieldCheck, Heart, User, Sparkles, Trophy, BookOpen, ChevronDown, Check, Trash, Menu, X } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Product } from '../types';
+import { Category, Product } from '../types';
+import { getTopLevelProductCategories } from '../utils/categories';
 
 interface HeaderProps {
-  currentView: string;
-  
   cartCount: number;
   openCart: () => void;
   products: Product[];
+  categories: Category[];
 }
 
-export default function Header({ cartCount, openCart, products }: Omit<HeaderProps, 'currentView'|'setView'>) {
+export default function Header({ cartCount, openCart, products, categories }: HeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const currentView = location.pathname.includes('catalog') ? 'catalog' : location.pathname.includes('blog') ? 'blog-list' : location.pathname.includes('store') ? 'store-locator' : location.pathname === '/' ? 'home' : '';
@@ -54,6 +54,8 @@ export default function Header({ cartCount, openCart, products }: Omit<HeaderPro
     setSearchQuery('');
     setShowSearchDropdown(false);
   };
+
+  const topLevelCategories = getTopLevelProductCategories(categories);
 
   const trendKeywords = ['Yonex Astrox', 'Giày Lining', 'Balo cầu lông', 'Cước đan vợt'];
 
@@ -286,46 +288,27 @@ export default function Header({ cartCount, openCart, products }: Omit<HeaderPro
                 {/* Main Links */}
                 <div className="p-4 space-y-6 overflow-y-auto max-h-[calc(100vh-140px)]">
                   {/* Shop Section */}
-                  <div className="space-y-2">
-                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-brand-primary">Danh Mục Sản Phẩm</h4>
-                    <div className="grid grid-cols-1 gap-1">
-                      <button 
-                        onClick={() => { navigate(`/catalog?category=Vợt`); setIsMobileMenuOpen(false); }}
-                        className={`w-full text-left py-2 px-3 rounded-lg text-xs font-semibold flex items-center gap-2 ${currentView === 'catalog' ? 'bg-brand-light text-brand-primary' : 'text-gray-700 hover:bg-gray-50'}`}
-                      >
-                        <Trophy className="w-4 h-4 text-brand-primary" />
-                        Vợt Cầu Lông Chuyên Nghiệp
-                      </button>
-                      <button 
-                        onClick={() => { navigate(`/catalog?category=Giày`); setIsMobileMenuOpen(false); }}
-                        className="w-full text-left py-2 px-3 rounded-lg text-xs font-semibold flex items-center gap-2 text-gray-700 hover:bg-gray-50"
-                      >
-                        <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
-                        Giày Cầu Lông Chuyên Dụng
-                      </button>
-                      <button 
-                        onClick={() => { navigate(`/catalog?category=Túi xách`); setIsMobileMenuOpen(false); }}
-                        className="w-full text-left py-2 px-3 rounded-lg text-xs font-semibold flex items-center gap-2 text-gray-700 hover:bg-gray-50"
-                      >
-                        <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
-                        Bao Vợt & Balo Thể Thao
-                      </button>
-                      <button 
-                        onClick={() => { navigate(`/catalog?category=Cước`); setIsMobileMenuOpen(false); }}
-                        className="w-full text-left py-2 px-3 rounded-lg text-xs font-semibold flex items-center gap-2 text-gray-700 hover:bg-gray-50"
-                      >
-                        <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
-                        Cước Đan Vợt Chính Hãng
-                      </button>
-                      <button 
-                        onClick={() => { navigate(`/catalog?category=Quả cầu`); setIsMobileMenuOpen(false); }}
-                        className="w-full text-left py-2 px-3 rounded-lg text-xs font-semibold flex items-center gap-2 text-gray-700 hover:bg-gray-50"
-                      >
-                        <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
-                        Quả Cầu Lông Chất Lượng
-                      </button>
+                  {topLevelCategories.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="text-[10px] font-bold uppercase tracking-wider text-brand-primary">Danh Mục Sản Phẩm</h4>
+                      <div className="grid grid-cols-1 gap-1">
+                        {topLevelCategories.map((category, index) => (
+                          <button
+                            key={category.id}
+                            onClick={() => { navigate(`/catalog?category=${encodeURIComponent(category.name)}`); setIsMobileMenuOpen(false); }}
+                            className={`w-full text-left py-2 px-3 rounded-lg text-xs font-semibold flex items-center gap-2 ${currentView === 'catalog' ? 'bg-brand-light text-brand-primary' : 'text-gray-700 hover:bg-gray-50'}`}
+                          >
+                            {index === 0 ? (
+                              <Trophy className="w-4 h-4 text-brand-primary" />
+                            ) : (
+                              <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
+                            )}
+                            {category.name}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Playstyle Section */}
                   <div className="space-y-2">
@@ -409,61 +392,9 @@ export default function Header({ cartCount, openCart, products }: Omit<HeaderPro
         <div className="max-w-7xl mx-auto flex items-center justify-between text-sm font-medium">
           {/* Main Links */}
           <div className="flex items-center gap-6 overflow-x-auto scrollbar-hide py-3 pr-4">
-            {/* Vợt Cầu Lông Dropdown Trigger */}
-            <div className="relative group cursor-pointer py-1 text-gray-800 hover:text-brand-primary transition flex items-center gap-1 shrink-0">
-              <span onClick={() => navigate(`/catalog?category=Vợt`)}>Vợt Cầu Lông</span>
-              <ChevronDown className="w-3.5 h-3.5" />
-              {/* Mega Dropdown */}
-              <div className="absolute top-full left-0 mt-3 w-[520px] bg-white border border-gray-100 rounded-xl shadow-2xl p-5 hidden group-hover:grid grid-cols-2 gap-6 z-50">
-                <div>
-                  <h4 className="font-bold text-gray-900 border-b border-gray-100 pb-2 mb-2 text-xs uppercase tracking-wider text-brand-primary">Thương hiệu quốc tế</h4>
-                  <ul className="space-y-1 text-xs text-gray-600">
-                    {['Yonex (Nhật Bản)', 'Lining (Trung Quốc)', 'Victor (Đài Loan)', 'Kumpoo (Quốc dân)', 'Mizuno (Nhật Bản)'].map((b, i) => (
-                      <li key={i} onClick={() => navigate(`/catalog?brand=${b.split(' ')[0]}`)} className="hover:text-brand-primary hover:pl-1 transition-all py-1">Vợt {b}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-bold text-gray-900 border-b border-gray-100 pb-2 mb-2 text-xs uppercase tracking-wider text-brand-primary">Đặc tính lối chơi</h4>
-                  <ul className="space-y-1 text-xs text-gray-600">
-                    <li onClick={() => navigate(`/catalog?characteristics=Tấn Công`)} className="hover:text-brand-primary hover:pl-1 transition-all py-1 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span> Thiên công (Heavy Head)
-                    </li>
-                    <li onClick={() => navigate(`/catalog?characteristics=Phòng Thủ`)} className="hover:text-brand-primary hover:pl-1 transition-all py-1 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Phản tạt / Tốc độ (Speed)
-                    </li>
-                    <li onClick={() => navigate(`/catalog?characteristics=Toàn Diện`)} className="hover:text-brand-primary hover:pl-1 transition-all py-1 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span> Công thủ toàn diện (Even)
-                    </li>
-                    <li onClick={() => navigate(`/catalog?characteristics=Người Mới`)} className="hover:text-brand-primary hover:pl-1 transition-all py-1 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-brand-primary"></span> Dành cho người mới tập chơi
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            {/* Giày Cầu Lông Trigger */}
-            <div className="relative group cursor-pointer py-1 text-gray-800 hover:text-brand-primary transition flex items-center gap-1 shrink-0">
-              <span onClick={() => navigate(`/catalog?category=Giày`)}>Giày Cầu Lông</span>
-              <ChevronDown className="w-3.5 h-3.5" />
-              {/* Dropdown */}
-              <div className="absolute top-full left-0 mt-3 w-[220px] bg-white border border-gray-100 rounded-lg shadow-sm p-3 hidden group-hover:block z-50">
-                <ul className="space-y-1.5 text-xs text-gray-600">
-                  <li onClick={() => navigate(`/catalog?category=Giày&isWide=true`)} className="hover:text-brand-primary py-1 flex items-center justify-between">
-                    <span>Giày Form Bè (Wide)</span>
-                    <span className="text-[10px] bg-brand-light text-brand-primary px-1 rounded-sm font-bold">Chân Bè</span>
-                  </li>
-                  <li onClick={() => navigate(`/catalog?category=Giày&brand=Yonex`)} className="hover:text-brand-primary py-1">Giày Yonex Power Cushion</li>
-                  <li onClick={() => navigate(`/catalog?category=Giày&brand=Lining`)} className="hover:text-brand-primary py-1">Giày Lining Chuyên Dụng</li>
-                </ul>
-              </div>
-            </div>
-
-            {/* Other Categories */}
-            <button onClick={() => navigate(`/catalog?category=Túi xách`)} className="text-gray-800 hover:text-brand-primary transition shrink-0 py-1">Bao Vợt & Balo</button>
-            <button onClick={() => navigate(`/catalog?category=Cước`)} className="text-gray-800 hover:text-brand-primary transition shrink-0 py-1">Cước Đan Vợt</button>
-            <button onClick={() => navigate(`/catalog?category=Quả cầu`)} className="text-gray-800 hover:text-brand-primary transition shrink-0 py-1">Quả Cầu Lông</button>
+            {topLevelCategories.map(category => (
+              <button key={category.id} onClick={() => navigate(`/catalog?category=${encodeURIComponent(category.name)}`)} className="text-gray-800 hover:text-brand-primary transition shrink-0 py-1">{category.name}</button>
+            ))}
             
             <button onClick={() => navigate('/blog')} className="text-gray-800 hover:text-brand-primary transition shrink-0 py-1">Đánh Giá Sân Bãi</button>
           </div>
