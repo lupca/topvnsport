@@ -15,44 +15,25 @@ export function extractItems<T>(data: unknown): T[] {
   return [];
 }
 
-function inferBrandFromName(nameLower: string): Product['brand'] {
-  if (nameLower.includes('yonex')) return 'Yonex';
-  if (nameLower.includes('lining') || nameLower.includes('li-ning')) return 'Lining';
-  if (nameLower.includes('victor')) return 'Victor';
-  if (nameLower.includes('kumpoo')) return 'Kumpoo';
-  return 'Other';
+function normalizeText(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
 }
 
-function inferCategoryFromSignals(
-  nameLower: string,
-  mappedCategoryName: string | undefined,
-  attrByCode: Record<string, string>
-): string {
-  if (mappedCategoryName) {
-    return mappedCategoryName;
+function mapBrandValue(rawBrand: string | undefined): Product['brand'] | null {
+  if (!rawBrand) {
+    return null;
   }
 
-  if (nameLower.includes('vợt') || nameLower.includes('racket')) {
-    return 'Vợt';
-  }
-
-  if (nameLower.includes('giày') || nameLower.includes('shoes')) {
-    return 'Giày';
-  }
-
-  if (nameLower.includes('cước') || nameLower.includes('string') || attrByCode.thickness) {
-    return 'Cước';
-  }
-
-  if (nameLower.includes('túi') || nameLower.includes('balo')) {
-    return 'Túi xách';
-  }
-
-  if (nameLower.includes('cầu') || nameLower.includes('shuttlecock')) {
-    return 'Quả cầu';
-  }
-
-  return 'Phụ kiện';
+  const normalized = normalizeText(rawBrand);
+  if (normalized.includes('yonex')) return 'Yonex';
+  if (normalized.includes('li-ning') || normalized.includes('lining')) return 'Lining';
+  if (normalized.includes('victor')) return 'Victor';
+  if (normalized.includes('kumpoo')) return 'Kumpoo';
+  return 'Other';
 }
 
 function mapPmiAttributes(values: PmiAttributeValue[]): ProductAttribute[] {
@@ -118,16 +99,10 @@ export function mapPmiProduct(pmiProduct: PmiProduct, categories: Category[]): P
   const image = gallery.length > 0 ? gallery[0] : NO_IMAGE_URL;
 
   const name = (pmiProduct.name || 'Sản phẩm').trim();
-  const nameLower = name.toLowerCase();
-
   const attributes = mapPmiAttributes(pmiProduct.attribute_values || []);
   const attrByCode = buildAttrByCode(attributes);
-  const brand = inferBrandFromName(nameLower);
-  const category = inferCategoryFromSignals(
-    nameLower,
-    categories.find((item) => item.id === pmiProduct.category_id)?.name,
-    attrByCode
-  );
+  const brand = mapBrandValue(attrByCode.brand) || 'Other';
+  const category = categories.find((item) => item.id === pmiProduct.category_id)?.name || 'Chua phan loai';
 
   const parsedBalance = Number(attrByCode.balance);
   const parsedMaxTension = Number(attrByCode.maxTension);

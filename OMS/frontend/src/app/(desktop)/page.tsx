@@ -105,15 +105,15 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="p-8 space-y-8 animate-pulse max-w-7xl mx-auto">
-        <div className="h-8 bg-slate-800 rounded-lg w-1/4"></div>
+        <div className="h-8 bg-gray-200 rounded-lg w-1/4"></div>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {[1, 2, 3, 4, 5, 6].map((n) => (
-            <div key={n} className="h-28 bg-slate-900 border border-slate-800 rounded-2xl"></div>
+            <div key={n} className="h-28 bg-gray-200 rounded-2xl"></div>
           ))}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 h-96 bg-slate-900 border border-slate-800 rounded-2xl"></div>
-          <div className="h-96 bg-slate-900 border border-slate-800 rounded-2xl"></div>
+          <div className="lg:col-span-2 h-96 bg-gray-200 rounded-2xl"></div>
+          <div className="h-96 bg-gray-200 rounded-2xl"></div>
         </div>
       </div>
     );
@@ -121,12 +121,12 @@ export default function DashboardPage() {
 
   if (error || !stats) {
     return (
-      <div className="p-8 max-w-xl mx-auto mt-20 text-center bg-slate-900 border border-slate-800 rounded-2xl shadow-lg text-slate-200">
-        <div className="w-12 h-12 rounded-full bg-rose-950/50 flex items-center justify-center mx-auto text-rose-400 mb-4">
+      <div className="p-8 max-w-xl mx-auto mt-20 text-center bg-surface border border-gray-200 rounded-2xl shadow-lg text-gray-800">
+        <div className="w-12 h-12 rounded-full bg-rose-50 flex items-center justify-center mx-auto text-rose-600 mb-4">
           <AlertCircle className="w-6 h-6" />
         </div>
-        <h3 className="text-sm font-bold text-slate-100 mb-2">Lỗi kết nối Backend</h3>
-        <p className="text-sm text-slate-400 mb-6">{error || "Không có dữ liệu trả về từ API."}</p>
+        <h3 className="text-sm font-bold text-gray-900 mb-2">Lỗi kết nối Backend</h3>
+        <p className="text-sm text-gray-500 mb-6">{error || "Không có dữ liệu trả về từ API."}</p>
         <button
           onClick={fetchData}
           className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/10 hover:bg-indigo-700 transition-colors"
@@ -155,14 +155,14 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8 text-slate-200 bg-transparent">
+    <div className="p-8 max-w-7xl mx-auto space-y-8 text-gray-800 bg-transparent">
       {/* Welcome banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-extrabold text-slate-100 flex items-center gap-2">
+          <h2 className="text-xl font-extrabold text-gray-900 flex items-center gap-2">
             <span>OMS Dashboard</span>
           </h2>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-gray-500 mt-1">
             Tổng quan hiệu suất hệ thống quản lý đơn hàng chuyên sâu.
           </p>
         </div>
@@ -178,115 +178,115 @@ export default function DashboardPage() {
       {/* 6 Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
         {/* Card 1: Total Orders */}
-        <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-sm flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-all duration-200">
+        <div className="bg-surface border border-gray-200 p-5 rounded-2xl shadow-sm flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-all duration-200">
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Đơn hàng</span>
-              <div className="w-6 h-6 rounded-lg bg-indigo-950/50 flex items-center justify-center border border-indigo-900/50">
-                <ShoppingCart className="w-3 h-3 text-indigo-400" />
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-gray-500">Đơn hàng</span>
+              <div className="w-6 h-6 rounded-lg bg-indigo-50 flex items-center justify-center border border-indigo-100">
+                <ShoppingCart className="w-3 h-3 text-indigo-600" />
               </div>
             </div>
-            <h3 className="text-xl font-extrabold text-slate-200 mt-3">{totalOrders}</h3>
+            <h3 className="text-xl font-extrabold text-gray-900 mt-3">{totalOrders}</h3>
           </div>
-          <p className="text-[9px] text-slate-400 mt-2 font-medium">Tổng đơn hệ thống</p>
+          <p className="text-[9px] text-gray-500 mt-2 font-medium">Tổng đơn hệ thống</p>
         </div>
 
         {/* Card 2: Revenue */}
-        <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-sm flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-all duration-200">
+        <div className="bg-surface border border-gray-200 p-5 rounded-2xl shadow-sm flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-all duration-200">
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Doanh thu</span>
-              <div className="w-6 h-6 rounded-lg bg-emerald-950/50 flex items-center justify-center border border-emerald-900/50">
-                <DollarSign className="w-3 h-3 text-emerald-400" />
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-gray-500">Doanh thu</span>
+              <div className="w-6 h-6 rounded-lg bg-emerald-50 flex items-center justify-center border border-emerald-100">
+                <DollarSign className="w-3 h-3 text-emerald-600" />
               </div>
             </div>
-            <h3 className="text-sm font-extrabold text-slate-200 mt-3 truncate">{formatCurrency(totalRevenue)}</h3>
+            <h3 className="text-sm font-extrabold text-gray-900 mt-3 truncate">{formatCurrency(totalRevenue)}</h3>
           </div>
-          <p className="text-[9px] text-slate-400 mt-2 font-medium">Doanh thu tích lũy</p>
+          <p className="text-[9px] text-gray-500 mt-2 font-medium">Doanh thu tích lũy</p>
         </div>
 
         {/* Card 3: AOV */}
-        <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-sm flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-all duration-200">
+        <div className="bg-surface border border-gray-200 p-5 rounded-2xl shadow-sm flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-all duration-200">
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Giá trị TB</span>
-              <div className="w-6 h-6 rounded-lg bg-violet-950/50 flex items-center justify-center border border-violet-900/50">
-                <TrendingUp className="w-3 h-3 text-violet-400" />
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-gray-500">Giá trị TB</span>
+              <div className="w-6 h-6 rounded-lg bg-violet-50 flex items-center justify-center border border-violet-100">
+                <TrendingUp className="w-3 h-3 text-violet-600" />
               </div>
             </div>
-            <h3 className="text-sm font-extrabold text-slate-200 mt-3 truncate">{formatCurrency(averageOrderValue)}</h3>
+            <h3 className="text-sm font-extrabold text-gray-900 mt-3 truncate">{formatCurrency(averageOrderValue)}</h3>
           </div>
-          <p className="text-[9px] text-slate-400 mt-2 font-medium">Giá trị TB mỗi đơn</p>
+          <p className="text-[9px] text-gray-500 mt-2 font-medium">Giá trị TB mỗi đơn</p>
         </div>
 
         {/* Card 4: Pending */}
-        <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-sm flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-all duration-200">
+        <div className="bg-surface border border-gray-200 p-5 rounded-2xl shadow-sm flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-all duration-200">
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Chờ xử lý</span>
-              <div className="w-6 h-6 rounded-lg bg-amber-955 bg-amber-950/50 flex items-center justify-center border border-amber-900/50">
-                <Clock className="w-3 h-3 text-amber-400" />
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-gray-500">Chờ xử lý</span>
+              <div className="w-6 h-6 rounded-lg bg-amber-50 flex items-center justify-center border border-amber-100">
+                <Clock className="w-3 h-3 text-amber-600" />
               </div>
             </div>
-            <h3 className="text-xl font-extrabold text-slate-200 mt-3">{pendingOrders}</h3>
+            <h3 className="text-xl font-extrabold text-gray-900 mt-3">{pendingOrders}</h3>
           </div>
-          <p className="text-[9px] text-slate-400 mt-2 font-medium">Đơn đang tiến hành</p>
+          <p className="text-[9px] text-gray-500 mt-2 font-medium">Đơn đang tiến hành</p>
         </div>
 
         {/* Card 5: Completed */}
-        <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-sm flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-all duration-200">
+        <div className="bg-surface border border-gray-200 p-5 rounded-2xl shadow-sm flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-all duration-200">
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Hoàn thành</span>
-              <div className="w-6 h-6 rounded-lg bg-emerald-950/50 flex items-center justify-center border border-emerald-900/50">
-                <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-gray-500">Hoàn thành</span>
+              <div className="w-6 h-6 rounded-lg bg-emerald-50 flex items-center justify-center border border-emerald-100">
+                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
               </div>
             </div>
-            <h3 className="text-xl font-extrabold text-slate-200 mt-3">{completedOrders}</h3>
+            <h3 className="text-xl font-extrabold text-gray-900 mt-3">{completedOrders}</h3>
           </div>
-          <p className="text-[9px] text-slate-400 mt-2 font-medium">Đơn thành công</p>
+          <p className="text-[9px] text-gray-500 mt-2 font-medium">Đơn thành công</p>
         </div>
 
         {/* Card 6: Cancelled */}
-        <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-sm flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-all duration-200">
+        <div className="bg-surface border border-gray-200 p-5 rounded-2xl shadow-sm flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-all duration-200">
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Đã hủy</span>
-              <div className="w-6 h-6 rounded-lg bg-rose-950/50 flex items-center justify-center border border-rose-900/50">
-                <XCircle className="w-3 h-3 text-rose-400" />
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-gray-500">Đã hủy</span>
+              <div className="w-6 h-6 rounded-lg bg-rose-50 flex items-center justify-center border border-rose-100">
+                <XCircle className="w-3 h-3 text-rose-600" />
               </div>
             </div>
-            <h3 className="text-xl font-extrabold text-slate-200 mt-3">{cancelledOrders}</h3>
+            <h3 className="text-xl font-extrabold text-gray-900 mt-3">{cancelledOrders}</h3>
           </div>
-          <p className="text-[9px] text-slate-400 mt-2 font-medium">Đơn hàng bị hủy</p>
+          <p className="text-[9px] text-gray-500 mt-2 font-medium">Đơn hàng bị hủy</p>
         </div>
       </div>
 
       {/* Main Grid: Chart & Recent Orders Table */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Chart Column */}
-        <div className="lg:col-span-2 bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
+        <div className="lg:col-span-2 bg-surface border border-gray-200 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
           <div className="mb-4">
-            <h3 className="text-sm font-extrabold text-slate-100">Biểu đồ 7 ngày gần đây</h3>
-            <p className="text-[10px] text-slate-400 mt-0.5">Số lượng đơn hàng và doanh thu theo ngày</p>
+            <h3 className="text-sm font-extrabold text-gray-900">Biểu đồ 7 ngày gần đây</h3>
+            <p className="text-[10px] text-gray-500 mt-0.5">Số lượng đơn hàng và doanh thu theo ngày</p>
           </div>
 
           <div className="h-80 w-full">
             {isMounted && chartData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1e293b" />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
                   <XAxis
                     dataKey="date"
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: "#94a3b8", fontSize: 10, fontWeight: 600 }}
+                    tick={{ fill: "#6b7280", fontSize: 10, fontWeight: 600 }}
                   />
                   <YAxis
                     yAxisId="left"
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: "#94a3b8", fontSize: 10, fontWeight: 600 }}
+                    tick={{ fill: "#6b7280", fontSize: 10, fontWeight: 600 }}
                     allowDecimals={false}
                   />
                   <YAxis
@@ -299,15 +299,15 @@ export default function DashboardPage() {
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "#0f172a",
-                      border: "1px solid #334155",
+                      backgroundColor: "#ffffff",
+                      border: "1px solid #e5e7eb",
                       borderRadius: "12px",
-                      color: "#fff",
+                      color: "#111827",
                       fontSize: "11px",
-                      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)"
+                      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.05)"
                     }}
-                    labelStyle={{ fontWeight: "bold", color: "#818cf8" }}
-                    cursor={{ fill: "#1e293b" }}
+                    labelStyle={{ fontWeight: "bold", color: "#4f46e5" }}
+                    cursor={{ fill: "#f8fafc" }}
                   />
                   <Legend wrapperStyle={{ fontSize: '10px', marginTop: '10px' }} />
                   <Bar yAxisId="left" dataKey="Số lượng" fill="#4f46e5" radius={[4, 4, 0, 0]} maxBarSize={30} />
@@ -315,7 +315,7 @@ export default function DashboardPage() {
                 </ComposedChart>
               </ResponsiveContainer>
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-xs text-slate-400">
+              <div className="w-full h-full flex items-center justify-center text-xs text-gray-500">
                 Không có dữ liệu biểu đồ
               </div>
             )}
@@ -323,14 +323,14 @@ export default function DashboardPage() {
         </div>
 
         {/* Recent Orders Column */}
-        <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
+        <div className="bg-surface border border-gray-200 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-800">
+            <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-200">
               <div>
-                <h3 className="text-sm font-extrabold text-slate-100">5 Đơn hàng gần nhất</h3>
-                <p className="text-[10px] text-slate-400 mt-0.5">Danh sách các đơn mới ghi nhận</p>
+                <h3 className="text-sm font-extrabold text-gray-900">5 Đơn hàng gần nhất</h3>
+                <p className="text-[10px] text-gray-500 mt-0.5">Danh sách các đơn mới ghi nhận</p>
               </div>
-              <Link href="/orders" className="text-xs text-indigo-400 font-bold hover:underline flex items-center gap-1">
+              <Link href="/orders" className="text-xs text-indigo-600 font-bold hover:underline flex items-center gap-1">
                 Tất cả <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
@@ -341,24 +341,24 @@ export default function DashboardPage() {
                 const isCancelable = !["SHIPPED", "CANCELLED", "COMPLETED"].includes(order.status);
                 
                 return (
-                  <div key={order.id} className="p-3 bg-slate-950 border border-slate-800 rounded-xl space-y-2 text-xs">
+                  <div key={order.id} className="p-3 bg-gray-50 border border-gray-200 rounded-xl space-y-2 text-xs">
                     <div className="flex items-center justify-between">
-                      <span className="font-extrabold text-slate-200">{order.order_number}</span>
+                      <span className="font-extrabold text-gray-900">{order.order_number}</span>
                       <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                        order.status === "DRAFT" ? "bg-slate-800 text-slate-300" :
-                        order.status === "COMPLETED" ? "bg-emerald-950/50 text-emerald-400 border border-emerald-900/50" :
-                        order.status === "CANCELLED" ? "bg-rose-950/50 text-rose-400 border border-rose-900/50" :
-                        "bg-indigo-950/50 text-indigo-400 border border-indigo-900/50"
+                        order.status === "DRAFT" ? "bg-gray-100 text-gray-700" :
+                        order.status === "COMPLETED" ? "bg-emerald-50 text-emerald-700 border border-emerald-200" :
+                        order.status === "CANCELLED" ? "bg-rose-50 text-rose-700 border border-rose-200" :
+                        "bg-indigo-50 text-indigo-700 border border-indigo-200"
                       }`}>{order.status}</span>
                     </div>
 
-                    <div className="flex justify-between text-slate-400 text-[10px]">
+                    <div className="flex justify-between text-gray-500 text-[10px]">
                       <span>KH: {order.customer?.name || `ID: ${order.customer_id}`}</span>
-                      <span className="font-bold text-slate-300">{formatCurrency(order.total_amount)}</span>
+                      <span className="font-bold text-gray-700">{formatCurrency(order.total_amount)}</span>
                     </div>
 
-                    <div className="flex justify-end gap-2 pt-1 border-t border-slate-800">
-                      <Link href={`/orders?view=detail&id=${order.id}`} className="px-2 py-1 bg-slate-900 border border-slate-800 text-slate-300 rounded font-bold text-[10px] hover:bg-slate-800 transition-colors">
+                    <div className="flex justify-end gap-2 pt-1 border-t border-gray-200">
+                      <Link href={`/orders?view=detail&id=${order.id}`} className="px-2 py-1 bg-white border border-gray-200 text-gray-700 rounded font-bold text-[10px] hover:bg-gray-50 transition-colors">
                         Chi tiết
                       </Link>
                       {isDraft && (
@@ -372,7 +372,7 @@ export default function DashboardPage() {
                       {isCancelable && (
                         <button
                           onClick={() => handleCancelOrder(order.id)}
-                          className="px-2 py-1 bg-rose-950 border border-rose-900/50 text-rose-400 rounded font-bold text-[10px] hover:bg-rose-900 transition-colors"
+                          className="px-2 py-1 bg-rose-50 border border-rose-200 text-rose-700 rounded font-bold text-[10px] hover:bg-rose-100 transition-colors"
                         >
                           Hủy đơn
                         </button>
@@ -382,7 +382,7 @@ export default function DashboardPage() {
                 );
               })}
               {recentOrders.length === 0 && (
-                <div className="text-center py-8 text-xs text-slate-400">Không có đơn hàng nào gần đây.</div>
+                <div className="text-center py-8 text-xs text-gray-500">Không có đơn hàng nào gần đây.</div>
               )}
             </div>
           </div>
