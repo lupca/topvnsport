@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session, selectinload
 from typing import List, Optional
+import unicodedata
+import re
 from database import get_db
 import models
 import schemas
@@ -8,12 +10,28 @@ from services.product_service import _upsert_product_attribute_values, _save_pro
 
 router = APIRouter(tags=['Products'])
 
+def slugify(text: str) -> str:
+    if not text:
+        return ""
+    text = text.replace('đ', 'd').replace('Đ', 'd')
+    text = unicodedata.normalize('NFKD', text)
+    text = text.encode('ascii', 'ignore').decode('ascii')
+    text = text.lower()
+    text = re.sub(r'[^a-z0-9]+', '-', text)
+    return text.strip('-')
+
 @router.post("/products", response_model=schemas.ProductResponse, status_code=status.HTTP_201_CREATED)
 def create_product(product_in: schemas.ProductCreate, db: Session = Depends(get_db)):
     try:
+        # Generate slug
+        slug_name = slugify(product_in.name)[:150]
+        slug_code = slugify(product_in.product_code)
+        product_slug = f"{slug_name}-{slug_code}".strip('-')
+
         # 1. Create the parent product
         db_product = models.Product(
             product_code=product_in.product_code,
+            slug=product_slug,
             name=product_in.name,
             description=product_in.description,
             category_id=product_in.category_id,
@@ -303,6 +321,17 @@ def delete_product(product_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Product not found")
     try:
         db.delete(db_product)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database transaction failed: {str(e)}")
+
+@router.post("/products/batch-delete", status_code=status.HTTP_204_NO_CONTENT)
+def batch_delete_products(request: schemas.BatchDeleteRequest, db: Session = Depends(get_db)):
+    try:
+        products = db.query(models.Product).filter(models.Product.id.in_(request.product_ids)).all()
+        for product in products:
+            db.delete(product)
         db.commit()
     except Exception as e:
         db.rollback()

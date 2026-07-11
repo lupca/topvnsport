@@ -183,6 +183,7 @@ class ProductCreate(ProductBase):
 
 class ProductResponse(ProductBase):
     id: int
+    slug: Optional[str] = None
     family: Optional['AttributeFamilyResponse'] = None
     tier_variations: List[TierVariationResponse] = []
     variants: List[ProductVariantResponse] = []
@@ -202,6 +203,9 @@ class PaginatedProductResponse(BaseModel):
 
 class ProductUpdate(ProductCreate):
     pass
+
+class BatchDeleteRequest(BaseModel):
+    product_ids: List[int]
 
 class ActivityDataItem(BaseModel):
     date: str

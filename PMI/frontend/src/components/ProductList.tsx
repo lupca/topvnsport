@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, HelpCircle, Sparkles, List, Grid, Download, ChevronDown } from "lucide-react";
+import { Plus, HelpCircle, Sparkles, List, Grid, Download, ChevronDown, Trash2 } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
 
 import ProductFilterBar, { Category } from "./products/ProductFilterBar";
@@ -56,6 +56,7 @@ export default function ProductList({
   const [deletingProductId, setDeletingProductId] = useState<number | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [batchDeleteMode, setBatchDeleteMode] = useState(false);
 
   const handlePreviewClick = (productId: number) => {
     setPreviewLoading(true);
@@ -78,49 +79,91 @@ export default function ProductList({
     const product = products.find(p => p.id === productId);
     if (!product) return;
 
+    setBatchDeleteMode(false);
     setDeleteError(null);
     setDeleteTarget(product);
+  };
+
+  const handleBatchDeleteClick = () => {
+    if (deletingProductId !== null) return;
+    setBatchDeleteMode(true);
+    setDeleteError(null);
+    setDeleteTarget({ id: -1, name: "Batch Delete", product_code: "BATCH" } as Product);
   };
 
   const confirmDeleteProduct = async () => {
     if (!deleteTarget || deletingProductId !== null) return;
 
-    const productId = deleteTarget.id;
+    if (batchDeleteMode) {
+      setDeletingProductId(-1);
+      try {
+        const res = await fetch(`${API_BASE_URL}/products/batch-delete`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ product_ids: selectedProductIds })
+        });
 
-    setDeletingProductId(productId);
-    try {
-      const res = await fetch(`${API_BASE_URL}/products/${productId}`, {
-        method: "DELETE"
-      });
-
-      if (!res.ok) {
-        let detail = "Xóa sản phẩm thất bại.";
-        try {
-          const data = await res.json();
-          if (data?.detail) {
-            detail = String(data.detail);
-          }
-        } catch {
-          // Keep generic detail if API did not return JSON payload
+        if (!res.ok) {
+          let detail = "Xóa nhiều sản phẩm thất bại.";
+          try {
+            const data = await res.json();
+            if (data?.detail) {
+              detail = String(data.detail);
+            }
+          } catch {}
+          setDeleteError(detail);
+          return;
         }
-        setDeleteError(detail);
-        return;
-      }
 
-      setProducts(prev => prev.filter(p => p.id !== productId));
-      setTotalItems(prev => Math.max(0, prev - 1));
-      setDeleteTarget(null);
-      setDeleteError(null);
-
-      if (showPreviewModal && previewProduct?.id === productId) {
-        setShowPreviewModal(false);
-        setPreviewProduct(null);
+        setProducts(prev => prev.filter(p => !selectedProductIds.includes(p.id)));
+        setTotalItems(prev => Math.max(0, prev - selectedProductIds.length));
+        setSelectedProductIds([]);
+        setDeleteTarget(null);
+        setDeleteError(null);
+      } catch (err) {
+        console.error("Error batch deleting products:", err);
+        setDeleteError("Không thể kết nối tới máy chủ để xóa sản phẩm.");
+      } finally {
+        setDeletingProductId(null);
       }
-    } catch (err) {
-      console.error("Error deleting product:", err);
-      setDeleteError("Không thể kết nối tới máy chủ để xóa sản phẩm.");
-    } finally {
-      setDeletingProductId(null);
+    } else {
+      const productId = deleteTarget.id;
+      setDeletingProductId(productId);
+      try {
+        const res = await fetch(`${API_BASE_URL}/products/${productId}`, {
+          method: "DELETE"
+        });
+
+        if (!res.ok) {
+          let detail = "Xóa sản phẩm thất bại.";
+          try {
+            const data = await res.json();
+            if (data?.detail) {
+              detail = String(data.detail);
+            }
+          } catch {}
+          setDeleteError(detail);
+          return;
+        }
+
+        setProducts(prev => prev.filter(p => p.id !== productId));
+        setSelectedProductIds(prev => prev.filter(id => id !== productId));
+        setTotalItems(prev => Math.max(0, prev - 1));
+        setDeleteTarget(null);
+        setDeleteError(null);
+
+        if (showPreviewModal && previewProduct?.id === productId) {
+          setShowPreviewModal(false);
+          setPreviewProduct(null);
+        }
+      } catch (err) {
+        console.error("Error deleting product:", err);
+        setDeleteError("Không thể kết nối tới máy chủ để xóa sản phẩm.");
+      } finally {
+        setDeletingProductId(null);
+      }
     }
   };
 
@@ -294,6 +337,16 @@ export default function ProductList({
             )}
           </div>
 
+          {selectedProductIds.length > 0 && (
+            <button
+              onClick={handleBatchDeleteClick}
+              className="px-5 py-2.5 rounded-2xl text-sm bg-rose-600 hover:bg-rose-700 text-white font-medium flex items-center gap-2 transition-colors shrink-0"
+            >
+              <Trash2 className="h-4 w-4" />
+              Xóa đã chọn
+            </button>
+          )}
+
           <button 
             onClick={onAddProductClick}
             className="btn-primary px-5 py-2.5 rounded-2xl text-sm shrink-0"
@@ -453,16 +506,31 @@ export default function ProductList({
         <div className="pim-modal-backdrop">
           <div className="w-full max-w-md rounded-3xl border border-gray-200 bg-surface shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="px-6 py-5 border-b border-gray-200 bg-rose-50/40">
-              <h3 className="text-lg font-black text-gray-900 tracking-tight">Xác nhận xóa sản phẩm</h3>
-              <p className="text-xs text-gray-500 mt-1">Thao tác này sẽ xóa dữ liệu sản phẩm khỏi hệ thống PMI.</p>
+              <h3 className="text-lg font-black text-gray-900 tracking-tight">
+                {batchDeleteMode ? "Xác nhận xóa nhiều sản phẩm" : "Xác nhận xóa sản phẩm"}
+              </h3>
+              <p className="text-xs text-gray-500 mt-1">
+                {batchDeleteMode 
+                  ? "Thao tác này sẽ xóa vĩnh viễn các sản phẩm đã chọn khỏi hệ thống PMI." 
+                  : "Thao tác này sẽ xóa dữ liệu sản phẩm khỏi hệ thống PMI."}
+              </p>
             </div>
 
             <div className="px-6 py-5 space-y-3">
-              <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
-                <p className="text-sm font-bold text-gray-900 line-clamp-2">{deleteTarget.name}</p>
-                <p className="text-xs text-gray-500 mt-1">SKU parent: {deleteTarget.product_code}</p>
-                <p className="text-xs text-gray-500 mt-0.5">ID: {deleteTarget.id}</p>
-              </div>
+              {batchDeleteMode ? (
+                <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
+                  <p className="text-sm font-bold text-gray-900">
+                    Bạn sắp xóa vĩnh viễn {selectedProductIds.length} sản phẩm đã chọn.
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">Hành động này không thể hoàn tác.</p>
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
+                  <p className="text-sm font-bold text-gray-900 line-clamp-2">{deleteTarget.name}</p>
+                  <p className="text-xs text-gray-500 mt-1">SKU parent: {deleteTarget.product_code}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">ID: {deleteTarget.id}</p>
+                </div>
+              )}
 
               {deleteError && (
                 <p className="text-xs text-rose-600 bg-rose-50 border border-rose-100 rounded-xl px-3 py-2">
@@ -488,7 +556,7 @@ export default function ProductList({
                 disabled={deletingProductId !== null}
                 className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs disabled:bg-rose-300 disabled:cursor-not-allowed transition-colors"
               >
-                {deletingProductId === deleteTarget.id ? "Đang xóa..." : "Xóa sản phẩm"}
+                {deletingProductId !== null ? "Đang xóa..." : batchDeleteMode ? "Xóa các sản phẩm" : "Xóa sản phẩm"}
               </button>
             </div>
           </div>

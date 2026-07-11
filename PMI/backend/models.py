@@ -22,6 +22,7 @@ class Product(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     product_code = Column(String(100), unique=True, nullable=False, index=True) # ps_sku_parent_short
+    slug = Column(String(255), unique=True, nullable=True, index=True)
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     category_id = Column(Integer, ForeignKey("categories.id", ondelete="SET NULL"), nullable=True, index=True)
