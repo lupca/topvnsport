@@ -58,6 +58,7 @@ services:
       - "13101:3001"
     environment:
       - NEXT_PUBLIC_OMS_API_URL=http://localhost:18101
+      - NEXT_TELEMETRY_DISABLED=1
     depends_on:
       - oms_backend
     networks:

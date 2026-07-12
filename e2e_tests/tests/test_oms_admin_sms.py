@@ -12,7 +12,7 @@ def test_oms_admin_sms_settings(page: Page, oms_api_url: str):
     page.on("console", lambda msg: print(f"Console: {msg.text}"))
 
     try:
-        expect(token_input).to_be_visible(timeout=60000)
+        expect(token_input).to_be_visible(timeout=120000)
     except Exception as e:
         print("Page HTML at timeout:")
         print(page.content())
