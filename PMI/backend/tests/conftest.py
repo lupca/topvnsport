@@ -34,6 +34,18 @@ def postgres_container() -> Generator[PostgresContainer, None, None]:
             def get_connection_url(self):
                 return url
         yield DummyContainer()
+    elif os.environ.get("USE_E2E_COMPOSE") == "true":
+        import subprocess
+        import time
+        compose_file = os.path.join(os.path.dirname(__file__), "../../docker-compose.e2e.yml")
+        subprocess.run(["docker", "compose", "-f", compose_file, "up", "-d", "db", "minio"], check=True)
+        time.sleep(3) # Wait for containers to be ready
+        url = "postgresql://postgres:postgres@localhost:15434/pim_e2e_db"
+        class E2EContainer:
+            def get_connection_url(self):
+                return url
+        yield E2EContainer()
+        subprocess.run(["docker", "compose", "-f", compose_file, "down", "-v"])
     else:
         with PostgresContainer(
             "postgres:16-alpine",

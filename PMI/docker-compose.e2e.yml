@@ -39,7 +39,7 @@ services:
       dockerfile: Dockerfile
     container_name: pim-api-e2e
     ports:
-      - "18101:8000"
+      - "18109:8000"
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/pim_e2e_db
       - MINIO_ENDPOINT=minio:9000

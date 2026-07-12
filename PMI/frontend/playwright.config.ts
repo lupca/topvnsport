@@ -47,12 +47,12 @@ export default defineConfig({
     {
       command:
         "docker compose -f ../docker-compose.e2e.yml up api",
-      url: "http://localhost:18101/categories",
+      url: "http://localhost:18109/categories",
       timeout: 180_000,
       reuseExistingServer: !isCI,
     },
     {
-      command: "PMI_API_PROXY_TARGET=http://localhost:18101 npm run dev -- --hostname 127.0.0.1 --port 3000",
+      command: "PMI_API_PROXY_TARGET=http://localhost:18109 npm run dev -- --hostname 127.0.0.1 --port 3000",
       url: "http://localhost:3000",
       timeout: 120_000,
       reuseExistingServer: !isCI,
