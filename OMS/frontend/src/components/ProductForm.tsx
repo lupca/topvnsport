@@ -78,6 +78,15 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
 
   const watchTiers = watch("tier_variations");
   const watchParentSku = watch("product_code");
+
+  useEffect(() => {
+    tierFields.forEach((_, index) => {
+      const currentTierIndex = watchTiers?.[index]?.tier_index;
+      if (currentTierIndex !== index + 1) {
+        setValue(`tier_variations.${index}.tier_index`, index + 1, { shouldDirty: true });
+      }
+    });
+  }, [tierFields.length, setValue, watchTiers]);
   const watchIsPreOrder = watch("is_pre_order");
   const watchVariants = watch("variants");
 

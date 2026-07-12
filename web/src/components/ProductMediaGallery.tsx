@@ -5,9 +5,38 @@ interface ProductMediaGalleryProps {
   productName: string;
   image: string;
   gallery?: string[];
+  selectedVisualOption?: string;
+  visualOptions?: string[];
 }
 
-export default function ProductMediaGallery({ productName, image, gallery }: ProductMediaGalleryProps) {
+function normalizeText(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
+function toTokens(value: string): string[] {
+  return normalizeText(value)
+    .split(/[^a-z0-9]+/)
+    .filter((token) => token.length >= 2);
+}
+
+function scoreImageForOption(option: string, imageUrl: string): number {
+  const tokens = toTokens(option);
+  if (tokens.length === 0) return 0;
+
+  const target = normalizeText(decodeURIComponent(imageUrl));
+  return tokens.reduce((score, token) => score + (target.includes(token) ? 1 : 0), 0);
+}
+
+export default function ProductMediaGallery({
+  productName,
+  image,
+  gallery,
+  selectedVisualOption,
+  visualOptions
+}: ProductMediaGalleryProps) {
   const galleryImages = useMemo(() => {
     const images = [image, ...(gallery || [])].filter(Boolean);
     return Array.from(new Set(images));
@@ -20,12 +49,54 @@ export default function ProductMediaGallery({ productName, image, gallery }: Pro
   const [isZoomModalOpen, setIsZoomModalOpen] = useState(false);
   const [modalZoomLevel, setModalZoomLevel] = useState(1.4);
 
+  const imageByVisualOption = useMemo(() => {
+    const map: Record<string, string> = {};
+    const options = visualOptions || [];
+    if (options.length === 0 || galleryImages.length === 0) {
+      return map;
+    }
+
+    options.forEach((option, index) => {
+      let bestImage = '';
+      let bestScore = 0;
+
+      galleryImages.forEach((candidate) => {
+        const score = scoreImageForOption(option, candidate);
+        if (score > bestScore) {
+          bestScore = score;
+          bestImage = candidate;
+        }
+      });
+
+      if (bestScore > 0) {
+        map[option] = bestImage;
+        return;
+      }
+
+      // Fallback: if backend sends media in variant option order, pick by index.
+      if (index < galleryImages.length) {
+        map[option] = galleryImages[index];
+      }
+    });
+
+    return map;
+  }, [galleryImages, visualOptions]);
+
   useEffect(() => {
     setSelectedImage(galleryImages[0] || image);
     setIsImageHovered(false);
     setIsZoomModalOpen(false);
     setModalZoomLevel(1.4);
   }, [galleryImages, image]);
+
+  useEffect(() => {
+    if (!selectedVisualOption) return;
+
+    const nextImage = imageByVisualOption[selectedVisualOption];
+    if (nextImage) {
+      setSelectedImage(nextImage);
+    }
+  }, [selectedVisualOption, imageByVisualOption]);
 
   useEffect(() => {
     if (!isZoomModalOpen) return;

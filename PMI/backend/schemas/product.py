@@ -106,9 +106,9 @@ class ProductCreate(ProductBase):
     def validate_tier_indices(cls, v):
         indices = [tv.tier_index for tv in v]
         if len(indices) != len(set(indices)):
-            raise ValueError("Tier indices must be unique (1 and/or 2)")
+            raise ValueError("Chỉ số nhóm phân loại phải là duy nhất (1 hoặc 2)")
         if len(indices) == 2 and set(indices) != {1, 2}:
-            raise ValueError("If two tiers are present, they must be tier 1 and tier 2")
+            raise ValueError("Chỉ hỗ trợ nhóm phân loại 1 và 2")
         return v
 
     @field_validator('variants')
@@ -118,9 +118,9 @@ class ProductCreate(ProductBase):
         # If no tier variations, there should be exactly one variant with null tier options
         if not tier_variations:
             if len(v) != 1:
-                raise ValueError("If there are no variations, exactly one base variant is required")
+                raise ValueError("Nếu không có nhóm phân loại, bắt buộc phải có chính xác một biến thể gốc")
             if v[0].tier_1_option is not None or v[0].tier_2_option is not None:
-                raise ValueError("Base variant tier options must be null")
+                raise ValueError("Các phân loại của biến thể gốc phải để trống")
             return v
 
         # Get the options for each tier
@@ -143,14 +143,13 @@ class ProductCreate(ProductBase):
 
         if provided_combinations != expected_combinations:
             raise ValueError(
-                f"Provided variants do not match the expected combinations of tier variations. "
-                f"Expected: {expected_combinations}, Got: {provided_combinations}"
+                f"Tổ hợp phân loại không khớp. Mong đợi: {expected_combinations}, Thực tế: {provided_combinations}"
             )
 
         # Ensure SKU codes are unique within the payload
         sku_codes = [variant.sku_code for variant in v if variant.sku_code]
         if len(sku_codes) != len(set(sku_codes)):
-            raise ValueError("SKU codes must be unique across all variants")
+            raise ValueError("Mã SKU phải là duy nhất giữa các phân loại")
 
         return v
 

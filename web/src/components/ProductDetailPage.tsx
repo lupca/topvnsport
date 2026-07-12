@@ -7,6 +7,12 @@ import ProductDetailTabs, { DetailTab } from './product-detail/ProductDetailTabs
 import MobilePurchaseBar from './product-detail/MobilePurchaseBar';
 import { isNoStringOption } from './product-detail/helpers';
 
+const normalizeText = (value: string): string =>
+  value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+
 interface ProductDetailPageProps {
   product: Product;
   stringOptions: StringOption[];
@@ -90,6 +96,17 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
       } : null)
     : (withStringing ? selectedString : null);
 
+  const colorTierVariation = product.tier_variations?.find((tier) => {
+    const normalizedName = normalizeText(tier.name);
+    return normalizedName.includes('mau') || normalizedName.includes('color');
+  });
+
+  const selectedVisualOption = colorTierVariation
+    ? (colorTierVariation.tier_index === 1 ? selectedTier1 : selectedTier2)
+    : selectedColor;
+
+  const visualOptions = colorTierVariation?.options || product.colors || [];
+
   const handleAddToCart = () => {
     onAddToCartWithSpecs(product, resolvedWeight, resolvedColor, resolvedStringChoice, tension);
   };
@@ -102,6 +119,8 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
             productName={product.name}
             image={product.image}
             gallery={product.gallery}
+            selectedVisualOption={selectedVisualOption}
+            visualOptions={visualOptions}
           />
 
           <TrustSealsPanel />

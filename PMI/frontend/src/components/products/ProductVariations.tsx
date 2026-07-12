@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useFormContext, useFieldArray } from "react-hook-form";
 import { Plus, Trash, Upload, Loader2, HelpCircle } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
@@ -37,6 +37,15 @@ export default function ProductVariations({
   const watchTiers = watch("tier_variations");
   const watchParentSku = watch("product_code");
   const watchVariants = watch("variants");
+
+  useEffect(() => {
+    tierFields.forEach((_, index) => {
+      const currentTierIndex = watchTiers?.[index]?.tier_index;
+      if (currentTierIndex !== index + 1) {
+        setValue(`tier_variations.${index}.tier_index`, index + 1, { shouldDirty: true });
+      }
+    });
+  }, [tierFields.length, setValue, watchTiers]);
 
   const handleTier1ImageUpload = async (optionName: string, file: File) => {
     setUploadingTier1(prev => ({ ...prev, [optionName]: true }));
