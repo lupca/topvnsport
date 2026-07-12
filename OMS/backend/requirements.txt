@@ -5,3 +5,4 @@ psycopg2-binary==2.9.9
 pydantic==2.7.4
 pytest==9.1.1
 httpx==0.28.1
+cryptography

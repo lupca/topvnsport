@@ -82,3 +82,82 @@ class FulfillmentOrder(Base):
     created_at = Column(DateTime, default=utcnow)
 
     order = relationship("Order", back_populates="fulfillment_orders")
+
+
+import os
+from sqlalchemy.types import TypeDecorator, String as SqlString
+from cryptography.fernet import Fernet
+
+class EncryptedString(TypeDecorator):
+    """
+    Encrypts a string value at rest using Fernet.
+    """
+    impl = SqlString
+    cache_ok = True
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        key = os.getenv("FERNET_KEY")
+        if not key:
+            key = "lz_K8Z8d1d-0iO-4yN2Vb11234567890abcdefghijk="
+        self.fernet = Fernet(key.encode() if isinstance(key, str) else key)
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return None
+        return self.fernet.encrypt(value.encode()).decode()
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return None
+        try:
+            return self.fernet.decrypt(value.encode()).decode()
+        except Exception as e:
+            raise ValueError(f"Decryption failed: {e}")
+
+
+class SystemConfig(Base):
+    __tablename__ = "system_configs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    config_key = Column(String(100), unique=True, nullable=False, index=True)
+    config_value = Column(EncryptedString(500), nullable=True)  # Fernet encrypted
+    description = Column(String(255), nullable=True)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
+
+
+class OtpVerification(Base):
+    __tablename__ = "otp_verifications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    phone_number = Column(String(20), nullable=False, index=True)
+    otp_hash = Column(String(255), nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    
+    # Lifecycle Timestamps
+    verified_at = Column(DateTime, nullable=True)
+    used_at = Column(DateTime, nullable=True)
+    status = Column(String(50), nullable=True)  # e.g. 'CONSUMED'
+    
+    # Verification Token
+    verification_token = Column(String(255), nullable=True, unique=True, index=True)
+    verification_expires_at = Column(DateTime, nullable=True)
+    
+    # SMS Provider Metadata
+    provider_status = Column(String(50), nullable=True)
+    provider_response = Column(Text, nullable=True)
+    failed_reason = Column(String(255), nullable=True)
+    sent_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=utcnow)
+
+
+class SmsRateLimit(Base):
+    __tablename__ = "sms_rate_limits"
+
+    id = Column(Integer, primary_key=True, index=True)
+    phone_number = Column(String(20), nullable=False, index=True)
+    action_type = Column(String(50), nullable=False)  # 'send' or 'verify'
+    attempt_count = Column(Integer, default=1)
+    last_attempt_at = Column(DateTime, default=utcnow)
+    lockout_until = Column(DateTime, nullable=True)
+

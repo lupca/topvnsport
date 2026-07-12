@@ -127,6 +127,7 @@ class OrderCreateInput(BaseModel):
     note: Optional[str] = None
     created_by: Optional[str] = None
     items: List[OrderItemInput]
+    verification_token: Optional[str] = None
 
 
 class OrderUpdateInput(BaseModel):
@@ -160,4 +161,26 @@ class PaginatedChannels(BaseModel):
     page: int
     pages: int
     limit: int
+
+
+# SystemConfig Schemas
+class SmsConfigUpdate(BaseModel):
+    config_value: str
+
+class SmsConfigOut(BaseModel):
+    config_key: str
+    config_value: str
+
+
+# SMS OTP Request/Response Schemas
+class SendOtpRequest(BaseModel):
+    phone_number: str
+
+class VerifyOtpRequest(BaseModel):
+    phone_number: str
+    otp_code: str
+
+class VerifyOtpResponse(BaseModel):
+    success: bool
+    verification_token: str
 

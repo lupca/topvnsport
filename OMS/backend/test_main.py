@@ -1,3 +1,10 @@
+import os
+os.environ.setdefault("INTEGRITY_MODE", "development")
+os.environ.setdefault("ENV", "development")
+os.environ.setdefault("FERNET_KEY", "lz_K8Z8d1d-0iO-4yN2Vb11234567890abcdefghijk=")
+os.environ["TESTING"] = "1"
+
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -22,6 +29,7 @@ def db():
     # Re-seed test channels
     channels_to_seed = [
         ("MANUAL", "Manual"),
+        ("STOREFRONT", "Storefront"),
         ("SHOPEE", "Shopee"),
         ("TIKTOK_SHOP", "TikTok Shop"),
         ("LAZADA", "Lazada"),
@@ -353,3 +361,175 @@ def test_cors_headers(client):
     })
     assert resp.status_code == 200
     assert resp.headers.get("access-control-allow-origin") == "http://localhost:13101"
+
+
+@pytest.fixture(scope="function")
+def configure_sms(db):
+    from utils.crypto import encrypt_value
+    config1 = models.SystemConfig(
+        config_key="speed_sms_token",
+        config_value=encrypt_value("speedsms_token_xyz123"),
+        description="SpeedSMS API Access Token"
+    )
+    config2 = models.SystemConfig(
+        config_key="SPEEDSMS_API_KEY",
+        config_value=encrypt_value("speedsms_token_xyz123"),
+        description="SpeedSMS API Access Token Alternative"
+    )
+    db.add(config1)
+    db.add(config2)
+    db.commit()
+    return config1
+
+def test_send_otp_rate_limit_and_lockout(client, db, configure_sms, monkeypatch):
+    monkeypatch.setattr("services.sms_service.send_speed_sms", lambda p, o, t: {"status": "success", "provider_response": "OK", "failed_reason": None})
+
+    phone = "0987654321"
+
+    # First send is successful
+    res1 = client.post("/api/sms/send-otp", json={"phone_number": phone})
+    assert res1.status_code == 200
+
+    # Second send within 60s returns 429
+    res2 = client.post("/api/sms/send-otp", json={"phone_number": phone})
+    assert res2.status_code == 429
+    assert "gửi yêu cầu quá nhanh" in res2.json()["detail"]
+
+    # Exceeding 5 requests blocks phone with a 15-minute lockout (HTTP 403)
+    limit_record = db.query(models.SmsRateLimit).filter(
+        models.SmsRateLimit.phone_number == "84987654321",
+        models.SmsRateLimit.action_type == "send"
+    ).first()
+    assert limit_record is not None
+    limit_record.attempt_count = 6
+    db.commit()
+
+    res3 = client.post("/api/sms/send-otp", json={"phone_number": phone})
+    assert res3.status_code == 403
+    assert "tạm khóa" in res3.json()["detail"]
+
+def test_otp_hashing(client, db, configure_sms, monkeypatch):
+    monkeypatch.setattr("services.sms_service.send_speed_sms", lambda p, o, t: {"status": "success", "provider_response": "OK", "failed_reason": None})
+
+    phone = "0912345678"
+    res = client.post("/api/sms/send-otp", json={"phone_number": phone})
+    assert res.status_code == 200
+
+    otp_record = db.query(models.OtpVerification).filter(
+        models.OtpVerification.phone_number == "84912345678"
+    ).first()
+    assert otp_record is not None
+    assert len(otp_record.otp_hash) == 64  # SHA256 length hex
+    assert not otp_record.otp_hash.isdigit()
+
+def test_sms_provider_failure(client, db, configure_sms, monkeypatch):
+    def mock_failed_send(phone, otp, token):
+        return {"status": "failed", "provider_response": "Authentication Failed", "failed_reason": "Invalid key"}
+
+    monkeypatch.setattr("services.sms_service.send_speed_sms", mock_failed_send)
+
+    phone = "0922222222"
+    resp = client.post("/api/sms/send-otp", json={"phone_number": phone})
+    
+    assert resp.status_code == 500
+    
+    otp_record = db.query(models.OtpVerification).filter(
+        models.OtpVerification.phone_number == "84922222222"
+    ).first()
+    assert otp_record.provider_status == "failed"
+    assert otp_record.failed_reason == "Invalid key"
+
+def test_otp_verification_flow(client, db, configure_sms, monkeypatch):
+    monkeypatch.setattr("services.sms_service.send_speed_sms", lambda p, o, t: {"status": "success", "provider_response": "OK", "failed_reason": None})
+
+    phone = "0933333333"
+    res_send = client.post("/api/sms/send-otp", json={"phone_number": phone})
+    assert res_send.status_code == 200
+
+    res_otp = client.get(f"/api/sms/test-last-otp?phone={phone}")
+    assert res_otp.status_code == 200
+    otp_code = res_otp.json()["otp_code"]
+
+    # Verify with incorrect code -> 400
+    res_wrong = client.post("/api/sms/verify-otp", json={"phone_number": phone, "otp_code": "000000"})
+    assert res_wrong.status_code == 400
+    assert "Mã OTP không chính xác" in res_wrong.json()["detail"]
+
+    # Verify with correct code -> 200 and return token
+    res_correct = client.post("/api/sms/verify-otp", json={"phone_number": phone, "otp_code": otp_code})
+    assert res_correct.status_code == 200
+    token = res_correct.json()["verification_token"]
+    assert len(token) > 0
+
+    # Try verifying again -> 400
+    res_again = client.post("/api/sms/verify-otp", json={"phone_number": phone, "otp_code": otp_code})
+    assert res_again.status_code == 400
+
+    # Test verification lockout after 5 failures
+    phone_lock = "0977777777"
+    client.post("/api/sms/send-otp", json={"phone_number": phone_lock})
+    for _ in range(4):
+        res = client.post("/api/sms/verify-otp", json={"phone_number": phone_lock, "otp_code": "111111"})
+        assert res.status_code == 400
+    
+    # 5th attempt -> 403 lockout
+    res_lock = client.post("/api/sms/verify-otp", json={"phone_number": phone_lock, "otp_code": "111111"})
+    assert res_lock.status_code == 403
+    assert "tạm khóa" in res_lock.json()["detail"]
+
+def test_order_creation_otp_security(client, db, monkeypatch):
+    cust = models.Customer(name="E2E Buyer", phone="0944444444", address="Street")
+    db.add(cust)
+    chan = db.query(models.Channel).filter(models.Channel.code == "STOREFRONT").first()
+    db.commit()
+    db.refresh(cust)
+
+    monkeypatch.setattr("main.call_api", lambda url, m, d=None: {
+        "price": 1000.0,
+        "product_name": "Test product",
+        "variant_name": "Test variant",
+        "image_url": "http://img.com"
+    })
+
+    order_payload = {
+        "customer_id": cust.id,
+        "channel_id": chan.id,
+        "shipping_fee": 100.0,
+        "shipping_address": "Street",
+        "items": [{"sku_code": "SKU-TEST", "quantity": 1}]
+    }
+
+    # 1. Attempt checkout with no token -> 403 Forbidden
+    res_no_token = client.post("/orders", json={**order_payload})
+    assert res_no_token.status_code == 403
+    assert "Verification token is missing" in res_no_token.json()["detail"]
+
+    # 2. Attempt checkout with invalid token -> 403 Forbidden
+    res_invalid_token = client.post("/orders", json={**order_payload, "verification_token": "fake-token"})
+    assert res_invalid_token.status_code == 403
+    assert "Invalid verification token" in res_invalid_token.json()["detail"]
+
+    # 3. Checkout with valid token -> 201 Created & marks token as used
+    from datetime import datetime, timedelta
+    token_record = models.OtpVerification(
+        phone_number="84944444444",
+        otp_hash="hashed",
+        expires_at=datetime.utcnow() + timedelta(minutes=5),
+        verified_at=datetime.utcnow(),
+        verification_token="valid-token-123",
+        verification_expires_at=datetime.utcnow() + timedelta(minutes=15)
+    )
+    db.add(token_record)
+    db.commit()
+
+    res_valid = client.post("/orders", json={**order_payload, "verification_token": "valid-token-123"})
+    assert res_valid.status_code == 201
+
+    db.refresh(token_record)
+    assert token_record.used_at is not None
+    assert token_record.status == "CONSUMED"
+
+    # 4. Attempt replay attack (reuse token) -> 403 Forbidden
+    res_replay = client.post("/orders", json={**order_payload, "verification_token": "valid-token-123"})
+    assert res_replay.status_code == 403
+    assert "Verification token has already been used" in res_replay.json()["detail"]

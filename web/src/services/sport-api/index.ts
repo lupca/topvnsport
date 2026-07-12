@@ -1,9 +1,9 @@
 import { Blog, Branch, Category, Product, StringOption } from '../../types';
 import rawData from '../../data.json';
 import { delay, OMS_API_URL, PMI_API_URL, SIMULATED_LATENCY } from './constants';
-import { findExistingCustomerIdByPhone, findManualChannel, getChannels } from './omsHelpers';
+import { findExistingCustomerIdByPhone, findManualChannel, findStorefrontChannel, getChannels } from './omsHelpers';
 import { extractItems, mapPmiProduct } from './productMappers';
-import { CreateOrderPayload, OmsChannel, OmsCustomer, OmsCustomerInput, PmiProduct } from './types';
+import { CreateOrderPayload, OmsChannel, OmsCustomer, OmsCustomerInput, PmiProduct, SendOtpResponse, VerifyOtpResponse } from './types';
 
 async function getCategories(): Promise<Category[]> {
   try {
@@ -129,7 +129,45 @@ async function createOrder(orderData: CreateOrderPayload) {
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Failed to create order: ${errorText}`);
+    const error = new Error(`Failed to create order: ${errorText}`) as any;
+    error.status = response.status;
+    throw error;
+  }
+
+  return response.json();
+}
+
+async function sendOtp(phoneNumber: string): Promise<SendOtpResponse> {
+  const response = await fetch(`${OMS_API_URL}/api/sms/send-otp`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phone_number: phoneNumber })
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
+    throw {
+      status: response.status,
+      message: errorData.detail || 'Failed to send OTP'
+    };
+  }
+
+  return response.json();
+}
+
+async function verifyOtp(phoneNumber: string, otpCode: string): Promise<VerifyOtpResponse> {
+  const response = await fetch(`${OMS_API_URL}/api/sms/verify-otp`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phone_number: phoneNumber, otp_code: otpCode })
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
+    throw {
+      status: response.status,
+      message: errorData.detail || 'Failed to verify OTP'
+    };
   }
 
   return response.json();
@@ -198,6 +236,43 @@ async function getOrCreateManualChannelId(): Promise<number> {
   throw new Error(`Failed to resolve channel: ${errorText}`);
 }
 
+async function getOrCreateStorefrontChannelId(): Promise<number> {
+  const searchedChannels = await getChannels('STOREFRONT');
+  const searchedStorefront = findStorefrontChannel(searchedChannels);
+  if (searchedStorefront) {
+    return searchedStorefront.id;
+  }
+
+  const channels = await getChannels();
+  const storefront = findStorefrontChannel(channels);
+  if (storefront) {
+    return storefront.id;
+  }
+
+  const activeChannel = channels.find((channel) => channel.is_active);
+  if (activeChannel) {
+    return activeChannel.id;
+  }
+
+  const createResponse = await fetch(`${OMS_API_URL}/channels`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      code: 'STOREFRONT',
+      name: 'Storefront',
+      is_active: true
+    })
+  });
+
+  if (createResponse.ok) {
+    const created = (await createResponse.json()) as OmsChannel;
+    return created.id;
+  }
+
+  const errorText = await createResponse.text();
+  throw new Error(`Failed to resolve channel: ${errorText}`);
+}
+
 export const sportApi = {
   getProducts,
   getProductById,
@@ -208,6 +283,10 @@ export const sportApi = {
   getStringOptions,
   getConstants,
   createOrder,
+  sendOtp,
+  verifyOtp,
   findOrCreateCustomer,
-  getOrCreateManualChannelId
+  getOrCreateManualChannelId,
+  getOrCreateStorefrontChannelId
 };
+

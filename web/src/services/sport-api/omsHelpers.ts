@@ -40,3 +40,7 @@ export async function getChannels(search?: string): Promise<OmsChannel[]> {
 export function findManualChannel(channels: OmsChannel[]): OmsChannel | undefined {
   return channels.find((channel) => channel.is_active && channel.code?.toUpperCase() === 'MANUAL');
 }
+
+export function findStorefrontChannel(channels: OmsChannel[]): OmsChannel | undefined {
+  return channels.find((channel) => channel.is_active && channel.code?.toUpperCase() === 'STOREFRONT');
+}

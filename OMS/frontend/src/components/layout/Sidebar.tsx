@@ -11,7 +11,8 @@ import {
   RefreshCw,
   Globe,
   Truck,
-  Shield
+  Shield,
+  MessageSquare
 } from "lucide-react";
 import { popupService } from "@/components/ui/popupService";
 
@@ -37,6 +38,7 @@ export default function Sidebar() {
       title: "Cài đặt hệ thống",
       items: [
         { name: "Kênh bán hàng (Channels)", href: "/channels", icon: Globe },
+        { name: "Cấu hình SMS", href: "/settings/sms", icon: MessageSquare },
         { name: "Phương thức vận chuyển (Shipping)", href: "#shipping-methods", icon: Truck },
         { name: "Người dùng (Users)", href: "#users", icon: Users },
         { name: "Vai trò (Roles)", href: "#roles", icon: Shield },

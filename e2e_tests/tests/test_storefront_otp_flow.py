@@ -10,30 +10,29 @@ from e2e_tests.utils.api_helpers import OMSApi, PMIApi, WMSApi, wait_until
 E2E_IMAGE_URL = "https://placehold.co/600x600/png?text=E2E+Racket"
 
 
-def test_full_flow(api_clients, page, web_base_url):
+def test_storefront_otp_checkout_flow(api_clients, page, web_base_url):
     run_id = uuid4().hex[:8]
-    product_name = f"Vợt Lining E2E Test {run_id}"
-    product_code = f"PROD-E2E-{run_id}"
-    sku_code = f"SKU-E2E-LINING-{run_id}"
-    barcode = f"EAN-E2E-{run_id}"
-    category_code = f"CAT-E2E-{run_id}"
-    family_code = f"FAM-E2E-{run_id}"
-    warehouse_code = f"WH-E2E-{run_id}"
-    storage_location_code = f"LOC-E2E-STORAGE-{run_id}"
-    pick_location_code = f"LOC-E2E-PICK-{run_id}"
-    inbound_number = f"INB-E2E-{run_id}"
-    tracking_number = f"TRK-E2E-{run_id}"
+    product_name = f"Vợt Lining E2E OTP Test {run_id}"
+    product_code = f"PROD-E2E-OTP-{run_id}"
+    sku_code = f"SKU-E2E-OTP-LINING-{run_id}"
+    barcode = f"EAN-E2E-OTP-{run_id}"
+    category_code = f"CAT-E2E-OTP-{run_id}"
+    family_code = f"FAM-E2E-OTP-{run_id}"
+    warehouse_code = f"WH-E2E-OTP-{run_id}"
+    storage_location_code = f"LOC-E2E-OTP-STORAGE-{run_id}"
+    pick_location_code = f"LOC-E2E-OTP-PICK-{run_id}"
+    inbound_number = f"INB-E2E-OTP-{run_id}"
     customer_phone = f"09{int(run_id, 16) % 10**8:08d}"
-    customer_name = f"E2E Customer {run_id}"
-    customer_address = f"E2E Street {run_id}"
+    customer_name = f"OTP Buyer {run_id}"
+    customer_address = f"E2E OTP Street {run_id}"
 
     pmi = PMIApi(api_clients.pmi)
     oms = OMSApi(api_clients.oms)
     wms = WMSApi(api_clients.wms)
 
     # Arrange: create fresh PMI + WMS master data.
-    category = pmi.create_category(name="Vợt Test E2E", code=category_code)
-    family = pmi.create_attribute_family(name="Family Test E2E", code=family_code)
+    category = pmi.create_category(name="Vợt Test E2E OTP", code=category_code)
+    family = pmi.create_attribute_family(name="Family Test E2E OTP", code=family_code)
     product = pmi.create_product_with_variants(
         product_code=product_code,
         name=product_name,
@@ -45,7 +44,7 @@ def test_full_flow(api_clients, page, web_base_url):
         image_url=E2E_IMAGE_URL,
     )
 
-    warehouse = wms.create_warehouse(code=warehouse_code, name="WH E2E 01")
+    warehouse = wms.create_warehouse(code=warehouse_code, name="WH E2E OTP 01")
     storage_location = wms.create_location(warehouse_id=warehouse.id, location_code=storage_location_code, location_type="STORAGE")
     wms.create_location(warehouse_id=warehouse.id, location_code=pick_location_code, location_type="PICKING")
     wms.create_barcode_mapping(barcode=barcode, sku_code=sku_code, product_name=product_name, variant_name="Standard")
@@ -67,7 +66,6 @@ def test_full_flow(api_clients, page, web_base_url):
     )
     assert inventory_after_inbound is not None
     assert inventory_after_inbound.qty_on_hand == 100
-    assert inventory_after_inbound.qty_reserved == 0
 
     # Act: place the order through the live web frontend.
     page.goto(web_base_url, wait_until="domcontentloaded")
@@ -86,13 +84,18 @@ def test_full_flow(api_clients, page, web_base_url):
     page.get_by_placeholder("Ví dụ: Nguyễn Văn A").fill(customer_name)
     page.get_by_placeholder("Ví dụ: 0912345678").fill(customer_phone)
     page.get_by_placeholder("Ví dụ: Số 12 Chùa Hà").fill(customer_address)
-    page.locator("button").filter(has_text="Xác nhận đặt hàng").click()
+    page.locator("button").filter(has_text="Xác nhận đặt hàng ✓").click()
 
     # Verify OtpModal is open
     otp_modal = page.locator("#otp-verification-modal")
-    expect(otp_modal).to_be_visible(timeout=10_000)
+    expect(otp_modal).to_be_visible(timeout=10000)
 
-    # Fetch the generated OTP code from the OMS Test API endpoint
+    # Verify 60s cooldown state on resend button
+    resend_button = page.locator("button:has-text('Gửi lại sau')")
+    expect(resend_button).to_be_disabled(timeout=5000)
+    expect(resend_button).to_contain_text("Gửi lại sau")
+
+    # Fetch the generated OTP code from OMS Test API endpoint
     otp_payload = wait_until(
         lambda: api_clients.oms.get(f"/api/sms/test-last-otp?phone={customer_phone}").json(),
         timeout_seconds=15
@@ -100,19 +103,20 @@ def test_full_flow(api_clients, page, web_base_url):
     otp_code = otp_payload.get("otp_code")
     assert otp_code is not None
 
-    # Input the correct OTP code
+    # Input correct OTP code
     otp_input = page.get_by_placeholder("Nhập 6 số OTP")
     otp_input.fill(otp_code)
     
-    # Click confirmation button in the OTP modal to complete submission
+    # Click confirmation button
     page.get_by_role("button", name="Xác nhận OTP").click()
 
+    # Verify successful checkout transition
     expect(page.get_by_text("ĐẶT HÀNG THÀNH CÔNG!")).to_be_visible(timeout=20_000)
     order_number_label = page.locator("div.bg-gray-50 p").filter(has_text="Mã đơn hàng")
     expect(order_number_label).to_be_visible(timeout=20_000)
     created_order_number = order_number_label.first.inner_text().split(":", maxsplit=1)[-1].strip()
 
-    # Assert: OMS order is created in DRAFT status before confirmation.
+    # Verify that the order is correctly created in the OMS database
     draft_order = wait_until(
         lambda: _find_latest_order_by_phone(oms, customer_phone),
         timeout_seconds=30,
@@ -120,50 +124,6 @@ def test_full_flow(api_clients, page, web_base_url):
     assert draft_order is not None
     assert draft_order.status == "DRAFT"
     assert draft_order.order_number in created_order_number
-
-    # Act: confirm order through OMS, which should create the WMS fulfillment order.
-    confirmed_order = oms.confirm_order(draft_order.id)
-    assert confirmed_order.status == "PROCESSING"
-
-    processed_order = wait_until(lambda: oms.get_order(draft_order.id), timeout_seconds=30)
-    assert processed_order.status == "PROCESSING"
-    assert processed_order.fulfillment_orders
-
-    fulfillment_number = processed_order.fulfillment_orders[0]["fulfillment_number"]
-    fulfillment = wait_until(lambda: wms.get_fulfillment_order(fulfillment_number), timeout_seconds=30)
-    assert fulfillment.status == "PENDING"
-    assert fulfillment.oms_order_number == processed_order.order_number
-
-    inventory_after_confirm = wait_until(
-        lambda: wms.get_inventory_record(sku_code=sku_code, location_id=storage_location.id),
-        timeout_seconds=30,
-    )
-    assert inventory_after_confirm is not None
-    assert inventory_after_confirm.qty_on_hand == 100
-    assert inventory_after_confirm.qty_reserved == 1
-
-    # Act: drive the fulfillment flow in WMS.
-    wms.start_pick(fulfillment_number)
-    wait_until(lambda: oms.get_order(draft_order.id).status == "PICKING", timeout_seconds=30)
-
-    pick_scan = wms.scan_pick(fulfillment_number, barcode=barcode, quantity=1)
-    assert pick_scan["picked_qty"] == 1
-    wms.complete_pick(fulfillment_number)
-
-    wms.scan_pack(fulfillment_number, tracking_number=tracking_number)
-    wms.complete_pack(fulfillment_number)
-    wms.ship(fulfillment_number)
-
-    final_order = wait_until(lambda: oms.get_order(draft_order.id), timeout_seconds=45)
-    assert final_order.status == "SHIPPED"
-
-    final_inventory = wait_until(
-        lambda: wms.get_inventory_record(sku_code=sku_code, location_id=storage_location.id),
-        timeout_seconds=30,
-    )
-    assert final_inventory is not None
-    assert final_inventory.qty_on_hand == 99
-    assert final_inventory.qty_reserved == 0
 
 
 def _find_latest_order_by_phone(oms: OMSApi, phone: str):

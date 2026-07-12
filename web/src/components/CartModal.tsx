@@ -3,6 +3,8 @@ import { X, Trash2, ShoppingBag, ShieldCheck, CheckCircle2, Phone, MapPin, Truck
 import { StringOption } from '../types';
 import { sportApi } from '../services/sportApi';
 import { popupService } from './ui/popupService';
+import OtpModal from './OtpModal';
+
 
 export interface CartItem {
   id: string; // Unique instance id
@@ -38,6 +40,8 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
   const [shippingMethod, setShippingMethod] = useState<'standard' | 'fast'>('standard');
   const [city, setCity] = useState('Hà Nội');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
+  const [verificationToken, setVerificationToken] = useState('');
 
   if (!isOpen) return null;
 
@@ -50,10 +54,18 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
   const shippingCost = shippingMethod === 'standard' ? 30000 : 50000;
   const orderTotal = itemsTotal + shippingCost;
 
-  const handleCheckoutSubmit = async (e?: React.FormEvent) => {
+  const handleCheckoutSubmit = async (e?: React.FormEvent, tokenOverride?: string) => {
     if (e) e.preventDefault();
     if (!fullName || !phone || !address) {
       await popupService.alert('Vui lòng cung cấp đầy đủ họ tên, số điện thoại và địa chỉ nhận hàng.');
+      return;
+    }
+
+    const activeToken = tokenOverride || verificationToken;
+
+    // Intercept flow: open OTP Verification first if token doesn't exist
+    if (!activeToken) {
+      setIsOtpModalOpen(true);
       return;
     }
 
@@ -65,7 +77,7 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
         phone: phone.trim(),
         address: shippingAddress
       });
-      const channelId = await sportApi.getOrCreateManualChannelId();
+      const channelId = await sportApi.getOrCreateStorefrontChannelId();
 
       for (const item of cartItems) {
         if (!item.skuCode) {
@@ -88,15 +100,21 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
         items,
         shipping_fee: shippingCost,
         shipping_address: shippingAddress,
-        note: shippingMethod === 'fast' ? 'Đơn web - Giao hỏa tốc' : 'Đơn web - Giao tiêu chuẩn'
+        note: shippingMethod === 'fast' ? 'Đơn web - Giao hỏa tốc' : 'Đơn web - Giao tiêu chuẩn',
+        verification_token: activeToken
       });
 
       setCreatedOrderNumber(order?.order_number || '');
 
       setStep(3);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      await popupService.alert('Có lỗi xảy ra khi tạo đơn hàng trên OMS. Vui lòng thử lại!');
+      if (err.status === 403) {
+        await popupService.alert('Mã xác thực OTP đã hết hạn hoặc không hợp lệ. Vui lòng tải lại trang và xác thực lại.');
+        setVerificationToken('');
+      } else {
+        await popupService.alert('Có lỗi xảy ra khi tạo đơn hàng trên OMS. Vui lòng thử lại!');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -106,6 +124,7 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
     onClearCart();
     setStep(1);
     setCreatedOrderNumber('');
+    setVerificationToken('');
     onClose();
   };
 
@@ -367,6 +386,17 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
         )}
 
       </div>
+      <OtpModal
+        isOpen={isOtpModalOpen}
+        phoneNumber={phone}
+        onClose={() => setIsOtpModalOpen(false)}
+        onSuccess={(token) => {
+          setIsOtpModalOpen(false);
+          setVerificationToken(token);
+          void handleCheckoutSubmit(undefined, token);
+        }}
+      />
     </div>
   );
 }
+

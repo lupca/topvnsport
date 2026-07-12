@@ -62,7 +62,19 @@ export type CreateOrderPayload = {
   shipping_address: string;
   note?: string;
   items: CreateOrderItem[];
+  verification_token?: string;
 };
+
+export type SendOtpResponse = {
+  success: boolean;
+  message?: string;
+};
+
+export type VerifyOtpResponse = {
+  success: boolean;
+  verification_token: string;
+};
+
 
 export type OmsCustomer = {
   id: number;

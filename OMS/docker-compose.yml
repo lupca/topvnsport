@@ -27,6 +27,9 @@ services:
       - "18101:8001"
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@oms_db:5432/oms_db
+      - INTEGRITY_MODE=development
+      - ENV=development
+      - FERNET_KEY=lz_K8Z8d1d-0iO-4yN2Vb11234567890abcdefghijk=
     depends_on:
       oms_db:
         condition: service_healthy

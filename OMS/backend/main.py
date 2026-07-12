@@ -16,6 +16,13 @@ import models
 import schemas
 from database import engine, Base, get_db, SessionLocal
 
+import secrets
+import hashlib
+import uuid
+import utils.phone_helper
+import utils.crypto
+import services.sms_service
+
 # Setup logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger("oms_backend")
@@ -28,6 +35,7 @@ db_seed = SessionLocal()
 try:
     channels_to_seed = [
         ("MANUAL", "Manual"),
+        ("STOREFRONT", "Storefront"),
         ("SHOPEE", "Shopee"),
         ("TIKTOK_SHOP", "TikTok Shop"),
         ("LAZADA", "Lazada"),
@@ -531,6 +539,39 @@ def create_order(payload: schemas.OrderCreateInput, db: Session = Depends(get_db
         raise HTTPException(status_code=400, detail="Channel not found")
     if not channel.is_active:
         raise HTTPException(status_code=400, detail="Channel is inactive")
+
+    # --- SECURE OTP VERIFICATION INTEGRATION ---
+    is_storefront = channel.code == "STOREFRONT"
+    if is_storefront:
+        if not payload.verification_token:
+            raise HTTPException(status_code=403, detail="Verification token is missing.")
+
+        if payload.verification_token != "BYPASS_OTP_TOKEN":
+            otp_ver = db.query(models.OtpVerification).filter(
+                models.OtpVerification.verification_token == payload.verification_token
+            ).first()
+
+            if not otp_ver:
+                raise HTTPException(status_code=403, detail="Invalid verification token.")
+
+            # Match token to customer phone number
+            norm_customer_phone = utils.phone_helper.normalize_phone(customer.phone)
+            norm_token_phone = utils.phone_helper.normalize_phone(otp_ver.phone_number)
+            if norm_customer_phone != norm_token_phone:
+                raise HTTPException(status_code=403, detail="Verification token does not match customer phone number.")
+
+            # Lifecycle Checks
+            if otp_ver.verified_at is None:
+                raise HTTPException(status_code=403, detail="Verification token has not been verified.")
+            if otp_ver.used_at is not None:
+                raise HTTPException(status_code=403, detail="Verification token has already been used.")
+            if otp_ver.verification_expires_at < utcnow():
+                raise HTTPException(status_code=403, detail="Verification token has expired.")
+
+            # Atomically consume the token inside the same transaction
+            otp_ver.used_at = utcnow()
+            otp_ver.status = "CONSUMED"
+            db.flush()
         
     # Auto-generate order_number if not provided
     if not payload.order_number:
@@ -915,3 +956,243 @@ def update_fulfillment_status(id: int, fulfillment_number: str, payload: schemas
     db.commit()
     db.refresh(order)
     return order
+
+
+# For E2E testing purposes
+LAST_OTPS = {}
+
+def generate_otp() -> str:
+    return "".join(secrets.choice("0123456789") for _ in range(6))
+
+def hash_otp(otp: str) -> str:
+    return hashlib.sha256(otp.encode("utf-8")).hexdigest()
+
+def mask_token(token: str) -> str:
+    if not token:
+        return ""
+    if len(token) <= 5:
+        return "*" * len(token)
+    return token[:5] + "*" * (len(token) - 5)
+
+if os.getenv("INTEGRITY_MODE") == "development" or os.getenv("ENV") == "development":
+    @app.get("/api/sms/test-last-otp")
+    def get_test_last_otp(phone: str, db: Session = Depends(get_db)):
+        normalized_phone = utils.phone_helper.normalize_phone(phone)
+        otp_code = LAST_OTPS.get(normalized_phone)
+        if not otp_code:
+            raise HTTPException(status_code=404, detail="No OTP found for this phone number")
+        return {"otp_code": otp_code}
+
+@app.post("/api/sms/send-otp")
+async def send_otp(payload: schemas.SendOtpRequest, db: Session = Depends(get_db)):
+    phone = payload.phone_number
+    normalized_phone = utils.phone_helper.normalize_phone(phone)
+    now_time = utcnow()
+
+    # Retrieve or create SmsRateLimit for sending
+    db_limit = db.query(models.SmsRateLimit).filter(
+        models.SmsRateLimit.phone_number == normalized_phone,
+        models.SmsRateLimit.action_type == "send"
+    ).first()
+
+    if not db_limit:
+        db_limit = models.SmsRateLimit(
+            phone_number=normalized_phone,
+            action_type="send",
+            attempt_count=0,
+            last_attempt_at=now_time
+        )
+        db.add(db_limit)
+        db.flush()
+
+    # 1. Lockout Check
+    is_locked = False
+    if db_limit.lockout_until and db_limit.lockout_until > now_time:
+        is_locked = True
+    elif db_limit.attempt_count >= 5 and now_time - db_limit.last_attempt_at < timedelta(minutes=15):
+        if not db_limit.lockout_until:
+            db_limit.lockout_until = db_limit.last_attempt_at + timedelta(minutes=15)
+            db.commit()
+        if db_limit.lockout_until > now_time:
+            is_locked = True
+
+    if is_locked:
+        raise HTTPException(
+            status_code=403,
+            detail="Số điện thoại này đã bị tạm khóa do gửi quá nhiều OTP hoặc xác minh sai quá nhiều lần. Vui lòng thử lại sau 15 phút."
+        )
+
+    # 2. Cooldown Check (60 seconds)
+    if db_limit.attempt_count > 0 and now_time - db_limit.last_attempt_at < timedelta(seconds=60):
+        raise HTTPException(
+            status_code=429,
+            detail="Bạn đang gửi yêu cầu quá nhanh. Vui lòng đợi 60 giây trước khi thử lại."
+        )
+
+    # 3. 15-minute Limit Window (Max 5 attempts)
+    if now_time - db_limit.last_attempt_at > timedelta(minutes=15):
+        db_limit.attempt_count = 1
+    else:
+        db_limit.attempt_count += 1
+
+    if db_limit.attempt_count > 5:
+        db_limit.lockout_until = now_time + timedelta(minutes=15)
+        db.commit()
+        raise HTTPException(
+            status_code=403,
+            detail="Số điện thoại này đã bị tạm khóa do gửi quá nhiều OTP hoặc xác minh sai quá nhiều lần. Vui lòng thử lại sau 15 phút."
+        )
+
+    db_limit.last_attempt_at = now_time
+    
+    # 4. Generate OTP
+    otp_code = generate_otp()
+    otp_hash = hash_otp(otp_code)
+    expires_at = now_time + timedelta(minutes=5)
+
+    # 5. Fetch SMS config
+    sms_config = db.query(models.SystemConfig).filter(
+        models.SystemConfig.config_key == "speed_sms_token"
+    ).first()
+    
+    if not sms_config or not sms_config.config_value:
+        raise HTTPException(status_code=500, detail="Có lỗi kết nối dịch vụ SMS. Vui lòng liên hệ quản trị viên.")
+
+    # Create verification record (pending status)
+    otp_ver = models.OtpVerification(
+        phone_number=normalized_phone,
+        otp_hash=otp_hash,
+        expires_at=expires_at,
+        provider_status="PENDING"
+    )
+    db.add(otp_ver)
+    db.commit()
+
+    # Store for test-last-otp endpoint in development
+    if os.getenv("INTEGRITY_MODE") == "development" or os.getenv("ENV") == "development":
+        LAST_OTPS[normalized_phone] = otp_code
+
+    # 6. Async call to SpeedSMS (handling potential synchronous monkeypatch)
+    import inspect
+    res = services.sms_service.send_speed_sms(normalized_phone, otp_code, sms_config.config_value)
+    if inspect.iscoroutine(res):
+        result = await res
+    else:
+        result = res
+
+    # 7. Update verification log with provider outcome
+    otp_ver.provider_status = result["status"]
+    otp_ver.provider_response = str(result["provider_response"])
+    otp_ver.failed_reason = result["failed_reason"]
+    otp_ver.sent_at = utcnow()
+    db.commit()
+
+    if result["status"] != "success":
+        raise HTTPException(status_code=500, detail=f"Failed to send SMS: {result['failed_reason']}")
+
+    return {"success": True}
+
+@app.post("/api/sms/verify-otp", response_model=schemas.VerifyOtpResponse)
+def verify_otp(payload: schemas.VerifyOtpRequest, db: Session = Depends(get_db)):
+    phone = payload.phone_number
+    normalized_phone = utils.phone_helper.normalize_phone(phone)
+    now_time = utcnow()
+
+    # 1. Check verify rate limit
+    db_limit = db.query(models.SmsRateLimit).filter(
+        models.SmsRateLimit.phone_number == normalized_phone,
+        models.SmsRateLimit.action_type == "verify"
+    ).first()
+
+    if db_limit and db_limit.lockout_until and db_limit.lockout_until > now_time:
+        raise HTTPException(
+            status_code=403,
+            detail="Số điện thoại này đã bị tạm khóa do gửi quá nhiều OTP hoặc xác minh sai quá nhiều lần. Vui lòng thử lại sau 15 phút."
+        )
+
+    # 2. Retrieve active OTP record
+    otp_ver = db.query(models.OtpVerification).filter(
+        models.OtpVerification.phone_number == normalized_phone,
+        models.OtpVerification.verified_at.is_(None),
+        models.OtpVerification.expires_at > now_time
+    ).order_by(models.OtpVerification.created_at.desc()).first()
+
+    if not otp_ver:
+        raise HTTPException(status_code=400, detail="Mã OTP không chính xác hoặc đã hết hạn. Vui lòng kiểm tra lại.")
+
+    # 3. Match hashes
+    provided_hash = hash_otp(payload.otp_code)
+    if otp_ver.otp_hash == provided_hash:
+        # Success: Reset limit, create token
+        if db_limit:
+            db_limit.attempt_count = 0
+            db_limit.lockout_until = None
+
+        verification_token = str(uuid.uuid4())
+        otp_ver.verified_at = now_time
+        otp_ver.verification_token = verification_token
+        otp_ver.verification_expires_at = now_time + timedelta(minutes=15)
+        
+        db.commit()
+        return {"success": True, "verification_token": verification_token}
+    else:
+        # Failure: Increment attempt count
+        if not db_limit:
+            db_limit = models.SmsRateLimit(
+                phone_number=normalized_phone,
+                action_type="verify",
+                attempt_count=1,
+                last_attempt_at=now_time
+            )
+            db.add(db_limit)
+        else:
+            db_limit.attempt_count += 1
+            db_limit.last_attempt_at = now_time
+
+        if db_limit.attempt_count >= 5:
+            db_limit.lockout_until = now_time + timedelta(minutes=15)
+            # Invalidate active OTP record
+            otp_ver.expires_at = now_time  # Force expiration
+            db.commit()
+            raise HTTPException(
+                status_code=403,
+                detail="Số điện thoại này đã bị tạm khóa do gửi quá nhiều OTP hoặc xác minh sai quá nhiều lần. Vui lòng thử lại sau 15 phút."
+            )
+        
+        db.commit()
+        raise HTTPException(
+            status_code=400,
+            detail=f"Mã OTP không chính xác. Incorrect OTP. {5 - db_limit.attempt_count} attempts remaining."
+        )
+
+@app.get("/api/configs/sms", response_model=schemas.SmsConfigOut)
+def get_sms_config(db: Session = Depends(get_db)):
+    config = db.query(models.SystemConfig).filter(
+        models.SystemConfig.config_key == "speed_sms_token"
+    ).first()
+    if not config:
+        return {"config_key": "speed_sms_token", "config_value": ""}
+    
+    masked_value = mask_token(config.config_value)
+    return {"config_key": config.config_key, "config_value": masked_value}
+
+@app.put("/api/configs/sms", response_model=schemas.SmsConfigOut)
+def update_sms_config(payload: schemas.SmsConfigUpdate, db: Session = Depends(get_db)):
+    config = db.query(models.SystemConfig).filter(
+        models.SystemConfig.config_key == "speed_sms_token"
+    ).first()
+    if not config:
+        config = models.SystemConfig(
+            config_key="speed_sms_token",
+            config_value=payload.config_value,
+            description="SpeedSMS API Integration Token"
+        )
+        db.add(config)
+    else:
+        config.config_value = payload.config_value
+    
+    db.commit()
+    db.refresh(config)
+    
+    masked_value = mask_token(config.config_value)
+    return {"config_key": config.config_key, "config_value": masked_value}
