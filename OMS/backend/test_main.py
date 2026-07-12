@@ -533,3 +533,13 @@ def test_order_creation_otp_security(client, db, monkeypatch):
     res_replay = client.post("/orders", json={**order_payload, "verification_token": "valid-token-123"})
     assert res_replay.status_code == 403
     assert "Verification token has already been used" in res_replay.json()["detail"]
+
+
+def test_validation_errors_translation_vietnamese(client):
+    # Missing name when creating customer
+    resp = client.post("/customers", json={"phone": "123456"})
+    assert resp.status_code == 422
+    errors = resp.json()["detail"]
+    name_error = next(e for e in errors if "name" in e["loc"])
+    assert name_error["msg"] == "Trường này là bắt buộc"
+    assert name_error["type"] == "missing"

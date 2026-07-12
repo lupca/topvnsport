@@ -87,12 +87,12 @@ describe("ProductForm", () => {
     await userEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByText("Tên sản phẩm phải từ 5 ký tự trở lên")).toBeInTheDocument();
-      expect(screen.getByText("Mã sản phẩm cha là bắt buộc")).toBeInTheDocument();
+      expect(screen.getByText("Độ dài tối thiểu là 5 ký tự")).toBeInTheDocument();
+      expect(screen.getByText("Trường này là bắt buộc")).toBeInTheDocument();
       expect(screen.getByText("Vui lòng chọn ngành hàng")).toBeInTheDocument();
       expect(screen.getByText("Vui lòng chọn bộ thuộc tính")).toBeInTheDocument();
-      expect(screen.getByText("Mô tả sản phẩm phải từ 10 ký tự trở lên")).toBeInTheDocument();
-      expect(screen.getByText("Cân nặng phải > 0")).toBeInTheDocument();
+      expect(screen.getByText("Độ dài tối thiểu là 10 ký tự")).toBeInTheDocument();
+      expect(screen.getByText("Giá trị phải lớn hơn hoặc bằng 1")).toBeInTheDocument();
     });
   });
 

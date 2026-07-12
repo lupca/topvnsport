@@ -304,3 +304,102 @@ def test_create_product_no_variations_auto_generates_default_sku(client):
     data = resp.json()
     assert len(data["variants"]) == 1
     assert data["variants"][0]["sku_code"] == "AUTO-SKU-NOVAR-DEFAULT"
+
+
+def test_create_product_with_12_images_succeeds(client):
+    category_id = _first_category_id(client)
+    family_id = _first_family_id(client)
+    attribute_id = _first_attribute_id(client)
+    
+    payload = _product_payload(category_id, family_id, attribute_id, parent_code="MEDIA-12-OK")
+    
+    media = [
+        {
+            "image_url": "https://example.com/cover.jpg",
+            "is_cover": True,
+            "display_order": 1,
+            "variant_tier_1_option": None,
+        },
+        {
+            "image_url": "https://example.com/main2.jpg",
+            "is_cover": False,
+            "display_order": 2,
+            "variant_tier_1_option": None,
+        }
+    ]
+    for i in range(3, 13):
+        option = "Do" if i % 2 == 0 else "Xanh"
+        media.append({
+            "image_url": f"https://example.com/variant-{i}.jpg",
+            "is_cover": False,
+            "display_order": i,
+            "variant_tier_1_option": option,
+        })
+        
+    payload["media"] = media
+    
+    resp = client.post("/products", json=payload)
+    assert resp.status_code == 201, resp.text
+    data = resp.json()
+    assert len(data["media"]) == 12
+
+
+def test_create_product_with_10_main_images_fails(client):
+    category_id = _first_category_id(client)
+    family_id = _first_family_id(client)
+    attribute_id = _first_attribute_id(client)
+    
+    payload = _product_payload(category_id, family_id, attribute_id, parent_code="MEDIA-10-MAIN-FAIL")
+    
+    media = []
+    for i in range(1, 11):
+        media.append({
+            "image_url": f"https://example.com/main-{i}.jpg",
+            "is_cover": i == 1,
+            "display_order": i,
+            "variant_tier_1_option": None,
+        })
+        
+    payload["media"] = media
+    
+    resp = client.post("/products", json=payload)
+    assert resp.status_code == 422
+    data = resp.json()
+    assert any(e["msg"] == "Tối đa 9 ảnh chính" for e in data["detail"])
+
+
+def test_product_validation_vietnamese(client):
+    category_id = _first_category_id(client)
+    family_id = _first_family_id(client)
+    attribute_id = _first_attribute_id(client)
+    
+    # 1. Missing name -> type == "missing"
+    payload = _product_payload(category_id, family_id, attribute_id, parent_code="VAL-FAIL-1")
+    payload.pop("name")
+    resp = client.post("/products", json=payload)
+    assert resp.status_code == 422
+    errors = resp.json()["detail"]
+    name_error = next(e for e in errors if "name" in e["loc"])
+    assert name_error["msg"] == "Trường này là bắt buộc"
+    assert name_error["type"] == "missing"
+
+    # 2. Negative weight -> type == "greater_than_equal"
+    payload = _product_payload(category_id, family_id, attribute_id, parent_code="VAL-FAIL-2")
+    payload["weight"] = -5
+    resp = client.post("/products", json=payload)
+    assert resp.status_code == 422
+    errors = resp.json()["detail"]
+    weight_error = next(e for e in errors if "weight" in e["loc"])
+    assert "Giá trị phải lớn hơn hoặc bằng" in weight_error["msg"]
+    assert weight_error["type"] == "greater_than_equal"
+
+    # 3. dts_days too large -> type == "less_than_equal"
+    payload = _product_payload(category_id, family_id, attribute_id, parent_code="VAL-FAIL-3")
+    payload["dts_days"] = 35
+    resp = client.post("/products", json=payload)
+    assert resp.status_code == 422
+    errors = resp.json()["detail"]
+    dts_error = next(e for e in errors if "dts_days" in e["loc"])
+    assert "Giá trị phải nhỏ hơn hoặc bằng" in dts_error["msg"]
+    assert dts_error["type"] == "less_than_equal"
+

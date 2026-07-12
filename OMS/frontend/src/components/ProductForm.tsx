@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
-import { z } from "zod";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { 
   Plus, Trash, Upload, Check, Loader2, 
@@ -21,46 +21,7 @@ interface Category {
   code: string;
 }
 
-// Zod schemas
-const tierVariationSchema = z.object({
-  tier_index: z.number().min(1).max(2),
-  name: z.string().min(1, "Nhóm phân loại hàng không được trống"),
-  options: z.array(z.string().min(1, "Phân loại không được trống")).min(1, "Tối thiểu 1 phân loại")
-});
-
-const variantSchema = z.object({
-  tier_1_option: z.string().nullable(),
-  tier_2_option: z.string().nullable(),
-  sku_code: z.string().min(1, "SKU không được để trống"),
-  price: z.coerce.number().min(0, "Giá trị phải >= 0"),
-  stock: z.coerce.number().min(0, "Kho hàng phải >= 0")
-});
-
-const productMediaSchema = z.object({
-  image_url: z.string().url(),
-  is_cover: z.boolean(),
-  display_order: z.number().min(1).max(9),
-  variant_tier_1_option: z.string().optional().nullable()
-});
-
-const productFormSchema = z.object({
-  product_code: z.string().min(1, "Mã sản phẩm cha là bắt buộc"),
-  name: z.string().min(5, "Tên sản phẩm phải từ 5 ký tự trở lên"),
-  description: z.string().min(10, "Mô tả sản phẩm phải từ 10 ký tự trở lên"),
-  category_id: z.coerce.number().min(1, "Vui lòng chọn ngành hàng"),
-  weight: z.coerce.number().min(1, "Cân nặng phải > 0"),
-  length: z.coerce.number().optional().nullable(),
-  width: z.coerce.number().optional().nullable(),
-  height: z.coerce.number().optional().nullable(),
-  is_pre_order: z.boolean().default(false),
-  dts_days: z.coerce.number().min(7).max(30).optional().nullable(),
-  status: z.enum(["Draft", "Published"]).default("Draft"),
-  tier_variations: z.array(tierVariationSchema).max(2),
-  variants: z.array(variantSchema).min(1),
-  media: z.array(productMediaSchema)
-});
-
-type ProductFormValues = z.infer<typeof productFormSchema>;
+import { productFormSchema, ProductFormValues } from "../validations/productSchema";
 
 interface ProductFormProps {
   productId?: number | null;
