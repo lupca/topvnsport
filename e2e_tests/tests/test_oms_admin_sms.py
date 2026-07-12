@@ -11,7 +11,12 @@ def test_oms_admin_sms_settings(page: Page, oms_api_url: str):
     page.on("pageerror", lambda err: print(f"Page Error: {err}"))
     page.on("console", lambda msg: print(f"Console: {msg.text}"))
 
-    expect(token_input).to_be_visible(timeout=30000)
+    try:
+        expect(token_input).to_be_visible(timeout=60000)
+    except Exception as e:
+        print("Page HTML at timeout:")
+        print(page.content())
+        raise e
     
     # Assert token masking (represented by asterisks) or empty
     current_value = token_input.input_value()

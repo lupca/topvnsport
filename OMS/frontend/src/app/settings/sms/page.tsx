@@ -22,6 +22,7 @@ export default function SmsSettingsPage() {
   const [showToken, setShowToken] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [debugLog, setDebugLog] = useState<string>("init");
 
   const {
     register,
@@ -37,19 +38,23 @@ export default function SmsSettingsPage() {
 
   const fetchSmsConfig = useCallback(async () => {
     try {
+      setDebugLog(prev => prev + " | start");
       setLoading(true);
       setSuccessMessage(null);
       setErrorMessage(null);
       
       const res = await api.get<{ config_key: string; config_value: string }>("/api/configs/sms");
+      setDebugLog(prev => prev + " | end fetch");
       const fetchedToken = res.config_value || "";
       
       setOriginalMaskedToken(fetchedToken);
       reset({ speed_sms_token: fetchedToken });
     } catch (err: any) {
+      setDebugLog(prev => prev + " | catch: " + (err.message || "error"));
       console.error(err);
       setErrorMessage("Không thể tải cấu hình SMS từ hệ thống.");
     } finally {
+      setDebugLog(prev => prev + " | finally");
       setLoading(false);
     }
   }, [reset]);
@@ -131,9 +136,12 @@ export default function SmsSettingsPage() {
         )}
 
         {loading ? (
-          <div className="py-12 text-center text-xs text-gray-500 flex items-center justify-center gap-2">
-            <RefreshCw className="w-4 h-4 animate-spin text-brand-primary" />
-            <span>Đang tải thông tin cấu hình...</span>
+          <div className="py-12 text-center text-xs text-gray-500 flex flex-col items-center justify-center gap-2">
+            <div className="flex items-center gap-2">
+              <RefreshCw className="w-4 h-4 animate-spin text-brand-primary" />
+              <span>Đang tải thông tin cấu hình...</span>
+            </div>
+            <div className="mt-4 p-2 bg-gray-100 rounded text-left break-all font-mono">DEBUG: {debugLog}</div>
           </div>
         ) : (
           <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
