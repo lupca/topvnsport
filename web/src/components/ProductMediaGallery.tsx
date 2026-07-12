@@ -6,28 +6,7 @@ interface ProductMediaGalleryProps {
   image: string;
   gallery?: string[];
   selectedVisualOption?: string;
-  visualOptions?: string[];
-}
-
-function normalizeText(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
-}
-
-function toTokens(value: string): string[] {
-  return normalizeText(value)
-    .split(/[^a-z0-9]+/)
-    .filter((token) => token.length >= 2);
-}
-
-function scoreImageForOption(option: string, imageUrl: string): number {
-  const tokens = toTokens(option);
-  if (tokens.length === 0) return 0;
-
-  const target = normalizeText(decodeURIComponent(imageUrl));
-  return tokens.reduce((score, token) => score + (target.includes(token) ? 1 : 0), 0);
+  imageByVisualOption?: Record<string, string>;
 }
 
 export default function ProductMediaGallery({
@@ -35,7 +14,7 @@ export default function ProductMediaGallery({
   image,
   gallery,
   selectedVisualOption,
-  visualOptions
+  imageByVisualOption
 }: ProductMediaGalleryProps) {
   const galleryImages = useMemo(() => {
     const images = [image, ...(gallery || [])].filter(Boolean);
@@ -49,39 +28,6 @@ export default function ProductMediaGallery({
   const [isZoomModalOpen, setIsZoomModalOpen] = useState(false);
   const [modalZoomLevel, setModalZoomLevel] = useState(1.4);
 
-  const imageByVisualOption = useMemo(() => {
-    const map: Record<string, string> = {};
-    const options = visualOptions || [];
-    if (options.length === 0 || galleryImages.length === 0) {
-      return map;
-    }
-
-    options.forEach((option, index) => {
-      let bestImage = '';
-      let bestScore = 0;
-
-      galleryImages.forEach((candidate) => {
-        const score = scoreImageForOption(option, candidate);
-        if (score > bestScore) {
-          bestScore = score;
-          bestImage = candidate;
-        }
-      });
-
-      if (bestScore > 0) {
-        map[option] = bestImage;
-        return;
-      }
-
-      // Fallback: if backend sends media in variant option order, pick by index.
-      if (index < galleryImages.length) {
-        map[option] = galleryImages[index];
-      }
-    });
-
-    return map;
-  }, [galleryImages, visualOptions]);
-
   useEffect(() => {
     setSelectedImage(galleryImages[0] || image);
     setIsImageHovered(false);
@@ -91,6 +37,7 @@ export default function ProductMediaGallery({
 
   useEffect(() => {
     if (!selectedVisualOption) return;
+    if (!imageByVisualOption) return;
 
     const nextImage = imageByVisualOption[selectedVisualOption];
     if (nextImage) {

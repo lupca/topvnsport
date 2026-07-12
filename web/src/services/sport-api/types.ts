@@ -13,6 +13,9 @@ export type PmiVariant = {
 
 export type PmiMedia = {
   image_url?: string;
+  variant_id?: number | null;
+  is_cover?: boolean;
+  display_order?: number;
 };
 
 export type PmiAttribute = {

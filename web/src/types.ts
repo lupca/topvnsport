@@ -36,6 +36,15 @@ export interface ProductReview {
   tags?: string[];
 }
 
+export interface ProductMedia {
+  imageUrl: string;
+  variantId?: number | null;
+  isCover?: boolean;
+  displayOrder?: number;
+  tier1Option?: string | null;
+  tier2Option?: string | null;
+}
+
 export interface Product {
   id: string;
   slug?: string;
@@ -43,6 +52,7 @@ export interface Product {
   brand: 'Yonex' | 'Lining' | 'Victor' | 'Kumpoo' | 'Other';
   image: string;
   gallery?: string[];
+  media?: ProductMedia[];
   category: string;
   price: number;
   salePrice?: number;

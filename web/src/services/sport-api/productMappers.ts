@@ -94,9 +94,35 @@ export function mapPmiProduct(pmiProduct: PmiProduct, categories: Category[]): P
   const stock = variants.reduce((sum, variant) => sum + Number(variant.stock || 0), 0);
   const colors = [...new Set(variants.map((variant) => variant.tier_1_option || 'Tiêu chuẩn'))] as string[];
 
-  const media = pmiProduct.media || [];
-  const gallery = media.map((item) => item.image_url).filter((url): url is string => Boolean(url));
-  const image = gallery.length > 0 ? gallery[0] : NO_IMAGE_URL;
+  const variantById = variants.reduce<Record<number, PmiVariant>>((accumulator, variant) => {
+    if (variant.id !== undefined && variant.id !== null) {
+      accumulator[Number(variant.id)] = variant;
+    }
+    return accumulator;
+  }, {});
+
+  const mappedMedia = (pmiProduct.media || [])
+    .filter((item) => Boolean(item.image_url))
+    .sort((left, right) => {
+      const leftOrder = left.display_order || 9999;
+      const rightOrder = right.display_order || 9999;
+      return leftOrder - rightOrder;
+    })
+    .map((item) => {
+      const variant = item.variant_id ? variantById[Number(item.variant_id)] : undefined;
+      return {
+        imageUrl: item.image_url as string,
+        variantId: item.variant_id ?? null,
+        isCover: item.is_cover ?? false,
+        displayOrder: item.display_order ?? 9999,
+        tier1Option: variant?.tier_1_option || null,
+        tier2Option: variant?.tier_2_option || null
+      };
+    });
+
+  const gallery = mappedMedia.map((item) => item.imageUrl);
+  const coverImage = mappedMedia.find((item) => item.isCover)?.imageUrl;
+  const image = coverImage || gallery[0] || NO_IMAGE_URL;
 
   const name = (pmiProduct.name || 'Sản phẩm').trim();
   const attributes = mapPmiAttributes(pmiProduct.attribute_values || []);
@@ -108,6 +134,17 @@ export function mapPmiProduct(pmiProduct: PmiProduct, categories: Category[]): P
   const parsedMaxTension = Number(attrByCode.maxTension);
   const resolvedPrice = minPrice > 0 ? minPrice : 100000;
 
+  const mappedVariants = variants.map((variant) => ({
+    id: variant.id,
+    product_id: Number(pmiProduct.id),
+    tier_1_option: variant.tier_1_option || null,
+    tier_2_option: variant.tier_2_option || null,
+    sku_code: variant.sku_code || '',
+    price: Number(variant.price || 0),
+    barcode: variant.barcode || null,
+    stock: Number(variant.stock || 0)
+  }));
+
   return {
     id: String(pmiProduct.id),
     slug: slugifyProductName(name),
@@ -115,6 +152,7 @@ export function mapPmiProduct(pmiProduct: PmiProduct, categories: Category[]): P
     brand,
     image,
     gallery,
+    media: mappedMedia,
     category,
     price: resolvedPrice,
     salePrice: minPrice > 0 ? minPrice : undefined,
@@ -133,15 +171,6 @@ export function mapPmiProduct(pmiProduct: PmiProduct, categories: Category[]): P
     skuByVariant: mapSkuByVariant(variants),
     colors: colors.length > 0 ? colors : ['Tiêu chuẩn'],
     tier_variations: pmiProduct.tier_variations || [],
-    variants: variants.map((variant) => ({
-      id: variant.id,
-      product_id: Number(pmiProduct.id),
-      tier_1_option: variant.tier_1_option || null,
-      tier_2_option: variant.tier_2_option || null,
-      sku_code: variant.sku_code || '',
-      price: Number(variant.price || 0),
-      barcode: variant.barcode || null,
-      stock: Number(variant.stock || 0)
-    }))
+    variants: mappedVariants
   };
 }

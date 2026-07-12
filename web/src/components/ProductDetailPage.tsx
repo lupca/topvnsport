@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Product, StringOption } from '../types';
 import ProductMediaGallery from './ProductMediaGallery';
 import TrustSealsPanel from './TrustSealsPanel';
@@ -6,12 +6,6 @@ import ProductPurchaseSection from './product-detail/ProductPurchaseSection';
 import ProductDetailTabs, { DetailTab } from './product-detail/ProductDetailTabs';
 import MobilePurchaseBar from './product-detail/MobilePurchaseBar';
 import { isNoStringOption } from './product-detail/helpers';
-
-const normalizeText = (value: string): string =>
-  value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
 
 interface ProductDetailPageProps {
   product: Product;
@@ -96,16 +90,44 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
       } : null)
     : (withStringing ? selectedString : null);
 
-  const colorTierVariation = product.tier_variations?.find((tier) => {
-    const normalizedName = normalizeText(tier.name);
-    return normalizedName.includes('mau') || normalizedName.includes('color');
-  });
+  const mediaByTier1 = useMemo(
+    () => (product.media || []).filter((item) => Boolean(item.tier1Option && item.imageUrl)),
+    [product.media]
+  );
+  const mediaByTier2 = useMemo(
+    () => (product.media || []).filter((item) => Boolean(item.tier2Option && item.imageUrl)),
+    [product.media]
+  );
 
-  const selectedVisualOption = colorTierVariation
-    ? (colorTierVariation.tier_index === 1 ? selectedTier1 : selectedTier2)
-    : selectedColor;
+  const selectedVisualOption = mediaByTier1.length > 0
+    ? selectedTier1
+    : mediaByTier2.length > 0
+      ? selectedTier2
+      : selectedColor;
 
-  const visualOptions = colorTierVariation?.options || product.colors || [];
+  const imageByVisualOption = useMemo(() => {
+    const map: Record<string, string> = {};
+
+    if (mediaByTier1.length > 0) {
+      mediaByTier1.forEach((item) => {
+        const option = item.tier1Option || '';
+        if (!option || map[option]) return;
+        map[option] = item.imageUrl;
+      });
+      return map;
+    }
+
+    if (mediaByTier2.length > 0) {
+      mediaByTier2.forEach((item) => {
+        const option = item.tier2Option || '';
+        if (!option || map[option]) return;
+        map[option] = item.imageUrl;
+      });
+      return map;
+    }
+
+    return map;
+  }, [mediaByTier1, mediaByTier2]);
 
   const handleAddToCart = () => {
     onAddToCartWithSpecs(product, resolvedWeight, resolvedColor, resolvedStringChoice, tension);
@@ -120,7 +142,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
             image={product.image}
             gallery={product.gallery}
             selectedVisualOption={selectedVisualOption}
-            visualOptions={visualOptions}
+            imageByVisualOption={imageByVisualOption}
           />
 
           <TrustSealsPanel />
