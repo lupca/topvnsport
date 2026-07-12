@@ -51,6 +51,7 @@ jobs:
               "OMS API": "http://localhost:18101/",
               "WMS API": "http://localhost:18102/status",
               "WEB Frontend": "http://localhost:13103/",
+              "OMS Frontend": "http://localhost:13101/settings/sms",
           }
 
           deadline = time.time() + 300
