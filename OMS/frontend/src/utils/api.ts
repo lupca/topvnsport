@@ -117,24 +117,38 @@ export interface ProductSearchResult {
 }
 
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(`${BASE_URL}${endpoint}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...options?.headers,
-    },
-    ...options,
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || `API Request Failed with status ${response.status}`);
+  try {
+    const response = await fetch(`${BASE_URL}${endpoint}`, {
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+      },
+      ...options,
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || `API Request Failed with status ${response.status}`);
+    }
+
+    if (response.status === 204) {
+      return null as T;
+    }
+
+    return response.json();
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    if (error.name === 'AbortError') {
+      throw new Error('Request timed out after 15 seconds');
+    }
+    throw error;
   }
-
-  if (response.status === 204) {
-    return null as T;
-  }
-
-  return response.json();
 }
 
 export const api = {

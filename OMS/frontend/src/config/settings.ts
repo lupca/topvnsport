@@ -1,7 +1,4 @@
 const getBaseUrl = () => {
-  if (typeof window !== "undefined") {
-    return "/oms-api";
-  }
   return process.env.NEXT_PUBLIC_OMS_API_URL || "http://localhost:18101";
 };
 

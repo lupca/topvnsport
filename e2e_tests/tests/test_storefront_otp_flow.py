@@ -96,7 +96,7 @@ def test_storefront_otp_checkout_flow(api_clients, page, web_base_url):
     expect(resend_button).to_contain_text("Gửi lại sau")
 
     # Click bypass button
-    page.get_by_role("button", name="Bỏ qua xác nhận (Chỉ dùng cho Test)").click()
+    page.get_by_role("button", name="Bỏ qua xác nhận", exact=True).click()
 
     # Verify successful checkout transition
     expect(page.get_by_text("ĐẶT HÀNG THÀNH CÔNG!")).to_be_visible(timeout=20_000)

@@ -93,7 +93,7 @@ def test_full_flow(api_clients, page, web_base_url):
     expect(otp_modal).to_be_visible(timeout=10_000)
 
     # Click bypass button
-    page.get_by_role("button", name="Bỏ qua xác nhận (Chỉ dùng cho Test)").click()
+    page.get_by_role("button", name="Bỏ qua xác nhận", exact=True).click()
 
     expect(page.get_by_text("ĐẶT HÀNG THÀNH CÔNG!")).to_be_visible(timeout=20_000)
     order_number_label = page.locator("div.bg-gray-50 p").filter(has_text="Mã đơn hàng")

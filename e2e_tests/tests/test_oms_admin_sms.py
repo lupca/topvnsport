@@ -8,6 +8,9 @@ def test_oms_admin_sms_settings(page: Page, oms_api_url: str):
 
     # Verify key inputs are present
     token_input = page.locator("input[name='speed_sms_token']")
+    page.on("pageerror", lambda err: print(f"Page Error: {err}"))
+    page.on("console", lambda msg: print(f"Console: {msg.text}"))
+
     expect(token_input).to_be_visible(timeout=30000)
     
     # Assert token masking (represented by asterisks) or empty
