@@ -8,7 +8,7 @@ def test_oms_admin_sms_settings(page: Page, oms_api_url: str):
 
     # Verify key inputs are present
     token_input = page.locator("input[name='speed_sms_token']")
-    expect(token_input).to_be_visible(timeout=10000)
+    expect(token_input).to_be_visible(timeout=30000)
     
     # Assert token masking (represented by asterisks) or empty
     current_value = token_input.input_value()

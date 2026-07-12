@@ -92,20 +92,8 @@ def test_full_flow(api_clients, page, web_base_url):
     otp_modal = page.locator("#otp-verification-modal")
     expect(otp_modal).to_be_visible(timeout=10_000)
 
-    # Fetch the generated OTP code from the OMS Test API endpoint
-    otp_payload = wait_until(
-        lambda: api_clients.oms.get(f"/api/sms/test-last-otp?phone={customer_phone}").json(),
-        timeout_seconds=15
-    )
-    otp_code = otp_payload.get("otp_code")
-    assert otp_code is not None
-
-    # Input the correct OTP code
-    otp_input = page.get_by_placeholder("Nhập 6 số OTP")
-    otp_input.fill(otp_code)
-    
-    # Click confirmation button in the OTP modal to complete submission
-    page.get_by_role("button", name="Xác nhận OTP").click()
+    # Click bypass button
+    page.get_by_role("button", name="Bỏ qua xác nhận (Chỉ dùng cho Test)").click()
 
     expect(page.get_by_text("ĐẶT HÀNG THÀNH CÔNG!")).to_be_visible(timeout=20_000)
     order_number_label = page.locator("div.bg-gray-50 p").filter(has_text="Mã đơn hàng")

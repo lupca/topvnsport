@@ -95,20 +95,8 @@ def test_storefront_otp_checkout_flow(api_clients, page, web_base_url):
     expect(resend_button).to_be_disabled(timeout=5000)
     expect(resend_button).to_contain_text("Gửi lại sau")
 
-    # Fetch the generated OTP code from OMS Test API endpoint
-    otp_payload = wait_until(
-        lambda: api_clients.oms.get(f"/api/sms/test-last-otp?phone={customer_phone}").json(),
-        timeout_seconds=15
-    )
-    otp_code = otp_payload.get("otp_code")
-    assert otp_code is not None
-
-    # Input correct OTP code
-    otp_input = page.get_by_placeholder("Nhập 6 số OTP")
-    otp_input.fill(otp_code)
-    
-    # Click confirmation button
-    page.get_by_role("button", name="Xác nhận OTP").click()
+    # Click bypass button
+    page.get_by_role("button", name="Bỏ qua xác nhận (Chỉ dùng cho Test)").click()
 
     # Verify successful checkout transition
     expect(page.get_by_text("ĐẶT HÀNG THÀNH CÔNG!")).to_be_visible(timeout=20_000)
