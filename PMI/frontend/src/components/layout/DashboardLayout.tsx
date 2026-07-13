@@ -67,12 +67,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   return (
-    <div className="flex min-h-screen bg-brand-light">
+    <div className="flex h-screen bg-brand-light overflow-hidden">
       {/* Fixed Sidebar */}
       <Sidebar />
       
       {/* Scrollable Content Container */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         <Topbar />
         <main className="flex-1 overflow-y-auto">
           {children}

@@ -3,6 +3,45 @@ import { useFormContext } from "react-hook-form";
 import { AlertCircle, HelpCircle, Layers, Settings, Globe } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
 import { fetchWithAuth } from "@/utils/apiClient";
+import { cn } from "@/utils/cn";
+import { InheritedField } from "./channel/InheritedField";
+
+interface VariantPriceOverrideProps {
+  variantIndex: number;
+  channelIndex: number;
+  masterPrice: number;
+  error?: any;
+}
+
+function VariantPriceOverride({ variantIndex, channelIndex, masterPrice, error }: VariantPriceOverrideProps) {
+  const { register, watch } = useFormContext();
+  const fieldName = `channel_listings.${channelIndex}.variant_overrides.${variantIndex}.price_override`;
+  const overridePrice = watch(fieldName);
+  
+  const isOverriding = overridePrice !== null && overridePrice !== undefined && overridePrice !== '' && !Number.isNaN(overridePrice);
+
+  return (
+    <td className="px-6 py-2">
+      <div className="flex items-center gap-2">
+        <input
+          type="number"
+          {...register(fieldName, { valueAsNumber: true })}
+          placeholder={masterPrice?.toLocaleString() || '0'}
+          className={cn(
+            "pim-input w-full",
+            !isOverriding && "bg-gray-50"
+          )}
+        />
+        {!isOverriding && (
+          <span className="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded shrink-0">
+            Master
+          </span>
+        )}
+      </div>
+      {error && <p className="text-[10px] text-rose-500 mt-0.5">{error.message}</p>}
+    </td>
+  );
+}
 
 const API_BASE_URL = APP_SETTINGS.api.baseUrl;
 
@@ -159,18 +198,12 @@ export default function ChannelConfig({ channelCode, channelName }: ChannelConfi
           <div className="p-6 border border-gray-200 rounded-2xl space-y-4">
             <h4 className="font-bold text-gray-900 border-b pb-3 border-gray-200">Ghi đè thông tin cơ bản</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-gray-700">Tên hiển thị ghi đè</label>
-                <input 
-                  type="text" 
-                  placeholder="Mặc định lấy từ Tên gốc"
-                  className="pim-input"
-                  {...register(`channel_listings.${listingIndex}.title_override`)}
-                />
-                {listingErrors?.title_override && (
-                  <p className="text-[10px] text-rose-500 mt-0.5">{listingErrors.title_override.message}</p>
-                )}
-              </div>
+              <InheritedField
+                masterFieldName="name"
+                overrideFieldName={`channel_listings.${listingIndex}.title_override`}
+                label="Tiêu đề sản phẩm"
+                placeholder="Nhập tiêu đề cho kênh này"
+              />
               <div className="space-y-1.5">
                 <label className="text-sm font-semibold text-gray-700">Mã sản phẩm trên sàn (Marketplace ID)</label>
                 <input 
@@ -183,17 +216,14 @@ export default function ChannelConfig({ channelCode, channelName }: ChannelConfi
                   <p className="text-[10px] text-rose-500 mt-0.5">{listingErrors.channel_product_id.message}</p>
                 )}
               </div>
-              <div className="md:col-span-2 space-y-1.5">
-                <label className="text-sm font-semibold text-gray-700">Mô tả chi tiết ghi đè</label>
-                <textarea 
-                  rows={4}
-                  placeholder="Mặc định lấy từ Mô tả gốc"
-                  className="pim-input"
-                  {...register(`channel_listings.${listingIndex}.description_override`)}
+              <div className="md:col-span-2">
+                <InheritedField
+                  masterFieldName="description"
+                  overrideFieldName={`channel_listings.${listingIndex}.description_override`}
+                  label="Mô tả sản phẩm"
+                  multiline
+                  placeholder="Nhập mô tả cho kênh này"
                 />
-                {listingErrors?.description_override && (
-                  <p className="text-[10px] text-rose-500 mt-0.5">{listingErrors.description_override.message}</p>
-                )}
               </div>
             </div>
           </div>
@@ -242,18 +272,12 @@ export default function ChannelConfig({ channelCode, channelName }: ChannelConfi
                           {variantError?.sku_code && <p className="text-[10px] text-rose-500 mt-0.5">{variantError.sku_code.message}</p>}
                         </td>
                         <td className="px-6 py-3 text-gray-500">₫{Number(v.price).toLocaleString()}</td>
-                        <td className="px-6 py-2">
-                          <div className="relative">
-                            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 text-xs">₫</span>
-                            <input 
-                              type="number" 
-                              placeholder="Giá ghi đè"
-                              className="pl-6 pr-3 py-1 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-1 focus:ring-brand-primary"
-                              {...register(`channel_listings.${listingIndex}.variant_overrides.${vIdx}.price_override` as const)}
-                            />
-                          </div>
-                          {variantError?.price_override && <p className="text-[10px] text-rose-500 mt-0.5">{variantError.price_override.message}</p>}
-                        </td>
+                        <VariantPriceOverride
+                          variantIndex={vIdx}
+                          channelIndex={listingIndex}
+                          masterPrice={Number(v.price)}
+                          error={variantError?.price_override}
+                        />
                       </tr>
                     );
                   })}

@@ -126,7 +126,7 @@ export default function AttributeMappingTab({ channel }: AttributeMappingTabProp
       <div className="bg-surface border border-gray-200 rounded-xl p-4 flex items-center justify-between shadow-sm">
         <div className="text-xs text-gray-500 flex items-center gap-2">
           <AlertCircle className="h-4 w-4 text-gray-400 shrink-0" />
-          <span>Nếu để trống mục "Áp dụng cho danh mục", thuộc tính này sẽ được xem là Global và áp dụng cho mọi sản phẩm thuộc kênh này.</span>
+          <span>Nếu để trống mục &quot;Áp dụng cho danh mục&quot;, thuộc tính này sẽ được xem là Global và áp dụng cho mọi sản phẩm thuộc kênh này.</span>
         </div>
 
         <div className="flex gap-3">
@@ -170,7 +170,7 @@ export default function AttributeMappingTab({ channel }: AttributeMappingTabProp
               {mappings.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-10 text-center text-gray-500 font-medium">
-                    Chưa có cấu hình ánh xạ thuộc tính nào. Nhấp "Thêm Thuộc Tính" để bắt đầu.
+                    Chưa có cấu hình ánh xạ thuộc tính nào. Nhấp &quot;Thêm Thuộc Tính&quot; để bắt đầu.
                   </td>
                 </tr>
               ) : (

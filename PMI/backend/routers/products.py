@@ -21,7 +21,38 @@ def slugify(text: str) -> str:
     text = re.sub(r'[^a-z0-9]+', '-', text)
     return text.strip('-')
 
-from utils.sku_helper import clean_option_for_sku, generate_sku_code
+from utils.sku_helper import clean_option_for_sku, generate_sku_code, generate_product_code
+from pydantic import BaseModel as PydanticBaseModel
+
+
+class GenerateProductCodeRequest(PydanticBaseModel):
+    category_code: str
+    product_name: str
+
+
+class GenerateProductCodeResponse(PydanticBaseModel):
+    product_code: str
+
+
+@router.post("/products/generate-code", response_model=GenerateProductCodeResponse)
+def generate_product_code_endpoint(request: GenerateProductCodeRequest, db: Session = Depends(get_db)):
+    """Generate a unique product code based on category and product name."""
+    # Generate initial code
+    code = generate_product_code(request.category_code, request.product_name)
+
+    # Check uniqueness and regenerate if needed (up to 10 attempts)
+    for _ in range(10):
+        existing = db.query(models.Product).filter(models.Product.product_code == code).first()
+        if not existing:
+            return {"product_code": code}
+        # Regenerate with new random suffix
+        code = generate_product_code(request.category_code, request.product_name)
+
+    # If still not unique after 10 attempts, add timestamp
+    import time
+    code = f"{code}-{int(time.time()) % 10000}"
+    return {"product_code": code}
+
 
 @router.post("/products", response_model=schemas.ProductResponse, status_code=status.HTTP_201_CREATED)
 @audit_action(module="Product", action_type="CREATE")

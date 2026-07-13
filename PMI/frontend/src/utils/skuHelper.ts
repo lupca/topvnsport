@@ -8,7 +8,14 @@ export function cleanOptionForSku(text: string): string {
 }
 
 export function generateSkuCode(productCode: string, t1?: string | null, t2?: string | null): string {
-  const parts = [(productCode || "").toUpperCase()];
+  const cleanedProductCode = (productCode || "").toUpperCase().trim();
+
+  // Don't generate SKU if product code is empty
+  if (!cleanedProductCode) {
+    return "";
+  }
+
+  const parts = [cleanedProductCode];
   if (t1) {
     const cleanedT1 = cleanOptionForSku(t1);
     if (cleanedT1) parts.push(cleanedT1);

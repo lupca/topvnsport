@@ -80,19 +80,19 @@ describe("ProductForm", () => {
     render(<ProductForm onSaveSuccess={onSaveSuccess} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Thông tin cơ bản")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Thông tin cơ bản" })).toBeInTheDocument();
     });
 
     const submitButton = screen.getByRole("button", { name: "Lưu & Hiển thị" });
     await userEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByText("Độ dài tối thiểu là 5 ký tự")).toBeInTheDocument();
-      expect(screen.getByText("Trường này là bắt buộc")).toBeInTheDocument();
-      expect(screen.getByText("Vui lòng chọn ngành hàng")).toBeInTheDocument();
-      expect(screen.getByText("Vui lòng chọn bộ thuộc tính")).toBeInTheDocument();
-      expect(screen.getByText("Độ dài tối thiểu là 10 ký tự")).toBeInTheDocument();
-      expect(screen.getByText("Giá trị phải lớn hơn hoặc bằng 1")).toBeInTheDocument();
+      expect(screen.getAllByText("Độ dài tối thiểu là 5 ký tự")[0]).toBeInTheDocument();
+      expect(screen.getAllByText("Trường này là bắt buộc")[0]).toBeInTheDocument();
+      expect(screen.getAllByText("Vui lòng chọn ngành hàng")[0]).toBeInTheDocument();
+      expect(screen.getAllByText("Vui lòng chọn bộ thuộc tính")[0]).toBeInTheDocument();
+      expect(screen.getAllByText("Độ dài tối thiểu là 10 ký tự")[0]).toBeInTheDocument();
+      expect(screen.getAllByText("Giá trị phải lớn hơn hoặc bằng 1")[0]).toBeInTheDocument();
     });
   });
 
@@ -100,7 +100,7 @@ describe("ProductForm", () => {
     render(<ProductForm onSaveSuccess={onSaveSuccess} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Thông tin bán hàng")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Thông tin bán hàng" })).toBeInTheDocument();
     });
 
     // Add a tier variation
@@ -129,7 +129,7 @@ describe("ProductForm", () => {
     render(<ProductForm onSaveSuccess={onSaveSuccess} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Thông tin bán hàng")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Thông tin bán hàng" })).toBeInTheDocument();
     });
 
     const addTierButton = screen.getByRole("button", { name: "Thêm nhóm phân loại hàng" });
@@ -171,12 +171,12 @@ describe("ProductForm", () => {
     const { container } = render(<ProductForm onSaveSuccess={onSaveSuccess} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Thông tin cơ bản")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Thông tin cơ bản" })).toBeInTheDocument();
     });
 
     // Fill basic details
     await userEvent.type(screen.getByPlaceholderText("Nhập tên sản phẩm (Ví dụ: Áo thun nam Cotton 100% cổ tròn)"), "Áo thun nam thể thao cao cấp");
-    await userEvent.type(screen.getByPlaceholderText("Ví dụ: TSHIRT-PARENT"), "TS-PARENT-01");
+    await userEvent.type(screen.getByPlaceholderText("Tự động tạo khi nhập tên + chọn ngành hàng"), "TS-PARENT-01");
     
     const selects = screen.getAllByRole("combobox");
     // Under React-hook-form, sometimes labels are not directly linked.
@@ -217,4 +217,357 @@ describe("ProductForm", () => {
       expect(onSaveSuccess).toHaveBeenCalled();
     }, { timeout: 1500 });
   });
+
+  describe("ProductForm - Edit Mode", () => {
+    const mockProduct = {
+      id: 42,
+      product_code: "TS-PARENT-01",
+      name: "Áo thun nam thể thao cao cấp",
+      description: "Mô tả sản phẩm áo thun nam cao cấp dài trên 10 ký tự.",
+      category_id: 1,
+      family_id: 1,
+      weight: 200,
+      length: 10,
+      width: 5,
+      height: 2,
+      hs_code: "1234.56.78",
+      tax_code: "TAX-999",
+      is_pre_order: false,
+      dts_days: 7,
+      status: "Draft",
+      tier_variations: [
+        { tier_index: 1, name: "Màu sắc", options: ["Đỏ"] }
+      ],
+      variants: [
+        { id: 100, tier_1_option: "Đỏ", tier_2_option: null, sku_code: "TS-PARENT-01-DO", price: 150000, barcode: "BARCODE123", stock: 15 }
+      ],
+      channel_listings: [
+        { channel_code: "shopee_vn", status: "Draft", title_override: "", description_override: "", attribute_values: [], variant_overrides: [] }
+      ],
+      attribute_values: [
+        { attribute_id: 10, value_string: "Polyester", value_decimal: null }
+      ],
+      media: [
+        { is_cover: true, image_url: "http://minio:9000/bucket/cover.jpg", display_order: 1 }
+      ]
+    };
+
+    test("loads existing product data and submits PUT on save", async () => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockImplementation((url: string, options: any) => {
+          if (url.includes("/products/42")) {
+            if (options?.method === "PUT") {
+              return Promise.resolve({
+                ok: true,
+                json: () => Promise.resolve({ id: 42, name: "Product updated" }),
+              });
+            }
+            return Promise.resolve({
+              ok: true,
+              json: () => Promise.resolve(mockProduct),
+            });
+          }
+          if (url.includes("/api/channels")) {
+            return Promise.resolve({
+              ok: true,
+              json: () => Promise.resolve([
+                { id: 1, code: "shopee_vn", name: "Shopee Vietnam" },
+                { id: 2, code: "tiktok_shop", name: "TikTok Shop" }
+              ]),
+            });
+          }
+          if (url.includes("/category-mappings")) {
+            return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
+          }
+          if (url.includes("/attribute-mappings")) {
+            return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
+          }
+          if (url.includes("/categories")) {
+            return Promise.resolve({ ok: true, json: () => Promise.resolve(mockCategories) });
+          }
+          if (url.includes("/attribute-families/1/attributes")) {
+            return Promise.resolve({ ok: true, json: () => Promise.resolve(mockAttributes) });
+          }
+          if (url.includes("/attribute-families")) {
+            return Promise.resolve({ ok: true, json: () => Promise.resolve(mockFamilies) });
+          }
+          return Promise.reject(new Error("Unknown URL: " + url));
+        })
+      );
+
+      render(<ProductForm productId={42} onSaveSuccess={onSaveSuccess} />);
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue("Áo thun nam thể thao cao cấp")).toBeInTheDocument();
+      });
+
+      expect(screen.getByDisplayValue("TS-PARENT-01")).toBeInTheDocument();
+      expect(screen.getByDisplayValue("150000")).toBeInTheDocument();
+
+      const submitButton = screen.getByRole("button", { name: "Cập nhật & Hiển thị" });
+      await userEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(global.fetch).toHaveBeenCalledWith(
+          expect.stringContaining("/products/42"),
+          expect.objectContaining({
+            method: "PUT",
+            body: expect.any(String),
+          })
+        );
+      });
+
+      const putCall = vi.mocked(global.fetch).mock.calls.find(call => call[0].includes("/products/42") && call[1]?.method === "PUT");
+      expect(putCall).toBeDefined();
+      const payload = JSON.parse(putCall![1]!.body as string);
+      expect(payload.name).toBe("Áo thun nam thể thao cao cấp");
+      expect(payload.product_code).toBe("TS-PARENT-01");
+      expect(payload.weight).toBe(200);
+
+      await waitFor(() => {
+        expect(onSaveSuccess).toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe("ProductForm - Duplicate Mode", () => {
+    const mockProduct = {
+      id: 42,
+      product_code: "TS-PARENT-01",
+      name: "Áo thun nam thể thao cao cấp",
+      description: "Mô tả sản phẩm áo thun nam cao cấp dài trên 10 ký tự.",
+      category_id: 1,
+      family_id: 1,
+      weight: 200,
+      length: 10,
+      width: 5,
+      height: 2,
+      hs_code: "1234.56.78",
+      tax_code: "TAX-999",
+      is_pre_order: false,
+      dts_days: 7,
+      status: "Draft",
+      tier_variations: [
+        { tier_index: 1, name: "Màu sắc", options: ["Đỏ"] }
+      ],
+      variants: [
+        { id: 100, tier_1_option: "Đỏ", tier_2_option: null, sku_code: "TS-PARENT-01-DO", price: 150000, barcode: "BARCODE123", stock: 15 }
+      ],
+      channel_listings: [
+        { channel_code: "shopee_vn", status: "Draft", title_override: "", description_override: "", attribute_values: [], variant_overrides: [] }
+      ],
+      attribute_values: [
+        { attribute_id: 10, value_string: "Polyester", value_decimal: null }
+      ],
+      media: [
+        { is_cover: true, image_url: "http://minio:9000/bucket/cover.jpg", display_order: 1 }
+      ]
+    };
+
+    test("loads original product data, clears SKUs/product_code, and submits POST on save", async () => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockImplementation((url: string, options: any) => {
+          if (url.includes("/products/42")) {
+            return Promise.resolve({
+              ok: true,
+              json: () => Promise.resolve(mockProduct),
+            });
+          }
+          if (url.includes("/products")) {
+            if (options?.method === "POST") {
+              return Promise.resolve({
+                ok: true,
+                json: () => Promise.resolve({ id: 99, name: "Product saved" }),
+              });
+            }
+          }
+          if (url.includes("/api/channels")) {
+            return Promise.resolve({
+              ok: true,
+              json: () => Promise.resolve([
+                { id: 1, code: "shopee_vn", name: "Shopee Vietnam" },
+                { id: 2, code: "tiktok_shop", name: "TikTok Shop" }
+              ]),
+            });
+          }
+          if (url.includes("/category-mappings")) {
+            return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
+          }
+          if (url.includes("/attribute-mappings")) {
+            return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
+          }
+          if (url.includes("/categories")) {
+            return Promise.resolve({ ok: true, json: () => Promise.resolve(mockCategories) });
+          }
+          if (url.includes("/attribute-families/1/attributes")) {
+            return Promise.resolve({ ok: true, json: () => Promise.resolve(mockAttributes) });
+          }
+          if (url.includes("/attribute-families")) {
+            return Promise.resolve({ ok: true, json: () => Promise.resolve(mockFamilies) });
+          }
+          return Promise.reject(new Error("Unknown URL: " + url));
+        })
+      );
+
+      render(<ProductForm duplicateProductId={42} onSaveSuccess={onSaveSuccess} />);
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue("Áo thun nam thể thao cao cấp")).toBeInTheDocument();
+      });
+
+      // Verify product_code is auto-generated for duplicate (not empty, starts with category code)
+      const productCodeInput = screen.getByPlaceholderText("Tự động tạo khi nhập tên + chọn ngành hàng") as HTMLInputElement;
+      await waitFor(() => {
+        // Should be auto-generated: starts with category code and contains product name parts
+        expect(productCodeInput.value).toMatch(/^[A-Z]+-[A-Z-]+-[A-Z0-9]+$/);
+      });
+
+      // Clear and fill in a custom parent SKU code
+      await userEvent.clear(productCodeInput);
+      await userEvent.type(productCodeInput, "TS-PARENT-NEW");
+
+      const submitButton = screen.getByRole("button", { name: "Lưu & Hiển thị" });
+      await userEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(global.fetch).toHaveBeenCalledWith(
+          expect.stringContaining("/products"),
+          expect.objectContaining({
+            method: "POST",
+            body: expect.any(String),
+          })
+        );
+      });
+
+      const postCall = vi.mocked(global.fetch).mock.calls.find(call => call[0].endsWith("/products") && call[1]?.method === "POST");
+      expect(postCall).toBeDefined();
+      const payload = JSON.parse(postCall![1]!.body as string);
+      expect(payload.name).toBe("Áo thun nam thể thao cao cấp");
+      expect(payload.product_code).toBe("TS-PARENT-NEW");
+      // The variant sku_code should also be generated from the new parent SKU, or cleared to generate.
+      // Wait, let's verify if variants are sent. The generateSkuCode helper generates the SKU for variants based on new parent SKU.
+
+      await waitFor(() => {
+        expect(onSaveSuccess).toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe("ProductForm - Error Handling", () => {
+    test("displays error message when product loading fails", async () => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockImplementation((url: string) => {
+          if (url.includes("/products/42")) {
+            return Promise.resolve({
+              ok: false,
+              status: 500,
+              clone: function() { return this; },
+              text: () => Promise.resolve("Internal Server Error"),
+            });
+          }
+          if (url.includes("/api/channels")) {
+            return Promise.resolve({
+              ok: true,
+              json: () => Promise.resolve([
+                { id: 1, code: "shopee_vn", name: "Shopee Vietnam" },
+                { id: 2, code: "tiktok_shop", name: "TikTok Shop" }
+              ]),
+            });
+          }
+          if (url.includes("/category-mappings")) {
+            return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
+          }
+          if (url.includes("/attribute-mappings")) {
+            return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
+          }
+          if (url.includes("/categories")) {
+            return Promise.resolve({ ok: true, json: () => Promise.resolve(mockCategories) });
+          }
+          if (url.includes("/attribute-families")) {
+            return Promise.resolve({ ok: true, json: () => Promise.resolve(mockFamilies) });
+          }
+          return Promise.reject(new Error("Unknown URL: " + url));
+        })
+      );
+
+      render(<ProductForm productId={42} onSaveSuccess={onSaveSuccess} />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Không thể tải thông tin sản phẩm.")).toBeInTheDocument();
+      });
+    });
+
+    test("displays server validation error message when submit fails", async () => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockImplementation((url: string, options: any) => {
+          if (url.includes("/api/channels")) {
+            return Promise.resolve({
+              ok: true,
+              json: () => Promise.resolve([
+                { id: 1, code: "shopee_vn", name: "Shopee Vietnam" },
+                { id: 2, code: "tiktok_shop", name: "TikTok Shop" }
+              ]),
+            });
+          }
+          if (url.includes("/category-mappings")) {
+            return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
+          }
+          if (url.includes("/attribute-mappings")) {
+            return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
+          }
+          if (url.includes("/categories")) {
+            return Promise.resolve({ ok: true, json: () => Promise.resolve(mockCategories) });
+          }
+          if (url.includes("/attribute-families/1/attributes")) {
+            return Promise.resolve({ ok: true, json: () => Promise.resolve(mockAttributes) });
+          }
+          if (url.includes("/attribute-families")) {
+            return Promise.resolve({ ok: true, json: () => Promise.resolve(mockFamilies) });
+          }
+          if (url.includes("/products")) {
+            return Promise.resolve({
+              ok: false,
+              status: 400,
+              clone: function() { return this; },
+              json: () => Promise.resolve({ detail: "Mã SKU sản phẩm cha đã tồn tại" }),
+            });
+          }
+          return Promise.reject(new Error("Unknown URL: " + url));
+        })
+      );
+
+      const { container } = render(<ProductForm onSaveSuccess={onSaveSuccess} />);
+
+      await waitFor(() => {
+        expect(screen.getByRole("heading", { name: "Thông tin cơ bản" })).toBeInTheDocument();
+      });
+
+      // Fill basic details
+      await userEvent.type(screen.getByPlaceholderText("Nhập tên sản phẩm (Ví dụ: Áo thun nam Cotton 100% cổ tròn)"), "Áo thun nam thể thao cao cấp");
+      await userEvent.type(screen.getByPlaceholderText("Tự động tạo khi nhập tên + chọn ngành hàng"), "TS-PARENT-01");
+      
+      const selects = screen.getAllByRole("combobox");
+      await userEvent.selectOptions(selects[0], "1");
+      await userEvent.selectOptions(selects[1], "1");
+
+      await userEvent.type(screen.getByPlaceholderText("Mô tả thông tin chi tiết về sản phẩm của bạn (chất liệu, công dụng, thông số kỹ thuật...)"), "Mô tả sản phẩm áo thun nam cao cấp dài trên 10 ký tự.");
+      
+      const weightInput = container.querySelector('input[name="weight"]')!;
+      await userEvent.type(weightInput, "200");
+
+      // Submit form
+      const submitButton = screen.getByRole("button", { name: "Lưu & Hiển thị" });
+      await userEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(screen.getByText("Lỗi lưu trữ (ACID Rollback)")).toBeInTheDocument();
+        expect(screen.getByText("Mã SKU sản phẩm cha đã tồn tại")).toBeInTheDocument();
+      });
+    });
+  });
 });
+

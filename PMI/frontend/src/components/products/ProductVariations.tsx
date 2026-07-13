@@ -5,6 +5,7 @@ import { APP_SETTINGS } from "@/config/settings";
 import { popupService } from "@/components/ui/popupService";
 import { normalizeImageUrl } from "@/utils/imageUrl";
 import { fetchWithAuth, apiClient } from "@/utils/apiClient";
+import { cn } from "@/utils/cn";
 
 const API_BASE_URL = APP_SETTINGS.api.baseUrl;
 
@@ -17,6 +18,8 @@ interface ProductVariationsProps {
   setBulkPrice: (val: string) => void;
   bulkStock: string;
   setBulkStock: (val: string) => void;
+  manuallyEditedSkus: Set<string>;
+  setManuallyEditedSkus: React.Dispatch<React.SetStateAction<Set<string>>>;
 }
 
 export default function ProductVariations({
@@ -27,7 +30,9 @@ export default function ProductVariations({
   bulkPrice,
   setBulkPrice,
   bulkStock,
-  setBulkStock
+  setBulkStock,
+  manuallyEditedSkus,
+  setManuallyEditedSkus
 }: ProductVariationsProps) {
   const { control, register, watch, setValue, formState: { errors } } = useFormContext();
   const { fields: tierFields, append: appendTier, remove: removeTier, update: updateTier } = useFieldArray({
@@ -78,6 +83,28 @@ export default function ProductVariations({
     });
 
     setValue("variants", updated);
+  };
+
+  const handleSkuChange = (variantIndex: number, value: string) => {
+    const variant = watchVariants[variantIndex];
+    if (!variant) return;
+    const key = `${variant.tier_1_option || ""}_${variant.tier_2_option || ""}`;
+    
+    if (value) {
+      setManuallyEditedSkus(prev => {
+        const next = new Set(prev);
+        next.add(key);
+        return next;
+      });
+    } else {
+      setManuallyEditedSkus(prev => {
+        const next = new Set(prev);
+        next.delete(key);
+        return next;
+      });
+    }
+    
+    setValue(`variants.${variantIndex}.sku_code`, value, { shouldDirty: true, shouldValidate: true });
   };
 
   return (
@@ -272,6 +299,7 @@ export default function ProductVariations({
             <tr>
               {watchTiers?.[0]?.name && <th className="px-6 py-4">{watchTiers[0].name}</th>}
               {watchTiers?.[1]?.name && <th className="px-6 py-4">{watchTiers[1].name}</th>}
+              <th className="px-6 py-4">SKU phân loại</th>
               <th className="px-6 py-4">Mã vạch (Barcode)</th>
               <th className="px-6 py-4">Giá bán *</th>
               <th className="px-6 py-4">Kho hàng *</th>
@@ -293,6 +321,9 @@ export default function ProductVariations({
                 }
               }
 
+              const key = `${v.tier_1_option || ""}_${v.tier_2_option || ""}`;
+              const isAuto = !manuallyEditedSkus || !manuallyEditedSkus.has(key);
+
               return (
                 <tr key={idx} className="hover:bg-gray-50 transition-colors">
                   {v.tier_1_option !== null && isFirstInGroup && (
@@ -304,6 +335,24 @@ export default function ProductVariations({
                     <td className="px-6 py-4 text-gray-500">{v.tier_2_option}</td>
                   )}
 
+                <td className="px-6 py-3">
+                  <div className="relative">
+                    <input 
+                      type="text"
+                      value={v.sku_code || ""}
+                      onChange={(e) => handleSkuChange(idx, e.target.value)}
+                      className={cn(
+                        "pim-input pr-14",
+                        isAuto && "bg-gray-50 text-gray-600"
+                      )}
+                    />
+                    {isAuto && v.sku_code && (
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
+                        Auto
+                      </span>
+                    )}
+                  </div>
+                </td>
                 <td className="px-6 py-3">
                   <input 
                     type="text" 
