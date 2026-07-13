@@ -226,4 +226,39 @@ describe("apiClient", () => {
     const result = await apiClient.delete("/products/1");
     expect(result).toBe(mockResponse);
   });
+
+  test("fetchWithAuth returns response directly when content-type is non-JSON", async () => {
+    const mockResponse = {
+      ok: true,
+      status: 200,
+      headers: new Headers({ "content-type": "text/csv" }),
+      json: vi.fn(),
+    };
+
+    const fetchMock = vi.fn().mockResolvedValue(mockResponse);
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await fetchWithAuth("/test-csv");
+
+    expect(result).toBe(mockResponse as any);
+    expect(mockResponse.json).not.toHaveBeenCalled();
+  });
+
+  test("fetchWithAuth returns response directly when content-type is completely missing", async () => {
+    const mockResponse = {
+      ok: true,
+      status: 200,
+      headers: new Headers(), // no headers at all
+      json: vi.fn(),
+    };
+
+    const fetchMock = vi.fn().mockResolvedValue(mockResponse);
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await fetchWithAuth("/test-no-headers");
+
+    expect(result).toBe(mockResponse as any);
+    expect(mockResponse.json).not.toHaveBeenCalled();
+  });
+
 });

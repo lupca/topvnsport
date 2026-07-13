@@ -218,6 +218,7 @@ def test_product_creation_and_export(client: TestClient, db_session: Session):
     response = client.get("/api/export/shopee?status=Published")
     assert response.status_code == 200
     assert response.headers["content-type"] == "text/csv; charset=utf-8"
+    assert response.content.startswith(b"\xef\xbb\xbf")
     csv_content = response.text
     assert "Vợt Tennis Pro 2026 Siêu Nhẹ Chính Hãng" in csv_content
     assert "shopee_color" in csv_content
@@ -325,9 +326,10 @@ def test_detailed_export_with_filtering_and_logistics(client: TestClient, db_ses
     assert r2.status_code == 201
     p2 = r2.json()
     
-    # 3. Test Shopee export ALL
-    response = client.get("/api/export/shopee?status=Published")
+    # 3. Test Shopee export ALL (omit status parameter)
+    response = client.get("/api/export/shopee")
     assert response.status_code == 200
+    assert response.content.startswith(b"\xef\xbb\xbf")
     csv_text = response.text
     # Check headers
     assert "barcode" in csv_text
@@ -343,16 +345,18 @@ def test_detailed_export_with_filtering_and_logistics(client: TestClient, db_ses
     assert "9506.51.10" in csv_text
     assert "TAX-VAT-8" in csv_text
     
-    # 4. Test Shopee export FILTER BY ID (only export product 1)
-    response_filter = client.get(f"/api/export/shopee?status=Published&product_ids={p1['id']}")
+    # 4. Test Shopee export FILTER BY ID without status (only export product 1)
+    response_filter = client.get(f"/api/export/shopee?product_ids={p1['id']}")
     assert response_filter.status_code == 200
+    assert response_filter.content.startswith(b"\xef\xbb\xbf")
     csv_filtered_text = response_filter.text
     assert "Vợt Yonex Astrox 88D Play Chính Hãng" in csv_filtered_text
     assert "Giày Yonex 65Z3 Trắng 2026" not in csv_filtered_text
     
-    # 5. Test TikTok export FILTER BY ID
-    response_tiktok = client.get(f"/api/export/tiktok?status=Published&product_ids={p1['id']}")
+    # 5. Test TikTok export FILTER BY ID without status
+    response_tiktok = client.get(f"/api/export/tiktok?product_ids={p1['id']}")
     assert response_tiktok.status_code == 200
+    assert response_tiktok.content.startswith(b"\xef\xbb\xbf")
     csv_tiktok_text = response_tiktok.text
     assert "Yonex Astrox 88D Play Badminton Racket" in csv_tiktok_text
     assert "product_name" in csv_tiktok_text

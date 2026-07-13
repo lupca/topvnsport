@@ -73,8 +73,8 @@ export async function fetchWithAuth(path: string, options: RequestInit = {}): Pr
     return response;
   }
 
-  const contentType = response.headers?.get?.("content-type");
-  if ((contentType && contentType.includes("application/json")) || (!contentType && typeof response.json === "function")) {
+  const contentType = response.headers?.get?.("content-type") || "";
+  if (contentType.includes("application/json")) {
     return response.json();
   }
   

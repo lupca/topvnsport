@@ -160,7 +160,7 @@ def bulk_save_attribute_mappings(channel_id: int, mappings: List[schemas.Channel
 
 @router.get("/export/shopee")
 @audit_action(module="Channel", action_type="EXPORT", read_only=True)
-def export_shopee(request: Request, status: str = "Published", product_ids: Optional[str] = None, db: Session = Depends(get_db)):
+def export_shopee(request: Request, status: Optional[str] = None, product_ids: Optional[str] = None, db: Session = Depends(get_db)):
     channel = db.query(models.Channel).filter(models.Channel.code == "shopee_vn").first()
     if not channel:
         raise HTTPException(status_code=404, detail="Shopee channel not found")
@@ -172,8 +172,7 @@ def export_shopee(request: Request, status: str = "Published", product_ids: Opti
         selectinload(models.ProductChannelListing.variant_overrides),
         selectinload(models.ProductChannelListing.channel)
     ).filter(
-        models.ProductChannelListing.channel_id == channel.id,
-        models.ProductChannelListing.status == status
+        models.ProductChannelListing.channel_id == channel.id
     )
 
     if product_ids:
@@ -182,6 +181,8 @@ def export_shopee(request: Request, status: str = "Published", product_ids: Opti
             query = query.filter(models.ProductChannelListing.product_id.in_(prod_ids))
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid product_ids format. Must be comma-separated integers.")
+    elif status:
+        query = query.filter(models.ProductChannelListing.status == status)
 
     listings = query.all()
 
@@ -293,16 +294,18 @@ def export_shopee(request: Request, status: str = "Published", product_ids: Opti
             row.update(shipping_data)
             writer.writerow(row)
 
-    output.seek(0)
+    csv_content = output.getvalue()
+    byte_content = b'\xef\xbb\xbf' + csv_content.encode('utf-8')
+    status_fn = status if status else "all"
     return StreamingResponse(
-        io.StringIO(output.getvalue()),
-        media_type="text/csv",
-        headers={"Content-Disposition": f"attachment; filename=shopee_export_{status}.csv"}
+        io.BytesIO(byte_content),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f"attachment; filename=shopee_export_{status_fn}.csv"}
     )
 
 @router.get("/export/tiktok")
 @audit_action(module="Channel", action_type="EXPORT", read_only=True)
-def export_tiktok(request: Request, status: str = "Published", product_ids: Optional[str] = None, db: Session = Depends(get_db)):
+def export_tiktok(request: Request, status: Optional[str] = None, product_ids: Optional[str] = None, db: Session = Depends(get_db)):
     channel = db.query(models.Channel).filter(models.Channel.code == "tiktok_shop").first()
     if not channel:
         raise HTTPException(status_code=404, detail="TikTok Shop channel not found")
@@ -314,8 +317,7 @@ def export_tiktok(request: Request, status: str = "Published", product_ids: Opti
         selectinload(models.ProductChannelListing.variant_overrides),
         selectinload(models.ProductChannelListing.channel)
     ).filter(
-        models.ProductChannelListing.channel_id == channel.id,
-        models.ProductChannelListing.status == status
+        models.ProductChannelListing.channel_id == channel.id
     )
 
     if product_ids:
@@ -324,6 +326,8 @@ def export_tiktok(request: Request, status: str = "Published", product_ids: Opti
             query = query.filter(models.ProductChannelListing.product_id.in_(prod_ids))
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid product_ids format. Must be comma-separated integers.")
+    elif status:
+        query = query.filter(models.ProductChannelListing.status == status)
 
     listings = query.all()
 
@@ -439,9 +443,11 @@ def export_tiktok(request: Request, status: str = "Published", product_ids: Opti
             row.update(shipping_data)
             writer.writerow(row)
 
-    output.seek(0)
+    csv_content = output.getvalue()
+    byte_content = b'\xef\xbb\xbf' + csv_content.encode('utf-8')
+    status_fn = status if status else "all"
     return StreamingResponse(
-        io.StringIO(output.getvalue()),
-        media_type="text/csv",
-        headers={"Content-Disposition": f"attachment; filename=tiktok_export_{status}.csv"}
+        io.BytesIO(byte_content),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f"attachment; filename=tiktok_export_{status_fn}.csv"}
     )

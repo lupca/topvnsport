@@ -404,9 +404,12 @@ describe("ProductList", () => {
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining("/api/export/shopee?status=Published"),
+        expect.stringContaining("/api/export/shopee"),
         expect.any(Object)
       );
+      const calledUrl = vi.mocked(global.fetch).mock.calls.find(c => c[0].includes("/export/shopee"))?.[0] as string;
+      expect(calledUrl).not.toContain("status=");
+      expect(calledUrl).not.toContain("product_ids=");
     });
   });
 
@@ -467,12 +470,73 @@ describe("ProductList", () => {
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining("/api/export/shopee?status=Published&product_ids=10"),
+        expect.stringContaining("/api/export/shopee?product_ids=10"),
         expect.any(Object)
       );
+      const calledUrl = vi.mocked(global.fetch).mock.calls.find(c => c[0].includes("/export/shopee"))?.[0] as string;
+      expect(calledUrl).not.toContain("status=");
     });
 
     await userEvent.click(checkboxes[0]);
     expect(screen.queryByText(/Đã chọn/i)).not.toBeInTheDocument();
+  });
+
+  test("exports with correct status parameter when activeTab is not all", async () => {
+    const mockBlob = new Blob(["test"], { type: "text/csv" });
+    const createObjectURLMock = vi.fn().mockReturnValue("blob:mock-url");
+    const revokeObjectURLMock = vi.fn();
+    global.URL.createObjectURL = createObjectURLMock;
+    global.URL.revokeObjectURL = revokeObjectURLMock;
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation((url: string) => {
+        if (url.includes("/categories")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve(mockCategories),
+          });
+        }
+        if (url.includes("/export/")) {
+          return Promise.resolve({
+            ok: true,
+            blob: () => Promise.resolve(mockBlob),
+            headers: new Headers({ "content-type": "text/csv" })
+          });
+        }
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockProductsData),
+        });
+      })
+    );
+
+    render(
+      <ProductList
+        onAddProductClick={onAddProductClick}
+        onEditProductClick={onEditProductClick}
+        onCopyProductClick={onCopyProductClick}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Áo Polo thể thao nam thoáng khí")).toBeInTheDocument();
+    });
+
+    const activeTabBtn = screen.getByRole("button", { name: /Đang hoạt động/i });
+    await userEvent.click(activeTabBtn);
+
+    const exportBtn = screen.getByRole("button", { name: /Xuất dữ liệu/i });
+    await userEvent.click(exportBtn);
+
+    const shopeeBtn = screen.getByText(/Xuất file Shopee/i);
+    await userEvent.click(shopeeBtn);
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining("/api/export/shopee?status=Published"),
+        expect.any(Object)
+      );
+    });
   });
 });

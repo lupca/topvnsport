@@ -31,6 +31,7 @@ export default function ProductList({
   // Selection states
   const [selectedProductIds, setSelectedProductIds] = useState<number[]>([]);
   const [showExportDropdown, setShowExportDropdown] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   // Filter & Search states
   const [searchQuery, setSearchQuery] = useState("");
@@ -240,9 +241,12 @@ export default function ProductList({
 
   const handleExport = async (platform: "shopee" | "tiktok") => {
     setShowExportDropdown(false);
-    let path = `/api/export/${platform}?status=Published`;
+    setExporting(true);
+    let path = `/api/export/${platform}`;
     if (selectedProductIds.length > 0) {
-      path += `&product_ids=${selectedProductIds.join(",")}`;
+      path += `?product_ids=${selectedProductIds.join(",")}`;
+    } else {
+      path += activeTab === "all" ? "" : `?status=${activeTab}`;
     }
     try {
       const response = await fetchWithAuth(path);
@@ -250,14 +254,23 @@ export default function ProductList({
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${platform}_export_Published.csv`;
+      let filename = `${platform}_export_all.csv`;
+      if (selectedProductIds.length > 0) {
+        filename = `${platform}_export_selected.csv`;
+      } else if (activeTab !== "all") {
+        filename = `${platform}_export_${activeTab}.csv`;
+      }
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
+      void popupService.alert("Xuất dữ liệu thành công!");
     } catch (err) {
       console.error("Export failed:", err);
       void popupService.alert("Xuất dữ liệu thất bại.");
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -290,6 +303,20 @@ export default function ProductList({
     }
   };
 
+  const getExportLabel = (platform: "shopee" | "tiktok") => {
+    const platformName = platform === "shopee" ? "Shopee" : "TikTok";
+    if (selectedProductIds.length > 0) {
+      return `Xuất file ${platformName} (Đã chọn)`;
+    }
+    if (activeTab === "Published") {
+      return `Xuất file ${platformName} (Đang hoạt động)`;
+    }
+    if (activeTab === "Draft") {
+      return `Xuất file ${platformName} (Nháp)`;
+    }
+    return `Xuất file ${platformName} (Tất cả)`;
+  };
+
   return (
     <div className="pim-page">
       
@@ -317,11 +344,12 @@ export default function ProductList({
           <div className="relative inline-block text-left">
             <button 
               type="button"
+              disabled={exporting}
               onClick={() => setShowExportDropdown(!showExportDropdown)}
-              className="btn-outline px-5 py-2.5 rounded-2xl text-sm flex items-center gap-2"
+              className={`btn-outline px-5 py-2.5 rounded-2xl text-sm flex items-center gap-2 ${exporting ? "opacity-50 cursor-wait" : ""}`}
             >
               <Download className="h-4 w-4" /> 
-              Xuất dữ liệu 
+              {exporting ? "Đang xuất..." : "Xuất dữ liệu"}
               <ChevronDown className="h-4 w-4" />
             </button>
             
@@ -334,16 +362,18 @@ export default function ProductList({
                 <div className="absolute right-0 mt-2 w-64 rounded-2xl border border-gray-200 bg-surface shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none z-20 overflow-hidden divide-y divide-gray-100 animate-in fade-in slide-in-from-top-2 duration-150">
                   <div className="py-1">
                     <button
+                      disabled={exporting}
                       onClick={() => handleExport("shopee")}
-                      className="flex w-full items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 gap-2 transition-colors text-left"
+                      className={`flex w-full items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 gap-2 transition-colors text-left ${exporting ? "opacity-50 cursor-wait" : ""}`}
                     >
-                      <span>📥</span> Xuất file Shopee (Đã Published)
+                      <span>📥</span> {getExportLabel("shopee")}
                     </button>
                     <button
+                      disabled={exporting}
                       onClick={() => handleExport("tiktok")}
-                      className="flex w-full items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 gap-2 transition-colors text-left"
+                      className={`flex w-full items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 gap-2 transition-colors text-left ${exporting ? "opacity-50 cursor-wait" : ""}`}
                     >
-                      <span>📥</span> Xuất file TikTok (Đã Published)
+                      <span>📥</span> {getExportLabel("tiktok")}
                     </button>
                   </div>
                 </div>
