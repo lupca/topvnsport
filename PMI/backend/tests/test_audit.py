@@ -491,7 +491,7 @@ def test_sync_stock_endpoint(client, db_session):
     resp = client.post(
         "/api/service/sync-stock",
         json={"product_id": product.id, "stock": 50},
-        headers={"X-API-Key": "valid-service-api-key-123", "X-Correlation-ID": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"}
+        headers={"X-API-Key": INTERNAL_SERVICE_TOKEN, "X-Correlation-ID": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"}
     )
     assert resp.status_code == 200
     assert resp.json()["message"] == "Stock synchronized successfully"

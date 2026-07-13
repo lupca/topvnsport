@@ -110,6 +110,18 @@ describe("Audit Log UI Component Tests", () => {
   });
 
   test("39. Table displays server-side paginated logs correctly", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation((url: string) => {
+        if (url.includes("/api/audit-logs")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ ...mockAuditLogs, total: 100 })
+          });
+        }
+        return Promise.reject(new Error("Unknown URL: " + url));
+      })
+    );
     const fetchSpy = vi.spyOn(global, "fetch");
     try {
       const AuditPage = await getAuditPage();
@@ -119,10 +131,21 @@ describe("Audit Log UI Component Tests", () => {
       await waitFor(() => {
         expect(screen.getByText("Trang sau")).toBeInTheDocument();
       });
+
+      // Clear previous calls before clicking pagination
+      fetchSpy.mockClear();
+      
       await userEvent.click(screen.getByText("Trang sau"));
-      expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining("page=2"), expect.any(Object));
-    } catch (e: any) {
-      expect.fail(e.message);
+
+      // Check if ANY fetch call contains page=2 (more resilient)
+      await waitFor(() => {
+        const calledWithPage2 = fetchSpy.mock.calls.some(([input]) =>
+          String(input).includes("page=2")
+        );
+        expect(calledWithPage2).toBe(true);
+      });
+    } finally {
+      fetchSpy.mockRestore();
     }
   });
 

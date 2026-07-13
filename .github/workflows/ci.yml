@@ -1,0 +1,372 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20'
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # ============================================
+  # STEP 1: Detect which subsystems changed
+  # ============================================
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      pmi: ${{ steps.filter.outputs.pmi }}
+      oms: ${{ steps.filter.outputs.oms }}
+      wms: ${{ steps.filter.outputs.wms }}
+      web: ${{ steps.filter.outputs.web }}
+      shared: ${{ steps.filter.outputs.shared }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            pmi:
+              - 'PMI/**'
+            oms:
+              - 'OMS/**'
+            wms:
+              - 'WMS/**'
+            web:
+              - 'web/**'
+            shared:
+              - '.github/workflows/**'
+              - 'start_all.sh'
+              - 'deploy_prod.sh'
+              - 'e2e_tests/**'
+
+  # ============================================
+  # STEP 2: PMI Tests (Backend + Frontend)
+  # ============================================
+  pmi-backend:
+    name: PMI Backend Tests
+    needs: changes
+    if: needs.changes.outputs.pmi == 'true' || needs.changes.outputs.shared == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: PMI/backend
+    
+    env:
+      # Test environment variables
+      JWT_SECRET_KEY: ci-test-jwt-secret-key-not-for-prod
+      INTERNAL_SERVICE_TOKEN: ci-test-internal-token
+      JWT_ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: '1440'
+      ALLOWED_SERVICE_KEYS: ci-test-service-key
+      TESTING: 'true'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-pmi-${{ hashFiles('PMI/backend/requirements*.txt') }}
+          restore-keys: |
+            pip-pmi-
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-test.txt
+      
+      - name: Run pytest
+        run: pytest -v --tb=short
+
+  pmi-frontend:
+    name: PMI Frontend Tests
+    needs: changes
+    if: needs.changes.outputs.pmi == 'true' || needs.changes.outputs.shared == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: PMI/frontend
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-pmi-${{ hashFiles('PMI/frontend/package-lock.json') }}
+          restore-keys: |
+            npm-pmi-
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run Vitest
+        run: npm run test
+      
+      - name: Build (verify)
+        run: npm run build
+
+  # ============================================
+  # STEP 3: OMS Tests
+  # ============================================
+  oms-backend:
+    name: OMS Backend Tests
+    needs: changes
+    if: needs.changes.outputs.oms == 'true' || needs.changes.outputs.shared == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: OMS/backend
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-oms-${{ hashFiles('OMS/backend/requirements*.txt') }}
+          restore-keys: |
+            pip-oms-
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio httpx
+      
+      - name: Python syntax check
+        run: python -m py_compile main.py
+
+  oms-frontend:
+    name: OMS Frontend Build
+    needs: changes
+    if: needs.changes.outputs.oms == 'true' || needs.changes.outputs.shared == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: OMS/frontend
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-oms-${{ hashFiles('OMS/frontend/package-lock.json') }}
+          restore-keys: |
+            npm-oms-
+      
+      - name: Install and build
+        run: |
+          npm install
+          npm run build
+
+  # ============================================
+  # STEP 4: WMS Tests
+  # ============================================
+  wms-backend:
+    name: WMS Backend Tests
+    needs: changes
+    if: needs.changes.outputs.wms == 'true' || needs.changes.outputs.shared == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: WMS/backend
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-wms-${{ hashFiles('WMS/backend/requirements*.txt') }}
+          restore-keys: |
+            pip-wms-
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio httpx
+      
+      - name: Python syntax check
+        run: python -m py_compile main.py
+
+  wms-frontend:
+    name: WMS Frontend Build
+    needs: changes
+    if: needs.changes.outputs.wms == 'true' || needs.changes.outputs.shared == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: WMS/frontend
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-wms-${{ hashFiles('WMS/frontend/package-lock.json') }}
+          restore-keys: |
+            npm-wms-
+      
+      - name: Install and build
+        run: |
+          npm install
+          npm run build
+
+  # ============================================
+  # STEP 5: Web Storefront
+  # ============================================
+  web-build:
+    name: Web Storefront Build
+    needs: changes
+    if: needs.changes.outputs.web == 'true' || needs.changes.outputs.shared == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-web-${{ hashFiles('web/package-lock.json') }}
+          restore-keys: |
+            npm-web-
+      
+      - name: Prepare env file
+        run: |
+          if [ -f .env.example ]; then
+            cp .env.example .env
+          else
+            touch .env
+          fi
+      
+      - name: Install and build
+        run: |
+          npm ci
+          npm run build
+
+  # ============================================
+  # STEP 6: Validate Docker Compose (always)
+  # ============================================
+  validate-compose:
+    name: Validate Compose Files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Validate all production compose files
+        run: |
+          docker compose -f PMI/docker-compose.prod.yml config > /dev/null
+          docker compose -f OMS/docker-compose.prod.yml config > /dev/null
+          docker compose -f WMS/docker-compose.prod.yml config > /dev/null
+          docker compose -f web/docker-compose.prod.yml config > /dev/null
+          echo "All compose files valid"
+
+  # ============================================
+  # STEP 7: Summary (for branch protection)
+  # ============================================
+  ci-success:
+    name: CI Success
+    needs: 
+      - pmi-backend
+      - pmi-frontend
+      - oms-backend
+      - oms-frontend
+      - wms-backend
+      - wms-frontend
+      - web-build
+      - validate-compose
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check all jobs
+        run: |
+          echo "PMI Backend: ${{ needs.pmi-backend.result }}"
+          echo "PMI Frontend: ${{ needs.pmi-frontend.result }}"
+          echo "OMS Backend: ${{ needs.oms-backend.result }}"
+          echo "OMS Frontend: ${{ needs.oms-frontend.result }}"
+          echo "WMS Backend: ${{ needs.wms-backend.result }}"
+          echo "WMS Frontend: ${{ needs.wms-frontend.result }}"
+          echo "Web Build: ${{ needs.web-build.result }}"
+          echo "Compose Validation: ${{ needs.validate-compose.result }}"
+          
+          # Fail if any required job failed (skipped is OK due to path filtering)
+          if [[ "${{ needs.validate-compose.result }}" == "failure" ]]; then
+            exit 1
+          fi
+          
+          for result in "${{ needs.pmi-backend.result }}" "${{ needs.pmi-frontend.result }}" \
+                        "${{ needs.oms-backend.result }}" "${{ needs.oms-frontend.result }}" \
+                        "${{ needs.wms-backend.result }}" "${{ needs.wms-frontend.result }}" \
+                        "${{ needs.web-build.result }}"; do
+            if [[ "$result" == "failure" ]]; then
+              echo "One or more jobs failed"
+              exit 1
+            fi
+          done
+          
+          echo "CI passed successfully"

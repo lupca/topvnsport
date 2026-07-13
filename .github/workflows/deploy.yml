@@ -1,0 +1,46 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false  # Don't cancel ongoing deploys
+
+jobs:
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup SSH key and known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
+      
+      - name: Run production deploy
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          PUBLIC_HOST: ${{ secrets.PUBLIC_HOST }}
+        run: |
+          chmod +x deploy_prod.sh
+          ./deploy_prod.sh
+      
+      - name: Notify deploy success
+        if: success()
+        run: echo "Deployed successfully to production"
+      
+      - name: Notify deploy failure
+        if: failure()
+        run: echo "Deploy failed - check logs"
