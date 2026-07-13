@@ -198,7 +198,7 @@ jobs:
       
       - name: Install and build
         run: |
-          npm install
+          npm ci
           npm run build
 
   # ============================================
@@ -265,7 +265,7 @@ jobs:
       
       - name: Install and build
         run: |
-          npm install
+          npm ci
           npm run build
 
   # ============================================
