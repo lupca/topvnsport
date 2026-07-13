@@ -12,6 +12,7 @@ from routers.upload import router as upload_router
 from routers.attributes import router as attributes_router
 from routers.auth import router as auth_router
 from routers.audit import router as audit_router
+from routers.public import router as public_router
 
 from utils.middleware import RequestContextMiddleware
 from contextlib import asynccontextmanager
@@ -95,6 +96,7 @@ app.include_router(products_router, dependencies=[Depends(get_current_identity)]
 app.include_router(upload_router, dependencies=[Depends(get_current_identity)])
 app.include_router(attributes_router, dependencies=[Depends(get_current_identity)])
 app.include_router(audit_router)
+app.include_router(public_router)
 
 import os
 if os.getenv("ENV") == "test" or os.getenv("TESTING") == "true":

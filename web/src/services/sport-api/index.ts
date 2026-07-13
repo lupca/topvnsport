@@ -7,7 +7,7 @@ import { CreateOrderPayload, OmsChannel, OmsCustomer, OmsCustomerInput, PmiProdu
 
 async function getCategories(): Promise<Category[]> {
   try {
-    const response = await fetch(`${PMI_API_URL}/categories`);
+    const response = await fetch(`${PMI_API_URL}/public/categories`);
     if (!response.ok) {
       return [];
     }
@@ -24,7 +24,7 @@ async function getProducts(): Promise<Product[]> {
   await delay(SIMULATED_LATENCY);
   try {
     const [response, categories] = await Promise.all([
-      fetch(`${PMI_API_URL}/products?limit=100`),
+      fetch(`${PMI_API_URL}/public/products?limit=100`),
       getCategories()
     ]);
 
@@ -45,7 +45,7 @@ async function getProductById(id: string): Promise<Product | null> {
   await delay(SIMULATED_LATENCY);
   try {
     const [response, categories] = await Promise.all([
-      fetch(`${PMI_API_URL}/products/${id}`),
+      fetch(`${PMI_API_URL}/public/products/${id}`),
       getCategories()
     ]);
 
