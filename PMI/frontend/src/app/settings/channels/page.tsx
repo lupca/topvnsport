@@ -5,6 +5,7 @@ import { Plus, Globe, Settings, AlertCircle, ShoppingBag, ShieldCheck, Trash2 } 
 import Link from "next/link";
 import { APP_SETTINGS } from "@/config/settings";
 import { popupService, showConfirm } from "@/components/ui/popupService";
+import { fetchWithAuth, apiClient } from "@/utils/apiClient";
 
 const API_BASE_URL = APP_SETTINGS.api.baseUrl;
 
@@ -29,14 +30,11 @@ export default function ChannelsPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const chanRes = await fetch(`${API_BASE_URL}/api/channels`);
-        if (!chanRes.ok) throw new Error("Không thể tải danh sách kênh");
-        const chanData: Channel[] = await chanRes.json();
+        const chanData: Channel[] = await fetchWithAuth("/api/channels");
         setChannels(chanData);
 
         const configPromises = chanData.map(c =>
-          fetch(`${API_BASE_URL}/api/channels/${c.id}/config`)
-            .then(res => (res.ok ? res.json() : null))
+          fetchWithAuth(`/api/channels/${c.id}/config`)
             .catch(() => null)
         );
         const configData = await Promise.all(configPromises);
@@ -70,11 +68,7 @@ export default function ChannelsPage() {
     if (!confirmed) return;
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/channels/${chan.id}`, {
-        method: "DELETE"
-      });
-      if (!res.ok) throw new Error("Không thể xóa kênh bán hàng");
-      
+      await apiClient.delete(`/api/channels/${chan.id}`);
       setChannels(prev => prev.filter(c => c.id !== chan.id));
       void popupService.alert("Đã xóa kênh bán hàng thành công!");
     } catch (err: any) {

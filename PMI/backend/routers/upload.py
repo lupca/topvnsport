@@ -1,10 +1,12 @@
 import uuid
 from fastapi import APIRouter, HTTPException, File, UploadFile
 import minio_client
+from utils.audit import audit_action
 
 router = APIRouter(tags=['Upload'])
 
 @router.post("/upload")
+@audit_action(module="Product", action_type="UPLOAD_IMAGE")
 async def upload_image(file: UploadFile = File(...)):
     try:
         content = await file.read()

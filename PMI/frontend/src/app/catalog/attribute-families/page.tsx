@@ -5,6 +5,7 @@ import DataTable from "@/components/ui/DataTable";
 import { FolderTree, X, AlertCircle } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
 import { popupService, showConfirm } from "@/components/ui/popupService";
+import { fetchWithAuth, apiClient } from "@/utils/apiClient";
 
 interface Attribute {
   id: number;
@@ -19,8 +20,6 @@ interface AttributeFamily {
   attributes?: Attribute[];
   created_at: string;
 }
-
-const API_BASE = APP_SETTINGS.api.baseUrl;
 
 export default function AttributeFamiliesPage() {
   const [families, setFamilies] = useState<AttributeFamily[]>([]);
@@ -44,19 +43,12 @@ export default function AttributeFamiliesPage() {
   const fetchFamilies = async () => {
     setLoading(true);
     try {
-      const [resFam, resAttr] = await Promise.all([
-        fetch(`${API_BASE}/attribute-families`),
-        fetch(`${API_BASE}/attributes`)
+      const [dataFam, dataAttr] = await Promise.all([
+        fetchWithAuth("/attribute-families"),
+        fetchWithAuth("/attributes")
       ]);
-      
-      if (resFam.ok) {
-        const data = await resFam.json();
-        setFamilies(data);
-      }
-      if (resAttr.ok) {
-        const dataAttr = await resAttr.json();
-        setAllAttributes(dataAttr);
-      }
+      setFamilies(dataFam);
+      setAllAttributes(dataAttr);
     } catch (err) {
       console.error("Failed to fetch data:", err);
     } finally {
@@ -91,16 +83,11 @@ export default function AttributeFamiliesPage() {
       return;
     }
     try {
-      const res = await fetch(`${API_BASE}/attribute-families/${family.id}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        fetchFamilies();
-      } else {
-        void popupService.alert("Không thể xóa họ thuộc tính này.");
-      }
-    } catch (err) {
+      await apiClient.delete(`/attribute-families/${family.id}`);
+      fetchFamilies();
+    } catch (err: any) {
       console.error(err);
+      void popupService.alert(err.message || "Không thể xóa họ thuộc tính này.");
     }
   };
 
@@ -120,42 +107,27 @@ export default function AttributeFamiliesPage() {
     };
 
     try {
-      const url = editingFamily 
-        ? `${API_BASE}/attribute-families/${editingFamily.id}`
-        : `${API_BASE}/attribute-families`;
+      const path = editingFamily 
+        ? `/attribute-families/${editingFamily.id}`
+        : "/attribute-families";
       const method = editingFamily ? "PUT" : "POST";
 
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+      let savedFamily;
+      if (method === "PUT") {
+        savedFamily = await apiClient.put(path, payload);
+      } else {
+        savedFamily = await apiClient.post(path, payload);
+      }
+
+      // Sync attributes
+      await apiClient.put(`/attribute-families/${savedFamily.id}/attributes`, {
+        attribute_ids: selectedAttributeIds
       });
 
-      if (res.ok) {
-        const savedFamily = await res.json();
-        
-        // Sync attributes
-        const syncRes = await fetch(`${API_BASE}/attribute-families/${savedFamily.id}/attributes`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ attribute_ids: selectedAttributeIds }),
-        });
-        
-        if (!syncRes.ok) {
-           const errData = await syncRes.json();
-           console.error("Sync failed", errData);
-           setErrorMsg("Đã lưu Họ thuộc tính nhưng lỗi khi đồng bộ Thuộc tính.");
-           return;
-        }
-
-        setIsOpen(false);
-        fetchFamilies();
-      } else {
-        const errData = await res.json();
-        setErrorMsg(errData.detail || "Đã xảy ra lỗi khi lưu họ thuộc tính.");
-      }
-    } catch (err) {
-      setErrorMsg("Không thể kết nối đến máy chủ.");
+      setIsOpen(false);
+      fetchFamilies();
+    } catch (err: any) {
+      setErrorMsg(err.message || "Đã xảy ra lỗi khi lưu họ thuộc tính.");
     } finally {
       setSubmitting(false);
     }

@@ -6,4 +6,8 @@ pydantic
 python-multipart
 minio
 pydantic-settings
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt<4.0.0
 alembic
+

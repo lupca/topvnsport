@@ -48,3 +48,9 @@ web/assets/.aistudio/
 .agents
 ORIGINAL_REQUEST.md
 PROJECT.md
+
+# Symbolic links and test results
+.venv
+PMI/.venv
+PMI/frontend/test-results/
+PMI/frontend/test_output.txt

@@ -59,9 +59,16 @@ def postgres_container() -> Generator[PostgresContainer, None, None]:
 @pytest.fixture(scope="session")
 def app_module(postgres_container):
     os.environ["DATABASE_URL"] = postgres_container.get_connection_url()
+    os.environ["TESTING"] = "true"
 
-    for mod_name in ["main", "database", "models", "schemas", "minio_client"]:
-        sys.modules.pop(mod_name, None)
+    for mod_name in list(sys.modules.keys()):
+        if (
+            mod_name.startswith("routers")
+            or mod_name.startswith("services")
+            or mod_name.startswith("utils")
+            or mod_name in ["main", "database", "models", "schemas", "minio_client"]
+        ):
+            sys.modules.pop(mod_name, None)
 
     module = importlib.import_module("main")
     return module
@@ -70,6 +77,7 @@ def app_module(postgres_container):
 @pytest.fixture(scope="session", autouse=True)
 def setup_database(app_module):
     """Create tables once per test session."""
+    importlib.import_module("models")
     database_module = importlib.import_module("database")
     database_module.Base.metadata.drop_all(bind=database_module.engine)
     database_module.Base.metadata.create_all(bind=database_module.engine)
@@ -124,8 +132,34 @@ def db_session(app_module):
 def client(app_module, mock_minio, db_session) -> Generator[TestClient, None, None]:
     def override_get_db():
         yield db_session
+        
+    def override_get_identity():
+        from utils.context import actor_username_var, actor_type_var
+        actor_username_var.set("test_admin")
+        actor_type_var.set("USER")
+        # Return a dummy identity dictionary
+        return {"actor_type": "USER", "actor_username": "test_admin", "user": type("MockUser", (), {"role": "admin", "username": "test_admin"})()}
 
     database_module = importlib.import_module("database")
+    dependency_module = importlib.import_module("utils.dependency")
+    
+    app_module.app.dependency_overrides[database_module.get_db] = override_get_db
+    # Override identity check so normal integration tests pass without a real JWT
+    app_module.app.dependency_overrides[dependency_module.get_current_identity] = override_get_identity
+
+    with TestClient(app_module.app) as test_client:
+        yield test_client
+
+    app_module.app.dependency_overrides.clear()
+
+
+@pytest.fixture()
+def client_no_auth_override(app_module, mock_minio, db_session) -> Generator[TestClient, None, None]:
+    def override_get_db():
+        yield db_session
+
+    database_module = importlib.import_module("database")
+    
     app_module.app.dependency_overrides[database_module.get_db] = override_get_db
 
     with TestClient(app_module.app) as test_client:

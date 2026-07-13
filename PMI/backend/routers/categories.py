@@ -4,6 +4,7 @@ from typing import List
 from database import get_db
 import models
 import schemas
+from utils.audit import audit_action
 
 router = APIRouter(tags=['Categories'])
 
@@ -60,6 +61,7 @@ def get_category(category_id: int, db: Session = Depends(get_db)):
     )
 
 @router.post("/categories", response_model=schemas.CategoryResponse, status_code=status.HTTP_201_CREATED)
+@audit_action(module="Category", action_type="CREATE")
 def create_category(category: schemas.CategoryCreate, db: Session = Depends(get_db)):
     db_cat = db.query(models.Category).filter(models.Category.code == category.code).first()
     if db_cat:
@@ -98,6 +100,7 @@ def create_category(category: schemas.CategoryCreate, db: Session = Depends(get_
     )
 
 @router.put("/categories/{category_id}", response_model=schemas.CategoryResponse)
+@audit_action(module="Category", action_type="UPDATE")
 def update_category(category_id: int, category_in: schemas.CategoryUpdate, db: Session = Depends(get_db)):
     db_cat = db.query(models.Category).filter(models.Category.id == category_id).first()
     if not db_cat:
@@ -140,6 +143,7 @@ def update_category(category_id: int, category_in: schemas.CategoryUpdate, db: S
     )
 
 @router.delete("/categories/{category_id}", status_code=status.HTTP_204_NO_CONTENT)
+@audit_action(module="Category", action_type="DELETE")
 def delete_category(category_id: int, db: Session = Depends(get_db)):
     db_cat = db.query(models.Category).filter(models.Category.id == category_id).first()
     if not db_cat:

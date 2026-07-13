@@ -49,6 +49,10 @@ services:
       - MINIO_SECRET_KEY=minioadmin
       - MINIO_SECURE=False
       - MINIO_BUCKET=pim-media
+      - TESTING=true
+      - JWT_SECRET_KEY=super_secret_jwt_key_pmi_2026_change_me
+      - INTERNAL_SERVICE_TOKEN=oms_wms_internal_api_key_secret_2026
+      - ALLOWED_SERVICE_KEYS=valid-service-api-key-123
     depends_on:
       db:
         condition: service_healthy

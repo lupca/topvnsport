@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Plus, HelpCircle, List, Grid, Download, ChevronDown, Trash2 } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
+import { fetchWithAuth, apiClient } from "@/utils/apiClient";
+import { popupService } from "@/components/ui/popupService";
 
 import ProductFilterBar, { Category } from "./products/ProductFilterBar";
 import ProductListTable from "./products/ProductListTable";
@@ -58,12 +60,15 @@ export default function ProductList({
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [batchDeleteMode, setBatchDeleteMode] = useState(false);
   const [refreshCount, setRefreshCount] = useState(0);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
 
   const handlePreviewClick = (productId: number) => {
     setPreviewLoading(true);
     setShowPreviewModal(true);
-    fetch(`${API_BASE_URL}/products/${productId}`)
-      .then(res => res.json())
+    fetchWithAuth(`/products/${productId}`)
       .then(data => {
         setPreviewProduct(data);
         setPreviewLoading(false);
@@ -109,34 +114,15 @@ export default function ProductList({
     if (batchDeleteMode) {
       setDeletingProductId(-1);
       try {
-        const res = await fetch(`${API_BASE_URL}/products/batch-delete`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ product_ids: selectedProductIds })
-        });
-
-        if (!res.ok) {
-          let detail = "Xóa nhiều sản phẩm thất bại.";
-          try {
-            const data = await res.json();
-            if (data?.detail) {
-              detail = String(data.detail);
-            }
-          } catch {}
-          setDeleteError(detail);
-          return;
-        }
-
+        await apiClient.post("/products/batch-delete", { product_ids: selectedProductIds });
         const deletedCount = selectedProductIds.length;
         setSelectedProductIds([]);
         setDeleteTarget(null);
         setDeleteError(null);
         handlePostDelete(deletedCount);
-      } catch (err) {
+      } catch (err: any) {
         console.error("Error batch deleting products:", err);
-        setDeleteError("Không thể kết nối tới máy chủ để xóa sản phẩm.");
+        setDeleteError(err.message || "Xóa nhiều sản phẩm thất bại.");
       } finally {
         setDeletingProductId(null);
       }
@@ -144,22 +130,7 @@ export default function ProductList({
       const productId = deleteTarget.id;
       setDeletingProductId(productId);
       try {
-        const res = await fetch(`${API_BASE_URL}/products/${productId}`, {
-          method: "DELETE"
-        });
-
-        if (!res.ok) {
-          let detail = "Xóa sản phẩm thất bại.";
-          try {
-            const data = await res.json();
-            if (data?.detail) {
-              detail = String(data.detail);
-            }
-          } catch {}
-          setDeleteError(detail);
-          return;
-        }
-
+        await apiClient.delete(`/products/${productId}`);
         setSelectedProductIds(prev => prev.filter(id => id !== productId));
         setDeleteTarget(null);
         setDeleteError(null);
@@ -170,9 +141,9 @@ export default function ProductList({
         }
 
         handlePostDelete(1);
-      } catch (err) {
+      } catch (err: any) {
         console.error("Error deleting product:", err);
-        setDeleteError("Không thể kết nối tới máy chủ để xóa sản phẩm.");
+        setDeleteError(err.message || "Xóa sản phẩm thất bại.");
       } finally {
         setDeletingProductId(null);
       }
@@ -196,31 +167,37 @@ export default function ProductList({
 
   // Fetch categories
   useEffect(() => {
-    fetch(`${API_BASE_URL}/categories`)
-      .then(res => res.json())
-      .then(data => setCategories(data))
-      .catch(err => console.error("Error categories:", err));
+    fetchWithAuth("/categories")
+      .then(data => {
+        if (Array.isArray(data)) {
+          setCategories(data);
+        } else {
+          setCategories([]);
+        }
+      })
+      .catch(err => {
+        console.error("Error categories:", err);
+        setCategories([]);
+      });
   }, []);
 
   // Fetch products based on filters, sorting, tab, and pagination
   useEffect(() => {
     setLoading(true);
-    let url = `${API_BASE_URL}/products?page=${currentPage}&limit=${pageSize}&sort_by=${sortBy}&sort_order=${sortOrder}&_t=${Date.now()}&`;
+    let path = `/products?page=${currentPage}&limit=${pageSize}&sort_by=${sortBy}&sort_order=${sortOrder}&_t=${Date.now()}&`;
     
     if (appliedSearch) {
-      url += `q=${encodeURIComponent(appliedSearch)}&`;
+      path += `q=${encodeURIComponent(appliedSearch)}&`;
     }
     if (appliedCategory !== "0") {
-      url += `category_id=${appliedCategory}&`;
+      path += `category_id=${appliedCategory}&`;
     }
     if (activeTab !== "all") {
-      url += `status=${activeTab}&`;
+      path += `status=${activeTab}&`;
     }
 
-    fetch(url)
-      .then(res => res.json())
+    fetchWithAuth(path)
       .then(data => {
-        // Handle paginated structure
         setProducts(data.items || []);
         setTotalItems(data.total || 0);
         setTotalPages(data.pages || 1);
@@ -261,13 +238,27 @@ export default function ProductList({
     }
   };
 
-  const handleExport = (platform: "shopee" | "tiktok") => {
+  const handleExport = async (platform: "shopee" | "tiktok") => {
     setShowExportDropdown(false);
-    let url = `${API_BASE_URL}/api/export/${platform}?status=Published`;
+    let path = `/api/export/${platform}?status=Published`;
     if (selectedProductIds.length > 0) {
-      url += `&product_ids=${selectedProductIds.join(",")}`;
+      path += `&product_ids=${selectedProductIds.join(",")}`;
     }
-    window.location.href = url;
+    try {
+      const response = await fetchWithAuth(path);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${platform}_export_Published.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      console.error("Export failed:", err);
+      void popupService.alert("Xuất dữ liệu thất bại.");
+    }
   };
 
   const handleApplyFilters = () => {
@@ -369,6 +360,13 @@ export default function ProductList({
               Xóa đã chọn
             </button>
           )}
+
+          <button 
+            onClick={() => setShowImportModal(true)}
+            className="btn-outline px-5 py-2.5 rounded-2xl text-sm flex items-center gap-2 shrink-0"
+          >
+            📥 Nhập excel/csv
+          </button>
 
           <button 
             onClick={onAddProductClick}
@@ -523,6 +521,75 @@ export default function ProductList({
         categories={categories}
         onEditProductClick={onEditProductClick}
       />
+
+      {/* IMPORT EXCEL/CSV MODAL */}
+      {showImportModal && (
+        <div className="pim-modal-backdrop">
+          <div className="w-full max-w-md rounded-3xl border border-gray-200 bg-surface shadow-2xl overflow-hidden">
+            <div className="px-6 py-5 border-b border-gray-200 bg-gray-50">
+              <h3 className="text-lg font-black text-gray-900 tracking-tight">
+                Nhập danh sách sản phẩm từ Excel/CSV
+              </h3>
+            </div>
+            <div className="px-6 py-5 space-y-4">
+              <input 
+                type="file" 
+                accept=".csv,.xlsx,.xls"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files.length > 0) {
+                    setImportFile(e.target.files[0]);
+                  }
+                }}
+                className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-brand-light file:text-brand-primary hover:file:bg-brand-light/80"
+              />
+              {importError && (
+                <p className="text-xs text-rose-600 bg-rose-50 border border-rose-100 rounded-xl px-3 py-2">
+                  {importError}
+                </p>
+              )}
+            </div>
+            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowImportModal(false);
+                  setImportFile(null);
+                  setImportError(null);
+                }}
+                disabled={importing}
+                className="btn-outline text-xs"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={async () => {
+                  if (!importFile) {
+                    setImportError("Vui lòng chọn một file.");
+                    return;
+                  }
+                  setImporting(true);
+                  setImportError(null);
+                  try {
+                    const formData = new FormData();
+                    formData.append("file", importFile);
+                    await apiClient.post("/products/import", formData);
+                    setShowImportModal(false);
+                    setImportFile(null);
+                    setRefreshCount(prev => prev + 1);
+                  } catch (err: any) {
+                    setImportError(err.message || "Lỗi khi nhập dữ liệu.");
+                  } finally {
+                    setImporting(false);
+                  }
+                }}
+                disabled={importing || !importFile}
+                className="px-4 py-2 rounded-xl bg-brand-primary hover:bg-brand-primary/90 text-white font-bold text-xs disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              >
+                {importing ? "Đang nhập..." : "Bắt đầu nhập"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* DELETE CONFIRM MODAL */}
       {deleteTarget && (

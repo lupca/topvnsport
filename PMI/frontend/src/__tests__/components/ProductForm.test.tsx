@@ -198,7 +198,7 @@ describe("ProductForm", () => {
         expect.stringContaining("/products"),
         expect.objectContaining({
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: expect.any(Object),
           body: expect.any(String)
         })
       );

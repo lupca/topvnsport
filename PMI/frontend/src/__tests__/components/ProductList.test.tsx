@@ -172,7 +172,8 @@ describe("ProductList", () => {
     await userEvent.click(page2Button);
 
     expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringContaining("page=2")
+      expect.stringContaining("page=2"),
+      expect.any(Object)
     );
   });
 
@@ -196,7 +197,8 @@ describe("ProductList", () => {
     await userEvent.click(applyButton);
 
     expect(global.fetch).toHaveBeenLastCalledWith(
-      expect.stringContaining("q=Polo")
+      expect.stringContaining("q=Polo"),
+      expect.any(Object)
     );
 
     const resetButton = screen.getByRole("button", { name: /đặt lại/i });
@@ -204,7 +206,8 @@ describe("ProductList", () => {
 
     // Verify it fetches without query
     expect(global.fetch).toHaveBeenLastCalledWith(
-      expect.not.stringContaining("q=Polo")
+      expect.not.stringContaining("q=Polo"),
+      expect.any(Object)
     );
   });
 
@@ -226,7 +229,8 @@ describe("ProductList", () => {
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenLastCalledWith(
-        expect.stringContaining("category_id=2")
+        expect.stringContaining("category_id=2"),
+        expect.any(Object)
       );
     });
 
@@ -236,12 +240,14 @@ describe("ProductList", () => {
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenLastCalledWith(
-        expect.stringContaining("q=Polo")
+        expect.stringContaining("q=Polo"),
+        expect.any(Object)
       );
     });
 
     expect(global.fetch).toHaveBeenLastCalledWith(
-      expect.stringContaining("category_id=2")
+      expect.stringContaining("category_id=2"),
+      expect.any(Object)
     );
   });
 
@@ -346,10 +352,34 @@ describe("ProductList", () => {
   });
 
   test("toggles export dropdown and handles platform export download", async () => {
-    const locationMock = { href: "" };
-    const originalLocation = window.location;
-    delete (window as any).location;
-    window.location = locationMock as any;
+    const mockBlob = new Blob(["test"], { type: "text/csv" });
+    const createObjectURLMock = vi.fn().mockReturnValue("blob:mock-url");
+    const revokeObjectURLMock = vi.fn();
+    global.URL.createObjectURL = createObjectURLMock;
+    global.URL.revokeObjectURL = revokeObjectURLMock;
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation((url: string) => {
+        if (url.includes("/categories")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve(mockCategories),
+          });
+        }
+        if (url.includes("/export/")) {
+          return Promise.resolve({
+            ok: true,
+            blob: () => Promise.resolve(mockBlob),
+            headers: new Headers({ "content-type": "text/csv" })
+          });
+        }
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockProductsData),
+        });
+      })
+    );
 
     render(
       <ProductList
@@ -372,16 +402,43 @@ describe("ProductList", () => {
     const shopeeBtn = screen.getByText(/Xuất file Shopee/i);
     await userEvent.click(shopeeBtn);
 
-    expect(locationMock.href).toContain("/api/export/shopee?status=Published");
-
-    window.location = originalLocation;
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining("/api/export/shopee?status=Published"),
+        expect.any(Object)
+      );
+    });
   });
 
   test("detailed bulk selection checkbox integration and filtered export", async () => {
-    const locationMock = { href: "" };
-    const originalLocation = window.location;
-    delete (window as any).location;
-    window.location = locationMock as any;
+    const mockBlob = new Blob(["test"], { type: "text/csv" });
+    const createObjectURLMock = vi.fn().mockReturnValue("blob:mock-url");
+    const revokeObjectURLMock = vi.fn();
+    global.URL.createObjectURL = createObjectURLMock;
+    global.URL.revokeObjectURL = revokeObjectURLMock;
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation((url: string) => {
+        if (url.includes("/categories")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve(mockCategories),
+          });
+        }
+        if (url.includes("/export/")) {
+          return Promise.resolve({
+            ok: true,
+            blob: () => Promise.resolve(mockBlob),
+            headers: new Headers({ "content-type": "text/csv" })
+          });
+        }
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockProductsData),
+        });
+      })
+    );
 
     render(
       <ProductList
@@ -408,11 +465,14 @@ describe("ProductList", () => {
     const shopeeBtn = screen.getByText(/Xuất file Shopee/i);
     await userEvent.click(shopeeBtn);
 
-    expect(locationMock.href).toContain("/api/export/shopee?status=Published&product_ids=10");
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining("/api/export/shopee?status=Published&product_ids=10"),
+        expect.any(Object)
+      );
+    });
 
     await userEvent.click(checkboxes[0]);
     expect(screen.queryByText(/Đã chọn/i)).not.toBeInTheDocument();
-
-    window.location = originalLocation;
   });
 });

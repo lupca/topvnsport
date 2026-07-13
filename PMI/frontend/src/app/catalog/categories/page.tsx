@@ -5,6 +5,7 @@ import DataTable from "@/components/ui/DataTable";
 import { FolderTree, X, AlertCircle } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
 import { popupService, showConfirm } from "@/components/ui/popupService";
+import { fetchWithAuth, apiClient } from "@/utils/apiClient";
 
 interface Category {
   id: number;
@@ -14,8 +15,6 @@ interface Category {
   display_name: string;
   created_at: string;
 }
-
-const API_BASE = APP_SETTINGS.api.baseUrl;
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -37,11 +36,8 @@ export default function CategoriesPage() {
   const fetchCategories = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/categories`);
-      if (res.ok) {
-        const data = await res.json();
-        setCategories(data);
-      }
+      const data = await fetchWithAuth("/categories");
+      setCategories(data);
     } catch (err) {
       console.error("Failed to fetch categories:", err);
     } finally {
@@ -76,16 +72,11 @@ export default function CategoriesPage() {
       return;
     }
     try {
-      const res = await fetch(`${API_BASE}/categories/${cat.id}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        fetchCategories();
-      } else {
-        void popupService.alert("Không thể xóa danh mục này.");
-      }
-    } catch (err) {
+      await apiClient.delete(`/categories/${cat.id}`);
+      fetchCategories();
+    } catch (err: any) {
       console.error(err);
+      void popupService.alert(err.message || "Không thể xóa danh mục này.");
     }
   };
 
@@ -111,26 +102,20 @@ export default function CategoriesPage() {
     };
 
     try {
-      const url = editingCategory 
-        ? `${API_BASE}/categories/${editingCategory.id}`
-        : `${API_BASE}/categories`;
+      const path = editingCategory 
+        ? `/categories/${editingCategory.id}`
+        : "/categories";
       const method = editingCategory ? "PUT" : "POST";
 
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (res.ok) {
-        setIsOpen(false);
-        fetchCategories();
+      if (method === "PUT") {
+        await apiClient.put(path, payload);
       } else {
-        const errData = await res.json();
-        setErrorMsg(errData.detail || "Đã xảy ra lỗi khi lưu danh mục.");
+        await apiClient.post(path, payload);
       }
-    } catch (err) {
-      setErrorMsg("Không thể kết nối đến máy chủ.");
+      setIsOpen(false);
+      fetchCategories();
+    } catch (err: any) {
+      setErrorMsg(err.message || "Đã xảy ra lỗi khi lưu danh mục.");
     } finally {
       setSubmitting(false);
     }

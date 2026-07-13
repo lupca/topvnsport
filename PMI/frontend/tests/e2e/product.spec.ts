@@ -6,7 +6,27 @@ const buildUploadFile = (name: string) => ({
   buffer: Buffer.from("fake-image-content"),
 });
 
+const getAuthHeaders = async (request) => {
+  const loginResponse = await request.post("http://localhost:18100/api/auth/login", {
+    data: { username: "admin", password: "password123" }
+  });
+  const { access_token } = await loginResponse.json();
+  return { Authorization: `Bearer ${access_token}` };
+};
+
 test("create product with image upload flow", async ({ page }) => {
+  // Login in browser
+  await page.goto("/login");
+  await page.getByPlaceholder("Tên đăng nhập").fill("admin");
+  await page.getByPlaceholder("Mật khẩu").fill("password123");
+  await page.getByRole("button", { name: "Đăng nhập" }).click();
+  
+  // Wait for redirect to dashboard and then navigate to catalog
+  await page.waitForURL("**/");
+  await page.goto("/catalog");
+  await expect(page.getByText("Đang tải danh sách sản phẩm...")).not.toBeVisible({ timeout: 60000 });
+  await expect(page.getByRole("heading", { name: "Danh Sách Sản Phẩm", exact: true })).toBeVisible();
+
   await page.route("**/pmi-api/upload", async (route) => {
     await route.fulfill({
       status: 200,
@@ -19,7 +39,10 @@ test("create product with image upload flow", async ({ page }) => {
   const productName = `Ao test e2e ${suffix}`;
   const parentSku = `E2E-${suffix}`;
 
-  const familyResponse = await page.request.get("http://localhost:18101/attribute-families");
+  const authHeaders = await getAuthHeaders(page.request);
+  const familyResponse = await page.request.get("http://localhost:18100/attribute-families", {
+    headers: authHeaders
+  });
   expect(familyResponse.ok()).toBeTruthy();
   const families = await familyResponse.json();
   expect(families.length).toBeGreaterThan(0);
@@ -66,24 +89,42 @@ test("create product with image upload flow", async ({ page }) => {
 });
 
 test("edit existing product", async ({ page }) => {
+  // Login in browser
+  await page.goto("/login");
+  await page.getByPlaceholder("Tên đăng nhập").fill("admin");
+  await page.getByPlaceholder("Mật khẩu").fill("password123");
+  await page.getByRole("button", { name: "Đăng nhập" }).click();
+
+  // Wait for redirect to dashboard and then navigate to catalog
+  await page.waitForURL("**/");
+  await page.goto("/catalog");
+  await expect(page.getByText("Đang tải danh sách sản phẩm...")).not.toBeVisible({ timeout: 60000 });
+
   const suffix = Date.now();
   const parentSku = `EDIT-${suffix}`;
   const originalName = `Ao edit goc ${suffix}`;
   const updatedName = `Ao edit moi ${suffix}`;
 
-  const categoryResponse = await page.request.get("http://localhost:18101/categories");
+  const authHeaders = await getAuthHeaders(page.request);
+
+  const categoryResponse = await page.request.get("http://localhost:18100/categories", {
+    headers: authHeaders
+  });
   expect(categoryResponse.ok()).toBeTruthy();
   const categories = await categoryResponse.json();
   expect(categories.length).toBeGreaterThan(0);
   const categoryId = categories[0].id;
 
-  const familyResponse = await page.request.get("http://localhost:18101/attribute-families");
+  const familyResponse = await page.request.get("http://localhost:18100/attribute-families", {
+    headers: authHeaders
+  });
   expect(familyResponse.ok()).toBeTruthy();
   const families = await familyResponse.json();
   expect(families.length).toBeGreaterThan(0);
   const familyId = families[0].id;
 
-  const createResponse = await page.request.post("http://localhost:18101/products", {
+  const createResponse = await page.request.post("http://localhost:18100/products", {
+    headers: authHeaders,
     data: {
       product_code: parentSku,
       name: originalName,
@@ -130,7 +171,9 @@ test("edit existing product", async ({ page }) => {
   await expect(row).toBeVisible({ timeout: 15000 });
   await row.getByRole("button", { name: "Cập nhật" }).click();
 
-  await page.getByPlaceholder("Nhập tên sản phẩm (Ví dụ: Áo thun nam Cotton 100% cổ tròn)").fill(updatedName);
+  const nameInput = page.getByPlaceholder("Nhập tên sản phẩm (Ví dụ: Áo thun nam Cotton 100% cổ tròn)");
+  await expect(nameInput).toHaveValue(originalName, { timeout: 10000 });
+  await nameInput.fill(updatedName);
   const updateResponsePromise = page.waitForResponse(
     (response) =>
       response.url().includes("/products/") && response.request().method() === "PUT"

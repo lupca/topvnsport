@@ -4,6 +4,7 @@ import { Image as ImageIcon, Loader2, Plus } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
 import { popupService } from "@/components/ui/popupService";
 import { normalizeImageUrl } from "@/utils/imageUrl";
+import { fetchWithAuth, apiClient } from "@/utils/apiClient";
 
 const API_BASE_URL = APP_SETTINGS.api.baseUrl;
 
@@ -56,12 +57,7 @@ export default function ProductBasicInfo({
     formData.append("file", file);
 
     try {
-      const res = await fetch(`${API_BASE_URL}/upload`, {
-        method: "POST",
-        body: formData
-      });
-      if (!res.ok) throw new Error("Upload failed");
-      const data = await res.json();
+      const data = await apiClient.post("/upload", formData);
       setCoverImage(normalizeImageUrl(data.image_url) || data.image_url);
     } catch (err) {
       console.error(err);
@@ -90,13 +86,7 @@ export default function ProductBasicInfo({
         const formData = new FormData();
         formData.append("file", file);
 
-        const res = await fetch(`${API_BASE_URL}/upload`, {
-          method: "POST",
-          body: formData
-        });
-        if (!res.ok) throw new Error("Upload failed");
-
-        const data = await res.json();
+        const data = await apiClient.post("/upload", formData);
         newUrls.push(normalizeImageUrl(data.image_url) || data.image_url);
       }
 

@@ -17,12 +17,40 @@ import {
   Settings,
   HelpCircle,
   Users,
-  Shield
+  Shield,
+  History
 } from "lucide-react";
 import { popupService } from "@/components/ui/popupService";
 
-export default function Sidebar() {
+export interface SidebarProps {
+  userRole?: string;
+}
+
+export default function Sidebar({ userRole }: SidebarProps = {}) {
   const pathname = usePathname();
+
+  // Resolve role: use prop if provided, else localStorage, else default to "admin"
+  let resolvedRole = userRole;
+  if (!resolvedRole) {
+    if (typeof window !== "undefined") {
+      resolvedRole = localStorage.getItem("user_role") || "";
+    } else {
+      resolvedRole = "";
+    }
+  }
+  const isAdmin = ["admin", "administrator"].includes(resolvedRole.toLowerCase());
+
+  const systemItems = [
+    { name: "Kênh bán hàng (Channels)", href: "/settings/channels", icon: Globe },
+    { name: "Ngôn ngữ (Locales)", href: "#locales", icon: Languages },
+    { name: "Tiền tệ (Currencies)", href: "#currencies", icon: DollarSign },
+    { name: "Người dùng (Users)", href: "/settings/users", icon: Users },
+    { name: "Vai trò (Roles)", href: "/settings/roles", icon: Shield },
+  ];
+
+  if (isAdmin) {
+    systemItems.push({ name: "Lịch sử hoạt động", href: "/settings/audit", icon: History });
+  }
 
   const menuItems = [
     {
@@ -43,13 +71,7 @@ export default function Sidebar() {
     },
     {
       title: "Cài đặt hệ thống",
-      items: [
-        { name: "Kênh bán hàng (Channels)", href: "/settings/channels", icon: Globe },
-        { name: "Ngôn ngữ (Locales)", href: "#locales", icon: Languages },
-        { name: "Tiền tệ (Currencies)", href: "#currencies", icon: DollarSign },
-        { name: "Người dùng (Users)", href: "/settings/users", icon: Users },
-        { name: "Vai trò (Roles)", href: "/settings/roles", icon: Shield },
-      ],
+      items: systemItems,
     },
   ];
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import { AlertCircle, HelpCircle, Layers, Settings, Globe } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
+import { fetchWithAuth } from "@/utils/apiClient";
 
 const API_BASE_URL = APP_SETTINGS.api.baseUrl;
 
@@ -29,8 +30,7 @@ export default function ChannelConfig({ channelCode, channelName }: ChannelConfi
   // 1. Fetch channel metadata, mappings, and config on mount / channelCode change
   useEffect(() => {
     setLoading(true);
-    fetch(`${API_BASE_URL}/api/channels`)
-      .then(res => res.json())
+    fetchWithAuth("/api/channels")
       .then(channels => {
         const chan = channels.find((c: any) => c.code === channelCode);
         if (chan) {
@@ -50,28 +50,25 @@ export default function ChannelConfig({ channelCode, channelName }: ChannelConfi
     if (!channelId) return;
 
     // Fetch category mapping for this specific PIM category
-    fetch(`${API_BASE_URL}/api/channels/${channelId}/category-mappings`)
-      .then(res => res.json())
+    fetchWithAuth(`/api/channels/${channelId}/category-mappings`)
       .then(mappings => {
         const mapped = mappings.find((m: any) => m.pim_category_id === Number(watchCategoryId));
         setCategoryMapping(mapped || null);
         
         // Fetch attribute mappings
-        return fetch(`${API_BASE_URL}/api/channels/${channelId}/attribute-mappings`)
-          .then(res => res.json())
+        return fetchWithAuth(`/api/channels/${channelId}/attribute-mappings`)
           .then(attrs => {
             // Filter attributes that are either global (null) or match the channel category code
             const mappedCatCode = mapped?.channel_category_code;
             const filteredAttrs = attrs.filter((a: any) => 
-              a.channel_category_code === null || 
-              (mappedCatCode && a.channel_category_code === mappedCatCode)
+              a.channel_category_code === null || a.channel_category_code === mappedCatCode
             );
             setAttributeMappings(filteredAttrs);
             setLoading(false);
           });
       })
       .catch(err => {
-        console.error("Error fetching mappings:", err);
+        console.error("Error fetching channel mappings:", err);
         setLoading(false);
       });
   }, [channelId, watchCategoryId]);

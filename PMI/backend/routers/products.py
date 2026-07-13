@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session, selectinload
 from typing import List, Optional
 import unicodedata
@@ -6,7 +6,8 @@ import re
 from database import get_db
 import models
 import schemas
-from services.product_service import _upsert_product_attribute_values, _save_product_channel_listings
+from services.product_service import _upsert_product_attribute_values, _save_product_channel_listings, update_product_aggregate
+from utils.audit import audit_action
 
 router = APIRouter(tags=['Products'])
 
@@ -23,6 +24,7 @@ def slugify(text: str) -> str:
 from utils.sku_helper import clean_option_for_sku, generate_sku_code
 
 @router.post("/products", response_model=schemas.ProductResponse, status_code=status.HTTP_201_CREATED)
+@audit_action(module="Product", action_type="CREATE")
 def create_product(product_in: schemas.ProductCreate, db: Session = Depends(get_db)):
     try:
         # Generate slug
@@ -211,105 +213,15 @@ def get_product(product_id: int, db: Session = Depends(get_db)):
     return db_product
 
 @router.put("/products/{product_id}", response_model=schemas.ProductResponse)
+@audit_action(module="Product", action_type="UPDATE")
 def update_product(product_id: int, product_in: schemas.ProductUpdate, db: Session = Depends(get_db)):
-    db_product = db.query(models.Product).options(
-        selectinload(models.Product.family),
-        selectinload(models.Product.channel_listings).selectinload(models.ProductChannelListing.attribute_values),
-        selectinload(models.Product.channel_listings).selectinload(models.ProductChannelListing.variant_overrides),
-        selectinload(models.Product.channel_listings).selectinload(models.ProductChannelListing.channel)
-    ).filter(models.Product.id == product_id).first()
-    if not db_product:
-        raise HTTPException(status_code=404, detail="Product not found")
-        
     try:
-        # Pre-load existing variant overrides map before they are cleared
-        existing_vos = db.query(models.VariantChannelListing).filter(
-            models.VariantChannelListing.product_id == product_id
-        ).all()
-        existing_vo_map = {}
-        for vo in existing_vos:
-            if vo.variant and vo.variant.sku_code:
-                existing_vo_map[(vo.channel_id, vo.variant.sku_code)] = vo.channel_variant_id
-
-        # 1. Update basic fields
-        db_product.product_code = product_in.product_code
-        db_product.name = product_in.name
-        db_product.description = product_in.description
-        db_product.category_id = product_in.category_id
-        db_product.family_id = product_in.family_id
-        db_product.weight = product_in.weight
-        db_product.length = product_in.length
-        db_product.width = product_in.width
-        db_product.height = product_in.height
-        db_product.hs_code = product_in.hs_code
-        db_product.tax_code = product_in.tax_code
-        db_product.is_pre_order = product_in.is_pre_order
-        db_product.dts_days = product_in.dts_days
-        db_product.status = product_in.status
-
-        # 2. Clear lists to delete orphans
-        db_product.tier_variations.clear()
-        db_product.variants.clear()
-        db_product.media.clear()
-        db.flush()
-        
-        # 3. Save new Tier Variations
-        for tv in product_in.tier_variations:
-            db_tv = models.TierVariation(
-                product_id=product_id,
-                tier_index=tv.tier_index,
-                name=tv.name,
-                options=tv.options
-            )
-            db_product.tier_variations.append(db_tv)
-            
-        # 4. Save new Product Variants
-        db_variants = []
-        for v in product_in.variants:
-            sku = v.sku_code
-            if not sku:
-                sku = generate_sku_code(product_in.product_code, v.tier_1_option, v.tier_2_option)
-            db_var = models.ProductVariant(
-                product_id=product_id,
-                tier_1_option=v.tier_1_option,
-                tier_2_option=v.tier_2_option,
-                sku_code=sku,
-                price=v.price,
-                barcode=v.barcode,
-                stock=v.stock
-            )
-            db_product.variants.append(db_var)
-            db_variants.append(db_var)
-        
-        db.flush() # Populate variants IDs for media mapping
-        
-        # 5. Save new Media
-        for m in product_in.media:
-            variant_id = None
-            if m.variant_tier_1_option:
-                for db_var in db_variants:
-                    if db_var.tier_1_option == m.variant_tier_1_option:
-                        variant_id = db_var.id
-                        break
-            
-            db_media = models.ProductMedia(
-                product_id=product_id,
-                variant_id=variant_id,
-                image_url=m.image_url,
-                is_cover=m.is_cover,
-                display_order=m.display_order
-            )
-            db_product.media.append(db_media)
-
-        _upsert_product_attribute_values(db, product_id, product_in.attributes)
-            
-        # Save new channel listings
-        _save_product_channel_listings(db, product_id, product_in.channel_listings, db_variants, existing_vo_map)
-
+        db_product = update_product_aggregate(db, product_id, product_in)
         db.commit()
         db.refresh(db_product)
         return db_product
-        
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         error_msg = str(e)
@@ -323,6 +235,7 @@ def update_product(product_id: int, product_in: schemas.ProductUpdate, db: Sessi
         raise HTTPException(status_code=500, detail=f"Database transaction failed: {error_msg}")
 
 @router.delete("/products/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
+@audit_action(module="Product", action_type="DELETE")
 def delete_product(product_id: int, db: Session = Depends(get_db)):
     db_product = db.query(models.Product).filter(models.Product.id == product_id).first()
     if not db_product:
@@ -335,6 +248,7 @@ def delete_product(product_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Database transaction failed: {str(e)}")
 
 @router.post("/products/batch-delete", status_code=status.HTTP_204_NO_CONTENT)
+@audit_action(module="Product", action_type="DELETE")
 def batch_delete_products(request: schemas.BatchDeleteRequest, db: Session = Depends(get_db)):
     try:
         products = db.query(models.Product).filter(models.Product.id.in_(request.product_ids)).all()
@@ -421,3 +335,75 @@ def get_product_by_sku(sku_code: str, db: Session = Depends(get_db)):
         category=product.category.name if product.category else None
     )
 
+
+
+@router.post("/products/import")
+def import_products(file: UploadFile = File(...), db: Session = Depends(get_db)):
+    import csv
+    import io
+    import uuid
+    from utils.audit import record_audit_event
+    from utils import context
+    try:
+
+        content = file.file.read().decode("utf-8")
+        reader = csv.DictReader(io.StringIO(content))
+        for row in reader:
+            sku = row.get("sku") or row.get("sku_code") or f"SKU-{uuid.uuid4().hex[:6]}"
+            name = row.get("name") or row.get("product_name") or f"Product-{uuid.uuid4().hex[:6]}"
+            price = float(row.get("price") or 0.0)
+            
+            # Delete existing duplicate product and variant to avoid constraint violations
+            existing_prod = db.query(models.Product).filter(models.Product.product_code == sku).first()
+            if existing_prod:
+                db.delete(existing_prod)
+                db.flush()
+            existing_var = db.query(models.ProductVariant).filter(models.ProductVariant.sku_code == sku).first()
+            if existing_var:
+                db.delete(existing_var)
+                db.flush()
+
+            # Create the product
+            product = models.Product(
+                name=name,
+                product_code=sku,
+                status="Published",
+                description="Mô tả sản phẩm mặc định khi nhập từ CSV",
+                category_id=1,
+                family_id=1,
+                weight=100.0,
+                length=10.0,
+                width=10.0,
+                height=10.0
+            )
+            db.add(product)
+            db.flush()
+            
+            # Create the variant
+            variant = models.ProductVariant(
+                product_id=product.id,
+                sku_code=sku,
+                price=price,
+                stock=100
+            )
+            db.add(variant)
+            db.flush()
+            
+            # Record individual audit event
+            record_audit_event(
+                db_session=db,
+                module="Product",
+                action_type="CREATE",
+                entity_type="Product",
+                entity_id=product.id,
+                changes={"name": name, "product_code": sku, "price": price},
+                method="POST",
+                path="/products/import"
+            )
+            
+        db.commit()
+        context.audit_logged_var.set(True)
+        return {"status": "success"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))

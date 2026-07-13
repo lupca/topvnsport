@@ -5,6 +5,7 @@ import { ChevronLeft, Globe, Settings, Layers, AlertCircle, ShoppingBag } from "
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { APP_SETTINGS } from "@/config/settings";
+import { fetchWithAuth } from "@/utils/apiClient";
 
 import GeneralTab from "./components/GeneralTab";
 import CategoryMappingTab from "./components/CategoryMappingTab";
@@ -29,9 +30,7 @@ export default function ChannelDetailPage() {
 
   const fetchChannelData = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/channels`);
-      if (!res.ok) throw new Error("Không thể tải thông tin kênh");
-      const data: Channel[] = await res.json();
+      const data: Channel[] = await fetchWithAuth("/api/channels");
       const matched = data.find(c => c.code === code);
       if (!matched) {
         throw new Error(`Kênh bán hàng có mã '${code}' không tồn tại trên hệ thống.`);

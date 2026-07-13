@@ -1,12 +1,13 @@
 import csv
 import io
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session, selectinload
 from database import get_db
 import models
 import schemas
+from utils.audit import audit_action
 
 router = APIRouter(
     prefix="/api",
@@ -19,6 +20,7 @@ def get_channels(db: Session = Depends(get_db)):
     return db.query(models.Channel).all()
 
 @router.post("/channels", response_model=schemas.ChannelResponse, status_code=status.HTTP_201_CREATED)
+@audit_action(module="Channel", action_type="CREATE")
 def create_channel(channel: schemas.ChannelCreate, db: Session = Depends(get_db)):
     db_chan = db.query(models.Channel).filter(models.Channel.code == channel.code).first()
     if db_chan:
@@ -37,6 +39,7 @@ def get_channel(channel_id: int, db: Session = Depends(get_db)):
     return chan
 
 @router.put("/channels/{channel_id}", response_model=schemas.ChannelResponse)
+@audit_action(module="Channel", action_type="UPDATE")
 def update_channel(channel_id: int, channel_in: schemas.ChannelUpdate, db: Session = Depends(get_db)):
     chan = db.query(models.Channel).filter(models.Channel.id == channel_id).first()
     if not chan:
@@ -51,6 +54,7 @@ def update_channel(channel_id: int, channel_in: schemas.ChannelUpdate, db: Sessi
     return chan
 
 @router.delete("/channels/{channel_id}", status_code=status.HTTP_204_NO_CONTENT)
+@audit_action(module="Channel", action_type="DELETE")
 def delete_channel(channel_id: int, db: Session = Depends(get_db)):
     chan = db.query(models.Channel).filter(models.Channel.id == channel_id).first()
     if not chan:
@@ -76,6 +80,7 @@ def get_channel_config(channel_id: int, db: Session = Depends(get_db)):
     return conf
 
 @router.put("/channels/{channel_id}/config", response_model=schemas.ChannelConfigResponse)
+@audit_action(module="Channel", action_type="UPDATE_CONFIG")
 def update_channel_config(channel_id: int, config_in: schemas.ChannelConfigUpdate, db: Session = Depends(get_db)):
     chan = db.query(models.Channel).filter(models.Channel.id == channel_id).first()
     if not chan:
@@ -154,7 +159,8 @@ def bulk_save_attribute_mappings(channel_id: int, mappings: List[schemas.Channel
     return db_mappings
 
 @router.get("/export/shopee")
-def export_shopee(status: str = "Published", product_ids: Optional[str] = None, db: Session = Depends(get_db)):
+@audit_action(module="Channel", action_type="EXPORT", read_only=True)
+def export_shopee(request: Request, status: str = "Published", product_ids: Optional[str] = None, db: Session = Depends(get_db)):
     channel = db.query(models.Channel).filter(models.Channel.code == "shopee_vn").first()
     if not channel:
         raise HTTPException(status_code=404, detail="Shopee channel not found")
@@ -295,7 +301,8 @@ def export_shopee(status: str = "Published", product_ids: Optional[str] = None, 
     )
 
 @router.get("/export/tiktok")
-def export_tiktok(status: str = "Published", product_ids: Optional[str] = None, db: Session = Depends(get_db)):
+@audit_action(module="Channel", action_type="EXPORT", read_only=True)
+def export_tiktok(request: Request, status: str = "Published", product_ids: Optional[str] = None, db: Session = Depends(get_db)):
     channel = db.query(models.Channel).filter(models.Channel.code == "tiktok_shop").first()
     if not channel:
         raise HTTPException(status_code=404, detail="TikTok Shop channel not found")

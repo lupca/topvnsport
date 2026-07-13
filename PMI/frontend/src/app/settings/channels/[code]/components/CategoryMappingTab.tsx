@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Search, Loader2, Save, Filter } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
 import { popupService } from "@/components/ui/popupService";
+import { fetchWithAuth, apiClient } from "@/utils/apiClient";
 
 const API_BASE_URL = APP_SETTINGS.api.baseUrl;
 
@@ -35,21 +36,16 @@ export default function CategoryMappingTab({ channel }: CategoryMappingTabProps)
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [catsRes, mapsRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/categories`),
-          fetch(`${API_BASE_URL}/api/channels/${channel.id}/category-mappings`)
+        const [catsData, mapsData] = await Promise.all([
+          fetchWithAuth("/categories"),
+          fetchWithAuth(`/api/channels/${channel.id}/category-mappings`)
         ]);
-
-        if (!catsRes.ok || !mapsRes.ok) throw new Error("Không thể tải dữ liệu ánh xạ danh mục");
-
-        const catsData: Category[] = await catsRes.json();
-        const mapsData: CategoryMapping[] = await mapsRes.json();
 
         setCategories(catsData);
 
         // Build path hierarchy
         const catMap = new Map<number, Category>();
-        catsData.forEach(c => catMap.set(c.id, c));
+        catsData.forEach((c: Category) => catMap.set(c.id, c));
         const getPath = (cat: Category): string => {
           if (cat.parent_id && catMap.has(cat.parent_id)) {
             return `${getPath(catMap.get(cat.parent_id)!)} > ${cat.name}`;
@@ -57,14 +53,14 @@ export default function CategoryMappingTab({ channel }: CategoryMappingTabProps)
           return cat.name;
         };
         const paths: Record<number, string> = {};
-        catsData.forEach(c => {
+        catsData.forEach((c: Category) => {
           paths[c.id] = getPath(c);
         });
         setCategoryPaths(paths);
 
         // Parse mappings into map keying by pim_category_id
         const mapObj: Record<number, CategoryMapping> = {};
-        mapsData.forEach(m => {
+        mapsData.forEach((m: CategoryMapping) => {
           mapObj[m.pim_category_id] = m;
         });
         setMappings(mapObj);
@@ -104,17 +100,7 @@ export default function CategoryMappingTab({ channel }: CategoryMappingTabProps)
         m => m.channel_category_code.trim() !== "" && m.channel_category_name.trim() !== ""
       );
 
-      const res = await fetch(`${API_BASE_URL}/api/channels/${channel.id}/category-mappings`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(mappingList)
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.detail || "Không thể lưu ánh xạ danh mục");
-      }
-
+      await apiClient.post(`/api/channels/${channel.id}/category-mappings`, mappingList);
       void popupService.alert("Lưu ánh xạ danh mục thành công!");
     } catch (err: any) {
       void popupService.alert(`Lỗi lưu trữ: ${err.message}`);

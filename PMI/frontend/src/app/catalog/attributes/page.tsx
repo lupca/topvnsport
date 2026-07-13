@@ -5,6 +5,7 @@ import DataTable from "@/components/ui/DataTable";
 import { Sliders, X, Check, AlertCircle } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
 import { popupService, showConfirm } from "@/components/ui/popupService";
+import { fetchWithAuth, apiClient } from "@/utils/apiClient";
 
 interface Attribute {
   id: number;
@@ -17,8 +18,6 @@ interface Attribute {
   is_channel_based: boolean;
   created_at: string;
 }
-
-const API_BASE = APP_SETTINGS.api.baseUrl;
 
 export default function AttributesPage() {
   const [attributes, setAttributes] = useState<Attribute[]>([]);
@@ -44,11 +43,8 @@ export default function AttributesPage() {
   const fetchAttributes = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/attributes`);
-      if (res.ok) {
-        const data = await res.json();
-        setAttributes(data);
-      }
+      const data = await fetchWithAuth("/attributes");
+      setAttributes(data);
     } catch (err) {
       console.error("Failed to fetch attributes:", err);
     } finally {
@@ -91,16 +87,11 @@ export default function AttributesPage() {
       return;
     }
     try {
-      const res = await fetch(`${API_BASE}/attributes/${attr.id}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        fetchAttributes();
-      } else {
-        void popupService.alert("Không thể xóa thuộc tính này.");
-      }
-    } catch (err) {
+      await apiClient.delete(`/attributes/${attr.id}`);
+      fetchAttributes();
+    } catch (err: any) {
       console.error(err);
+      void popupService.alert(err.message || "Không thể xóa thuộc tính này.");
     }
   };
 
@@ -125,26 +116,20 @@ export default function AttributesPage() {
     };
 
     try {
-      const url = editingAttr 
-        ? `${API_BASE}/attributes/${editingAttr.id}`
-        : `${API_BASE}/attributes`;
+      const path = editingAttr 
+        ? `/attributes/${editingAttr.id}`
+        : "/attributes";
       const method = editingAttr ? "PUT" : "POST";
 
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (res.ok) {
-        setIsOpen(false);
-        fetchAttributes();
+      if (method === "PUT") {
+        await apiClient.put(path, payload);
       } else {
-        const errData = await res.json();
-        setErrorMsg(errData.detail || "Đã xảy ra lỗi khi lưu thuộc tính.");
+        await apiClient.post(path, payload);
       }
-    } catch (err) {
-      setErrorMsg("Không thể kết nối đến máy chủ.");
+      setIsOpen(false);
+      fetchAttributes();
+    } catch (err: any) {
+      setErrorMsg(err.message || "Đã xảy ra lỗi khi lưu thuộc tính.");
     } finally {
       setSubmitting(false);
     }

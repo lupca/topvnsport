@@ -8,6 +8,7 @@ import { Check, Loader2, AlertCircle, ChevronRight } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
 import { normalizeImageUrl } from "@/utils/imageUrl";
 import { generateSkuCode } from "@/utils/skuHelper";
+import { fetchWithAuth, apiClient } from "@/utils/apiClient";
 
 import ProductBasicInfo, { Category, AttributeFamily } from "./products/ProductBasicInfo";
 import ProductTechSpecs, { Attribute } from "./products/ProductTechSpecs";
@@ -83,12 +84,12 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
   // Fetch categories
   useEffect(() => {
     Promise.all([
-      fetch(`${API_BASE_URL}/categories`).then(res => res.json()),
-      fetch(`${API_BASE_URL}/attribute-families`).then(res => res.json())
+      fetchWithAuth("/categories"),
+      fetchWithAuth("/attribute-families")
     ])
       .then(([categoryData, familyData]) => {
-        setCategories(categoryData);
-        setFamilies(familyData);
+        setCategories(Array.isArray(categoryData) ? categoryData : []);
+        setFamilies(Array.isArray(familyData) ? familyData : []);
       })
       .catch(err => console.error("Error fetching lookup data:", err));
   }, []);
@@ -99,9 +100,12 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
       return;
     }
 
-    fetch(`${API_BASE_URL}/attribute-families/${watchFamilyId}/attributes`)
-      .then(res => res.json())
+    fetchWithAuth(`/attribute-families/${watchFamilyId}/attributes`)
       .then((data: Attribute[]) => {
+        if (!Array.isArray(data)) {
+          setFamilyAttributes([]);
+          return;
+        }
         setFamilyAttributes(data);
         setAttributeValues(prev => {
           const allowedIds = new Set(data.map(attr => attr.id));
@@ -121,13 +125,11 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
       });
   }, [watchFamilyId]);
 
-  // Fetch product data if editing or copying
   const targetId = productId || duplicateProductId;
   useEffect(() => {
     if (!targetId) return;
 
-    fetch(`${API_BASE_URL}/products/${targetId}`)
-      .then(res => res.json())
+    fetchWithAuth(`/products/${targetId}`)
       .then(data => {
         // Map Tier Variations
         const tiers = data.tier_variations.map((tv: any) => ({
@@ -374,28 +376,13 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
     };
 
     try {
-      const url = productId 
-        ? `${API_BASE_URL}/products/${productId}` 
-        : `${API_BASE_URL}/products`;
+      const path = productId ? `/products/${productId}` : "/products";
       const method = productId ? "PUT" : "POST";
 
-      const res = await fetch(url, {
-        method: method,
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(finalPayload)
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        let errMsg = `Đã xảy ra lỗi khi ${productId ? "cập nhật" : "tạo"} sản phẩm`;
-        if (typeof data.detail === "string") {
-            errMsg = data.detail;
-        } else if (Array.isArray(data.detail)) {
-            errMsg = data.detail.map((err: any) => `${err.loc?.join(".") || ""}: ${err.msg}`).join(", ");
-        }
-        throw new Error(errMsg);
+      if (method === "PUT") {
+        await apiClient.put(path, finalPayload);
+      } else {
+        await apiClient.post(path, finalPayload);
       }
 
       setSubmitSuccess(true);

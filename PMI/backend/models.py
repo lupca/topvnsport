@@ -1,8 +1,31 @@
-from sqlalchemy import Column, Integer, String, Boolean, Float, ForeignKey, JSON, Text, DateTime, UniqueConstraint, Numeric
+from sqlalchemy import Column, Integer, String, Boolean, Float, ForeignKey, JSON, Text, DateTime, UniqueConstraint, Numeric, Enum, func, Index
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from database import Base
 import datetime
+import uuid
+import enum
+from sqlalchemy.types import TypeDecorator, String
+
+class CoercedUUIDString(TypeDecorator):
+    impl = String(255)
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return value
+        if isinstance(value, uuid.UUID):
+            return str(value)
+        return value
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return value
+        try:
+            return uuid.UUID(value)
+        except (ValueError, AttributeError, TypeError):
+            return value
 
 class Category(Base):
     __tablename__ = "categories"
@@ -322,6 +345,18 @@ class ChannelConfig(Base):
     channel = relationship("Channel", backref=backref("config", uselist=False, cascade="all, delete-orphan"))
 
 
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String(255), unique=True, index=True, nullable=False)
+    email = Column(String(255), unique=True, index=True, nullable=False)
+    hashed_password = Column(String(255), nullable=False)
+    role = Column(String(50), default="admin", nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+
+
 from sqlalchemy import event, select
 from utils.sku_helper import clean_option_for_sku
 
@@ -356,4 +391,74 @@ def receive_before_insert(mapper, connection, target):
         target.sku_code = "-".join(parts)
 
 
+class ActorType(str, enum.Enum):
+    USER = "USER"
+    SERVICE = "SERVICE"
+    GUEST = "GUEST"
 
+
+class OutboxStatus(str, enum.Enum):
+    PENDING = "PENDING"
+    PROCESSING = "PROCESSING"
+    FAILED = "FAILED"
+
+
+class AuditOutbox(Base):
+    __tablename__ = "audit_outbox"
+    __table_args__ = (
+        Index(
+            "ix_audit_outbox_retry",
+            "status", "next_retry_at",
+            postgresql_where="status IN ('PENDING', 'FAILED')"
+        ),
+        Index(
+            "ix_audit_outbox_locked",
+            "locked_by", "locked_at",
+            postgresql_where="status = 'PROCESSING'"
+        ),
+    )
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    correlation_id = Column(CoercedUUIDString, nullable=False)
+    actor_id = Column(String(100), nullable=True)
+    actor_username = Column(String(255), nullable=False)
+    actor_type = Column(Enum(ActorType, name="actor_type_enum"), nullable=False)
+    ip_address = Column(String(45), nullable=True)
+    method = Column(String(10), nullable=True)
+    path = Column(String(1024), nullable=True)
+    source_service = Column(String(100), default="PMI", nullable=False)
+    module = Column(String(100), nullable=False, index=True)
+    action_type = Column(String(50), nullable=False)
+    entity_type = Column(String(100), nullable=True)
+    entity_id = Column(String(100), nullable=True, index=True)
+    changes = Column(JSONB, nullable=True)
+    raw_details = Column(Text, nullable=True)
+    status = Column(Enum(OutboxStatus, name="outbox_status_enum"), default=OutboxStatus.PENDING, nullable=False, index=True)
+    attempt_count = Column(Integer, default=0, nullable=False)
+    locked_by = Column(String(255), nullable=True)
+    locked_at = Column(DateTime(timezone=True), nullable=True)
+    last_error = Column(Text, nullable=True)
+    next_retry_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.datetime.now(datetime.timezone.utc), server_default=func.now(), nullable=False, index=True)
+
+
+class AuditLog(Base):
+    __tablename__ = "audit_logs"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    correlation_id = Column(CoercedUUIDString, nullable=False)
+    actor_id = Column(String(100), nullable=True)
+    actor_username = Column(String(255), nullable=False, index=True)
+    actor_type = Column(Enum(ActorType, name="actor_type_enum"), nullable=False)
+    ip_address = Column(String(45), nullable=True)
+    method = Column(String(10), nullable=True)
+    path = Column(String(1024), nullable=True)
+    source_service = Column(String(100), default="PMI", nullable=False)
+    module = Column(String(100), nullable=False, index=True)
+    action_type = Column(String(50), nullable=False)
+    entity_type = Column(String(100), nullable=True)
+    entity_id = Column(String(100), nullable=True, index=True)
+    changes = Column(JSONB, nullable=True)
+    raw_details = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.datetime.now(datetime.timezone.utc), server_default=func.now(), nullable=False, index=True)
+    processed_at = Column(DateTime(timezone=True), default=lambda: datetime.datetime.now(datetime.timezone.utc), server_default=func.now(), nullable=False)

@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, ShieldCheck, CheckCircle } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
 import { popupService } from "@/components/ui/popupService";
+import { fetchWithAuth, apiClient } from "@/utils/apiClient";
 
 const API_BASE_URL = APP_SETTINGS.api.baseUrl;
 
@@ -43,8 +44,7 @@ export default function GeneralTab({ channel, onSaveSuccess }: GeneralTabProps) 
   const watchIsActive = watch("is_active");
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/api/channels/${channel.id}/config`)
-      .then(res => res.json())
+    fetchWithAuth(`/api/channels/${channel.id}/config`)
       .then(data => {
         reset({
           name: channel.name,
@@ -63,27 +63,20 @@ export default function GeneralTab({ channel, onSaveSuccess }: GeneralTabProps) 
     try {
       // 1. Update channel details if name changed
       if (values.name !== channel.name) {
-        await fetch(`${API_BASE_URL}/api/channels/${channel.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ code: channel.code, name: values.name })
+        await apiClient.put(`/api/channels/${channel.id}`, {
+          code: channel.code,
+          name: values.name
         });
       }
 
       // 2. Update config details
-      const configRes = await fetch(`${API_BASE_URL}/api/channels/${channel.id}/config`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          app_key: values.app_key || null,
-          app_secret: values.app_secret || null,
-          access_token: values.access_token || null,
-          refresh_token: values.refresh_token || null,
-          is_active: values.is_active
-        })
+      await apiClient.put(`/api/channels/${channel.id}/config`, {
+        app_key: values.app_key || null,
+        app_secret: values.app_secret || null,
+        access_token: values.access_token || null,
+        refresh_token: values.refresh_token || null,
+        is_active: values.is_active
       });
-
-      if (!configRes.ok) throw new Error("Không thể lưu cấu hình");
       
       void popupService.alert("Đã lưu cấu hình kênh thành công!");
       onSaveSuccess();

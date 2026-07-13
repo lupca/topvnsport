@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { APP_SETTINGS } from "@/config/settings";
+import { fetchWithAuth } from "@/utils/apiClient";
 import {
   Package,
   FolderTree,
@@ -61,12 +62,7 @@ export default function DashboardPage() {
   const fetchStats = async () => {
     try {
       setLoading(true);
-      const apiUrl = APP_SETTINGS.api.baseUrl;
-      const res = await fetch(`${apiUrl}/dashboard/stats`);
-      if (!res.ok) {
-        throw new Error("Không thể tải thông tin thống kê từ máy chủ.");
-      }
-      const data: StatsData = await res.json();
+      const data: StatsData = await fetchWithAuth("/dashboard/stats");
       setStats(data);
       setError(null);
     } catch (err: any) {

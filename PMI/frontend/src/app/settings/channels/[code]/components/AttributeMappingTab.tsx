@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Plus, Trash, Loader2, Save, AlertCircle } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
 import { popupService } from "@/components/ui/popupService";
+import { fetchWithAuth, apiClient } from "@/utils/apiClient";
 
 const API_BASE_URL = APP_SETTINGS.api.baseUrl;
 
@@ -39,19 +40,15 @@ export default function AttributeMappingTab({ channel }: AttributeMappingTabProp
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [attrsRes, catMapsRes, attrMapsRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/attributes`),
-          fetch(`${API_BASE_URL}/api/channels/${channel.id}/category-mappings`),
-          fetch(`${API_BASE_URL}/api/channels/${channel.id}/attribute-mappings`)
+        const [attrs, catMaps, attrMaps] = await Promise.all([
+          fetchWithAuth("/attributes"),
+          fetchWithAuth(`/api/channels/${channel.id}/category-mappings`),
+          fetchWithAuth(`/api/channels/${channel.id}/attribute-mappings`)
         ]);
 
-        if (!attrsRes.ok || !catMapsRes.ok || !attrMapsRes.ok) {
-          throw new Error("Không thể tải cấu hình ánh xạ thuộc tính");
-        }
-
-        setPimAttributes(await attrsRes.json());
-        setCategoryMappings(await catMapsRes.json());
-        setMappings(await attrMapsRes.json());
+        setPimAttributes(attrs);
+        setCategoryMappings(catMaps);
+        setMappings(attrMaps);
       } catch (err: any) {
         void popupService.alert(`Lỗi: ${err.message}`);
       } finally {
@@ -105,17 +102,7 @@ export default function AttributeMappingTab({ channel }: AttributeMappingTabProp
 
     setSaving(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/channels/${channel.id}/attribute-mappings`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(mappings)
-      });
-
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.detail || "Không thể lưu cấu hình thuộc tính");
-      }
-
+      await apiClient.post(`/api/channels/${channel.id}/attribute-mappings`, mappings);
       void popupService.alert("Lưu cấu hình ánh xạ thuộc tính thành công!");
     } catch (err: any) {
       void popupService.alert(`Lỗi lưu trữ: ${err.message}`);

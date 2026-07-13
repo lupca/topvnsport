@@ -2,9 +2,20 @@
 
 import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Bell, Search } from "lucide-react";
 
 export default function Topbar() {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("user_role");
+    localStorage.removeItem("user_username");
+    localStorage.removeItem("pending_login_username");
+    router.push("/login");
+  };
+
   return (
     <header className="h-16 bg-surface border-b border-gray-200 px-6 flex items-center justify-between sticky top-0 z-40 shadow-sm">
       {/* Search Input bar */}
@@ -45,6 +56,13 @@ export default function Topbar() {
             AD
           </div>
         </Link>
+
+        <button
+          onClick={handleLogout}
+          className="px-3 py-1.5 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-colors"
+        >
+          Đăng xuất
+        </button>
       </div>
     </header>
   );

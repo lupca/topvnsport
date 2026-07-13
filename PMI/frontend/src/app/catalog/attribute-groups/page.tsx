@@ -5,6 +5,7 @@ import DataTable from "@/components/ui/DataTable";
 import { Layers, X, AlertCircle } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
 import { popupService, showConfirm } from "@/components/ui/popupService";
+import { fetchWithAuth, apiClient } from "@/utils/apiClient";
 
 interface Attribute {
   id: number;
@@ -19,8 +20,6 @@ interface AttributeGroup {
   attributes?: Attribute[];
   created_at: string;
 }
-
-const API_BASE = APP_SETTINGS.api.baseUrl;
 
 export default function AttributeGroupsPage() {
   const [groups, setGroups] = useState<AttributeGroup[]>([]);
@@ -44,19 +43,12 @@ export default function AttributeGroupsPage() {
   const fetchGroups = async () => {
     setLoading(true);
     try {
-      const [resGrp, resAttr] = await Promise.all([
-        fetch(`${API_BASE}/attribute-groups`),
-        fetch(`${API_BASE}/attributes`)
+      const [dataGrp, dataAttr] = await Promise.all([
+        fetchWithAuth("/attribute-groups"),
+        fetchWithAuth("/attributes")
       ]);
-      
-      if (resGrp.ok) {
-        const data = await resGrp.json();
-        setGroups(data);
-      }
-      if (resAttr.ok) {
-        const dataAttr = await resAttr.json();
-        setAllAttributes(dataAttr);
-      }
+      setGroups(dataGrp);
+      setAllAttributes(dataAttr);
     } catch (err) {
       console.error("Failed to fetch data:", err);
     } finally {
@@ -91,16 +83,11 @@ export default function AttributeGroupsPage() {
       return;
     }
     try {
-      const res = await fetch(`${API_BASE}/attribute-groups/${group.id}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        fetchGroups();
-      } else {
-        void popupService.alert("Không thể xóa nhóm thuộc tính này.");
-      }
-    } catch (err) {
+      await apiClient.delete(`/attribute-groups/${group.id}`);
+      fetchGroups();
+    } catch (err: any) {
       console.error(err);
+      void popupService.alert(err.message || "Không thể xóa nhóm thuộc tính này.");
     }
   };
 
@@ -120,42 +107,27 @@ export default function AttributeGroupsPage() {
     };
 
     try {
-      const url = editingGroup 
-        ? `${API_BASE}/attribute-groups/${editingGroup.id}`
-        : `${API_BASE}/attribute-groups`;
+      const path = editingGroup 
+        ? `/attribute-groups/${editingGroup.id}`
+        : "/attribute-groups";
       const method = editingGroup ? "PUT" : "POST";
 
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+      let savedGroup;
+      if (method === "PUT") {
+        savedGroup = await apiClient.put(path, payload);
+      } else {
+        savedGroup = await apiClient.post(path, payload);
+      }
+
+      // Sync attributes
+      await apiClient.put(`/attribute-groups/${savedGroup.id}/attributes`, {
+        attribute_ids: selectedAttributeIds
       });
 
-      if (res.ok) {
-        const savedGroup = await res.json();
-        
-        // Sync attributes
-        const syncRes = await fetch(`${API_BASE}/attribute-groups/${savedGroup.id}/attributes`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ attribute_ids: selectedAttributeIds }),
-        });
-        
-        if (!syncRes.ok) {
-           const errData = await syncRes.json();
-           console.error("Sync failed", errData);
-           setErrorMsg("Đã lưu Nhóm thuộc tính nhưng lỗi khi đồng bộ Thuộc tính.");
-           return;
-        }
-
-        setIsOpen(false);
-        fetchGroups();
-      } else {
-        const errData = await res.json();
-        setErrorMsg(errData.detail || "Đã xảy ra lỗi khi lưu nhóm thuộc tính.");
-      }
-    } catch (err) {
-      setErrorMsg("Không thể kết nối đến máy chủ.");
+      setIsOpen(false);
+      fetchGroups();
+    } catch (err: any) {
+      setErrorMsg(err.message || "Đã xảy ra lỗi khi lưu nhóm thuộc tính.");
     } finally {
       setSubmitting(false);
     }
