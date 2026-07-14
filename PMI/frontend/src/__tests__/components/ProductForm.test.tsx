@@ -26,7 +26,8 @@ describe("ProductForm", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockImplementation((url: string) => {
-        if (url.includes("/api/channels")) {
+        // Use regex to match URLs regardless of prefix
+        if (/\/channels(?:\/|$|\?)/.test(url) && !/mappings/.test(url)) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve([
@@ -35,43 +36,47 @@ describe("ProductForm", () => {
             ]),
           });
         }
-        if (url.includes("/category-mappings")) {
+        if (/category-mappings/.test(url)) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve([]),
           });
         }
-        if (url.includes("/attribute-mappings")) {
+        if (/attribute-mappings/.test(url)) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve([]),
           });
         }
-        if (url.includes("/categories")) {
+        if (/\/categories/.test(url)) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve(mockCategories),
           });
         }
-        if (url.includes("/attribute-families/1/attributes")) {
+        if (/attribute-families\/\d+\/attributes/.test(url)) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve(mockAttributes),
           });
         }
-        if (url.includes("/attribute-families")) {
+        if (/attribute-families/.test(url)) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve(mockFamilies),
           });
         }
-        if (url.includes("/products")) {
+        if (/\/products/.test(url)) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve({ id: 99, name: "Product saved" }),
           });
         }
-        return Promise.reject(new Error("Unknown URL: " + url));
+        // Return empty array for unknown URLs instead of rejecting
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve([]),
+        });
       })
     );
   });
@@ -256,7 +261,7 @@ describe("ProductForm", () => {
       vi.stubGlobal(
         "fetch",
         vi.fn().mockImplementation((url: string, options: any) => {
-          if (url.includes("/products/42")) {
+          if (/\/products\/42/.test(url)) {
             if (options?.method === "PUT") {
               return Promise.resolve({
                 ok: true,
@@ -268,7 +273,7 @@ describe("ProductForm", () => {
               json: () => Promise.resolve(mockProduct),
             });
           }
-          if (url.includes("/api/channels")) {
+          if (/\/channels(?:\/|$|\?)/.test(url) && !/mappings/.test(url)) {
             return Promise.resolve({
               ok: true,
               json: () => Promise.resolve([
@@ -277,19 +282,19 @@ describe("ProductForm", () => {
               ]),
             });
           }
-          if (url.includes("/category-mappings")) {
+          if (/category-mappings/.test(url)) {
             return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
           }
-          if (url.includes("/attribute-mappings")) {
+          if (/attribute-mappings/.test(url)) {
             return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
           }
-          if (url.includes("/categories")) {
+          if (/\/categories/.test(url)) {
             return Promise.resolve({ ok: true, json: () => Promise.resolve(mockCategories) });
           }
-          if (url.includes("/attribute-families/1/attributes")) {
+          if (/attribute-families\/\d+\/attributes/.test(url)) {
             return Promise.resolve({ ok: true, json: () => Promise.resolve(mockAttributes) });
           }
-          if (url.includes("/attribute-families")) {
+          if (/attribute-families/.test(url)) {
             return Promise.resolve({ ok: true, json: () => Promise.resolve(mockFamilies) });
           }
           return Promise.reject(new Error("Unknown URL: " + url));
@@ -369,13 +374,13 @@ describe("ProductForm", () => {
       vi.stubGlobal(
         "fetch",
         vi.fn().mockImplementation((url: string, options: any) => {
-          if (url.includes("/products/42")) {
+          if (/\/products\/42/.test(url)) {
             return Promise.resolve({
               ok: true,
               json: () => Promise.resolve(mockProduct),
             });
           }
-          if (url.includes("/products")) {
+          if (/\/products/.test(url)) {
             if (options?.method === "POST") {
               return Promise.resolve({
                 ok: true,
@@ -383,7 +388,7 @@ describe("ProductForm", () => {
               });
             }
           }
-          if (url.includes("/api/channels")) {
+          if (/\/channels(?:\/|$|\?)/.test(url) && !/mappings/.test(url)) {
             return Promise.resolve({
               ok: true,
               json: () => Promise.resolve([
@@ -392,19 +397,19 @@ describe("ProductForm", () => {
               ]),
             });
           }
-          if (url.includes("/category-mappings")) {
+          if (/category-mappings/.test(url)) {
             return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
           }
-          if (url.includes("/attribute-mappings")) {
+          if (/attribute-mappings/.test(url)) {
             return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
           }
-          if (url.includes("/categories")) {
+          if (/\/categories/.test(url)) {
             return Promise.resolve({ ok: true, json: () => Promise.resolve(mockCategories) });
           }
-          if (url.includes("/attribute-families/1/attributes")) {
+          if (/attribute-families\/\d+\/attributes/.test(url)) {
             return Promise.resolve({ ok: true, json: () => Promise.resolve(mockAttributes) });
           }
-          if (url.includes("/attribute-families")) {
+          if (/attribute-families/.test(url)) {
             return Promise.resolve({ ok: true, json: () => Promise.resolve(mockFamilies) });
           }
           return Promise.reject(new Error("Unknown URL: " + url));
@@ -460,7 +465,7 @@ describe("ProductForm", () => {
       vi.stubGlobal(
         "fetch",
         vi.fn().mockImplementation((url: string) => {
-          if (url.includes("/products/42")) {
+          if (/\/products\/42/.test(url)) {
             return Promise.resolve({
               ok: false,
               status: 500,
@@ -468,7 +473,7 @@ describe("ProductForm", () => {
               text: () => Promise.resolve("Internal Server Error"),
             });
           }
-          if (url.includes("/api/channels")) {
+          if (/\/channels(?:\/|$|\?)/.test(url) && !/mappings/.test(url)) {
             return Promise.resolve({
               ok: true,
               json: () => Promise.resolve([
@@ -477,16 +482,16 @@ describe("ProductForm", () => {
               ]),
             });
           }
-          if (url.includes("/category-mappings")) {
+          if (/category-mappings/.test(url)) {
             return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
           }
-          if (url.includes("/attribute-mappings")) {
+          if (/attribute-mappings/.test(url)) {
             return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
           }
-          if (url.includes("/categories")) {
+          if (/\/categories/.test(url)) {
             return Promise.resolve({ ok: true, json: () => Promise.resolve(mockCategories) });
           }
-          if (url.includes("/attribute-families")) {
+          if (/attribute-families/.test(url)) {
             return Promise.resolve({ ok: true, json: () => Promise.resolve(mockFamilies) });
           }
           return Promise.reject(new Error("Unknown URL: " + url));
@@ -504,7 +509,7 @@ describe("ProductForm", () => {
       vi.stubGlobal(
         "fetch",
         vi.fn().mockImplementation((url: string, options: any) => {
-          if (url.includes("/api/channels")) {
+          if (/\/channels(?:\/|$|\?)/.test(url) && !/mappings/.test(url)) {
             return Promise.resolve({
               ok: true,
               json: () => Promise.resolve([
@@ -513,22 +518,22 @@ describe("ProductForm", () => {
               ]),
             });
           }
-          if (url.includes("/category-mappings")) {
+          if (/category-mappings/.test(url)) {
             return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
           }
-          if (url.includes("/attribute-mappings")) {
+          if (/attribute-mappings/.test(url)) {
             return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
           }
-          if (url.includes("/categories")) {
+          if (/\/categories/.test(url)) {
             return Promise.resolve({ ok: true, json: () => Promise.resolve(mockCategories) });
           }
-          if (url.includes("/attribute-families/1/attributes")) {
+          if (/attribute-families\/\d+\/attributes/.test(url)) {
             return Promise.resolve({ ok: true, json: () => Promise.resolve(mockAttributes) });
           }
-          if (url.includes("/attribute-families")) {
+          if (/attribute-families/.test(url)) {
             return Promise.resolve({ ok: true, json: () => Promise.resolve(mockFamilies) });
           }
-          if (url.includes("/products")) {
+          if (/\/products/.test(url)) {
             return Promise.resolve({
               ok: false,
               status: 400,

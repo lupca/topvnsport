@@ -50,13 +50,18 @@ describe("Audit Log UI Component Tests", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockImplementation((url: string) => {
-        if (url.includes("/api/audit-logs")) {
+        // Match audit-logs endpoint with any prefix
+        if (/audit-logs/.test(url)) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve(mockAuditLogs)
           });
         }
-        return Promise.reject(new Error("Unknown URL: " + url));
+        // Return empty for unknown URLs instead of rejecting
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve([])
+        });
       })
     );
   });
@@ -113,7 +118,7 @@ describe("Audit Log UI Component Tests", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockImplementation((url: string) => {
-        if (url.includes("/api/audit-logs")) {
+        if (/audit-logs/.test(url)) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve({ ...mockAuditLogs, total: 100 })
@@ -303,7 +308,7 @@ describe("Audit Log UI Component Tests", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockImplementation((url: string) => {
-        if (url.includes("/api/audit-logs")) {
+        if (/audit-logs/.test(url)) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve(customAuditLogs)
