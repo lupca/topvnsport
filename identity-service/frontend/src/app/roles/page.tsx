@@ -36,8 +36,8 @@ export default function RolesPage() {
         apiClient.get("/roles/"),
         apiClient.get("/staff/"),
       ]);
-      setRoles(rolesData || []);
-      setStaffs(staffData || []);
+      setRoles(Array.isArray(rolesData) ? rolesData : []);
+      setStaffs(Array.isArray(staffData) ? staffData : []);
     } catch (err: any) {
       toast(err.message || "Không thể tải danh sách vai trò hoặc nhân sự", "error");
     } finally {

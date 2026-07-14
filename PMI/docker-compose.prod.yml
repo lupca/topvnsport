@@ -63,11 +63,11 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.prod
+      args:
+        - NEXT_PUBLIC_API_URL=http://api-pmi.topvnsport.com
+        - NEXT_PUBLIC_IDENTITY_URL=http://identity.topvnsport.com
     container_name: pim-frontend
     restart: always
-    environment:
-      - NEXT_PUBLIC_API_URL=http://api-pmi.topvnsport.com
-      - NEXT_PUBLIC_WMS_API_URL=http://api-wms.topvnsport.com
     depends_on:
       - api
     networks:

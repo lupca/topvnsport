@@ -37,8 +37,8 @@ export default function DashboardPage() {
           apiClient.get("/roles/"),
         ]);
 
-        const staffs = (staffData || []) as Staff[];
-        const roles = (rolesData || []) as Role[];
+        const staffs = (Array.isArray(staffData) ? staffData : []) as Staff[];
+        const roles = (Array.isArray(rolesData) ? rolesData : []) as Role[];
 
         setStats({
           totalStaff: staffs.length,
