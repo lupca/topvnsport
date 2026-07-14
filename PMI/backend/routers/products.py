@@ -107,7 +107,9 @@ def create_product(product_in: schemas.ProductCreate, db: Session = Depends(get_
                 sku_code=sku,
                 price=v.price,
                 barcode=v.barcode,
-                stock=v.stock
+                stock=v.stock,
+                default_cost_price=v.default_cost_price,
+                default_tax_rate=v.default_tax_rate
             )
             db.add(db_var)
             db_variants.append(db_var)

@@ -7,7 +7,8 @@ import {
   Barcode,
   X,
   Image as ImageIcon,
-  Scan
+  Scan,
+  RefreshCw
 } from "lucide-react";
 import DataTable from "@/components/ui/DataTable";
 import { popupService, showConfirm } from "@/components/ui/popupService";
@@ -23,6 +24,8 @@ interface BarcodeMapping {
   variant_name: string | null;
   image_url: string | null;
   created_at: string;
+  cost_price: number | null;
+  tax_rate: number | null;
 }
 
 export default function BarcodeMappingsPage() {
@@ -31,6 +34,7 @@ export default function BarcodeMappingsPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isScanOpen, setIsScanOpen] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   // Modal States
   const [isOpen, setIsOpen] = useState(false);
@@ -41,6 +45,8 @@ export default function BarcodeMappingsPage() {
   const [productName, setProductName] = useState("");
   const [variantName, setVariantName] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [costPrice, setCostPrice] = useState("");
+  const [taxRate, setTaxRate] = useState("");
 
   const handleScanSuccess = (scannedBarcode: string) => {
     const match = mappings.find((m) => m.barcode === scannedBarcode);
@@ -55,9 +61,31 @@ export default function BarcodeMappingsPage() {
       setProductName("");
       setVariantName("");
       setImageUrl("");
+      setCostPrice("");
+      setTaxRate("");
       setEditingMapping(null);
       setIsOpen(true);
       void popupService.alert(`Mã vạch ${scannedBarcode} chưa được liên kết. Hãy điền thông tin để tạo liên kết mới!`);
+    }
+  };
+
+  const handleSync = async () => {
+    const confirmed = await showConfirm("Bạn có chắc muốn đồng bộ sản phẩm từ PMI?");
+    if (!confirmed) return;
+    try {
+      setSyncing(true);
+      setError(null);
+      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/products/sync`, {
+        method: "POST",
+      });
+      if (!res.ok) throw new Error("Đồng bộ sản phẩm thất bại.");
+      const result = await res.json();
+      void popupService.alert(result.message || `Đồng bộ thành công!`);
+      await fetchMappings();
+    } catch (err: any) {
+      setError(err.message || "Lỗi đồng bộ sản phẩm.");
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -93,7 +121,9 @@ export default function BarcodeMappingsPage() {
       sku_code: skuCode,
       product_name: productName,
       variant_name: variantName || null,
-      image_url: imageUrl || null
+      image_url: imageUrl || null,
+      cost_price: costPrice ? parseFloat(costPrice) : null,
+      tax_rate: taxRate ? parseFloat(taxRate) : null
     };
 
     try {
@@ -114,7 +144,7 @@ export default function BarcodeMappingsPage() {
       }
 
       setIsOpen(false);
-      fetchMappings();
+      await fetchMappings();
       void popupService.alert("Đã lưu liên kết mã vạch thành công!");
     } catch (err: any) {
       void popupService.alert(err.message);
@@ -128,7 +158,7 @@ export default function BarcodeMappingsPage() {
         method: "DELETE"
       });
       if (!res.ok) throw new Error("Không thể xóa liên kết mã vạch.");
-      fetchMappings();
+      await fetchMappings();
     } catch (err: any) {
       void popupService.alert(err.message);
     }
@@ -143,6 +173,8 @@ export default function BarcodeMappingsPage() {
       setProductName(bm.product_name);
       setVariantName(bm.variant_name || "");
       setImageUrl(bm.image_url || "");
+      setCostPrice(bm.cost_price !== null && bm.cost_price !== undefined ? bm.cost_price.toString() : "");
+      setTaxRate(bm.tax_rate !== null && bm.tax_rate !== undefined ? bm.tax_rate.toString() : "");
     } else {
       setBarcode("");
       setBarcodeType("EAN-13");
@@ -150,6 +182,8 @@ export default function BarcodeMappingsPage() {
       setProductName("");
       setVariantName("");
       setImageUrl("");
+      setCostPrice("");
+      setTaxRate("");
     }
     setIsOpen(true);
   };
@@ -216,6 +250,28 @@ export default function BarcodeMappingsPage() {
       render: (bm: BarcodeMapping) => (
         <span className="text-gray-500 font-medium">{bm.variant_name || "-"}</span>
       )
+    },
+    {
+      key: "cost_price",
+      label: "Giá Vốn (VND)",
+      render: (bm: BarcodeMapping) => (
+        <span className="font-semibold text-gray-700">
+          {bm.cost_price !== null && bm.cost_price !== undefined
+            ? `${Number(bm.cost_price).toLocaleString("vi-VN")} đ`
+            : "-"}
+        </span>
+      )
+    },
+    {
+      key: "tax_rate",
+      label: "Thuế (%)",
+      render: (bm: BarcodeMapping) => (
+        <span className="text-gray-600 font-semibold">
+          {bm.tax_rate !== null && bm.tax_rate !== undefined
+            ? `${Number(bm.tax_rate)}%`
+            : "-"}
+        </span>
+      )
     }
   ];
 
@@ -232,13 +288,23 @@ export default function BarcodeMappingsPage() {
             Định nghĩa liên kết giữa mã vạch quét từ máy quét (EAN-13, Code 128, etc.) với mã SKU của sản phẩm
           </p>
         </div>
-        <button
-          onClick={() => setIsScanOpen(true)}
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md transition-colors"
-        >
-          <Scan className="w-4 h-4" />
-          <span>Quét Barcode (Camera)</span>
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleSync}
+            disabled={syncing}
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 ${syncing ? "animate-spin" : ""}`} />
+            <span>{syncing ? "Đang đồng bộ..." : "Đồng bộ từ PMI"}</span>
+          </button>
+          <button
+            onClick={() => setIsScanOpen(true)}
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md transition-colors"
+          >
+            <Scan className="w-4 h-4" />
+            <span>Quét Barcode (Camera)</span>
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -337,6 +403,30 @@ export default function BarcodeMappingsPage() {
                   placeholder="https://example.com/image.jpg"
                   className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-surface text-gray-900"
                 />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="font-semibold text-gray-700 block">Giá vốn (VND)</label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={costPrice}
+                    onChange={(e) => setCostPrice(e.target.value)}
+                    placeholder="VD: 50000"
+                    className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-surface text-gray-900"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="font-semibold text-gray-700 block">Thuế suất (%)</label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={taxRate}
+                    onChange={(e) => setTaxRate(e.target.value)}
+                    placeholder="VD: 10"
+                    className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-surface text-gray-900"
+                  />
+                </div>
               </div>
               <div className="flex justify-end gap-2 border-t pt-4 border-gray-200 bg-transparent">
                 <button

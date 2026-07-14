@@ -57,6 +57,12 @@ docker compose -f PMI/docker-compose.e2e.yml up --build   # spins up isolated DB
 # Then run Playwright against it, or use Dockerfile.test (root) for containerized runs
 ```
 
+**OMS/WMS Backend (pytest):**
+```bash
+docker compose -f OMS/docker-compose.yml exec api pytest    # OMS tests
+docker compose -f WMS/docker-compose.yml exec api pytest    # WMS tests
+```
+
 **Cross-system E2E (pytest + Playwright):**
 ```bash
 ./start_all.sh --no-watch                        # bring up all services
@@ -64,6 +70,11 @@ pip install -r e2e_tests/requirements.txt
 python -m playwright install --with-deps chromium
 pytest e2e_tests/ -v
 ```
+
+E2E environment overrides:
+- `E2E_PMI_API_URL` (default: `http://localhost:18100`)
+- `E2E_OMS_API_URL` (default: `http://localhost:18101`)
+- `E2E_WMS_API_URL` (default: `http://localhost:18102`)
 
 ### Database Migrations (PMI)
 ```bash
@@ -86,6 +97,18 @@ Three workflows in `.github/workflows/`:
 | **PIM Test Pipeline** | `test.yml` | push/PR to `main` | PMI backend pytest, PMI frontend vitest (Playwright e2e currently commented out) |
 | **E2E Test Pipeline** | `e2e_test.yml` | push/PR to `main` + manual | Starts all services via `start_all.sh`, waits for readiness, runs `pytest e2e_tests/` with Playwright (chromium), uploads artifacts |
 | **CI/CD** | `cicd.yml` | push/PR to `main` | Validates all prod compose files, builds all frontends, Python syntax check; on `main` push deploys to EC2 via `deploy_prod.sh` |
+
+## Required Environment Variables
+
+PMI backend requires these env vars (set in docker-compose or `.env`):
+- `JWT_SECRET_KEY` — signing key for JWT tokens
+- `INTERNAL_SERVICE_TOKEN` — shared secret for inter-service API calls
+- `DATABASE_URL` — Postgres connection string
+- `MINIO_*` — MinIO credentials for file storage
+
+Test modes:
+- `BYPASS_TESTCONTAINERS=true` — use external DB instead of testcontainers
+- `USE_E2E_COMPOSE=true` — use the e2e docker-compose stack
 
 ## Architecture Details
 

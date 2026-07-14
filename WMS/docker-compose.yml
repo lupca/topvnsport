@@ -31,6 +31,7 @@ services:
     networks:
       - default
       - oms_default
+      - pmi_default
     develop:
       watch:
         - action: sync
@@ -73,6 +74,8 @@ networks:
     name: wms_default
     external: true
   oms_default:
+    external: true
+  pmi_default:
     external: true
 
 volumes:

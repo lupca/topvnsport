@@ -99,6 +99,8 @@ class ProductVariant(Base):
     price = Column(Numeric(12, 2), nullable=False)
     barcode = Column(String(255), nullable=True)
     stock = Column(Integer, nullable=False)
+    default_cost_price = Column(Numeric(12, 2), nullable=True)  # Giá vốn tham chiếu (VND)
+    default_tax_rate = Column(Numeric(5, 2), nullable=True)     # Thuế suất % (VD: 10.00 = 10%)
 
     product = relationship("Product", back_populates="variants")
     media = relationship("ProductMedia", back_populates="variant", cascade="all, delete-orphan")

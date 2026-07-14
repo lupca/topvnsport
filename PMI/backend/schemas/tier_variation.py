@@ -24,6 +24,8 @@ class ProductVariantBase(BaseModel):
     price: Decimal = Field(..., ge=0)
     barcode: Optional[str] = Field(None, max_length=255)
     stock: int = Field(..., ge=0)
+    default_cost_price: Optional[Decimal] = Field(None, ge=0, description="Giá vốn tham chiếu (VND)")
+    default_tax_rate: Optional[Decimal] = Field(None, ge=0, le=100, description="Thuế suất mặc định (%)")
 
 class ProductVariantCreate(ProductVariantBase):
     pass
@@ -31,4 +33,6 @@ class ProductVariantCreate(ProductVariantBase):
 class ProductVariantResponse(ProductVariantBase):
     id: int
     product_id: int
+    default_cost_price: Optional[Decimal] = None
+    default_tax_rate: Optional[Decimal] = None
     model_config = ConfigDict(from_attributes=True)

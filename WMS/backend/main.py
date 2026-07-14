@@ -38,6 +38,48 @@ with engine.begin() as conn:
     except Exception as e:
         logging.getLogger("wms_backend").error(f"Migration error (uq_inventory_sku_location): {e}")
 
+# ===== MIGRATION: Add cost/tax fields to barcode_mappings and inbound_items =====
+try:
+    with engine.begin() as conn:
+        conn.execute(text("""
+            DO $$
+            BEGIN
+                -- barcode_mappings: cost_price
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                    WHERE table_name='barcode_mappings' AND column_name='cost_price') THEN
+                    ALTER TABLE barcode_mappings ADD COLUMN cost_price NUMERIC(12,2);
+                END IF;
+                
+                -- barcode_mappings: tax_rate
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                    WHERE table_name='barcode_mappings' AND column_name='tax_rate') THEN
+                    ALTER TABLE barcode_mappings ADD COLUMN tax_rate NUMERIC(5,2);
+                END IF;
+                
+                -- barcode_mappings: pmi_variant_id
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                    WHERE table_name='barcode_mappings' AND column_name='pmi_variant_id') THEN
+                    ALTER TABLE barcode_mappings ADD COLUMN pmi_variant_id INTEGER;
+                END IF;
+                
+                -- barcode_mappings: last_synced_at
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                    WHERE table_name='barcode_mappings' AND column_name='last_synced_at') THEN
+                    ALTER TABLE barcode_mappings ADD COLUMN last_synced_at TIMESTAMP;
+                END IF;
+                
+                -- inbound_items: unit_cost
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                    WHERE table_name='inbound_items' AND column_name='unit_cost') THEN
+                    ALTER TABLE inbound_items ADD COLUMN unit_cost NUMERIC(12,2);
+                END IF;
+            END $$;
+        """))
+    logger.info("Migration: cost/tax fields added successfully")
+except Exception as e:
+    logger.error(f"Migration error (cost_tax_fields): {e}")
+# ===== END MIGRATION =====
+
 app = FastAPI(title="WMS Backend API", version="1.0.0")
 
 allowed_origins = [
@@ -986,44 +1028,155 @@ def get_fulfillment_order(id: str, db: Session = Depends(get_db)):
 # --- Product Sync API ---
 
 @app.post("/products/sync")
-def sync_products(db: Session = Depends(get_db)):
-    pmi_url = "http://pim-api:8000/products?limit=100"
-    pmi_api_key = os.getenv("PIM_API_KEY", "oms_wms_internal_api_key_secret_2026")
-    try:
-        req = urllib.request.Request(pmi_url, method="GET")
-        req.add_header("X-API-Key", pmi_api_key)
-        with urllib.request.urlopen(req, timeout=5) as response:
-            data = json.loads(response.read().decode("utf-8"))
-            products = data.get("items", [])
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to fetch products from PMI: {str(e)}")
-        
+def sync_products_from_pmi(db: Session = Depends(get_db)):
+    """
+    Đồng bộ tất cả sản phẩm từ PMI sang WMS BarcodeMapping.
+    
+    Cải tiến:
+    - Dùng barcode thật từ PMI (fallback sang sku_code nếu không có)
+    - Pagination để sync TẤT CẢ sản phẩm
+    - Cache cost_price và tax_rate từ PMI
+    - Track thời điểm sync
+    - Tối ưu hiệu năng: Prefetch all mappings tránh N+1 Query
+    """
+    pmi_base_url = os.getenv("PMI_API_URL", "http://pim-api:8000")
     synced_count = 0
-    for prod in products:
-        for var in prod.get("variants", []):
-            sku = var.get("sku_code")
-            if not sku:
-                continue
-            barcode = f"BAR-{sku}"
-            bm = db.query(models.BarcodeMapping).filter(models.BarcodeMapping.sku_code == sku).first()
-            if not bm:
-                bm = models.BarcodeMapping(
-                    barcode=barcode,
-                    barcode_type="EAN-13",
-                    sku_code=sku,
-                    product_name=prod.get("name"),
-                    variant_name=var.get("tier_1_option") or "Standard",
-                    image_url=prod.get("media", [{}])[0].get("image_url") if prod.get("media") else None
-                )
-                db.add(bm)
-            else:
-                bm.product_name = prod.get("name")
-                bm.variant_name = var.get("tier_1_option") or "Standard"
-                if prod.get("media"):
-                    bm.image_url = prod.get("media")[0].get("image_url")
-            synced_count += 1
+    created_count = 0
+    updated_count = 0
+    page = 1
+    limit = 100
+    
+    # Prefetch all existing mappings to avoid N+1 query problem
+    existing_mappings = {bm.sku_code: bm for bm in db.query(models.BarcodeMapping).all()}
+    existing_barcodes = {bm.barcode: bm.sku_code for bm in db.query(models.BarcodeMapping).all()}
+    
+    while True:
+        # Fetch products từ PMI với pagination
+        pmi_url = f"{pmi_base_url}/public/products?page={page}&limit={limit}"
+        try:
+            req = urllib.request.Request(pmi_url, method="GET")
+            with urllib.request.urlopen(req, timeout=30) as response:
+                data = json.loads(response.read().decode("utf-8"))
+                products = data.get("items", [])
+                total_pages = data.get("pages", 1)
+        except Exception as e:
+            logger.error(f"Failed to fetch products from PMI page {page}: {e}")
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Không thể kết nối đến PMI: {str(e)}"
+            )
+        
+        if not products:
+            break
+        
+        for prod in products:
+            for var in prod.get("variants", []):
+                sku = var.get("sku_code")
+                if not sku:
+                    continue
+                
+                # === Xác định barcode ===
+                # Ưu tiên dùng barcode thật từ PMI, fallback sang SKU
+                pmi_barcode = var.get("barcode")
+                if pmi_barcode and pmi_barcode.strip():
+                    barcode = pmi_barcode.strip()
+                    barcode_type = "EAN-13"  # hoặc detect type
+                else:
+                    barcode = sku
+                    barcode_type = "SKU"
+                
+                # === Lấy cost và tax từ PMI ===
+                cost_price = var.get("default_cost_price")
+                tax_rate = var.get("default_tax_rate")
+                pmi_variant_id = var.get("id")
+                
+                # === Build variant_name ===
+                parts = []
+                if var.get("tier_1_option"):
+                    parts.append(var.get("tier_1_option"))
+                if var.get("tier_2_option"):
+                    parts.append(var.get("tier_2_option"))
+                variant_name = " / ".join(parts) if parts else "Standard"
+                
+                # === Lấy image URL ===
+                image_url = None
+                media = prod.get("media", [])
+                if media:
+                    # Ưu tiên ảnh cover
+                    cover = next((m for m in media if m.get("is_cover")), None)
+                    image_url = (cover or media[0]).get("image_url")
+                
+                # === Upsert by sku_code ===
+                existing = existing_mappings.get(sku)
+                
+                if not existing:
+                    # Kiểm tra barcode collision (barcode trùng với SKU khác)
+                    colliding_sku = existing_barcodes.get(barcode)
+                    if colliding_sku and colliding_sku != sku:
+                        # Xử lý collision: append SKU suffix
+                        barcode = f"{barcode}-{sku}"
+                        logger.warning(f"Barcode collision detected, using: {barcode}")
+                    
+                    # Tạo mới
+                    bm = models.BarcodeMapping(
+                        barcode=barcode,
+                        barcode_type=barcode_type,
+                        sku_code=sku,
+                        product_name=prod.get("name", ""),
+                        variant_name=variant_name,
+                        image_url=image_url,
+                        cost_price=cost_price,
+                        tax_rate=tax_rate,
+                        pmi_variant_id=pmi_variant_id,
+                        last_synced_at=datetime.utcnow()
+                    )
+                    db.add(bm)
+                    
+                    # Cập nhật maps để tránh collision/trùng lặp in-flight
+                    existing_mappings[sku] = bm
+                    existing_barcodes[barcode] = sku
+                    created_count += 1
+                else:
+                    # Cập nhật existing
+                    # Chỉ update barcode nếu PMI có barcode thật
+                    if pmi_barcode and pmi_barcode.strip():
+                        old_barcode = existing.barcode
+                        new_barcode = pmi_barcode.strip()
+                        existing.barcode = new_barcode
+                        existing.barcode_type = "EAN-13"
+                        # Cập nhật map
+                        if old_barcode in existing_barcodes:
+                            del existing_barcodes[old_barcode]
+                        existing_barcodes[new_barcode] = sku
+                    
+                    existing.product_name = prod.get("name", "")
+                    existing.variant_name = variant_name
+                    existing.image_url = image_url
+                    existing.cost_price = cost_price
+                    existing.tax_rate = tax_rate
+                    existing.pmi_variant_id = pmi_variant_id
+                    existing.last_synced_at = datetime.utcnow()
+                    updated_count += 1
+                
+                synced_count += 1
+        
+        logger.info(f"Synced page {page}/{total_pages}, products so far: {synced_count}")
+        
+        # Check if more pages
+        if page >= total_pages:
+            break
+        page += 1
+    
     db.commit()
-    return {"status": "success", "synced_count": synced_count}
+    
+    return {
+        "status": "success",
+        "message": f"Đồng bộ thành công {synced_count} sản phẩm",
+        "synced_count": synced_count,
+        "created_count": created_count,
+        "updated_count": updated_count,
+        "pages_processed": page
+    }
 
 
 # --- Stock Transaction Logs ---

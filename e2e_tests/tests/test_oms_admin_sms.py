@@ -1,9 +1,19 @@
 from playwright.sync_api import Page, expect
 
+import re
+
 def test_oms_admin_sms_settings(page: Page, oms_api_url: str):
-    # Navigate to OMS Admin SMS Settings (e.g. localhost:13101 in layout)
-    # Since OMS frontend runs on port 13101:
     admin_base_url = oms_api_url.replace("18101", "13101")
+    
+    # 1. Login first
+    page.goto(admin_base_url)
+    page.wait_for_url(re.compile(r"^http://localhost:13110/login\?redirect="))
+    page.fill("input[name='username']", "admin")
+    page.fill("input[name='password']", "Admin@123")
+    page.click("button[type='submit']")
+    page.wait_for_url(re.compile(r"^http://localhost:13101/(\?.*)?$"))
+    
+    # 2. Navigate to SMS Settings
     page.goto(f"{admin_base_url}/settings/sms")
 
     # Verify key inputs are present

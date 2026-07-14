@@ -139,8 +139,11 @@ class PMIApi:
         sku_code: str,
         price: float,
         stock: int,
-        image_url: str,
+        image_url: str | None = None,
         description: str = "E2E generated product",
+        default_cost_price: float | None = None,
+        default_tax_rate: float | None = None,
+        barcode: str | None = None,
     ) -> ProductResponse:
         payload = {
             "product_code": product_code,
@@ -163,6 +166,9 @@ class PMIApi:
                     "sku_code": sku_code,
                     "price": price,
                     "stock": stock,
+                    "default_cost_price": default_cost_price,
+                    "default_tax_rate": default_tax_rate,
+                    "barcode": barcode,
                 }
             ],
             "media": [
@@ -171,7 +177,7 @@ class PMIApi:
                     "is_cover": True,
                     "display_order": 1,
                 }
-            ],
+            ] if image_url else [],
             "attributes": [],
         }
         return self._request_model("POST", "/products", payload, ProductResponse)

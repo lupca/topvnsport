@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, UniqueConstraint, Numeric
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -68,6 +68,10 @@ class BarcodeMapping(Base):
     variant_name = Column(String, nullable=True)
     image_url = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+    cost_price = Column(Numeric(12, 2), nullable=True)      # Cache giá vốn từ PMI
+    tax_rate = Column(Numeric(5, 2), nullable=True)         # Cache thuế suất từ PMI (%)
+    pmi_variant_id = Column(Integer, nullable=True)         # ID variant bên PMI
+    last_synced_at = Column(DateTime, nullable=True)        # Thời điểm sync gần nhất
 
 
 class InboundShipment(Base):
@@ -99,6 +103,7 @@ class InboundItem(Base):
     received_qty = Column(Integer, default=0, nullable=False)
     location_id = Column(Integer, ForeignKey("locations.id"), nullable=True)
     status = Column(String, default="pending", nullable=False)
+    unit_cost = Column(Numeric(12, 2), nullable=True)  # Giá nhập thực tế của lô hàng này (VND)
 
     inbound_shipment = relationship("InboundShipment", back_populates="items")
     location = relationship("Location", back_populates="inbound_items")

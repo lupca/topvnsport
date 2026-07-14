@@ -322,7 +322,9 @@ def update_product_aggregate(db: Session, product_id: int, product_in: schemas.P
             sku_code=sku,
             price=v.price,
             barcode=v.barcode,
-            stock=v.stock
+            stock=v.stock,
+            default_cost_price=v.default_cost_price,
+            default_tax_rate=v.default_tax_rate
         )
         db_product.variants.append(db_var)
         db_variants.append(db_var)

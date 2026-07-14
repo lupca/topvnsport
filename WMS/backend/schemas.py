@@ -60,6 +60,8 @@ class BarcodeMappingBase(BaseModel):
     product_name: str
     variant_name: Optional[str] = None
     image_url: Optional[str] = None
+    cost_price: Optional[float] = None
+    tax_rate: Optional[float] = None
 
 class BarcodeMappingCreate(BarcodeMappingBase):
     pass
@@ -67,6 +69,8 @@ class BarcodeMappingCreate(BarcodeMappingBase):
 class BarcodeMappingResponse(BarcodeMappingBase):
     id: int
     created_at: datetime
+    pmi_variant_id: Optional[int] = None
+    last_synced_at: Optional[datetime] = None
     model_config = ConfigDict(from_attributes=True)
 
 # --- InboundItem Schemas ---
@@ -77,6 +81,7 @@ class InboundItemBase(BaseModel):
     received_qty: Optional[int] = 0
     location_id: Optional[int] = None
     status: Optional[str] = "pending"
+    unit_cost: Optional[float] = None  # Giá nhập thực tế (VND)
 
 class InboundItemCreate(InboundItemBase):
     pass

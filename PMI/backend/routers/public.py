@@ -47,6 +47,8 @@ class PublicVariantResponse(BaseModel):
     price: float
     barcode: Optional[str] = None
     stock: int
+    default_cost_price: Optional[float] = None
+    default_tax_rate: Optional[float] = None
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -269,7 +271,9 @@ def get_public_products(
                     sku_code=v.sku_code,
                     price=float(v.price),
                     barcode=v.barcode,
-                    stock=v.stock
+                    stock=v.stock,
+                    default_cost_price=float(v.default_cost_price) if v.default_cost_price is not None else None,
+                    default_tax_rate=float(v.default_tax_rate) if v.default_tax_rate is not None else None
                 ) for v in p.variants
             ],
             media=[
@@ -381,7 +385,9 @@ def get_public_product(
                 sku_code=v.sku_code,
                 price=float(v.price),
                 barcode=v.barcode,
-                stock=v.stock
+                stock=v.stock,
+                default_cost_price=float(v.default_cost_price) if v.default_cost_price is not None else None,
+                default_tax_rate=float(v.default_tax_rate) if v.default_tax_rate is not None else None
             ) for v in product.variants
         ],
         media=[
