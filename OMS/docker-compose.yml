@@ -30,6 +30,7 @@ services:
       - INTEGRITY_MODE=development
       - ENV=development
       - FERNET_KEY=lz_K8Z8d1d-0iO-4yN2Vb11234567890abcdefghijk=
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-identity_jwt_secret_key_2026_change_me_in_prod}
     depends_on:
       oms_db:
         condition: service_healthy
@@ -37,6 +38,7 @@ services:
       - default
       - pmi_default
       - wms_default
+      - gateway_network
     develop:
       watch:
         - action: sync
@@ -80,6 +82,8 @@ networks:
   pmi_default:
     external: true
   wms_default:
+    external: true
+  gateway_network:
     external: true
 
 volumes:

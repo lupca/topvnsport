@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithAuth } from "@/utils/apiClient";
 
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -48,8 +49,8 @@ export default function PickDetailPage() {
   const fetchData = async () => {
     try {
       const [ordRes, locRes] = await Promise.all([
-        fetch(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${id}`),
-        fetch(`${APP_SETTINGS.api.baseUrl}/locations`)
+        fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${id}`),
+        fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/locations`)
       ]);
       if (!ordRes.ok) throw new Error("Failed to load fulfillment order");
       const ordData = await ordRes.json();
@@ -67,7 +68,7 @@ export default function PickDetailPage() {
     if (!order) return;
     try {
       setScanMessage(null);
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${order.id}/scan-pick`, {
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${order.id}/scan-pick`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -87,7 +88,7 @@ export default function PickDetailPage() {
         type: "success",
       });
       // Refresh data
-      const refreshRes = await fetch(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${id}`);
+      const refreshRes = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${id}`);
       if (refreshRes.ok) {
         setOrder(await refreshRes.json());
       }
@@ -102,7 +103,7 @@ export default function PickDetailPage() {
   const handleCompletePick = async () => {
     if (!order) return;
     try {
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${order.id}/complete-pick`, {
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${order.id}/complete-pick`, {
         method: "POST",
       });
       if (!res.ok) throw new Error("Không thể hoàn tất nhặt hàng.");

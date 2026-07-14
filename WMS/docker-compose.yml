@@ -25,6 +25,7 @@ services:
       - "18102:8002"
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@wms-db:5432/wms_db
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-identity_jwt_secret_key_2026_change_me_in_prod}
     depends_on:
       wms-db:
         condition: service_healthy
@@ -32,6 +33,7 @@ services:
       - default
       - oms_default
       - pmi_default
+      - gateway_network
     develop:
       watch:
         - action: sync
@@ -76,6 +78,8 @@ networks:
   oms_default:
     external: true
   pmi_default:
+    external: true
+  gateway_network:
     external: true
 
 volumes:

@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithAuth } from "@/utils/apiClient";
 
 import React, { useState, useEffect } from "react";
 import { APP_SETTINGS } from "@/config/settings";
@@ -55,9 +56,9 @@ export default function TransactionsPage() {
       setError(null);
       
       const [txRes, locRes, whRes] = await Promise.all([
-        fetch(`${APP_SETTINGS.api.baseUrl}/stock-transactions`),
-        fetch(`${APP_SETTINGS.api.baseUrl}/locations`),
-        fetch(`${APP_SETTINGS.api.baseUrl}/warehouses`)
+        fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/stock-transactions`),
+        fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/locations`),
+        fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/warehouses`)
       ]);
 
       if (!txRes.ok || !locRes.ok || !whRes.ok) {

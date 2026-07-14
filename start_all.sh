@@ -73,7 +73,10 @@ echo -e "${BLUE}===============================================${NC}"
 # Step 1: Ensure external Docker networks exist
 echo -e "\n${YELLOW}Step 1: Checking and creating Docker networks...${NC}"
 docker network create pmi_default || true
+docker network create oms_default || true
 docker network create wms_default || true
+docker network create identity_default || true
+docker network create gateway_network || true
 
 # Step 2: Build and start the projects using compose
 echo -e "\n${YELLOW}Step 2: Starting services via Docker Compose...${NC}"
@@ -90,6 +93,9 @@ docker compose -f WMS/docker-compose.yml up "${UP_ARGS[@]}"
 echo -e "${BLUE}Starting WEB (Development mode)...${NC}"
 docker compose -f web/docker-compose.yml up "${UP_ARGS[@]}"
 
+echo -e "${BLUE}Starting Gateway + Identity Service (Development mode)...${NC}"
+docker compose -f gateway/docker-compose.yml up "${UP_ARGS[@]}"
+
 # Step 3: Wait for services to be ready
 echo -e "\n${YELLOW}Step 3: Waiting for APIs to respond...${NC}"
 python3 -c '
@@ -100,7 +106,9 @@ import sys
 ports = {
     18100: "PMI API",
     18101: "OMS API",
-    18102: "WMS API"
+    18102: "WMS API",
+    18110: "Identity API",
+    8080: "API Gateway"
 }
 
 start_time = time.time()
@@ -165,6 +173,9 @@ else
         WATCH_PIDS+=("$!")
 
         docker compose -f web/docker-compose.yml watch --no-up web_frontend &
+        WATCH_PIDS+=("$!")
+
+        docker compose -f gateway/docker-compose.yml watch --no-up identity-api identity-frontend &
         WATCH_PIDS+=("$!")
 
         trap cleanup_watchers EXIT INT TERM

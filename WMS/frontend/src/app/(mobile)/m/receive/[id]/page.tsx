@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithAuth } from "@/utils/apiClient";
 
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -56,8 +57,8 @@ export default function ReceiveDetailPage() {
   const fetchData = async () => {
     try {
       const [shipRes, locRes] = await Promise.all([
-        fetch(`${APP_SETTINGS.api.baseUrl}/inbound-shipments/${id}`),
-        fetch(`${APP_SETTINGS.api.baseUrl}/locations`)
+        fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/inbound-shipments/${id}`),
+        fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/locations`)
       ]);
       if (!shipRes.ok) throw new Error("Failed to load shipment details");
       const shipData = await shipRes.json();
@@ -83,7 +84,7 @@ export default function ReceiveDetailPage() {
     if (!shipment) return;
     try {
       setScanMessage(null);
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/inbound/${shipment.id}/receive-scan`, {
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/inbound/${shipment.id}/receive-scan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -104,7 +105,7 @@ export default function ReceiveDetailPage() {
       });
 
       // Reload shipment details
-      const refreshRes = await fetch(`${APP_SETTINGS.api.baseUrl}/inbound-shipments/${id}`);
+      const refreshRes = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/inbound-shipments/${id}`);
       if (refreshRes.ok) {
         setShipment(await refreshRes.json());
       }
@@ -122,7 +123,7 @@ export default function ReceiveDetailPage() {
 
     try {
       setPutAwayMessage(null);
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/inbound/${shipment.id}/put-away`, {
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/inbound/${shipment.id}/put-away`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -143,7 +144,7 @@ export default function ReceiveDetailPage() {
       });
 
       // Reload shipment details
-      const refreshRes = await fetch(`${APP_SETTINGS.api.baseUrl}/inbound-shipments/${id}`);
+      const refreshRes = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/inbound-shipments/${id}`);
       if (refreshRes.ok) {
         setShipment(await refreshRes.json());
       }
@@ -158,7 +159,7 @@ export default function ReceiveDetailPage() {
   const handleCompleteInbound = async () => {
     if (!shipment) return;
     try {
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/inbound/${shipment.id}/complete`, {
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/inbound/${shipment.id}/complete`, {
         method: "PATCH",
       });
       if (!res.ok) {

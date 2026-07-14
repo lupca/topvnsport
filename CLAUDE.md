@@ -4,10 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Top VNSport is a multi-system e-commerce platform consisting of four subsystems, each containerized with Docker Compose:
+Top VNSport is a multi-system e-commerce platform with centralized SSO authentication:
 
 | System | Backend | Frontend | Ports (API / UI) |
 |--------|---------|----------|------------------|
+| **Gateway** | Nginx (auth_request) | — | 8080 |
+| **Identity** (SSO Service) | FastAPI + PostgreSQL | Next.js 14 + Tailwind | 18110 / 13110 |
 | **PMI** (Product Information Management) | FastAPI + PostgreSQL + MinIO | Next.js 14 + Tailwind | 18100 / 13100 |
 | **OMS** (Order Management System) | FastAPI + PostgreSQL | Next.js 14 + Tailwind | 18101 / 13101 |
 | **WMS** (Warehouse Management System) | FastAPI + PostgreSQL | Next.js 14 + Tailwind | 18102 / 13102 |
@@ -29,6 +31,14 @@ All backends use SQLAlchemy ORM with PostgreSQL 15. PMI is the most actively dev
 cd PMI && docker compose up      # or OMS/, WMS/
 cd web && npm run dev             # storefront (port 3000)
 ```
+
+### Start Gateway + Identity (centralized auth)
+```bash
+# Create networks first (if not already running other services)
+docker network create pmi_default oms_default wms_default identity_default gateway_network 2>/dev/null || true
+cd gateway && docker compose up
+```
+Gateway runs on port 8080, routes `/api/pmi/*`, `/api/oms/*`, `/api/wms/*` through auth.
 
 ### Running Tests
 
@@ -61,6 +71,11 @@ docker compose -f PMI/docker-compose.e2e.yml up --build   # spins up isolated DB
 ```bash
 docker compose -f OMS/docker-compose.yml exec api pytest    # OMS tests
 docker compose -f WMS/docker-compose.yml exec api pytest    # WMS tests
+```
+
+**Identity Service (pytest):**
+```bash
+docker compose -f gateway/docker-compose.yml exec identity-api pytest
 ```
 
 **Cross-system E2E (pytest + Playwright):**
@@ -112,6 +127,16 @@ Test modes:
 
 ## Architecture Details
 
+### Gateway + Identity Service
+- **Gateway** (`gateway/`): Nginx with `auth_request` module for centralized auth
+  - All `/api/*` routes validated via `/auth/verify` before proxying to backend
+  - `/internal/*` routes use X-API-Key for service-to-service calls
+  - Config in `gateway/nginx/conf.d/upstream.conf` (dev), `locations.conf` (dev) and `locations.prod.conf` (prod)
+- **Identity Service** (`identity-service/`): FastAPI SSO service
+  - Manages users, roles, JWT tokens (access + refresh)
+  - Routers: `auth.py` (login/verify/refresh), `staff.py`, `roles.py`
+  - Frontend: Next.js login/dashboard at port 13110
+
 ### PMI Backend Structure (`PMI/backend/`)
 - **Routers**: `routers/` — one file per domain (products, categories, channels, attributes, auth, audit, upload)
 - **Schemas**: `schemas/` — Pydantic v2 models split by domain (product, category, channel_config, attribute, tier_variation)
@@ -148,6 +173,9 @@ Key docs:
 
 | Service | Host Port |
 |---------|-----------|
+| Gateway (Nginx) | 8080 |
+| Identity API | 18110 |
+| Identity Frontend | 13110 |
 | PMI Postgres | 15433 |
 | OMS Postgres | 15434 |
 | WMS Postgres | 15435 |

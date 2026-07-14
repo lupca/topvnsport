@@ -70,13 +70,16 @@ ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "
   sudo docker network create oms_default >/dev/null 2>&1 || true
   sudo docker network create wms_default >/dev/null 2>&1 || true
   sudo docker network create identity_default >/dev/null 2>&1 || true
+  sudo docker network create gateway_network >/dev/null 2>&1 || true
   export PUBLIC_HOST='$PUBLIC_HOST'
   sudo -E docker compose -f PMI/docker-compose.prod.yml up -d --build
   sudo -E docker compose -f OMS/docker-compose.prod.yml up -d --build
   sudo -E docker compose -f WMS/docker-compose.prod.yml up -d --build
   sudo -E docker compose -f identity-service/docker-compose.prod.yml up -d --build
   sudo -E docker compose -f web/docker-compose.prod.yml up -d --build
-  sudo -E docker compose -f nginx/docker-compose.yml up -d --build
+  sudo -E docker compose -f gateway/docker-compose.prod.yml up -d --build
+  echo "Waiting for Gateway to be healthy..."
+  timeout 60 bash -c 'until curl -sf http://localhost/health > /dev/null 2>&1; do sleep 2; done' || true
 "
 
 echo "[4/5] Health checks"

@@ -2,7 +2,25 @@
 
 Tài liệu này mô tả chi tiết kiến trúc hệ thống và toàn bộ luồng nghiệp vụ của chuỗi hệ thống **PMI + OMS + WMS** bằng sơ đồ Mermaid.
 
-## 1. Kiến Trúc Hệ Thống Tổng Quan (System Architecture)
+### Sơ đồ định tuyến qua Gateway (Centralized Auth & Routing)
+
+```mermaid
+graph TB
+    Client[Browser/App]
+    Gateway["🛡️ Gateway Nginx (:8080)"]
+    Identity["🔑 Identity Service (:18110)"]
+    PMI["⚙️ PMI API (:18100)"]
+    OMS["⚙️ OMS API (:18101)"]
+    WMS["⚙️ WMS API (:18102)"]
+    
+    Client --> Gateway
+    Gateway -->|auth_request| Identity
+    Gateway -->|/api/pmi/*| PMI
+    Gateway -->|/api/oms/*| OMS
+    Gateway -->|/api/wms/*| WMS
+```
+
+## 2. Kiến Trúc Chi Tiết Các Thành Phần (System Components Architecture)
 
 Sơ đồ dưới đây biểu diễn 3 hệ thống chạy độc lập dưới dạng Microservices, các thành phần bên trong (Frontend, API, DB), phân quyền tác vụ của từng đối tượng (Saler, Thủ kho, Packer) và các kênh giao tiếp API giữa các service.
 

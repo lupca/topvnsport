@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithAuth } from "@/utils/apiClient";
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
@@ -79,7 +80,7 @@ export default function DashboardPage() {
 
     // 1. Fetch dashboard stats
     try {
-      const statsRes = await fetch(`${apiUrl}/dashboard/stats`);
+      const statsRes = await fetchWithAuth(`${apiUrl}/dashboard/stats`);
       if (!statsRes.ok) throw new Error("Không thể tải thông tin thống kê.");
       const statsData: StatsData = await statsRes.json();
       setStats(statsData);
@@ -92,7 +93,7 @@ export default function DashboardPage() {
 
     // 2. Fetch inventory for low-stock alerts
     try {
-      const invRes = await fetch(`${apiUrl}/inventory`);
+      const invRes = await fetchWithAuth(`${apiUrl}/inventory`);
       if (!invRes.ok) {
         throw new Error("Không thể tải thông tin tồn kho.");
       }
@@ -117,7 +118,7 @@ export default function DashboardPage() {
 
     // 3. Fetch recent transactions
     try {
-      const txRes = await fetch(`${apiUrl}/stock-transactions`);
+      const txRes = await fetchWithAuth(`${apiUrl}/stock-transactions`);
       if (!txRes.ok) {
         throw new Error("Không thể tải thông tin lịch sử giao dịch.");
       }

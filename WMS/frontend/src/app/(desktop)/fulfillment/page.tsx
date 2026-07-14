@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithAuth } from "@/utils/apiClient";
 
 import React, { useState, useEffect } from "react";
 import { APP_SETTINGS } from "@/config/settings";
@@ -76,8 +77,8 @@ export default function FulfillmentPage() {
       setLoading(true);
       setError(null);
       const [ordRes, locRes] = await Promise.all([
-        fetch(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders`),
-        fetch(`${APP_SETTINGS.api.baseUrl}/locations`)
+        fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders`),
+        fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/locations`)
       ]);
 
       if (!ordRes.ok || !locRes.ok) {
@@ -99,7 +100,7 @@ export default function FulfillmentPage() {
   const handleSelectOrder = async (order: FulfillmentOrder) => {
     try {
       setLoading(true);
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${order.id}`);
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${order.id}`);
       if (!res.ok) throw new Error("Không thể tải chi tiết đơn hàng.");
       const data = await res.json();
       setSelectedOrder(data);
@@ -116,7 +117,7 @@ export default function FulfillmentPage() {
 
   const handleStartPick = async (orderId: number) => {
     try {
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${orderId}/start-pick`, {
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${orderId}/start-pick`, {
         method: "POST"
       });
       if (!res.ok) throw new Error("Không thể bắt đầu nhặt hàng.");
@@ -135,7 +136,7 @@ export default function FulfillmentPage() {
     if (!selectedOrder || !pickBarcode) return;
 
     try {
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${selectedOrder.id}/scan-pick`, {
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${selectedOrder.id}/scan-pick`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -169,7 +170,7 @@ export default function FulfillmentPage() {
     if (!selectedOrder) return;
 
     try {
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${selectedOrder.id}/scan-pick`, {
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${selectedOrder.id}/scan-pick`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -201,7 +202,7 @@ export default function FulfillmentPage() {
 
   const handleCompletePick = async (orderId: number) => {
     try {
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${orderId}/complete-pick`, {
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${orderId}/complete-pick`, {
         method: "POST"
       });
       if (!res.ok) throw new Error("Không thể hoàn tất nhặt hàng.");
@@ -223,7 +224,7 @@ export default function FulfillmentPage() {
     }
 
     try {
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${selectedOrder.id}/scan-pack`, {
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${selectedOrder.id}/scan-pack`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -237,7 +238,7 @@ export default function FulfillmentPage() {
         throw new Error(errData.detail || "Quét đóng gói thất bại.");
       }
 
-      await fetch(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${selectedOrder.id}/complete-pack`, {
+      await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${selectedOrder.id}/complete-pack`, {
         method: "POST"
       });
 
@@ -251,7 +252,7 @@ export default function FulfillmentPage() {
 
   const handleCompletePack = async (orderId: number) => {
     try {
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${orderId}/complete-pack`, {
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${orderId}/complete-pack`, {
         method: "POST"
       });
       if (!res.ok) throw new Error("Không thể hoàn tất đóng gói.");
@@ -267,7 +268,7 @@ export default function FulfillmentPage() {
 
   const handleShipOrder = async (orderId: number) => {
     try {
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${orderId}/ship`, {
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${orderId}/ship`, {
         method: "POST"
       });
       if (!res.ok) {
@@ -287,7 +288,7 @@ export default function FulfillmentPage() {
   const handleCancelOrder = async (orderId: number) => {
     if (!(await showConfirm("Bạn có chắc muốn hủy yêu cầu xuất kho này? Tồn kho dự phòng sẽ được trả lại."))) return;
     try {
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${orderId}/cancel`, {
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${orderId}/cancel`, {
         method: "POST"
       });
       if (!res.ok) throw new Error("Không thể hủy đơn.");

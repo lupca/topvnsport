@@ -11,6 +11,7 @@ from sqlalchemy import text, func
 from database import engine, Base, get_db
 import models, schemas
 from utils.helpers import log_stock_transaction, notify_oms_status
+from utils.auth import get_current_user
 
 import logging
 
@@ -44,8 +45,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/health")
+def health_check():
+    return {"status": "ok", "service": "wms-backend"}
+
 @app.get("/status")
-def get_status(db: Session = Depends(get_db)):
+def get_status(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     try:
         # Check database connection
         db.execute(text("SELECT 1"))
@@ -54,7 +59,7 @@ def get_status(db: Session = Depends(get_db)):
         return {"status": "error", "database": "disconnected", "detail": str(e)}
 
 @app.get("/dashboard/stats")
-def get_dashboard_stats(db: Session = Depends(get_db)):
+def get_dashboard_stats(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     warehouse_count = db.query(models.Warehouse).count()
     location_count = db.query(models.Location).count()
     qty_on_hand = db.query(func.sum(models.Inventory.qty_on_hand)).scalar() or 0
@@ -79,9 +84,9 @@ from routers.fulfillment import router as fulfillment_router
 from routers.transactions import router as transactions_router
 
 # Include Routers
-app.include_router(warehouses_router)
-app.include_router(barcode_mappings_router)
-app.include_router(inventory_router)
-app.include_router(inbound_router)
-app.include_router(fulfillment_router)
-app.include_router(transactions_router)
+app.include_router(warehouses_router, dependencies=[Depends(get_current_user)])
+app.include_router(barcode_mappings_router, dependencies=[Depends(get_current_user)])
+app.include_router(inventory_router, dependencies=[Depends(get_current_user)])
+app.include_router(inbound_router, dependencies=[Depends(get_current_user)])
+app.include_router(fulfillment_router, dependencies=[Depends(get_current_user)])
+app.include_router(transactions_router, dependencies=[Depends(get_current_user)])

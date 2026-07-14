@@ -8,10 +8,31 @@ OMS_URL = "http://localhost:18101"
 WMS_URL = "http://localhost:18102"
 PMI_URL = "http://localhost:18100"
 
+def get_auth_token():
+    url = "http://localhost:8080/auth/login"
+    data = json.dumps({"username": "admin", "password": "Admin@123"}).encode("utf-8")
+    req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"}, method="POST")
+    try:
+        with urllib.request.urlopen(req, timeout=5) as response:
+            res_data = json.loads(response.read().decode("utf-8"))
+            return res_data["access_token"]
+    except Exception as e:
+        print(f"Failed to obtain auth token from gateway: {e}")
+        return None
+
+token = None
+
 def request(url, method="GET", data=None):
+    global token
     headers = {"Content-Type": "application/json"}
     if "18100" in url or "pim-api" in url:
         headers["X-API-Key"] = "oms_wms_internal_api_key_secret_2026"
+    else:
+        if not token:
+            token = get_auth_token()
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
+            
     req_data = json.dumps(data).encode("utf-8") if data else None
     req = urllib.request.Request(url, data=req_data, headers=headers, method=method)
     try:

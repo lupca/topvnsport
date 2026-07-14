@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithAuth } from "@/utils/apiClient";
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
@@ -16,7 +17,7 @@ export default function MobileDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${APP_SETTINGS.api.baseUrl}/dashboard/stats`)
+    fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/dashboard/stats`)
       .then((res) => res.json())
       .then((data) => {
         setStats(data);

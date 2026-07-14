@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithAuth } from "@/utils/apiClient";
 
 import React, { useState, useEffect } from "react";
 import { APP_SETTINGS } from "@/config/settings";
@@ -75,9 +76,9 @@ export default function InventoryPage() {
       setError(null);
       
       const [invRes, locRes, whRes] = await Promise.all([
-        fetch(`${APP_SETTINGS.api.baseUrl}/inventory`),
-        fetch(`${APP_SETTINGS.api.baseUrl}/locations`),
-        fetch(`${APP_SETTINGS.api.baseUrl}/warehouses`)
+        fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/inventory`),
+        fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/locations`),
+        fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/warehouses`)
       ]);
 
       if (!invRes.ok || !locRes.ok || !whRes.ok) {
@@ -113,7 +114,7 @@ export default function InventoryPage() {
     };
 
     try {
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/inventory/adjust`, {
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/inventory/adjust`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -152,7 +153,7 @@ export default function InventoryPage() {
     };
 
     try {
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/inventory/transfer`, {
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/inventory/transfer`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)

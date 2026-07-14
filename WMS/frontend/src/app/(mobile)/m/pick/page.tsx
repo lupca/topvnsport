@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithAuth } from "@/utils/apiClient";
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
@@ -34,7 +35,7 @@ export default function PickListPage() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders`);
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders`);
       if (!res.ok) throw new Error("Failed to fetch orders");
       const data = await res.json();
       setOrders(data);
@@ -47,7 +48,7 @@ export default function PickListPage() {
 
   const handleStartPick = async (orderId: number) => {
     try {
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${orderId}/start-pick`, {
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${orderId}/start-pick`, {
         method: "POST"
       });
       if (!res.ok) throw new Error("Failed to start pick");

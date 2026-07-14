@@ -15,6 +15,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy import func, cast, Date
 
 import models
+from utils.auth import get_current_user, get_optional_user
+
 import schemas
 from database import engine, Base, get_db, SessionLocal
 
@@ -163,7 +165,8 @@ def _fetch_inventory_snapshot(order_items: List[models.OrderItem]) -> tuple[Dict
     warehouse_url = f"{WMS_API_URL}/warehouses"
     inventory_url = f"{WMS_API_URL}/inventory"
     locations_url = f"{WMS_API_URL}/locations"
-    with httpx.Client(timeout=10.0) as client:
+    headers = {"X-API-Key": PIM_API_KEY}
+    with httpx.Client(timeout=10.0, headers=headers) as client:
         warehouses_resp = client.get(warehouse_url)
         inventory_resp = client.get(inventory_url)
         locations_resp = client.get(locations_url)
@@ -310,7 +313,7 @@ def read_root():
 # --- Dashboard Stats ---
 
 @app.get("/dashboard/stats")
-def get_dashboard_stats(db: Session = Depends(get_db)):
+def get_dashboard_stats(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     order_count = db.query(models.Order).count()
     customer_count = db.query(models.Customer).count()
     
@@ -355,7 +358,7 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
 # --- Products Proxy Search ---
 
 @app.get("/products/search")
-def search_products(request: Request):
+def search_products(request: Request, current_user: dict = Depends(get_current_user)):
     params = dict(request.query_params)
     if "search" in params:
         params["q"] = params.pop("search")
@@ -377,7 +380,7 @@ def search_products(request: Request):
 # --- Customer CRUD ---
 
 @app.post("/customers", response_model=schemas.CustomerOut, status_code=status.HTTP_201_CREATED)
-def create_customer(customer: schemas.CustomerCreate, db: Session = Depends(get_db)):
+def create_customer(customer: schemas.CustomerCreate, db: Session = Depends(get_db), current_user: Optional[dict] = Depends(get_optional_user)):
     db_customer = models.Customer(
         name=customer.name,
         phone=customer.phone,
@@ -401,8 +404,7 @@ def list_customers(
     page: int = 1,
     limit: int = 20,
     search: Optional[str] = None,
-    db: Session = Depends(get_db)
-):
+    db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     query = db.query(models.Customer)
     if search:
         search_filter = f"%{search}%"
@@ -427,7 +429,7 @@ def list_customers(
     }
 
 @app.get("/customers/{customer_id}", response_model=schemas.CustomerOut)
-def retrieve_customer(customer_id: int, db: Session = Depends(get_db)):
+def retrieve_customer(customer_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     customer = db.query(models.Customer).filter(models.Customer.id == customer_id).first()
     if not customer:
         raise HTTPException(
@@ -437,7 +439,7 @@ def retrieve_customer(customer_id: int, db: Session = Depends(get_db)):
     return customer
 
 @app.put("/customers/{customer_id}", response_model=schemas.CustomerOut)
-def update_customer(customer_id: int, customer_data: schemas.CustomerUpdate, db: Session = Depends(get_db)):
+def update_customer(customer_id: int, customer_data: schemas.CustomerUpdate, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     customer = db.query(models.Customer).filter(models.Customer.id == customer_id).first()
     if not customer:
         raise HTTPException(
@@ -461,7 +463,7 @@ def update_customer(customer_id: int, customer_data: schemas.CustomerUpdate, db:
         )
 
 @app.delete("/customers/{customer_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_customer(customer_id: int, db: Session = Depends(get_db)):
+def delete_customer(customer_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     customer = db.query(models.Customer).filter(models.Customer.id == customer_id).first()
     if not customer:
         raise HTTPException(
@@ -475,7 +477,7 @@ def delete_customer(customer_id: int, db: Session = Depends(get_db)):
 # --- Channel CRUD ---
 
 @app.post("/channels", response_model=schemas.ChannelOut, status_code=status.HTTP_201_CREATED)
-def create_channel(channel: schemas.ChannelCreate, db: Session = Depends(get_db)):
+def create_channel(channel: schemas.ChannelCreate, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     db_channel = models.Channel(
         code=channel.code,
         name=channel.name,
@@ -498,8 +500,7 @@ def list_channels(
     page: int = 1,
     limit: int = 20,
     search: Optional[str] = None,
-    db: Session = Depends(get_db)
-):
+    db: Session = Depends(get_db), current_user: Optional[dict] = Depends(get_optional_user)):
     query = db.query(models.Channel)
     if search:
         search_filter = f"%{search}%"
@@ -523,7 +524,7 @@ def list_channels(
     }
 
 @app.get("/channels/{channel_id}", response_model=schemas.ChannelOut)
-def retrieve_channel(channel_id: int, db: Session = Depends(get_db)):
+def retrieve_channel(channel_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     channel = db.query(models.Channel).filter(models.Channel.id == channel_id).first()
     if not channel:
         raise HTTPException(
@@ -533,7 +534,7 @@ def retrieve_channel(channel_id: int, db: Session = Depends(get_db)):
     return channel
 
 @app.put("/channels/{channel_id}", response_model=schemas.ChannelOut)
-def update_channel(channel_id: int, channel_data: schemas.ChannelUpdate, db: Session = Depends(get_db)):
+def update_channel(channel_id: int, channel_data: schemas.ChannelUpdate, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     channel = db.query(models.Channel).filter(models.Channel.id == channel_id).first()
     if not channel:
         raise HTTPException(
@@ -557,7 +558,7 @@ def update_channel(channel_id: int, channel_data: schemas.ChannelUpdate, db: Ses
         )
 
 @app.delete("/channels/{channel_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_channel(channel_id: int, db: Session = Depends(get_db)):
+def delete_channel(channel_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     channel = db.query(models.Channel).filter(models.Channel.id == channel_id).first()
     if not channel:
         raise HTTPException(
@@ -571,7 +572,7 @@ def delete_channel(channel_id: int, db: Session = Depends(get_db)):
 # --- Order CRUD ---
 
 @app.post("/orders", response_model=schemas.OrderOut, status_code=status.HTTP_201_CREATED)
-def create_order(payload: schemas.OrderCreateInput, db: Session = Depends(get_db)):
+def create_order(payload: schemas.OrderCreateInput, db: Session = Depends(get_db), current_user: Optional[dict] = Depends(get_optional_user)):
     # 1. Validate customer
     customer = db.query(models.Customer).filter(models.Customer.id == payload.customer_id).first()
     if not customer:
@@ -691,8 +692,7 @@ def list_orders(
     channel_id: Optional[int] = None,
     date: Optional[str] = None,
     search: Optional[str] = None,
-    db: Session = Depends(get_db)
-):
+    db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     query = db.query(models.Order).order_by(models.Order.created_at.desc())
     if status:
         query = query.filter(models.Order.status == status)
@@ -727,14 +727,14 @@ def list_orders(
     }
 
 @app.get("/orders/{id}", response_model=schemas.OrderOut)
-def retrieve_order(id: int, db: Session = Depends(get_db)):
+def retrieve_order(id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     order = db.query(models.Order).filter(models.Order.id == id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     return order
 
 @app.put("/orders/{id}", response_model=schemas.OrderOut)
-def update_order(id: int, payload: schemas.OrderUpdateInput, db: Session = Depends(get_db)):
+def update_order(id: int, payload: schemas.OrderUpdateInput, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     order = db.query(models.Order).filter(models.Order.id == id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
@@ -803,7 +803,7 @@ def update_order(id: int, payload: schemas.OrderUpdateInput, db: Session = Depen
     return order
 
 @app.delete("/orders/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_order(id: int, db: Session = Depends(get_db)):
+def delete_order(id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     order = db.query(models.Order).filter(models.Order.id == id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
@@ -814,7 +814,7 @@ def delete_order(id: int, db: Session = Depends(get_db)):
     return
 
 @app.post("/orders/{id}/confirm", response_model=schemas.OrderOut)
-def confirm_order(id: int, db: Session = Depends(get_db)):
+def confirm_order(id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     order = db.query(models.Order).filter(models.Order.id == id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
@@ -875,7 +875,7 @@ def confirm_order(id: int, db: Session = Depends(get_db)):
 
 
 @app.get("/orders/{id}/stock-check")
-def check_order_stock(id: int, db: Session = Depends(get_db)):
+def check_order_stock(id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     order = db.query(models.Order).filter(models.Order.id == id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
@@ -897,7 +897,7 @@ def check_order_stock(id: int, db: Session = Depends(get_db)):
         raise
 
 @app.post("/orders/{id}/cancel", response_model=schemas.OrderOut)
-def cancel_order(id: int, db: Session = Depends(get_db)):
+def cancel_order(id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     order = db.query(models.Order).filter(models.Order.id == id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
@@ -932,7 +932,7 @@ ALLOWED_TRANSITIONS = {
 }
 
 @app.patch("/orders/{id}/status", response_model=schemas.OrderOut)
-def update_order_status(id: int, payload: schemas.OrderStatusUpdate, db: Session = Depends(get_db)):
+def update_order_status(id: int, payload: schemas.OrderStatusUpdate, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     order = db.query(models.Order).filter(models.Order.id == id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
@@ -962,7 +962,7 @@ def update_order_status(id: int, payload: schemas.OrderStatusUpdate, db: Session
 
 
 @app.patch("/orders/{id}/fulfillments/{fulfillment_number}/status", response_model=schemas.OrderOut)
-def update_fulfillment_status(id: int, fulfillment_number: str, payload: schemas.FulfillmentStatusUpdate, db: Session = Depends(get_db)):
+def update_fulfillment_status(id: int, fulfillment_number: str, payload: schemas.FulfillmentStatusUpdate, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     order = db.query(models.Order).filter(models.Order.id == id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
@@ -1210,7 +1210,7 @@ def verify_otp(payload: schemas.VerifyOtpRequest, db: Session = Depends(get_db))
         )
 
 @app.get("/api/configs/sms", response_model=schemas.SmsConfigOut)
-def get_sms_config(db: Session = Depends(get_db)):
+def get_sms_config(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     config = db.query(models.SystemConfig).filter(
         models.SystemConfig.config_key == "speed_sms_token"
     ).first()
@@ -1221,7 +1221,7 @@ def get_sms_config(db: Session = Depends(get_db)):
     return {"config_key": config.config_key, "config_value": masked_value}
 
 @app.put("/api/configs/sms", response_model=schemas.SmsConfigOut)
-def update_sms_config(payload: schemas.SmsConfigUpdate, db: Session = Depends(get_db)):
+def update_sms_config(payload: schemas.SmsConfigUpdate, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     config = db.query(models.SystemConfig).filter(
         models.SystemConfig.config_key == "speed_sms_token"
     ).first()

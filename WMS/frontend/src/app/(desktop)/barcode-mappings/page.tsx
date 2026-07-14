@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithAuth } from "@/utils/apiClient";
 
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
@@ -75,7 +76,7 @@ export default function BarcodeMappingsPage() {
     try {
       setSyncing(true);
       setError(null);
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/products/sync`, {
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/products/sync`, {
         method: "POST",
       });
       if (!res.ok) throw new Error("Đồng bộ sản phẩm thất bại.");
@@ -97,7 +98,7 @@ export default function BarcodeMappingsPage() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/barcode-mappings`);
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/barcode-mappings`);
       if (!res.ok) throw new Error("Không thể tải danh sách mã vạch.");
       const data = await res.json();
       setMappings(data);
@@ -132,7 +133,7 @@ export default function BarcodeMappingsPage() {
         : `${APP_SETTINGS.api.baseUrl}/barcode-mappings`;
       const method = editingMapping ? "PUT" : "POST";
 
-      const res = await fetch(url, {
+      const res = await fetchWithAuth(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -154,7 +155,7 @@ export default function BarcodeMappingsPage() {
   const handleDelete = async (id: number) => {
     if (!(await showConfirm("Bạn có chắc chắn muốn xóa liên kết mã vạch này?"))) return;
     try {
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/barcode-mappings/${id}`, {
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/barcode-mappings/${id}`, {
         method: "DELETE"
       });
       if (!res.ok) throw new Error("Không thể xóa liên kết mã vạch.");

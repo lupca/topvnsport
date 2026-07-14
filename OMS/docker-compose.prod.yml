@@ -22,6 +22,7 @@ services:
     restart: always
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@oms_db:5432/oms_db
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-identity_jwt_secret_key_2026_change_me_in_prod}
     depends_on:
       - oms_db
     networks:

@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithAuth } from "@/utils/apiClient";
 
 import React, { useState, useEffect } from "react";
 import { APP_SETTINGS } from "@/config/settings";
@@ -68,7 +69,7 @@ export default function WarehousesPage() {
   const fetchWarehouses = async () => {
     try {
       setLoadingWh(true);
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/warehouses`);
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/warehouses`);
       if (!res.ok) throw new Error("Không thể tải danh sách kho.");
       const data = await res.json();
       setWarehouses(data);
@@ -86,7 +87,7 @@ export default function WarehousesPage() {
     setSelectedWarehouse(wh);
     try {
       setLoadingLoc(true);
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/warehouses/${wh.id}/locations`);
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/warehouses/${wh.id}/locations`);
       if (!res.ok) throw new Error("Không thể tải vị trí của kho.");
       const data = await res.json();
       setLocations(data);
@@ -118,7 +119,7 @@ export default function WarehousesPage() {
         : `${APP_SETTINGS.api.baseUrl}/warehouses`;
       const method = editingWh ? "PUT" : "POST";
 
-      const res = await fetch(url, {
+      const res = await fetchWithAuth(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -140,7 +141,7 @@ export default function WarehousesPage() {
   const handleWhDelete = async (id: number) => {
     if (!(await showConfirm("Bạn có chắc chắn muốn xóa kho này?"))) return;
     try {
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/warehouses/${id}`, {
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/warehouses/${id}`, {
         method: "DELETE"
       });
       if (!res.ok) throw new Error("Không thể xóa kho. Vui lòng kiểm tra lại liên kết dữ liệu.");
@@ -180,7 +181,7 @@ export default function WarehousesPage() {
         : `${APP_SETTINGS.api.baseUrl}/locations`;
       const method = editingLoc ? "PUT" : "POST";
 
-      const res = await fetch(url, {
+      const res = await fetchWithAuth(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -202,7 +203,7 @@ export default function WarehousesPage() {
   const handleLocDelete = async (id: number) => {
     if (!(await showConfirm("Bạn có chắc chắn muốn xóa vị trí này?"))) return;
     try {
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/locations/${id}`, {
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/locations/${id}`, {
         method: "DELETE"
       });
       if (!res.ok) {

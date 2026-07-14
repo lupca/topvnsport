@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithAuth } from "@/utils/apiClient";
 
 import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
@@ -46,7 +47,7 @@ export default function LookupPage() {
 
   useEffect(() => {
     // Pre-load locations to map them easily
-    fetch(`${APP_SETTINGS.api.baseUrl}/locations`)
+    fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/locations`)
       .then((res) => (res.ok ? res.json() : []))
       .then((data) => setLocations(data))
       .catch((err) => console.error("Failed to load locations", err));
@@ -60,7 +61,7 @@ export default function LookupPage() {
       setStocks([]);
 
       // 1. Lookup barcode
-      const lookupRes = await fetch(`${APP_SETTINGS.api.baseUrl}/barcode-mappings/lookup/${barcode}`);
+      const lookupRes = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/barcode-mappings/lookup/${barcode}`);
       if (!lookupRes.ok) {
         if (lookupRes.status === 404) {
           setUnmappedBarcode(barcode);
@@ -73,7 +74,7 @@ export default function LookupPage() {
       setSkuInfo(mappingData);
 
       // 2. Lookup inventory for this SKU
-      const invRes = await fetch(`${APP_SETTINGS.api.baseUrl}/inventory`);
+      const invRes = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/inventory`);
       if (invRes.ok) {
         const allInv: InventoryItem[] = await invRes.json();
         const skuInv = allInv.filter((item) => item.sku_code === mappingData.sku_code);
@@ -93,7 +94,7 @@ export default function LookupPage() {
       return;
     }
     try {
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/barcode-mappings`, {
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/barcode-mappings`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

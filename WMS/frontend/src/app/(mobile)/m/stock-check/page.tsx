@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithAuth } from "@/utils/apiClient";
 
 import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
@@ -37,7 +38,7 @@ export default function StockCheckPage() {
 
   useEffect(() => {
     // Load Locations
-    fetch(`${APP_SETTINGS.api.baseUrl}/locations`)
+    fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/locations`)
       .then((res) => (res.ok ? res.json() : []))
       .then((data) => {
         setLocations(data);
@@ -57,7 +58,7 @@ export default function StockCheckPage() {
       setSkuInfo(null);
 
       // Lookup SKU code of barcode
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/barcode-mappings/lookup/${barcode}`);
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/barcode-mappings/lookup/${barcode}`);
       if (!res.ok) {
         throw new Error(`Mã vạch ${barcode} chưa được liên kết với bất kỳ SKU nào.`);
       }
@@ -82,7 +83,7 @@ export default function StockCheckPage() {
       setError(null);
       setSuccessMessage(null);
 
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/inventory/adjust`, {
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/inventory/adjust`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

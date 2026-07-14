@@ -26,10 +26,14 @@ def notify_oms_status(oms_order_id: int, fulfillment_number: str, new_status: st
     target_url = f"{oms_url}/orders/{oms_order_id}/fulfillments/{fulfillment_number}/status"
     logger.info(f"Notifying OMS of status {new_status} for fulfillment {fulfillment_number} at URL: {target_url}")
     try:
+        internal_token = os.getenv("INTERNAL_SERVICE_TOKEN", "oms_wms_internal_api_key_secret_2026")
         req = urllib.request.Request(
             target_url,
             data=json.dumps({"status": new_status}).encode("utf-8"),
-            headers={"Content-Type": "application/json"},
+            headers={
+                "Content-Type": "application/json",
+                "X-API-Key": internal_token
+            },
             method="PATCH"
         )
         with urllib.request.urlopen(req, timeout=5) as resp:

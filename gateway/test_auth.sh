@@ -43,7 +43,7 @@ echo "Test 4: Verify valid token"
 VERIFY_RESPONSE=$(curl -s -i "$GATEWAY_URL/auth/verify" \
   -H "Authorization: Bearer $TOKEN")
 
-if echo "$VERIFY_RESPONSE" | grep -q "X-User-Id"; then
+if echo "$VERIFY_RESPONSE" | grep -qi "X-User-Id"; then
     pass "Verify returns X-User-Id header"
 else
     fail "Verify did not return X-User-Id header"

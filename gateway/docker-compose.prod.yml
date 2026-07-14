@@ -1,0 +1,45 @@
+# ==============================================
+# PRODUCTION GATEWAY
+# Chỉ có nginx, không có identity service
+# (Identity chạy riêng trong identity-service/)
+# ==============================================
+
+services:
+  gateway-nginx:
+    image: nginx:1.25-alpine
+    container_name: gateway-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d/upstream.prod.conf:/etc/nginx/conf.d/upstream.conf:ro
+      - ./nginx/conf.d/locations.prod.conf:/etc/nginx/conf.d/locations.conf:ro
+      # SSL certs - uncomment khi có
+      # - /etc/letsencrypt:/etc/letsencrypt:ro
+    networks:
+      - pmi_default
+      - oms_default
+      - wms_default
+      - identity_default
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  pmi_default:
+    external: true
+  oms_default:
+    external: true
+  wms_default:
+    external: true
+  identity_default:
+    external: true

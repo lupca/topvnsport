@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithAuth } from "@/utils/apiClient";
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
@@ -24,7 +25,7 @@ export default function PackListPage() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders`);
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders`);
       if (!res.ok) throw new Error("Failed to fetch orders");
       const data = await res.json();
       setOrders(data);

@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithAuth } from "@/utils/apiClient";
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
@@ -32,7 +33,7 @@ export default function ReceiveListPage() {
 
   const fetchShipments = async () => {
     try {
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/inbound-shipments`);
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/inbound-shipments`);
       if (!res.ok) throw new Error("Failed to fetch inbound shipments");
       const data = await res.json();
       setShipments(data);

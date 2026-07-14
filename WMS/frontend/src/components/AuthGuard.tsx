@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { getAccessToken, verifyToken, refreshAccessToken, redirectToLogin, handleAuthCallback } from '@/utils/auth';
+import '@/utils/apiClient'; // Enable global fetch interception for JWT auth
 
 interface AuthGuardProps {
   children: React.ReactNode;

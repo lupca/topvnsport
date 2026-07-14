@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithAuth } from "@/utils/apiClient";
 
 import React, { useState, useEffect } from "react";
 import { APP_SETTINGS } from "@/config/settings";
@@ -128,11 +129,11 @@ export default function InboundPage() {
       setLoading(true);
       setError(null);
       const [shipRes, whRes, locRes, mapRes, invRes] = await Promise.all([
-        fetch(`${APP_SETTINGS.api.baseUrl}/inbound-shipments`),
-        fetch(`${APP_SETTINGS.api.baseUrl}/warehouses`),
-        fetch(`${APP_SETTINGS.api.baseUrl}/locations`),
-        fetch(`${APP_SETTINGS.api.baseUrl}/barcode-mappings`),
-        fetch(`${APP_SETTINGS.api.baseUrl}/inventory`)
+        fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/inbound-shipments`),
+        fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/warehouses`),
+        fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/locations`),
+        fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/barcode-mappings`),
+        fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/inventory`)
       ]);
 
       if (!shipRes.ok || !whRes.ok || !locRes.ok || !mapRes.ok || !invRes.ok) {
@@ -174,7 +175,7 @@ export default function InboundPage() {
   const handleSelectShipment = async (shipment: InboundShipment) => {
     try {
       setLoading(true);
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/inbound-shipments/${shipment.id}`);
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/inbound-shipments/${shipment.id}`);
       if (!res.ok) throw new Error("Không thể tải chi tiết lô hàng.");
       const data = await res.json();
       setSelectedShipment(data);
@@ -239,7 +240,7 @@ export default function InboundPage() {
     };
 
     try {
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/inbound-shipments`, {
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/inbound-shipments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -272,7 +273,7 @@ export default function InboundPage() {
     if (!selectedShipment || !scanBarcode) return;
 
     try {
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/inbound/${selectedShipment.id}/receive-scan`, {
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/inbound/${selectedShipment.id}/receive-scan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -313,7 +314,7 @@ export default function InboundPage() {
     }
 
     try {
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/inbound/${selectedShipment.id}/put-away`, {
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/inbound/${selectedShipment.id}/put-away`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -341,7 +342,7 @@ export default function InboundPage() {
     if (!(await showConfirm("Bạn có chắc chắn muốn hoàn thành lô hàng này? Tồn kho thực tế sẽ được cập nhật."))) return;
 
     try {
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/inbound/${selectedShipment.id}/complete`, {
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/inbound/${selectedShipment.id}/complete`, {
         method: "PATCH"
       });
 

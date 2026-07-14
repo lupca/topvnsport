@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithAuth } from "@/utils/apiClient";
 
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -40,7 +41,7 @@ export default function PackDetailPage() {
 
   const fetchOrder = async () => {
     try {
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${id}`);
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${id}`);
       if (!res.ok) throw new Error("Failed to load order");
       const data = await res.json();
       setOrder(data);
@@ -56,7 +57,7 @@ export default function PackDetailPage() {
     try {
       setPackMessage(null);
       // 1. Scan tracking number
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${order.id}/scan-pack`, {
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${order.id}/scan-pack`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -73,7 +74,7 @@ export default function PackDetailPage() {
       setTrackingNumber(barcode);
 
       // 2. Automatically complete pack
-      const completeRes = await fetch(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${order.id}/complete-pack`, {
+      const completeRes = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${order.id}/complete-pack`, {
         method: "POST",
       });
       if (!completeRes.ok) throw new Error("Failed to complete packing");
@@ -96,7 +97,7 @@ export default function PackDetailPage() {
   const handleShipOrder = async () => {
     if (!order) return;
     try {
-      const res = await fetch(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${order.id}/ship`, {
+      const res = await fetchWithAuth(`${APP_SETTINGS.api.baseUrl}/fulfillment-orders/${order.id}/ship`, {
         method: "POST",
       });
       if (!res.ok) {

@@ -121,12 +121,23 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const timeoutId = setTimeout(() => controller.abort(), 15000);
 
   try {
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+      ...options?.headers,
+    };
+
+    // Attach JWT token
+    if (typeof window !== "undefined") {
+      const { getAccessToken } = await import("@/utils/auth");
+      const token = getAccessToken();
+      if (token) {
+        (headers as Record<string, string>)["Authorization"] = `Bearer ${token}`;
+      }
+    }
+
     const response = await fetch(`${BASE_URL}${endpoint}`, {
-      headers: {
-        "Content-Type": "application/json",
-        ...options?.headers,
-      },
       ...options,
+      headers,
       signal: controller.signal,
     });
 
