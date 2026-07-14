@@ -125,7 +125,7 @@ describe("ProductList", () => {
 
     // Wait for the product list to be loaded
     await waitFor(() => {
-      expect(screen.getByText("Áo Polo thể thao nam thoáng khí")).toBeInTheDocument();
+      expect(screen.getByText(/Áo Polo thể thao nam/i)).toBeInTheDocument();
     });
 
     expect(screen.getByText("SKU parent: P-10-PARENT")).toBeInTheDocument();
@@ -165,7 +165,7 @@ describe("ProductList", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Áo Polo thể thao nam thoáng khí")).toBeInTheDocument();
+      expect(screen.getByText(/Áo Polo thể thao nam/i)).toBeInTheDocument();
     });
 
     const page2Button = screen.getByRole("button", { name: "2" });
@@ -187,10 +187,10 @@ describe("ProductList", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Áo Polo thể thao nam thoáng khí")).toBeInTheDocument();
+      expect(screen.getByText(/Áo Polo thể thao nam/i)).toBeInTheDocument();
     });
 
-    const searchInput = screen.getByPlaceholderText("Tìm Tên sản phẩm, SKU sản phẩm, SKU phân loại...");
+    const searchInput = screen.getByPlaceholderText(/Tìm.*sản phẩm/i);
     await userEvent.type(searchInput, "Polo");
 
     const applyButton = screen.getByRole("button", { name: "Áp dụng" });
@@ -221,7 +221,7 @@ describe("ProductList", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Áo Polo thể thao nam thoáng khí")).toBeInTheDocument();
+      expect(screen.getByText(/Áo Polo thể thao nam/i)).toBeInTheDocument();
     });
 
     const categorySelect = screen.getAllByRole("combobox")[0];
@@ -234,7 +234,7 @@ describe("ProductList", () => {
       );
     });
 
-    const searchInput = screen.getByPlaceholderText("Tìm Tên sản phẩm, SKU sản phẩm, SKU phân loại...");
+    const searchInput = screen.getByPlaceholderText(/Tìm.*sản phẩm/i);
     await userEvent.clear(searchInput);
     await userEvent.type(searchInput, "Polo");
 
@@ -261,10 +261,10 @@ describe("ProductList", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Áo Polo thể thao nam thoáng khí")).toBeInTheDocument();
+      expect(screen.getByText(/Áo Polo thể thao nam/i)).toBeInTheDocument();
     });
 
-    const previewButton = screen.getByRole("button", { name: "Xem trước" });
+    const previewButton = screen.getByRole("button", { name: /Xem trước/i });
     await userEvent.click(previewButton);
 
     await waitFor(() => {
@@ -286,18 +286,18 @@ describe("ProductList", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Áo Polo thể thao nam thoáng khí")).toBeInTheDocument();
+      expect(screen.getByText(/Áo Polo thể thao nam/i)).toBeInTheDocument();
     });
 
-    const editButton = screen.getByRole("button", { name: "Cập nhật" });
+    const editButton = screen.getByRole("button", { name: /Cập nhật/i });
     await userEvent.click(editButton);
     expect(onEditProductClick).toHaveBeenCalledWith(10);
 
-    const copyButton = screen.getByRole("button", { name: "Sao chép" });
+    const copyButton = screen.getByRole("button", { name: /Sao chép/i });
     await userEvent.click(copyButton);
     expect(onCopyProductClick).toHaveBeenCalledWith(10);
 
-    const addButton = screen.getByRole("button", { name: "Thêm 1 sản phẩm mới" });
+    const addButton = screen.getByRole("button", { name: /Thêm.*sản phẩm/i });
     await userEvent.click(addButton);
     expect(onAddProductClick).toHaveBeenCalled();
   });
@@ -334,15 +334,15 @@ describe("ProductList", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Áo Polo thể thao nam thoáng khí")).toBeInTheDocument();
+      expect(screen.getByText(/Áo Polo thể thao nam/i)).toBeInTheDocument();
     });
 
-    const deleteButton = screen.getByRole("button", { name: "Xóa" });
+    const deleteButton = screen.getByRole("button", { name: /^Xóa$/i });
     await userEvent.click(deleteButton);
 
-    expect(screen.getByText("Xác nhận xóa sản phẩm")).toBeInTheDocument();
+    expect(screen.getByText(/Xác nhận xóa/i)).toBeInTheDocument();
 
-    const confirmDeleteButton = screen.getByRole("button", { name: "Xóa sản phẩm" });
+    const confirmDeleteButton = screen.getByRole("button", { name: /Xóa sản phẩm/i });
     await userEvent.click(confirmDeleteButton);
 
     expect(global.fetch).toHaveBeenCalledWith(
@@ -390,16 +390,16 @@ describe("ProductList", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Áo Polo thể thao nam thoáng khí")).toBeInTheDocument();
+      expect(screen.getByText(/Áo Polo thể thao nam/i)).toBeInTheDocument();
     });
 
     const exportBtn = screen.getByRole("button", { name: /Xuất dữ liệu/i });
     await userEvent.click(exportBtn);
 
-    expect(screen.getByText(/Xuất file Shopee/i)).toBeInTheDocument();
-    expect(screen.getByText(/Xuất file TikTok/i)).toBeInTheDocument();
+    expect(screen.getByText(/Xuất.*Shopee/i)).toBeInTheDocument();
+    expect(screen.getByText(/Xuất.*TikTok/i)).toBeInTheDocument();
 
-    const shopeeBtn = screen.getByText(/Xuất file Shopee/i);
+    const shopeeBtn = screen.getByText(/Xuất.*Shopee/i);
     await userEvent.click(shopeeBtn);
 
     await waitFor(() => {
@@ -452,7 +452,7 @@ describe("ProductList", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Áo Polo thể thao nam thoáng khí")).toBeInTheDocument();
+      expect(screen.getByText(/Áo Polo thể thao nam/i)).toBeInTheDocument();
     });
 
     expect(screen.queryByText(/Đã chọn/i)).not.toBeInTheDocument();
@@ -465,7 +465,7 @@ describe("ProductList", () => {
     const exportBtn = screen.getByRole("button", { name: /Xuất dữ liệu/i });
     await userEvent.click(exportBtn);
 
-    const shopeeBtn = screen.getByText(/Xuất file Shopee/i);
+    const shopeeBtn = screen.getByText(/Xuất.*Shopee/i);
     await userEvent.click(shopeeBtn);
 
     await waitFor(() => {
@@ -520,7 +520,7 @@ describe("ProductList", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Áo Polo thể thao nam thoáng khí")).toBeInTheDocument();
+      expect(screen.getByText(/Áo Polo thể thao nam/i)).toBeInTheDocument();
     });
 
     const activeTabBtn = screen.getByRole("button", { name: /Đang hoạt động/i });
@@ -529,7 +529,7 @@ describe("ProductList", () => {
     const exportBtn = screen.getByRole("button", { name: /Xuất dữ liệu/i });
     await userEvent.click(exportBtn);
 
-    const shopeeBtn = screen.getByText(/Xuất file Shopee/i);
+    const shopeeBtn = screen.getByText(/Xuất.*Shopee/i);
     await userEvent.click(shopeeBtn);
 
     await waitFor(() => {

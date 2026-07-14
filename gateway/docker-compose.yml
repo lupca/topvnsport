@@ -1,0 +1,96 @@
+services:
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: gateway-nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+    depends_on:
+      - identity-api
+    networks:
+      - gateway_network
+      - identity_default
+      - pmi_default
+      - oms_default
+      - wms_default
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Include Identity Service for standalone gateway testing
+  identity-db:
+    image: postgres:15-alpine
+    container_name: identity-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=identity_db
+    volumes:
+      - identity_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - identity_default
+
+  identity-api:
+    build:
+      context: ../identity-service/backend
+      dockerfile: Dockerfile.dev
+    container_name: identity-api
+    command: sh -c "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
+    ports:
+      - "18110:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@identity-db:5432/identity_db
+      - JWT_SECRET_KEY=identity_jwt_secret_key_2026_change_me_in_prod
+      - JWT_ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=60
+      - REFRESH_TOKEN_EXPIRE_DAYS=7
+      - ENV=development
+    depends_on:
+      identity-db:
+        condition: service_healthy
+    networks:
+      - gateway_network
+      - identity_default
+
+  identity-frontend:
+    build:
+      context: ../identity-service/frontend
+      dockerfile: Dockerfile.dev
+    container_name: identity-frontend
+    ports:
+      - "13110:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8080
+      - NEXT_PUBLIC_PMI_URL=http://localhost:13100
+      - NEXT_PUBLIC_OMS_URL=http://localhost:13101
+      - NEXT_PUBLIC_WMS_URL=http://localhost:13102
+    depends_on:
+      - identity-api
+    networks:
+      - gateway_network
+      - identity_default
+
+volumes:
+  identity_pgdata:
+
+networks:
+  gateway_network:
+    driver: bridge
+  identity_default:
+    driver: bridge
+  pmi_default:
+    external: true
+  oms_default:
+    external: true
+  wms_default:
+    external: true

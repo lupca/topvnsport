@@ -1,0 +1,74 @@
+version: "3.8"
+
+services:
+  identity-db:
+    image: postgres:15-alpine
+    container_name: identity-db-prod
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=identity_db
+    ports:
+      - "15436:5432"
+    volumes:
+      - identity_pgdata_prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - default
+
+  identity-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: identity-api-prod
+    ports:
+      - "18110:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@identity-db:5432/identity_db
+      - JWT_SECRET_KEY=identity_jwt_secret_key_2026_change_me_in_prod
+      - JWT_ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=60
+      - REFRESH_TOKEN_EXPIRE_DAYS=7
+      - ENV=production
+    depends_on:
+      identity-db:
+        condition: service_healthy
+    networks:
+      - default
+      - pmi_default
+      - oms_default
+      - wms_default
+
+  identity-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: identity-frontend-prod
+    ports:
+      - "13110:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:18110
+      - NEXT_PUBLIC_PMI_URL=http://localhost:13100
+      - NEXT_PUBLIC_OMS_URL=http://localhost:13101
+      - NEXT_PUBLIC_WMS_URL=http://localhost:13102
+    depends_on:
+      - identity-api
+    networks:
+      - default
+
+volumes:
+  identity_pgdata_prod:
+
+networks:
+  default:
+    name: identity_prod_default
+  pmi_default:
+    external: true
+  oms_default:
+    external: true
+  wms_default:
+    external: true

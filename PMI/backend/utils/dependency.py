@@ -10,9 +10,9 @@ from utils.context import actor_username_var, actor_type_var, actor_id_var
 
 logger = logging.getLogger(__name__)
 
-# Security schemes definition
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 security_bearer = HTTPBearer(auto_error=False)
+
 
 async def get_current_identity(
     request: Request,
@@ -21,8 +21,10 @@ async def get_current_identity(
     db: Session = Depends(get_db)
 ):
     """
-    Dependency to authenticate incoming requests via Service Key or JWT Token.
-    Binds actor type and identity to request context variables.
+    Authenticate requests via:
+    1. X-API-Key (service-to-service from OMS/WMS)
+    2. X-User-* headers (gateway-injected after auth_request)
+    3. JWT Bearer fallback (direct API access, legacy)
     """
     # 1. API Key Auth (Services - OMS/WMS)
     if api_key:
@@ -38,8 +40,27 @@ async def get_current_identity(
             detail="Invalid Service API Key"
         )
 
-    # 2. JWT Bearer Auth (Human Users)
-    logger.debug(f"DEBUG_BE_GET_IDENTITY: token={token.credentials if token else None}")
+    # 2. Gateway-injected X-User-* headers (primary method)
+    x_user_id = request.headers.get("X-User-Id")
+    x_user_username = request.headers.get("X-User-Username")
+
+    if x_user_id and x_user_username:
+        x_user_role = request.headers.get("X-User-Role", "")
+        x_user_permissions = request.headers.get("X-User-Permissions", "")
+
+        actor_username_var.set(x_user_username)
+        actor_type_var.set("USER")
+        actor_id_var.set(x_user_id)
+
+        return {
+            "actor_type": "USER",
+            "actor_username": x_user_username,
+            "actor_id": x_user_id,
+            "role": x_user_role,
+            "permissions": x_user_permissions.split(",") if x_user_permissions else [],
+        }
+
+    # 3. JWT Bearer fallback (direct API access without gateway)
     if token:
         payload = decode_access_token(token.credentials)
         if not payload:
@@ -47,14 +68,14 @@ async def get_current_identity(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid or expired JWT token"
             )
-        
+
         username = payload.get("sub")
         if not username:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Token payload is missing subject claim"
             )
-            
+
         user = db.query(models.User).filter(models.User.username == username).first()
         if not user:
             raise HTTPException(
@@ -66,13 +87,17 @@ async def get_current_identity(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="User account is deactivated"
             )
-            
-        # Bind actor context
+
         actor_username_var.set(user.username)
         actor_type_var.set("USER")
         user_id = getattr(user, "id", None)
         actor_id_var.set(str(user_id) if user_id is not None else None)
-        return {"actor_type": "USER", "actor_username": user.username, "actor_id": str(user_id) if user_id is not None else None, "user": user}
+        return {
+            "actor_type": "USER",
+            "actor_username": user.username,
+            "actor_id": str(user_id) if user_id is not None else None,
+            "user": user
+        }
 
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
