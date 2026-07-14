@@ -85,6 +85,11 @@ ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "
   sudo -E docker compose -f gateway/docker-compose.prod.yml up -d --build
   echo "Waiting for Gateway to be healthy..."
   timeout 60 bash -c 'until curl -sf http://localhost/health > /dev/null 2>&1; do sleep 2; done' || true
+
+  # Run database migrations for PMI and WMS
+  echo "Running database migrations..."
+  sudo docker exec pim-api alembic upgrade head || true
+  sudo docker exec wms-api alembic upgrade head || true
 "
 
 echo "[4/5] Health checks"
