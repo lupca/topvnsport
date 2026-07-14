@@ -50,7 +50,7 @@ services:
       - MINIO_SECRET_KEY=minioadmin
       - MINIO_SECURE=False
       - MINIO_BUCKET=pim-media
-      - JWT_SECRET_KEY=prod_secret_jwt_key_pmi_2026_must_change
+      - JWT_SECRET_KEY=identity_jwt_secret_key_2026_change_me_in_prod
       - INTERNAL_SERVICE_TOKEN=prod_oms_wms_internal_api_key_must_change
       - ALLOWED_SERVICE_KEYS=prod-service-api-key-must-change
     depends_on:
