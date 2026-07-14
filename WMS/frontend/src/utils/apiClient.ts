@@ -59,20 +59,34 @@ export async function fetchWithAuth(path: string, options: RequestInit = {}): Pr
     }
   }
 
-  const response = await fetch(url, {
-    ...options,
-    headers,
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-  if (response.status === 401) {
-    if (typeof window !== "undefined") {
-      const { removeAccessToken, redirectToLogin } = await import("@/utils/auth");
-      removeAccessToken();
-      redirectToLogin();
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers,
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (response.status === 401) {
+      if (typeof window !== "undefined") {
+        const { removeAccessToken, redirectToLogin } = await import("@/utils/auth");
+        removeAccessToken();
+        redirectToLogin();
+      }
     }
-  }
 
-  return response;
+    return response;
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    if (error.name === "AbortError") {
+      throw new Error("API request timed out after 15 seconds");
+    }
+    throw error;
+  }
 }
 
 // Helper to handle response errors in modern apiClient usage

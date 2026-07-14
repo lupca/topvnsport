@@ -3,7 +3,11 @@ from fastapi import Request, HTTPException, status
 import os
 from jose import JWTError, jwt
 
-JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "identity_jwt_secret_key_2026_change_me_in_prod")
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+if not JWT_SECRET_KEY:
+    if os.getenv("ENV") == "production":
+        raise RuntimeError("JWT_SECRET_KEY environment variable is required in production mode!")
+    JWT_SECRET_KEY = "identity_jwt_secret_key_2026_change_me_in_prod"
 JWT_ALGORITHM = "HS256"
 
 
