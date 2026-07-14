@@ -72,6 +72,7 @@ class BarcodeMapping(Base):
     tax_rate = Column(Numeric(5, 2), nullable=True)         # Cache thuế suất từ PMI (%)
     pmi_variant_id = Column(Integer, nullable=True)         # ID variant bên PMI
     last_synced_at = Column(DateTime, nullable=True)        # Thời điểm sync gần nhất
+    selling_price = Column(Numeric(12, 2), nullable=True)   # Cache giá bán lẻ từ PMI
 
 
 class InboundShipment(Base):
@@ -87,6 +88,9 @@ class InboundShipment(Base):
     expected_date = Column(DateTime, nullable=True)
     received_date = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+    receiver_name = Column(String, nullable=True)
+    original_document_number = Column(String, nullable=True)
+    total_amount = Column(Numeric(12, 2), nullable=True)
 
     warehouse = relationship("Warehouse", back_populates="inbound_shipments")
     items = relationship("InboundItem", back_populates="inbound_shipment", cascade="all, delete-orphan")
@@ -120,6 +124,8 @@ class FulfillmentOrder_WMS(Base):
     assigned_to = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     completed_at = Column(DateTime, nullable=True)
+    original_document_number = Column(String, nullable=True)
+    total_amount = Column(Numeric(12, 2), nullable=True)
 
     pick_list_items = relationship("PickListItem", back_populates="fulfillment_order", cascade="all, delete-orphan")
     packing_sessions = relationship("PackingSession", back_populates="fulfillment_order", cascade="all, delete-orphan")
@@ -136,6 +142,7 @@ class PickListItem(Base):
     quantity = Column(Integer, nullable=False)
     picked_qty = Column(Integer, default=0, nullable=False)
     status = Column(String, default="pending", nullable=False)
+    selling_price = Column(Numeric(12, 2), nullable=True)
 
     fulfillment_order = relationship("FulfillmentOrder_WMS", back_populates="pick_list_items")
     location = relationship("Location", back_populates="pick_list_items")

@@ -62,6 +62,7 @@ class BarcodeMappingBase(BaseModel):
     image_url: Optional[str] = None
     cost_price: Optional[float] = None
     tax_rate: Optional[float] = None
+    selling_price: Optional[float] = None
 
 class BarcodeMappingCreate(BarcodeMappingBase):
     pass
@@ -101,6 +102,9 @@ class InboundShipmentBase(BaseModel):
     created_by: Optional[str] = None
     expected_date: Optional[datetime] = None
     received_date: Optional[datetime] = None
+    receiver_name: Optional[str] = None
+    original_document_number: Optional[str] = None
+    total_amount: Optional[float] = None
 
 class InboundShipmentCreate(InboundShipmentBase):
     items: List[InboundItemCreate] = []
@@ -119,6 +123,7 @@ class PickListItemBase(BaseModel):
     quantity: int
     picked_qty: Optional[int] = 0
     status: Optional[str] = "pending"
+    selling_price: Optional[float] = None
 
 class PickListItemCreate(PickListItemBase):
     pass
@@ -153,6 +158,8 @@ class FulfillmentOrderWMSBase(BaseModel):
     status: Optional[str] = "pending"
     assigned_to: Optional[str] = None
     completed_at: Optional[datetime] = None
+    original_document_number: Optional[str] = None
+    total_amount: Optional[float] = None
 
 class FulfillmentOrderWMSCreate(FulfillmentOrderWMSBase):
     pick_list_items: List[PickListItemCreate] = []
@@ -178,6 +185,7 @@ class FulfillmentOrderCreateInput(BaseModel):
     oms_order_number: str
     warehouse_code: str
     status: Optional[str] = "PENDING"
+    original_document_number: Optional[str] = None
     items: List[FulfillmentOrderItemInput]
 
 

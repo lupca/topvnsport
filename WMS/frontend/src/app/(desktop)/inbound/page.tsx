@@ -17,6 +17,7 @@ import {
   Layers
 } from "lucide-react";
 import { popupService, showConfirm } from "@/components/ui/popupService";
+import { convertNumberToVietnameseWords } from "@/utils/numberToWords";
 
 interface InboundItem {
   id: number;
@@ -26,6 +27,7 @@ interface InboundItem {
   received_qty: number;
   location_id: number | null;
   status: string;
+  unit_cost?: number | null;
 }
 
 interface InboundShipment {
@@ -40,6 +42,9 @@ interface InboundShipment {
   received_date: string | null;
   created_at: string;
   items: InboundItem[];
+  receiver_name: string | null;
+  original_document_number: string | null;
+  total_amount: number | null;
 }
 
 interface Warehouse {
@@ -61,6 +66,7 @@ export default function InboundPage() {
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [barcodeMappings, setBarcodeMappings] = useState<{ sku_code: string; product_name: string; variant_name: string | null }[]>([]);
+  const [inventories, setInventories] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -69,10 +75,12 @@ export default function InboundPage() {
   const [inboundNumber, setInboundNumber] = useState("");
   const [selectedWhId, setSelectedWhId] = useState("");
   const [supplierName, setSupplierName] = useState("");
+  const [receiverName, setReceiverName] = useState("");
+  const [originalDocumentNumber, setOriginalDocumentNumber] = useState("");
   const [note, setNote] = useState("");
   const [expectedDate, setExpectedDate] = useState("");
-  const [itemsInput, setItemsInput] = useState<{ sku_code: string; product_name: string; expected_qty: number; isManual?: boolean }[]>([
-    { sku_code: "", product_name: "", expected_qty: 1, isManual: false }
+  const [itemsInput, setItemsInput] = useState<{ sku_code: string; product_name: string; expected_qty: number; unit_cost: number; isManual?: boolean }[]>([
+    { sku_code: "", product_name: "", expected_qty: 1, unit_cost: 0, isManual: false }
   ]);
 
   // Scan Receive Form
@@ -108,18 +116,26 @@ export default function InboundPage() {
     });
   };
 
+  const getSkuStock = (sku: string) => {
+    if (!sku) return 0;
+    return inventories
+      .filter((inv) => inv.sku_code === sku)
+      .reduce((sum, inv) => sum + inv.qty_on_hand, 0);
+  };
+
   const fetchData = async () => {
     try {
       setLoading(true);
       setError(null);
-      const [shipRes, whRes, locRes, mapRes] = await Promise.all([
+      const [shipRes, whRes, locRes, mapRes, invRes] = await Promise.all([
         fetch(`${APP_SETTINGS.api.baseUrl}/inbound-shipments`),
         fetch(`${APP_SETTINGS.api.baseUrl}/warehouses`),
         fetch(`${APP_SETTINGS.api.baseUrl}/locations`),
-        fetch(`${APP_SETTINGS.api.baseUrl}/barcode-mappings`)
+        fetch(`${APP_SETTINGS.api.baseUrl}/barcode-mappings`),
+        fetch(`${APP_SETTINGS.api.baseUrl}/inventory`)
       ]);
 
-      if (!shipRes.ok || !whRes.ok || !locRes.ok || !mapRes.ok) {
+      if (!shipRes.ok || !whRes.ok || !locRes.ok || !mapRes.ok || !invRes.ok) {
         throw new Error("Không thể đồng bộ dữ liệu từ backend.");
       }
 
@@ -127,6 +143,7 @@ export default function InboundPage() {
       const whData = await whRes.json();
       const locData = await locRes.json();
       const mapData = await mapRes.json();
+      const invData = await invRes.json();
 
       // Filter unique products from barcode mappings
       const uniqueProducts: any[] = [];
@@ -146,6 +163,7 @@ export default function InboundPage() {
       setWarehouses(whData);
       setLocations(locData);
       setBarcodeMappings(uniqueProducts);
+      setInventories(invData);
     } catch (err: any) {
       setError(err.message || "Lỗi khi tải dữ liệu nhập kho.");
     } finally {
@@ -172,7 +190,7 @@ export default function InboundPage() {
   };
 
   const handleAddItemRow = () => {
-    setItemsInput((current) => [...current, { sku_code: "", product_name: "", expected_qty: 1, isManual: false }]);
+    setItemsInput((current) => [...current, { sku_code: "", product_name: "", expected_qty: 1, unit_cost: 0, isManual: false }]);
   };
 
   const handleRemoveItemRow = (idx: number) => {
@@ -204,6 +222,8 @@ export default function InboundPage() {
       inbound_number: inboundNumber,
       warehouse_id: parseInt(selectedWhId),
       supplier_name: supplierName,
+      receiver_name: receiverName || null,
+      original_document_number: originalDocumentNumber || null,
       note: note || null,
       created_by: "Admin",
       expected_date: expectedDate ? new Date(expectedDate).toISOString() : null,
@@ -213,7 +233,8 @@ export default function InboundPage() {
         expected_qty: item.expected_qty,
         received_qty: 0,
         location_id: null,
-        status: "pending"
+        status: "pending",
+        unit_cost: item.unit_cost || 0
       }))
     };
 
@@ -234,9 +255,11 @@ export default function InboundPage() {
       setInboundNumber("");
       setSelectedWhId("");
       setSupplierName("");
+      setReceiverName("");
+      setOriginalDocumentNumber("");
       setNote("");
       setExpectedDate("");
-      setItemsInput([{ sku_code: "", product_name: "", expected_qty: 1, isManual: false }]);
+      setItemsInput([{ sku_code: "", product_name: "", expected_qty: 1, unit_cost: 0, isManual: false }]);
       fetchData();
       void popupService.alert("Tạo lô hàng nhập kho thành công!");
     } catch (err: any) {
@@ -440,6 +463,31 @@ export default function InboundPage() {
                   <p className="text-sm text-gray-500 mt-1">
                     Trạng thái: <span className="font-bold uppercase text-gray-900">{selectedShipment.status}</span> • Kho: {getWarehouseName(selectedShipment.warehouse_id)}
                   </p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3 text-xs bg-gray-50 p-3 rounded-xl border border-gray-200 text-gray-700">
+                    <div>
+                      <span className="font-bold text-gray-500 block">Nhà cung cấp:</span>
+                      <span className="font-semibold text-gray-900">{selectedShipment.supplier_name}</span>
+                    </div>
+                    <div>
+                      <span className="font-bold text-gray-500 block">Người nhận:</span>
+                      <span className="font-semibold text-gray-900">{selectedShipment.receiver_name || "—"}</span>
+                    </div>
+                    <div>
+                      <span className="font-bold text-gray-500 block">Chứng từ gốc:</span>
+                      <span className="font-semibold text-gray-900">{selectedShipment.original_document_number || "—"}</span>
+                    </div>
+                    <div>
+                      <span className="font-bold text-gray-500 block">Tổng tiền:</span>
+                      <span className="font-extrabold text-indigo-600 text-sm">
+                        {selectedShipment.total_amount ? selectedShipment.total_amount.toLocaleString("vi-VN") + " ₫" : "0 ₫"}
+                      </span>
+                    </div>
+                  </div>
+                  {selectedShipment.total_amount ? (
+                    <p className="text-[10px] italic text-gray-500 mt-1.5 ml-1">
+                      Bằng chữ: <span className="font-semibold text-gray-700">{convertNumberToVietnameseWords(selectedShipment.total_amount)}</span>
+                    </p>
+                  ) : null}
                 </div>
                 <div className="flex items-center gap-2">
                   {selectedShipment.status !== "COMPLETED" && (
@@ -473,8 +521,10 @@ export default function InboundPage() {
                       <tr className="bg-surface text-gray-500 font-bold border-b border-gray-200">
                         <th className="p-3">SKU</th>
                         <th className="p-3">Tên sản phẩm</th>
+                        <th className="p-3 text-right">Giá nhập</th>
                         <th className="p-3 text-right">Dự kiến</th>
                         <th className="p-3 text-right">Đã nhận</th>
+                        <th className="p-3 text-right">Thành tiền</th>
                         <th className="p-3">Vị trí cất</th>
                         <th className="p-3 text-right">Trạng thái</th>
                       </tr>
@@ -484,8 +534,14 @@ export default function InboundPage() {
                         <tr key={item.id} className="border-b border-gray-200 hover:bg-gray-50">
                           <td className="p-3 font-bold text-gray-800">{item.sku_code}</td>
                           <td className="p-3 text-gray-700 font-semibold">{item.product_name}</td>
+                          <td className="p-3 text-right font-semibold text-gray-700">
+                            {item.unit_cost ? item.unit_cost.toLocaleString("vi-VN") + " ₫" : "—"}
+                          </td>
                           <td className="p-3 text-right font-extrabold text-gray-700">{item.expected_qty}</td>
                           <td className="p-3 text-right font-extrabold text-indigo-600">{item.received_qty}</td>
+                          <td className="p-3 text-right font-bold text-gray-800">
+                            {item.unit_cost ? (item.expected_qty * item.unit_cost).toLocaleString("vi-VN") + " ₫" : "—"}
+                          </td>
                           <td className="p-3">
                             <span className="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded text-[10px] font-bold border border-gray-200">
                               {getLocationCode(item.location_id)}
@@ -667,6 +723,26 @@ export default function InboundPage() {
                   />
                 </div>
                 <div className="space-y-1">
+                  <label className="font-semibold text-gray-700 block">Người nhận (Receiver)</label>
+                  <input
+                    type="text"
+                    value={receiverName}
+                    onChange={(e) => setReceiverName(e.target.value)}
+                    placeholder="VD: Nguyễn Văn A (Thủ kho)"
+                    className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none bg-surface text-gray-900"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="font-semibold text-gray-700 block">Số chứng từ gốc kèm theo</label>
+                  <input
+                    type="text"
+                    value={originalDocumentNumber}
+                    onChange={(e) => setOriginalDocumentNumber(e.target.value)}
+                    placeholder="VD: HĐ-2026-1002"
+                    className="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none bg-surface text-gray-900"
+                  />
+                </div>
+                <div className="space-y-1">
                   <label className="font-semibold text-gray-700 block">Ngày dự kiến giao hàng</label>
                   <input
                     type="date"
@@ -736,7 +812,7 @@ export default function InboundPage() {
                           </div>
                           {row.sku_code && (
                             <div className="flex-[1.5] space-y-1">
-                              {idx === 0 && <label className="font-semibold text-gray-500">Tên Sản phẩm</label>}
+                              {idx === 0 && <label className="font-semibold text-gray-500">Tên Sản phẩm (Tồn hiện tại: {getSkuStock(row.sku_code)})</label>}
                               <input
                                 type="text"
                                 value={row.product_name}
@@ -756,6 +832,7 @@ export default function InboundPage() {
                                   type="button"
                                   onClick={() => handleItemInputChange(idx, "isManual", false)}
                                   className="text-[9px] text-indigo-600 hover:underline"
+                                  tabIndex={-1}
                                 >
                                   Chọn sẵn
                                 </button>
@@ -771,7 +848,7 @@ export default function InboundPage() {
                             />
                           </div>
                           <div className="flex-[1.5] space-y-1">
-                            {idx === 0 && <label className="font-semibold text-gray-700">Tên Sản phẩm *</label>}
+                            {idx === 0 && <label className="font-semibold text-gray-700">Tên Sản phẩm * (Tồn hiện tại: {getSkuStock(row.sku_code)})</label>}
                             <input
                               type="text"
                               value={row.product_name}
@@ -783,12 +860,23 @@ export default function InboundPage() {
                           </div>
                         </div>
                       )}
+                      <div className="w-32 space-y-1">
+                        {idx === 0 && <label className="font-semibold text-gray-700 block text-right">Đơn giá nhập (VND) *</label>}
+                        <input
+                          type="number"
+                          value={row.unit_cost}
+                          onChange={(e) => handleItemInputChange(idx, "unit_cost", parseFloat(e.target.value) || 0)}
+                          className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none text-right bg-surface text-gray-900"
+                          min="0"
+                          required
+                        />
+                      </div>
                       <div className="w-24 space-y-1">
                         {idx === 0 && <label className="font-semibold text-gray-700 block text-right">SL dự kiến *</label>}
                         <input
                           type="number"
                           value={row.expected_qty}
-                          onChange={(e) => handleItemInputChange(idx, "expected_qty", parseInt(e.target.value))}
+                          onChange={(e) => handleItemInputChange(idx, "expected_qty", parseInt(e.target.value) || 1)}
                           className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none text-right bg-surface text-gray-900"
                           min="1"
                           required

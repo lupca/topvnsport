@@ -1,5 +1,6 @@
 import os
 import pytest
+from unittest.mock import patch
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -7,6 +8,12 @@ from sqlalchemy.orm import sessionmaker
 from database import Base, get_db
 from main import app
 import models
+
+@pytest.fixture(autouse=True)
+def mock_notify_oms():
+    with patch('routers.fulfillment.notify_oms_status') as mock:
+        yield mock
+
 
 # Use file-based SQLite for testing to maintain table persistence during tests
 DB_FILE = "/tmp/test.db"
@@ -462,5 +469,94 @@ def test_outbound_fulfillment_picking_packing_flow(client, db):
     tx = db.query(models.StockTransaction).filter(models.StockTransaction.sku_code == "SKU-OUTB", models.StockTransaction.transaction_type == "OUTBOUND").first()
     assert tx is not None
     assert tx.quantity == -10
+
+
+def test_inbound_shipment_financial_fields(client, db):
+    wh = models.Warehouse(code="WH-IN-FIN", name="Inbound Fin WH", is_active=True)
+    db.add(wh)
+    db.commit()
+    db.refresh(wh)
+
+    payload = {
+        "inbound_number": "INB-FIN-001",
+        "warehouse_id": wh.id,
+        "supplier_name": "Supplier ABC",
+        "receiver_name": "Receiver XYZ",
+        "original_document_number": "DOC-INB-999",
+        "note": "Testing financial fields",
+        "created_by": "Admin",
+        "items": [
+            {
+                "sku_code": "SKU-FIN-1",
+                "product_name": "Financial Prod 1",
+                "expected_qty": 5,
+                "unit_cost": 150000.0
+            },
+            {
+                "sku_code": "SKU-FIN-2",
+                "product_name": "Financial Prod 2",
+                "expected_qty": 10,
+                "unit_cost": 200000.0
+            }
+        ]
+    }
+    response = client.post("/inbound-shipments", json=payload)
+    assert response.status_code == 201
+    data = response.json()
+    assert data["receiver_name"] == "Receiver XYZ"
+    assert data["original_document_number"] == "DOC-INB-999"
+    # Total = 5 * 150000 + 10 * 200000 = 750000 + 2000000 = 2750000
+    assert float(data["total_amount"]) == 2750000.0
+    assert len(data["items"]) == 2
+    assert float(data["items"][0]["unit_cost"]) == 150000.0
+
+
+def test_fulfillment_order_financial_fields(client, db):
+    wh = models.Warehouse(code="WH-OUT-FIN", name="Outbound Fin WH", is_active=True)
+    db.add(wh)
+    db.commit()
+    db.refresh(wh)
+
+    loc = models.Location(warehouse_id=wh.id, location_code="LOC-OUT-FIN", type="STORAGE", is_active=True)
+    db.add(loc)
+    db.commit()
+    db.refresh(loc)
+
+    inv = models.Inventory(sku_code="SKU-OUT-FIN", product_name="Outbound Fin Prod", location_id=loc.id, qty_on_hand=100, qty_reserved=0)
+    db.add(inv)
+
+    bm = models.BarcodeMapping(
+        barcode="BAR-OUT-FIN",
+        barcode_type="EAN-13",
+        sku_code="SKU-OUT-FIN",
+        product_name="Outbound Fin Prod",
+        selling_price=450000.0 # Selling price cached in mapping
+    )
+    db.add(bm)
+    db.commit()
+
+    payload = {
+        "fulfillment_number": "FM-FIN-001",
+        "oms_order_id": 88,
+        "oms_order_number": "ORD-88",
+        "warehouse_code": "WH-OUT-FIN",
+        "original_document_number": "DOC-OUTB-888",
+        "items": [
+            {
+                "sku_code": "SKU-OUT-FIN",
+                "product_name": "Outbound Fin Prod",
+                "quantity": 2
+            }
+        ]
+    }
+    response = client.post("/fulfillment-orders", json=payload)
+    assert response.status_code == 201
+    data = response.json()
+    assert data["original_document_number"] == "DOC-OUTB-888"
+    # Total = 2 * 450000 = 900000
+    assert float(data["total_amount"]) == 900000.0
+    assert len(data["pick_list_items"]) == 1
+    assert float(data["pick_list_items"][0]["selling_price"]) == 450000.0
+
 
 

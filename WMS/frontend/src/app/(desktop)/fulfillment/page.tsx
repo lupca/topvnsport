@@ -19,6 +19,7 @@ import {
   ClipboardList
 } from "lucide-react";
 import { popupService, showConfirm } from "@/components/ui/popupService";
+import { convertNumberToVietnameseWords } from "@/utils/numberToWords";
 
 interface PickListItem {
   id: number;
@@ -28,6 +29,7 @@ interface PickListItem {
   quantity: number;
   picked_qty: number;
   status: string;
+  selling_price?: number | null;
 }
 
 interface FulfillmentOrder {
@@ -39,6 +41,8 @@ interface FulfillmentOrder {
   created_at: string;
   completed_at: string | null;
   pick_list_items: PickListItem[];
+  original_document_number: string | null;
+  total_amount: number | null;
 }
 
 interface Location {
@@ -434,6 +438,24 @@ export default function FulfillmentPage() {
                 <div>
                   <h3 className="text-xs font-extrabold text-gray-900">{selectedOrder.fulfillment_number}</h3>
                   <p className="text-[10px] text-gray-500 mt-0.5">Trạng thái: {selectedOrder.status}</p>
+                  
+                  <div className="grid grid-cols-2 gap-4 mt-2.5 text-[10px] bg-gray-50 p-2.5 rounded-xl border border-gray-200 text-gray-700">
+                    <div>
+                      <span className="font-bold text-gray-500 block">Chứng từ gốc:</span>
+                      <span className="font-semibold text-gray-900">{selectedOrder.original_document_number || "—"}</span>
+                    </div>
+                    <div>
+                      <span className="font-bold text-gray-500 block">Tổng tiền xuất:</span>
+                      <span className="font-extrabold text-indigo-600">
+                        {selectedOrder.total_amount ? selectedOrder.total_amount.toLocaleString("vi-VN") + " ₫" : "0 ₫"}
+                      </span>
+                    </div>
+                  </div>
+                  {selectedOrder.total_amount ? (
+                    <p className="text-[9px] italic text-gray-500 mt-1 ml-0.5">
+                      Bằng chữ: <span className="font-semibold text-gray-700">{convertNumberToVietnameseWords(selectedOrder.total_amount)}</span>
+                    </p>
+                  ) : null}
                 </div>
                 {["PENDING", "PICKING"].includes(selectedOrder.status.toUpperCase()) && (
                   <button
@@ -459,6 +481,12 @@ export default function FulfillmentPage() {
                         <span>{item.picked_qty}/{item.quantity}</span>
                       </div>
                       <p className="text-[10px] text-gray-500 font-semibold pr-16">{item.product_name}</p>
+                      
+                      <div className="flex justify-between text-[10px] text-gray-700 font-semibold pr-16">
+                        <span>Giá xuất: {item.selling_price ? item.selling_price.toLocaleString("vi-VN") + " ₫" : "—"}</span>
+                        <span>Thành tiền: {item.selling_price ? (item.quantity * item.selling_price).toLocaleString("vi-VN") + " ₫" : "—"}</span>
+                      </div>
+
                       <div className="flex items-center gap-1 text-[9px] text-indigo-600 font-bold">
                         <MapPin className="w-3 h-3" />
                         <span>Vị trí nhặt: {getLocationCode(item.location_id)}</span>
