@@ -586,6 +586,10 @@ def test_audit_logs_jwt_only_admin(client_no_auth_override, db_session):
     import models
     from utils.auth import create_access_token
     
+    # Clear existing logs to avoid noise and test pollution in session-wide db tests
+    db_session.query(models.AuditLog).delete()
+    db_session.commit()
+    
     # Admin user not present in DB, authenticated purely via JWT payload role="admin"
     token = create_access_token({"sub": "jwt_only_admin", "role": "admin"})
     headers = {"Authorization": f"Bearer {token}"}
@@ -599,6 +603,13 @@ def test_audit_logs_jwt_only_admin(client_no_auth_override, db_session):
 def test_audit_logs_jwt_only_non_admin(client_no_auth_override, db_session):
     import models
     from utils.auth import create_access_token
+    
+    # Clear existing intrusion logs to avoid noise
+    db_session.query(models.AuditOutbox).filter_by(
+        actor_username="jwt_only_staff",
+        action_type="SECURITY"
+    ).delete()
+    db_session.commit()
     
     # Non-admin user not present in DB, authenticated purely via JWT payload role="staff"
     token = create_access_token({"sub": "jwt_only_staff", "role": "staff"})
@@ -614,6 +625,7 @@ def test_audit_logs_jwt_only_non_admin(client_no_auth_override, db_session):
         action_type="SECURITY"
     ).first()
     assert intrusion_log is not None
+
 
 
 
