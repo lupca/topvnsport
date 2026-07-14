@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -27,8 +27,50 @@ function LoginContent() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   const redirectUrl = searchParams.get("redirect") || "";
+
+  // Auto-redirect if already logged in
+  useEffect(() => {
+    const checkExistingAuth = async () => {
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        setIsCheckingAuth(false);
+        return;
+      }
+
+      try {
+        // Verify token is still valid
+        const userProfile = await apiClient.get("/auth/me");
+
+        // Token is valid, redirect with tokens
+        if (redirectUrl) {
+          const decodedUrl = decodeURIComponent(redirectUrl);
+          const safeUrl = getSafeRedirectUrl(decodedUrl);
+
+          const refreshToken = localStorage.getItem("refresh_token") || "";
+          const redirectWithTokens = new URL(safeUrl);
+          redirectWithTokens.searchParams.set('token', token);
+          redirectWithTokens.searchParams.set('refresh_token', refreshToken);
+          redirectWithTokens.searchParams.set('user_id', userProfile.id?.toString() || '');
+          redirectWithTokens.searchParams.set('username', userProfile.username);
+          redirectWithTokens.searchParams.set('role', userProfile.role_code);
+
+          window.location.href = redirectWithTokens.toString();
+        } else {
+          router.push("/dashboard");
+        }
+      } catch {
+        // Token invalid, clear and show login form
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        setIsCheckingAuth(false);
+      }
+    };
+
+    checkExistingAuth();
+  }, [redirectUrl, router]);
 
   const {
     register,
@@ -89,6 +131,14 @@ function LoginContent() {
   const pmiUrl = process.env.NEXT_PUBLIC_PMI_URL || "http://localhost:13100";
   const omsUrl = process.env.NEXT_PUBLIC_OMS_URL || "http://localhost:13101";
   const wmsUrl = process.env.NEXT_PUBLIC_WMS_URL || "http://localhost:13102";
+
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-brand-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 sm:px-6 lg:px-8">
