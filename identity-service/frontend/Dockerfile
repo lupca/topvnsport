@@ -18,10 +18,10 @@ COPY . .
 RUN mkdir -p public
 
 # Build-time environment variables for Next.js
-ARG NEXT_PUBLIC_API_URL=http://localhost:8000
-ARG NEXT_PUBLIC_PMI_URL=http://localhost:13100
-ARG NEXT_PUBLIC_OMS_URL=http://localhost:13101
-ARG NEXT_PUBLIC_WMS_URL=http://localhost:13102
+ARG NEXT_PUBLIC_API_URL=https://api-identity.topvnsport.com
+ARG NEXT_PUBLIC_PMI_URL=https://pmi.topvnsport.com
+ARG NEXT_PUBLIC_OMS_URL=https://oms.topvnsport.com
+ARG NEXT_PUBLIC_WMS_URL=https://wms.topvnsport.com
 
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_PMI_URL=$NEXT_PUBLIC_PMI_URL
