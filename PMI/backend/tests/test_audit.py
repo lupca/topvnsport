@@ -582,5 +582,39 @@ def test_mask_deque():
     assert res["data"][0]["password"] == "***MASKED***"
     assert isinstance(res["data"], collections.deque)
 
+def test_audit_logs_jwt_only_admin(client_no_auth_override, db_session):
+    import models
+    from utils.auth import create_access_token
+    
+    # Admin user not present in DB, authenticated purely via JWT payload role="admin"
+    token = create_access_token({"sub": "jwt_only_admin", "role": "admin"})
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    resp = client_no_auth_override.get("/api/audit-logs", headers=headers)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "data" in data
+    assert data["total"] == 0
+
+def test_audit_logs_jwt_only_non_admin(client_no_auth_override, db_session):
+    import models
+    from utils.auth import create_access_token
+    
+    # Non-admin user not present in DB, authenticated purely via JWT payload role="staff"
+    token = create_access_token({"sub": "jwt_only_staff", "role": "staff"})
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    resp = client_no_auth_override.get("/api/audit-logs", headers=headers)
+    assert resp.status_code == 403
+    
+    # Check security intrusion log was written to audit_outbox
+    db_session.commit()
+    intrusion_log = db_session.query(models.AuditOutbox).filter_by(
+        actor_username="jwt_only_staff",
+        action_type="SECURITY"
+    ).first()
+    assert intrusion_log is not None
+
+
 
 

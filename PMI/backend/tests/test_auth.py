@@ -223,3 +223,40 @@ def test_unicode_api_key_unauthorized(client_no_auth_override):
     response = client_no_auth_override.get("/api/auth/me", headers=headers)
     assert response.status_code == 401
     assert response.json()["detail"] == "Invalid Service API Key"
+
+def test_get_me_jwt_only_user(client_no_auth_override):
+    # User does NOT exist in db, but token is valid
+    token = create_access_token({"sub": "jwt_only_tester", "role": "admin", "staff_id": 9876})
+    
+    headers = {"Authorization": f"Bearer {token}"}
+    response = client_no_auth_override.get("/api/auth/me", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["actor_type"] == "USER"
+    assert data["actor_username"] == "jwt_only_tester"
+    assert data["user"]["id"] == "9876"
+    assert data["user"]["username"] == "jwt_only_tester"
+    assert data["user"]["role"] == "admin"
+    assert data["user"]["is_active"] is True
+    assert data["user"]["email"] is None
+
+def test_get_me_jwt_deactivated_user_in_db(client_no_auth_override, db_session):
+    # User exists in db but is deactivated
+    hashed_pw = get_password_hash("testpwd")
+    user = models.User(
+        username="deactivated_jwt_user",
+        email="deact@example.com",
+        hashed_password=hashed_pw,
+        role="admin",
+        is_active=False
+    )
+    db_session.add(user)
+    db_session.commit()
+
+    token = create_access_token({"sub": "deactivated_jwt_user", "role": "admin"})
+    
+    headers = {"Authorization": f"Bearer {token}"}
+    response = client_no_auth_override.get("/api/auth/me", headers=headers)
+    assert response.status_code == 401
+    assert response.json()["detail"] == "User account is deactivated"
+

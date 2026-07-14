@@ -77,27 +77,30 @@ async def get_current_identity(
             )
 
         user = db.query(models.User).filter(models.User.username == username).first()
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="User account not found"
-            )
-        if not user.is_active:
+        if user and not user.is_active:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="User account is deactivated"
             )
 
-        actor_username_var.set(user.username)
+        role = user.role if user else payload.get("role")
+        user_id = str(user.id) if user else str(payload.get("staff_id") or "")
+        if not user_id:
+            user_id = None
+
+        actor_username_var.set(username)
         actor_type_var.set("USER")
-        user_id = getattr(user, "id", None)
-        actor_id_var.set(str(user_id) if user_id is not None else None)
-        return {
+        actor_id_var.set(user_id)
+
+        identity = {
             "actor_type": "USER",
-            "actor_username": user.username,
-            "actor_id": str(user_id) if user_id is not None else None,
-            "user": user
+            "actor_username": username,
+            "actor_id": user_id,
+            "role": role
         }
+        if user:
+            identity["user"] = user
+        return identity
 
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,

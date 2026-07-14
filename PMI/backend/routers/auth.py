@@ -53,6 +53,15 @@ async def get_me(identity: dict = Depends(get_current_identity)):
             "is_active": getattr(user, "is_active", None),
             "created_at": getattr(user, "created_at", None).isoformat() if getattr(user, "created_at", None) else None
         }
+    elif identity.get("actor_type") == "USER":
+        res["user"] = {
+            "id": identity.get("actor_id"),
+            "username": identity.get("actor_username"),
+            "email": None,
+            "role": identity.get("role"),
+            "is_active": True,
+            "created_at": None
+        }
     return res
 
 @router.get("/context")

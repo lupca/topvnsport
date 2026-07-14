@@ -43,7 +43,8 @@ def get_audit_logs(
 ):
     # Checks that user role is admin
     user = current_identity.get("user")
-    if not user or user.role.lower() not in ["admin", "administrator"]:
+    role = user.role if user else current_identity.get("role")
+    if not role or role.lower() not in ["admin", "administrator"]:
         # Log a security intrusion event to audit_outbox
         username = user.username if user else current_identity.get("actor_username", "guest")
         actor_username_var.set(username)
@@ -191,11 +192,12 @@ def log_security_intrusion(
 ):
     user = current_identity.get("user")
     actor_type = current_identity.get("actor_type")
+    role = user.role if user else current_identity.get("role")
     
     # Only allow admin users or internal services to manually log security events
     if actor_type == "SERVICE":
         pass
-    elif user and user.role.lower() in ["admin", "administrator"]:
+    elif role and role.lower() in ["admin", "administrator"]:
         pass
     else:
         raise HTTPException(
@@ -208,9 +210,11 @@ def log_security_intrusion(
     # Sets thread local context variables
     actor_username_var.set(username)
     actor_type_var.set("USER" if actor_type != "SERVICE" else "SERVICE")
-    if user:
+    
+    actor_id = str(user.id) if user else current_identity.get("actor_id")
+    if actor_id:
         from utils.context import actor_id_var
-        actor_id_var.set(str(user.id))
+        actor_id_var.set(actor_id)
 
     # Writes a security event to audit_outbox
     record_audit_event(
