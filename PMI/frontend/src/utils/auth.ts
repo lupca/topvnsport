@@ -25,11 +25,10 @@ export function redirectToLogin(): void {
 export async function verifyToken(token: string): Promise<boolean> {
   try {
     const res = await fetch(`${IDENTITY_URL.replace('identity.', 'api-identity.')}/auth/verify`, {
-      method: 'POST',
+      method: 'GET',
       headers: {
-        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify({ token }),
     });
     return res.ok;
   } catch {
