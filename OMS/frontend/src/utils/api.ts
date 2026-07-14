@@ -132,6 +132,15 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
 
     clearTimeout(timeoutId);
 
+    if (response.status === 401) {
+      if (typeof window !== "undefined") {
+        const { removeAccessToken, redirectToLogin } = await import("@/utils/auth");
+        removeAccessToken();
+        redirectToLogin();
+      }
+      throw new Error("Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.");
+    }
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.detail || `API Request Failed with status ${response.status}`);

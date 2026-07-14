@@ -3,8 +3,12 @@
 import React from "react";
 import Link from "next/link";
 import { Bell, Search } from "lucide-react";
+import { logout } from "@/utils/auth";
 
 export default function Topbar() {
+  const handleLogout = () => {
+    logout();
+  };
   return (
     <header className="h-16 bg-surface border-b border-gray-200 px-6 flex items-center justify-between sticky top-0 z-40 shadow-sm">
       {/* Search Input bar */}
@@ -39,12 +43,19 @@ export default function Topbar() {
         <Link href="/account" className="flex items-center gap-3 hover:opacity-85 transition-opacity cursor-pointer">
           <div className="flex flex-col text-right">
             <span className="text-xs font-bold text-gray-800">Administrator</span>
-            <span className="text-[10px] text-gray-500 font-semibold uppercase">PIM Owner</span>
+            <span className="text-[10px] text-gray-500 font-semibold uppercase">OMS Owner</span>
           </div>
           <div className="w-9 h-9 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center text-brand-primary font-bold text-xs">
             AD
           </div>
         </Link>
+
+        <button
+          onClick={handleLogout}
+          className="px-3 py-1.5 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-colors"
+        >
+          Đăng xuất
+        </button>
       </div>
     </header>
   );

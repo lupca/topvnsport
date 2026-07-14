@@ -2,18 +2,12 @@
 
 import React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Bell, Search } from "lucide-react";
+import { logout } from "@/utils/auth";
 
 export default function Topbar() {
-  const router = useRouter();
-
   const handleLogout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("user_role");
-    localStorage.removeItem("user_username");
-    localStorage.removeItem("pending_login_username");
-    router.push("/login");
+    logout();
   };
 
   return (

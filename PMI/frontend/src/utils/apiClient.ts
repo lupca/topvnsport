@@ -37,10 +37,9 @@ export async function fetchWithAuth(path: string, options: RequestInit = {}): Pr
 
   if (response.status === 401) {
     if (typeof window !== "undefined") {
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("user_role");
-      localStorage.removeItem("user_username");
-      window.location.href = "/login";
+      const { removeAccessToken, redirectToLogin } = await import("@/utils/auth");
+      removeAccessToken();
+      redirectToLogin();
     }
     throw new ApiError("Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.", 401);
   }
