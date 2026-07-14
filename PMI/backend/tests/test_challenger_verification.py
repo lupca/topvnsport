@@ -5,46 +5,10 @@ from fastapi import status
 from fastapi.testclient import TestClient
 from jose import jwt
 
-import models
-from utils.auth import JWT_SECRET_KEY, JWT_ALGORITHM, create_access_token, get_password_hash
+from utils.auth import JWT_SECRET_KEY, JWT_ALGORITHM, create_access_token
 
-def test_seeded_admin_login(client):
-    """Verify that the seeded default accounts (admin/password) can log in successfully."""
-    login_payload = {"username": "admin", "password": "password123"}
-    response = client.post("/api/auth/login", json=login_payload)
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
-    assert "access_token" in data
-    assert data["token_type"] == "bearer"
-
-def test_invalid_credentials_rejected(client):
-    """Verify incorrect credentials get rejected with 401."""
-    # 1. Invalid password for admin
-    login_payload = {"username": "admin", "password": "wrongpassword"}
-    response = client.post("/api/auth/login", json=login_payload)
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert response.json()["detail"] == "Incorrect username or password"
-
-    # 2. Non-existent user login
-    login_payload = {"username": "non_existent_user_123", "password": "some_password"}
-    response = client.post("/api/auth/login", json=login_payload)
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert response.json()["detail"] == "Incorrect username or password"
-
-def test_jwt_token_rejections(client_no_auth_override, db_session):
+def test_jwt_token_rejections(client_no_auth_override):
     """Verify invalid and malformed JWT tokens are correctly rejected with 401."""
-    # Setup test user for valid lookup if needed
-    u = db_session.query(models.User).filter(models.User.username == "jwt_verifier").first()
-    if not u:
-        u = models.User(
-            username="jwt_verifier",
-            email="jwt_verifier@example.com",
-            hashed_password=get_password_hash("password"),
-            role="admin",
-            is_active=True
-        )
-        db_session.add(u)
-        db_session.commit()
 
     # Case A: Invalid Signature
     invalid_sig_token = jwt.encode({"sub": "jwt_verifier"}, "different_secret_key", algorithm=JWT_ALGORITHM)

@@ -76,15 +76,8 @@ async def get_current_identity(
                 detail="Token payload is missing subject claim"
             )
 
-        user = db.query(models.User).filter(models.User.username == username).first()
-        if user and not user.is_active:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="User account is deactivated"
-            )
-
-        role = user.role if user else payload.get("role")
-        user_id = str(user.id) if user else str(payload.get("staff_id") or "")
+        role = payload.get("role")
+        user_id = str(payload.get("staff_id") or "")
         if not user_id:
             user_id = None
 
@@ -98,8 +91,6 @@ async def get_current_identity(
             "actor_id": user_id,
             "role": role
         }
-        if user:
-            identity["user"] = user
         return identity
 
     raise HTTPException(

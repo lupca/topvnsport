@@ -4,24 +4,11 @@ import datetime
 from datetime import timedelta
 from typing import Optional, Any
 from jose import JWTError, jwt
-from passlib.context import CryptContext
-
-# Crypt context for hashing passwords using bcrypt
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 # Configuration constants loaded from environment
 JWT_SECRET_KEY = os.environ["JWT_SECRET_KEY"]
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))  # 24 hours default
 INTERNAL_SERVICE_TOKEN = os.environ["INTERNAL_SERVICE_TOKEN"]
-
-def get_password_hash(password: str) -> str:
-    """Hash a plaintext password using bcrypt."""
-    return pwd_context.hash(password)
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a plaintext password against a stored bcrypt hash."""
-    return pwd_context.verify(plain_password, hashed_password)
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """Generate a JWT bearer token signed with the secret key."""

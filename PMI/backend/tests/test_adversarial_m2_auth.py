@@ -5,7 +5,7 @@ import importlib
 from datetime import timedelta
 from sqlalchemy.orm import Session
 import models
-from utils.auth import get_password_hash, create_access_token, INTERNAL_SERVICE_TOKEN
+from utils.auth import create_access_token, INTERNAL_SERVICE_TOKEN
 from utils.context import actor_username_var, actor_type_var
 
 @pytest.mark.asyncio
@@ -17,24 +17,10 @@ async def test_concurrency_contextvars_safety(app_module, db_session):
     """
     # Create multiple test users
     num_users = 40
-    users = []
     tokens = []
     for i in range(num_users):
         username = f"concurrent_user_{i}"
-        user = models.User(
-            username=username,
-            email=f"user_{i}@example.com",
-            hashed_password=get_password_hash("password"),
-            role="USER",
-            is_active=True
-        )
-        db_session.add(user)
-        users.append(username)
-    db_session.commit()
-
-    # Generate tokens for each user
-    for username in users:
-        token = create_access_token({"sub": username})
+        token = create_access_token({"sub": username, "role": "USER"})
         tokens.append((username, token))
 
     # Override database dependency to yield our db_session
@@ -85,18 +71,8 @@ async def test_token_expiration(app_module, db_session):
     expires and correctly rejects requests after 1 second.
     """
     username = "expiring_user"
-    user = models.User(
-        username=username,
-        email="expiring@example.com",
-        hashed_password=get_password_hash("password"),
-        role="USER",
-        is_active=True
-    )
-    db_session.add(user)
-    db_session.commit()
-
     # Generate token with 1 second expiry
-    token = create_access_token({"sub": username}, expires_delta=timedelta(seconds=1))
+    token = create_access_token({"sub": username, "role": "USER"}, expires_delta=timedelta(seconds=1))
 
     def override_get_db():
         yield db_session
@@ -132,17 +108,7 @@ async def test_exceptions_and_validations_do_not_leak_contextvars(app_module, db
     subsequent requests are clean and contextvars do not crossover or remain polluted.
     """
     username = "clean_user"
-    user = models.User(
-        username=username,
-        email="clean@example.com",
-        hashed_password=get_password_hash("password"),
-        role="USER",
-        is_active=True
-    )
-    db_session.add(user)
-    db_session.commit()
-
-    token = create_access_token({"sub": username})
+    token = create_access_token({"sub": username, "role": "USER"})
 
     def override_get_db():
         yield db_session
@@ -173,8 +139,8 @@ async def test_exceptions_and_validations_do_not_leak_contextvars(app_module, db
         assert resp_after_401.json()["actor_username"] == "guest"
         assert resp_after_401.json()["actor_type"] == "GUEST"
 
-        # Step E: Trigger 422 Validation Error (empty payload for POST login)
-        resp_422 = await ac.post("/api/auth/login", json={})
+        # Step E: Trigger 422 Validation Error (empty payload for POST audit security log)
+        resp_422 = await ac.post("/api/audit-logs/security", json={}, headers={"Authorization": f"Bearer {token}"})
         assert resp_422.status_code == 422
 
         # Step F: Verify context is not polluted after 422

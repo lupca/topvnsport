@@ -345,17 +345,6 @@ class ChannelConfig(Base):
     channel = relationship("Channel", backref=backref("config", uselist=False, cascade="all, delete-orphan"))
 
 
-class User(Base):
-    __tablename__ = "users"
-
-    id = Column(Integer, primary_key=True, index=True)
-    username = Column(String(255), unique=True, index=True, nullable=False)
-    email = Column(String(255), unique=True, index=True, nullable=False)
-    hashed_password = Column(String(255), nullable=False)
-    role = Column(String(50), default="admin", nullable=False)
-    is_active = Column(Boolean, default=True, nullable=False)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
-
 
 from sqlalchemy import event, select
 from utils.sku_helper import clean_option_for_sku

@@ -1,16 +1,7 @@
 import pytest
 from fastapi import status
-from utils.auth import get_password_hash, verify_password, create_access_token, decode_access_token, INTERNAL_SERVICE_TOKEN
-import models
-import datetime
+from utils.auth import create_access_token, decode_access_token, INTERNAL_SERVICE_TOKEN
 from jose import jwt
-
-def test_password_hashing():
-    pw = "my-secret-password"
-    hashed = get_password_hash(pw)
-    assert hashed != pw
-    assert verify_password(pw, hashed) is True
-    assert verify_password("wrong-password", hashed) is False
 
 def test_jwt_operations():
     payload = {"sub": "test_user", "role": "admin"}
@@ -20,98 +11,6 @@ def test_jwt_operations():
     assert decoded["sub"] == "test_user"
     assert decoded["role"] == "admin"
     assert "exp" in decoded
-
-def test_user_model_creation(db_session):
-    hashed_pw = get_password_hash("password123")
-    user = models.User(
-        username="john_doe",
-        email="john@example.com",
-        hashed_password=hashed_pw,
-        role="admin",
-        is_active=True
-    )
-    db_session.add(user)
-    db_session.commit()
-
-    db_user = db_session.query(models.User).filter(models.User.username == "john_doe").first()
-    assert db_user is not None
-    assert db_user.email == "john@example.com"
-    assert verify_password("password123", db_user.hashed_password) is True
-    assert db_user.role == "admin"
-    assert db_user.is_active is True
-    assert isinstance(db_user.created_at, datetime.datetime)
-
-def test_login_flow(client, db_session):
-    hashed_pw = get_password_hash("testpwd")
-    user = models.User(
-        username="auth_tester",
-        email="tester@example.com",
-        hashed_password=hashed_pw,
-        role="admin",
-        is_active=True
-    )
-    db_session.add(user)
-    db_session.commit()
-
-    # Login with correct credentials
-    login_payload = {"username": "auth_tester", "password": "testpwd"}
-    response = client.post("/api/auth/login", json=login_payload)
-    assert response.status_code == 200
-    data = response.json()
-    assert "access_token" in data
-    assert data["token_type"] == "bearer"
-
-    # Login with incorrect password
-    bad_payload = {"username": "auth_tester", "password": "wrongpassword"}
-    response = client.post("/api/auth/login", json=bad_payload)
-    assert response.status_code == 401
-    assert response.json()["detail"] == "Incorrect username or password"
-
-def test_login_inactive_user(client, db_session):
-    hashed_pw = get_password_hash("testpwd")
-    user = models.User(
-        username="inactive_tester",
-        email="inactive@example.com",
-        hashed_password=hashed_pw,
-        role="admin",
-        is_active=False
-    )
-    db_session.add(user)
-    db_session.commit()
-
-    login_payload = {"username": "inactive_tester", "password": "testpwd"}
-    response = client.post("/api/auth/login", json=login_payload)
-    assert response.status_code == 401
-    assert response.json()["detail"] == "User account is deactivated"
-
-def test_get_me_user_auth(client_no_auth_override, db_session):
-    # Create user
-    hashed_pw = get_password_hash("testpwd")
-    user = models.User(
-        username="me_tester",
-        email="me@example.com",
-        hashed_password=hashed_pw,
-        role="admin",
-        is_active=True
-    )
-    db_session.add(user)
-    db_session.commit()
-
-    # Generate token
-    token = create_access_token({"sub": "me_tester"})
-
-    # Get /me without token (should fail)
-    response = client_no_auth_override.get("/api/auth/me")
-    assert response.status_code == 401
-
-    # Get /me with valid token
-    headers = {"Authorization": f"Bearer {token}"}
-    response = client_no_auth_override.get("/api/auth/me", headers=headers)
-    assert response.status_code == 200
-    data = response.json()
-    assert data["actor_type"] == "USER"
-    assert data["actor_username"] == "me_tester"
-    assert data["user"]["email"] == "me@example.com"
 
 def test_get_me_service_auth(client_no_auth_override):
     # Get /me with service API key
@@ -157,13 +56,7 @@ def test_request_context_middleware(client):
     assert response.headers["X-Correlation-ID"] == custom_corr_id
     assert response.json()["correlation_id"] == custom_corr_id
 
-def test_contextvars_isolation(client_no_auth_override, db_session):
-    # Setup two users
-    u1 = models.User(username="user1", email="u1@ex.com", hashed_password=get_password_hash("pw"), is_active=True)
-    u2 = models.User(username="user2", email="u2@ex.com", hashed_password=get_password_hash("pw"), is_active=True)
-    db_session.add_all([u1, u2])
-    db_session.commit()
-
+def test_contextvars_isolation(client_no_auth_override):
     token1 = create_access_token({"sub": "user1"})
     token2 = create_access_token({"sub": "user2"})
 
@@ -240,23 +133,5 @@ def test_get_me_jwt_only_user(client_no_auth_override):
     assert data["user"]["is_active"] is True
     assert data["user"]["email"] is None
 
-def test_get_me_jwt_deactivated_user_in_db(client_no_auth_override, db_session):
-    # User exists in db but is deactivated
-    hashed_pw = get_password_hash("testpwd")
-    user = models.User(
-        username="deactivated_jwt_user",
-        email="deact@example.com",
-        hashed_password=hashed_pw,
-        role="admin",
-        is_active=False
-    )
-    db_session.add(user)
-    db_session.commit()
 
-    token = create_access_token({"sub": "deactivated_jwt_user", "role": "admin"})
-    
-    headers = {"Authorization": f"Bearer {token}"}
-    response = client_no_auth_override.get("/api/auth/me", headers=headers)
-    assert response.status_code == 401
-    assert response.json()["detail"] == "User account is deactivated"
 

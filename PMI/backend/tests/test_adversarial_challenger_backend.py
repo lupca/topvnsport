@@ -15,7 +15,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import models
 import schemas
-from utils.auth import JWT_SECRET_KEY, JWT_ALGORITHM, create_access_token, get_password_hash, INTERNAL_SERVICE_TOKEN
+from utils.auth import JWT_SECRET_KEY, JWT_ALGORITHM, create_access_token, INTERNAL_SERVICE_TOKEN
 from utils.context import actor_username_var, actor_type_var, correlation_id_var
 from utils.audit import audit_action
 from services.product_service import _parse_attribute_storage_value, _upsert_product_attribute_values, _save_product_channel_listings, update_product_aggregate
@@ -113,19 +113,7 @@ def test_sync_stock_non_existent_product_flaw(client, db_session: Session):
 
 def test_audit_logs_pagination_boundaries(client, db_session: Session):
     """Test boundary parameter validation in the audit-logs endpoint."""
-    admin_user = db_session.query(models.User).filter_by(role="admin").first()
-    if not admin_user:
-        admin_user = models.User(
-            username="admin_pagination_tester",
-            email="admin_pagination@example.com",
-            hashed_password=get_password_hash("password123"),
-            role="admin",
-            is_active=True
-        )
-        db_session.add(admin_user)
-        db_session.commit()
-
-    token = create_access_token({"sub": admin_user.username})
+    token = create_access_token({"sub": "admin_pagination_tester", "role": "admin"})
     headers = {"Authorization": f"Bearer {token}"}
 
     # Instantiate a new TestClient with raise_server_exceptions=False

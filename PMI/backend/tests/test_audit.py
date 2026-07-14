@@ -353,27 +353,8 @@ def test_get_audit_logs_endpoints(client_no_auth_override, db_session):
     db_session.query(AuditLog).delete()
     db_session.commit()
 
-    # Create admin and staff users
-    admin_user = models.User(
-        username="admin_user_test",
-        email="admin_test@example.com",
-        hashed_password="hashed_password",
-        role="admin",
-        is_active=True
-    )
-    staff_user = models.User(
-        username="staff_user_test",
-        email="staff_test@example.com",
-        hashed_password="hashed_password",
-        role="staff",
-        is_active=True
-    )
-    db_session.add(admin_user)
-    db_session.add(staff_user)
-    db_session.commit()
-
-    admin_token = create_access_token({"sub": "admin_user_test"})
-    staff_token = create_access_token({"sub": "staff_user_test"})
+    admin_token = create_access_token({"sub": "admin_user_test", "role": "admin"})
+    staff_token = create_access_token({"sub": "staff_user_test", "role": "staff"})
 
     # 1. Non-admin access should be forbidden and log security intrusion
     headers_staff = {"Authorization": f"Bearer {staff_token}"}
@@ -512,30 +493,11 @@ def test_sync_stock_endpoint(client, db_session):
 
 
 def test_log_security_intrusion_endpoint(client_no_auth_override, db_session):
-    import models
     from models import AuditOutbox
     from utils.auth import create_access_token
 
-    hacker_user = models.User(
-        username="hacker123",
-        email="hacker@example.com",
-        hashed_password="hashed_password",
-        role="staff",
-        is_active=True
-    )
-    admin_user = models.User(
-        username="admin123",
-        email="admin@example.com",
-        hashed_password="hashed_password",
-        role="admin",
-        is_active=True
-    )
-    db_session.add(hacker_user)
-    db_session.add(admin_user)
-    db_session.commit()
-
     # 1. Staff gets 403 and intrusion is NOT logged
-    token = create_access_token({"sub": "hacker123"})
+    token = create_access_token({"sub": "hacker123", "role": "staff", "staff_id": "456"})
     headers = {"Authorization": f"Bearer {token}"}
 
     resp = client_no_auth_override.post(
@@ -553,7 +515,7 @@ def test_log_security_intrusion_endpoint(client_no_auth_override, db_session):
     assert intrusion_log is None
 
     # 2. Admin gets 200 and intrusion IS logged
-    admin_token = create_access_token({"sub": "admin123"})
+    admin_token = create_access_token({"sub": "admin123", "role": "admin", "staff_id": "123"})
     admin_headers = {"Authorization": f"Bearer {admin_token}"}
     resp_admin = client_no_auth_override.post(
         "/api/audit-logs/security",

@@ -388,41 +388,6 @@ def startup_populate():
         _seed_channel_mappings(db)
         db.flush()
 
-        # Seed default admin user
-        from utils.auth import get_password_hash
-        admin_user = db.query(models.User).filter(models.User.username == "admin").first()
-        if not admin_user:
-            print("Seeding default admin user...")
-            admin_user = models.User(
-                username="admin",
-                email="admin@topvnsport.com",
-                hashed_password=get_password_hash("password123"),
-                role="admin",
-                is_active=True
-            )
-            db.add(admin_user)
-        else:
-            admin_user.hashed_password = get_password_hash("password123")
-            admin_user.role = "admin"
-            admin_user.is_active = True
-            
-        # Seed staff user
-        staff_user = db.query(models.User).filter(models.User.username == "staff_user").first()
-        if not staff_user:
-            print("Seeding staff user...")
-            staff_user = models.User(
-                username="staff_user",
-                email="staff@topvnsport.com",
-                hashed_password=get_password_hash("password123"),
-                role="staff",
-                is_active=True
-            )
-            db.add(staff_user)
-        else:
-            staff_user.hashed_password = get_password_hash("password123")
-            staff_user.role = "staff"
-            staff_user.is_active = True
-        db.flush()
 
         db.commit()
         print("PIM database seeding completed successfully.")

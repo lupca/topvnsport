@@ -1,40 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
-from pydantic import BaseModel
-from database import get_db
-import models
-from utils.auth import verify_password, create_access_token
 from utils.dependency import get_current_identity
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
-
-class LoginRequest(BaseModel):
-    username: str
-    password: str
-
-class TokenResponse(BaseModel):
-    access_token: str
-    token_type: str
-
-@router.post("/login", response_model=TokenResponse)
-def login(login_data: LoginRequest, db: Session = Depends(get_db)):
-    """Authenticate credentials and generate a JWT access token."""
-    user = db.query(models.User).filter(models.User.username == login_data.username).first()
-    if not user or not verify_password(login_data.password, user.hashed_password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password"
-        )
-        
-    if not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User account is deactivated"
-        )
-
-    # Generate token
-    token = create_access_token(data={"sub": user.username, "role": user.role})
-    return {"access_token": token, "token_type": "bearer"}
 
 @router.get("/me")
 async def get_me(identity: dict = Depends(get_current_identity)):
@@ -43,17 +10,7 @@ async def get_me(identity: dict = Depends(get_current_identity)):
         "actor_type": identity["actor_type"],
         "actor_username": identity["actor_username"]
     }
-    if "user" in identity:
-        user = identity["user"]
-        res["user"] = {
-            "id": getattr(user, "id", None),
-            "username": getattr(user, "username", None),
-            "email": getattr(user, "email", None),
-            "role": getattr(user, "role", None),
-            "is_active": getattr(user, "is_active", None),
-            "created_at": getattr(user, "created_at", None).isoformat() if getattr(user, "created_at", None) else None
-        }
-    elif identity.get("actor_type") == "USER":
+    if identity.get("actor_type") == "USER":
         res["user"] = {
             "id": identity.get("actor_id"),
             "username": identity.get("actor_username"),

@@ -9,26 +9,9 @@ from fastapi.testclient import TestClient
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from main import app
-from database import SessionLocal
-from utils.auth import JWT_SECRET_KEY, JWT_ALGORITHM, create_access_token, get_password_hash
-import models
+from utils.auth import JWT_SECRET_KEY, JWT_ALGORITHM, create_access_token
 
-def setup_user():
-    db = SessionLocal()
-    # Create test user if not exists
-    user = db.query(models.User).filter(models.User.username == "jwt_boundary_tester").first()
-    if not user:
-        user = models.User(
-            username="jwt_boundary_tester",
-            email="jwt_boundary_tester@example.com",
-            hashed_password=get_password_hash("password123"),
-            role="admin",
-            is_active=True
-        )
-        db.add(user)
-        db.commit()
-        db.refresh(user)
-    db.close()
+
 
 def run_jwt_tests():
     client = TestClient(app)
@@ -64,5 +47,4 @@ def run_jwt_tests():
     print("ALL JWT boundary tests PASSED successfully!")
 
 if __name__ == "__main__":
-    setup_user()
     run_jwt_tests()
