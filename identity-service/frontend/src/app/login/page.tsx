@@ -49,15 +49,21 @@ function LoginContent() {
           const decodedUrl = decodeURIComponent(redirectUrl);
           const safeUrl = getSafeRedirectUrl(decodedUrl);
 
-          const refreshToken = localStorage.getItem("refresh_token") || "";
-          const redirectWithTokens = new URL(safeUrl);
-          redirectWithTokens.searchParams.set('token', token);
-          redirectWithTokens.searchParams.set('refresh_token', refreshToken);
-          redirectWithTokens.searchParams.set('user_id', userProfile.id?.toString() || '');
-          redirectWithTokens.searchParams.set('username', userProfile.username);
-          redirectWithTokens.searchParams.set('role', userProfile.role_code);
+          // If safeUrl is relative path (same domain), just navigate
+          if (safeUrl.startsWith("/")) {
+            router.push(safeUrl);
+          } else {
+            // External URL - append tokens for SSO
+            const refreshToken = localStorage.getItem("refresh_token") || "";
+            const redirectWithTokens = new URL(safeUrl);
+            redirectWithTokens.searchParams.set('token', token);
+            redirectWithTokens.searchParams.set('refresh_token', refreshToken);
+            redirectWithTokens.searchParams.set('user_id', userProfile.id?.toString() || '');
+            redirectWithTokens.searchParams.set('username', userProfile.username);
+            redirectWithTokens.searchParams.set('role', userProfile.role_code);
 
-          window.location.href = redirectWithTokens.toString();
+            window.location.href = redirectWithTokens.toString();
+          }
         } else {
           router.push("/dashboard");
         }
@@ -107,15 +113,20 @@ function LoginContent() {
         const decodedUrl = decodeURIComponent(redirectUrl);
         const safeUrl = getSafeRedirectUrl(decodedUrl);
 
-        // Append auth tokens to redirect URL for cross-subdomain SSO
-        const redirectWithTokens = new URL(safeUrl);
-        redirectWithTokens.searchParams.set('token', response.access_token);
-        redirectWithTokens.searchParams.set('refresh_token', response.refresh_token);
-        redirectWithTokens.searchParams.set('user_id', userProfile.id?.toString() || '');
-        redirectWithTokens.searchParams.set('username', userProfile.username);
-        redirectWithTokens.searchParams.set('role', userProfile.role_code);
+        // If safeUrl is relative path (same domain), just navigate
+        if (safeUrl.startsWith("/")) {
+          router.push(safeUrl);
+        } else {
+          // External URL - append tokens for cross-subdomain SSO
+          const redirectWithTokens = new URL(safeUrl);
+          redirectWithTokens.searchParams.set('token', response.access_token);
+          redirectWithTokens.searchParams.set('refresh_token', response.refresh_token);
+          redirectWithTokens.searchParams.set('user_id', userProfile.id?.toString() || '');
+          redirectWithTokens.searchParams.set('username', userProfile.username);
+          redirectWithTokens.searchParams.set('role', userProfile.role_code);
 
-        window.location.href = redirectWithTokens.toString();
+          window.location.href = redirectWithTokens.toString();
+        }
       } else {
         router.push("/dashboard");
       }
