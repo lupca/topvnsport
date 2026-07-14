@@ -48,7 +48,14 @@ if (typeof window !== "undefined" && !(window as any).__fetch_intercepted__) {
 // It returns the raw Response object so it can be a drop-in replacement for window.fetch in legacy pages.
 export async function fetchWithAuth(path: string, options: RequestInit = {}): Promise<Response> {
   const baseUrl = APP_SETTINGS.api.baseUrl;
-  const url = path.startsWith("http") ? path : `${baseUrl}${path}`;
+  let url = path;
+  if (!path.startsWith("http")) {
+    if (path.startsWith(baseUrl)) {
+      url = path;
+    } else {
+      url = `${baseUrl}${path}`;
+    }
+  }
 
   const headers = new Headers(options.headers || {});
   
