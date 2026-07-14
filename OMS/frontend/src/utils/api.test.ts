@@ -5,6 +5,7 @@ import { removeAccessToken, redirectToLogin } from "@/utils/auth";
 vi.mock("@/utils/auth", () => ({
   removeAccessToken: vi.fn(),
   redirectToLogin: vi.fn(),
+  getAccessToken: vi.fn(),
 }));
 
 describe("OMS API client", () => {
