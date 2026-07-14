@@ -9,6 +9,10 @@ export default defineConfig({
 		globals: true,
 		setupFiles: ["./vitest.setup.ts"],
 		include: ["src/**/*.{test,spec}.{ts,tsx}"],
+		isolate: true,
+		pool: "forks",
+		testTimeout: 10000,
+		hookTimeout: 10000,
 		coverage: {
 			provider: "v8",
 			reporter: ["text", "json", "html"],
