@@ -2,11 +2,26 @@ import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi, beforeEach } from "vitest";
+
+const { mockFetchWithAuth, mockApiClient } = vi.hoisted(() => ({
+  mockFetchWithAuth: vi.fn(),
+  mockApiClient: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn(),
+  },
+}));
+
+vi.mock("@/utils/apiClient", () => ({
+  fetchWithAuth: mockFetchWithAuth,
+  apiClient: mockApiClient,
+}));
+
 import AuditLogPage from "@/app/settings/audit/page";
 
 const mockPush = vi.fn();
 
-// Mock next/navigation at the top level
 vi.mock("next/navigation", () => ({
   useParams: () => ({}),
   useRouter: () => ({
@@ -45,26 +60,15 @@ const mockAuditLogs = {
 
 describe("Audit Log UI Component Tests", () => {
   beforeEach(() => {
-    vi.restoreAllMocks();
-    vi.unstubAllGlobals();
+    vi.clearAllMocks();
     mockPush.mockClear();
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockImplementation((url: string) => {
-        // Match audit-logs endpoint with any prefix
-        if (/audit-logs/.test(url)) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(mockAuditLogs)
-          });
-        }
-        // Return empty for unknown URLs instead of rejecting
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve([])
-        });
-      })
-    );
+
+    mockFetchWithAuth.mockImplementation((url: string) => {
+      if (/audit-logs/.test(url)) {
+        return Promise.resolve(mockAuditLogs);
+      }
+      return Promise.resolve([]);
+    });
   });
 
   const getAuditPage = async () => {
@@ -78,199 +82,134 @@ describe("Audit Log UI Component Tests", () => {
   };
 
   test("36. Admin role user sees 'Lịch sử hoạt động' sidebar link and page", async () => {
-    try {
-      const AuditPage = await getAuditPage();
-      render(React.createElement(AuditPage, { userRole: "admin" }));
-      await waitFor(() => {
-        expect(screen.getByText("Lịch sử hoạt động")).toBeInTheDocument();
-      });
-    } catch (e: any) {
-      expect.fail(e.message);
-    }
+    const AuditPage = await getAuditPage();
+    render(React.createElement(AuditPage, { userRole: "admin" }));
+    await waitFor(() => {
+      expect(screen.getByText("Lịch sử hoạt động")).toBeInTheDocument();
+    });
   });
 
   test("37. Non-admin role (e.g. Staff) does not see the sidebar link", async () => {
-    try {
-      const Sidebar = await getSidebar();
-      render(React.createElement(Sidebar, { userRole: "staff" }));
-      expect(screen.queryByText("Lịch sử hoạt động")).not.toBeInTheDocument();
-    } catch (e: any) {
-      expect.fail(e.message);
-    }
+    const Sidebar = await getSidebar();
+    render(React.createElement(Sidebar, { userRole: "staff" }));
+    expect(screen.queryByText("Lịch sử hoạt động")).not.toBeInTheDocument();
   });
 
   test("38. Table displays columns: Timestamp, Actor, Action, Entity, Changes", async () => {
-    try {
-      const AuditPage = await getAuditPage();
-      render(React.createElement(AuditPage));
-      await waitFor(() => {
-        expect(screen.getByText("Thời gian")).toBeInTheDocument();
-        expect(screen.getByText("Tác nhân")).toBeInTheDocument();
-        expect(screen.getByText("Hành động")).toBeInTheDocument();
-        expect(screen.getByText("Đối tượng")).toBeInTheDocument();
-        expect(screen.getByText("Thay đổi")).toBeInTheDocument();
-      });
-    } catch (e: any) {
-      expect.fail(e.message);
-    }
+    const AuditPage = await getAuditPage();
+    render(React.createElement(AuditPage));
+    await waitFor(() => {
+      expect(screen.getByText("Thời gian")).toBeInTheDocument();
+      expect(screen.getByText("Tác nhân")).toBeInTheDocument();
+      expect(screen.getByText("Hành động")).toBeInTheDocument();
+      expect(screen.getByText("Đối tượng")).toBeInTheDocument();
+      expect(screen.getByText("Thay đổi")).toBeInTheDocument();
+    });
   });
 
   test("39. Table displays server-side paginated logs correctly", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockImplementation((url: string) => {
-        if (/audit-logs/.test(url)) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve({ ...mockAuditLogs, total: 100 })
-          });
-        }
-        return Promise.reject(new Error("Unknown URL: " + url));
-      })
-    );
-    const fetchSpy = vi.spyOn(global, "fetch");
-    try {
-      const AuditPage = await getAuditPage();
-      render(React.createElement(AuditPage));
-      
-      // Verify pagination component exists and triggers new fetch
-      await waitFor(() => {
-        expect(screen.getByText("Trang sau")).toBeInTheDocument();
-      });
+    mockFetchWithAuth.mockImplementation((url: string) => {
+      if (/audit-logs/.test(url)) {
+        return Promise.resolve({ ...mockAuditLogs, total: 100 });
+      }
+      return Promise.resolve([]);
+    });
 
-      // Clear previous calls before clicking pagination
-      fetchSpy.mockClear();
-      
-      await userEvent.click(screen.getByText("Trang sau"));
+    const AuditPage = await getAuditPage();
+    render(React.createElement(AuditPage));
 
-      // Check if ANY fetch call contains page=2 (more resilient)
-      await waitFor(() => {
-        const calledWithPage2 = fetchSpy.mock.calls.some(([input]) =>
-          String(input).includes("page=2")
-        );
-        expect(calledWithPage2).toBe(true);
-      });
-    } finally {
-      fetchSpy.mockRestore();
-    }
+    await waitFor(() => {
+      expect(screen.getByText("Trang sau")).toBeInTheDocument();
+    });
+
+    mockFetchWithAuth.mockClear();
+
+    await userEvent.click(screen.getByText("Trang sau"));
+
+    await waitFor(() => {
+      const calledWithPage2 = mockFetchWithAuth.mock.calls.some(([input]) =>
+        String(input).includes("page=2")
+      );
+      expect(calledWithPage2).toBe(true);
+    });
   });
 
   test("40. Table renders semantic diffs (before/after changes) cleanly", async () => {
-    try {
-      const AuditPage = await getAuditPage();
-      render(React.createElement(AuditPage));
-      await waitFor(() => {
-        expect(screen.getByText("Old Name")).toBeInTheDocument();
-        expect(screen.getByText("New Name")).toBeInTheDocument();
-      });
-    } catch (e: any) {
-      expect.fail(e.message);
-    }
+    const AuditPage = await getAuditPage();
+    render(React.createElement(AuditPage));
+    await waitFor(() => {
+      expect(screen.getByText("Old Name")).toBeInTheDocument();
+      expect(screen.getByText("New Name")).toBeInTheDocument();
+    });
   });
 
   test("76. Direct URL access to /settings/audit by non-admin redirects to /", async () => {
-    try {
-      const AuditPage = await getAuditPage();
-      render(React.createElement(AuditPage, { userRole: "staff" }));
-      await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith("/");
-      });
-    } catch (e: any) {
-      expect.fail(e.message);
-    }
+    const AuditPage = await getAuditPage();
+    render(React.createElement(AuditPage, { userRole: "staff" }));
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith("/");
+    });
   });
 
   test("77. Empty log state displays correct empty state placeholder", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockImplementation(() =>
-        Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({ data: [], total: 0 })
-        })
-      )
+    mockFetchWithAuth.mockImplementation(() =>
+      Promise.resolve({ data: [], total: 0 })
     );
-    try {
-      const AuditPage = await getAuditPage();
-      render(React.createElement(AuditPage));
-      await waitFor(() => {
-        expect(screen.getByText("Không có lịch sử hoạt động nào")).toBeInTheDocument();
-      });
-    } catch (e: any) {
-      expect.fail(e.message);
-    }
+
+    const AuditPage = await getAuditPage();
+    render(React.createElement(AuditPage));
+    await waitFor(() => {
+      expect(screen.getByText("Không có lịch sử hoạt động nào")).toBeInTheDocument();
+    });
   });
 
   test("78. Filters update query params and trigger log re-fetching", async () => {
-    const fetchSpy = vi.spyOn(global, "fetch");
-    try {
-      const AuditPage = await getAuditPage();
-      render(React.createElement(AuditPage));
-      await waitFor(() => {
-        expect(screen.getByPlaceholderText("Lọc theo tác nhân...")).toBeInTheDocument();
-      });
-      await userEvent.type(screen.getByPlaceholderText("Lọc theo tác nhân..."), "john");
-      await waitFor(() => {
-        expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining("actor=john"), expect.any(Object));
-      });
-    } catch (e: any) {
-      expect.fail(e.message);
-    }
+    const AuditPage = await getAuditPage();
+    render(React.createElement(AuditPage));
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText("Lọc theo tác nhân...")).toBeInTheDocument();
+    });
+    await userEvent.type(screen.getByPlaceholderText("Lọc theo tác nhân..."), "john");
+    await waitFor(() => {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith(expect.stringContaining("actor=john"));
+    });
   });
 
   test("79. Row selection opens detailed view showing raw JSON changes", async () => {
-    try {
-      const AuditPage = await getAuditPage();
-      render(React.createElement(AuditPage));
-      await waitFor(() => {
-        expect(screen.getByText("admin")).toBeInTheDocument();
-      });
-      await userEvent.click(screen.getByText("admin"));
-      await waitFor(() => {
-        expect(screen.getByText(/"correlation_id": "uuid-1"/)).toBeInTheDocument();
-      });
-    } catch (e: any) {
-      expect.fail(e.message);
-    }
+    const AuditPage = await getAuditPage();
+    render(React.createElement(AuditPage));
+    await waitFor(() => {
+      expect(screen.getByText("admin")).toBeInTheDocument();
+    });
+    await userEvent.click(screen.getByText("admin"));
+    await waitFor(() => {
+      expect(screen.getByText(/"correlation_id": "uuid-1"/)).toBeInTheDocument();
+    });
   });
 
   test("80. Network failure displays user-friendly error toast", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockImplementation(() => Promise.reject(new Error("Network Error")))
-    );
-    try {
-      const AuditPage = await getAuditPage();
-      render(React.createElement(AuditPage));
-      await waitFor(() => {
-        expect(screen.getByText("Không thể tải lịch sử hoạt động")).toBeInTheDocument();
-      });
-    } catch (e: any) {
-      expect.fail(e.message);
-    }
+    mockFetchWithAuth.mockImplementation(() => Promise.reject(new Error("Network Error")));
+
+    const AuditPage = await getAuditPage();
+    render(React.createElement(AuditPage));
+    await waitFor(() => {
+      expect(screen.getByText("Không thể tải lịch sử hoạt động")).toBeInTheDocument();
+    });
   });
 
   test("81a. Polling for updates silently every 1.5 seconds triggers background fetches", async () => {
-    const fetchSpy = vi.spyOn(global, "fetch");
-    try {
-      const AuditPage = await getAuditPage();
-      render(React.createElement(AuditPage, { userRole: "admin" }));
-      
-      await waitFor(() => {
-        expect(screen.getByText("Thời gian")).toBeInTheDocument();
-      });
+    const AuditPage = await getAuditPage();
+    render(React.createElement(AuditPage, { userRole: "admin" }));
 
-      // Clear the initial fetch calls
-      fetchSpy.mockClear();
+    await waitFor(() => {
+      expect(screen.getByText("Thời gian")).toBeInTheDocument();
+    });
 
-      // Wait 1.6 seconds for real polling check
-      await new Promise((resolve) => setTimeout(resolve, 1600));
+    mockFetchWithAuth.mockClear();
 
-      // Verify that fetch was called again silently
-      expect(fetchSpy).toHaveBeenCalled();
-    } finally {
-      // no cleanup
-    }
+    await new Promise((resolve) => setTimeout(resolve, 1600));
+
+    expect(mockFetchWithAuth).toHaveBeenCalled();
   });
 
   test("81e. Table renderChanges handles different detail format inputs gracefully", async () => {
@@ -306,30 +245,19 @@ describe("Audit Log UI Component Tests", () => {
       limit: 10
     };
 
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockImplementation((url: string) => {
-        if (/audit-logs/.test(url)) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(customAuditLogs)
-          });
-        }
-        return Promise.reject(new Error("Unknown URL: " + url));
-      })
-    );
+    mockFetchWithAuth.mockImplementation((url: string) => {
+      if (/audit-logs/.test(url)) {
+        return Promise.resolve(customAuditLogs);
+      }
+      return Promise.resolve([]);
+    });
 
-    try {
-      const AuditPage = await getAuditPage();
-      render(React.createElement(AuditPage));
+    const AuditPage = await getAuditPage();
+    render(React.createElement(AuditPage));
 
-      await waitFor(() => {
-        expect(screen.getByText("Custom manual modification")).toBeInTheDocument();
-        expect(screen.getByText("Không có thay đổi dữ liệu")).toBeInTheDocument();
-      });
-    } catch (e: any) {
-      expect.fail(e.message);
-    }
+    await waitFor(() => {
+      expect(screen.getByText("Custom manual modification")).toBeInTheDocument();
+      expect(screen.getByText("Không có thay đổi dữ liệu")).toBeInTheDocument();
+    });
   });
 });
-

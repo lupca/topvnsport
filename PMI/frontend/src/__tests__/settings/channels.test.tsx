@@ -3,10 +3,24 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi, beforeEach } from "vitest";
 
+const { mockFetchWithAuth, mockApiClient } = vi.hoisted(() => ({
+  mockFetchWithAuth: vi.fn(),
+  mockApiClient: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn(),
+  },
+}));
+
+vi.mock("@/utils/apiClient", () => ({
+  fetchWithAuth: mockFetchWithAuth,
+  apiClient: mockApiClient,
+}));
+
 import ChannelsPage from "@/app/settings/channels/page";
 import ChannelDetailPage from "@/app/settings/channels/[code]/page";
 
-// Mock next/navigation
 vi.mock("next/navigation", () => ({
   useParams: () => ({ code: "shopee_vn" }),
   useRouter: () => ({
@@ -54,71 +68,39 @@ const mockAttributeMappings = [
 
 describe("Channels settings UI", () => {
   beforeEach(() => {
-    vi.restoreAllMocks();
-    vi.unstubAllGlobals();
+    vi.clearAllMocks();
 
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockImplementation((url: string) => {
-        // Match /channels/X/config (with or without /pmi-api or /api prefix)
-        if (/\/channels\/\d+\/config/.test(url)) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(mockConfig)
-          });
-        }
-        // Match /channels/X/category-mappings
-        if (/\/channels\/\d+\/category-mappings/.test(url)) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(mockCategoryMappings)
-          });
-        }
-        // Match /channels/X/attribute-mappings
-        if (/\/channels\/\d+\/attribute-mappings/.test(url)) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(mockAttributeMappings)
-          });
-        }
-        // Match /channels/X (single channel) but not /channels/X/something
-        if (/\/channels\/\d+$/.test(url)) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(mockChannels[1]) // Return Shopee Vietnam
-          });
-        }
-        // Match /channels (list)
-        if (/\/channels\/?$/.test(url) || url.endsWith("/api/channels") || url.endsWith("/pmi-api/api/channels")) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(mockChannels)
-          });
-        }
-        // Match /categories
-        if (url.includes("/categories")) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(mockCategories)
-          });
-        }
-        // Match /attributes
-        if (url.includes("/attributes")) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(mockPimAttributes)
-          });
-        }
-        console.log("Unmatched URL:", url);
-        return Promise.reject(new Error("Unknown mock URL: " + url));
-      })
-    );
+    mockFetchWithAuth.mockImplementation((url: string) => {
+      if (/\/channels\/\d+\/config/.test(url)) {
+        return Promise.resolve(mockConfig);
+      }
+      if (/\/channels\/\d+\/category-mappings/.test(url)) {
+        return Promise.resolve(mockCategoryMappings);
+      }
+      if (/\/channels\/\d+\/attribute-mappings/.test(url)) {
+        return Promise.resolve(mockAttributeMappings);
+      }
+      if (/\/channels\/\d+$/.test(url)) {
+        return Promise.resolve(mockChannels[1]);
+      }
+      if (/\/channels\/?$/.test(url) || url.endsWith("/api/channels") || url.endsWith("/pmi-api/api/channels")) {
+        return Promise.resolve(mockChannels);
+      }
+      if (url.includes("/categories")) {
+        return Promise.resolve(mockCategories);
+      }
+      if (url.includes("/attributes")) {
+        return Promise.resolve(mockPimAttributes);
+      }
+      return Promise.resolve([]);
+    });
+
+    mockApiClient.delete.mockResolvedValue({ success: true });
   });
 
   test("renders channels list page and lists channel cards", async () => {
     render(<ChannelsPage />);
 
-    // Wait for channels to load and render - use findAllByText since text appears multiple times
     const webstoreElements = await screen.findAllByText(/Default Webstore/i);
     expect(webstoreElements.length).toBeGreaterThan(0);
 
@@ -127,25 +109,19 @@ describe("Channels settings UI", () => {
   });
 
   test("handles deleting a channel successfully", async () => {
-    const fetchSpy = vi.spyOn(global, "fetch");
-
     render(<ChannelsPage />);
 
-    // Wait for channels to load
     const shopeeElements = await screen.findAllByText(/Shopee Vietnam/i);
     expect(shopeeElements.length).toBeGreaterThan(0);
 
-    // Webstore should not have delete button, Shopee should have one
     const deleteButtons = screen.getAllByTitle(/Xóa kênh/i);
     expect(deleteButtons.length).toBe(1);
 
     await userEvent.click(deleteButtons[0]);
 
-    // Should call DELETE method
     await waitFor(() => {
-      expect(fetchSpy).toHaveBeenCalledWith(
-        expect.stringContaining("/api/channels/2"),
-        expect.objectContaining({ method: "DELETE" })
+      expect(mockApiClient.delete).toHaveBeenCalledWith(
+        expect.stringContaining("/channels/2")
       );
     });
   });
@@ -153,15 +129,12 @@ describe("Channels settings UI", () => {
   test("renders detail page and navigates tabs", async () => {
     render(<ChannelDetailPage />);
 
-    // Renders header
     await waitFor(() => {
       expect(screen.getByText(/Cấu hình kênh.*Shopee Vietnam|Shopee Vietnam.*Config/i)).toBeInTheDocument();
     });
 
-    // Default tab is General
     expect(await screen.findByText(/API Credentials|OAuth2/i)).toBeInTheDocument();
 
-    // Click Category Mapping tab
     const catTabButton = screen.getByRole("button", { name: /Ánh xạ danh mục/i });
     await userEvent.click(catTabButton);
 
@@ -170,7 +143,6 @@ describe("Channels settings UI", () => {
       expect(screen.getByText(/Áo thun nam/i)).toBeInTheDocument();
     });
 
-    // Click Attribute Mapping tab
     const attrTabButton = screen.getByRole("button", { name: /Ánh xạ thuộc tính/i });
     await userEvent.click(attrTabButton);
 

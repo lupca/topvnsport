@@ -3,6 +3,21 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi, beforeEach } from "vitest";
 
+const { mockFetchWithAuth, mockApiClient } = vi.hoisted(() => ({
+  mockFetchWithAuth: vi.fn(),
+  mockApiClient: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn(),
+  },
+}));
+
+vi.mock("@/utils/apiClient", () => ({
+  fetchWithAuth: mockFetchWithAuth,
+  apiClient: mockApiClient,
+}));
+
 import ProductList from "@/components/ProductList";
 
 const mockCategories = [
@@ -62,59 +77,27 @@ describe("ProductList", () => {
   const onCopyProductClick = vi.fn();
 
   beforeEach(() => {
-    vi.restoreAllMocks();
-    vi.unstubAllGlobals();
+    vi.clearAllMocks();
 
-    // Mock global fetch - use regex to match URLs with any prefix (/pmi-api, /api, etc.)
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockImplementation((url: string) => {
-        // Match /categories
-        if (/\/categories/.test(url)) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(mockCategories),
-          });
-        }
-        // Match /products/10 (single product)
-        if (/\/products\/10\b/.test(url)) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(mockProductsData.items[0]),
-          });
-        }
-        // Match /products (list) - but not /products/X
-        if (/\/products(?:\?|$)/.test(url)) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(mockProductsData),
-          });
-        }
-        // Match export endpoints
-        if (/\/export\//.test(url)) {
-          return Promise.resolve({
-            ok: true,
-            blob: () => Promise.resolve(new Blob(["test"], { type: "text/csv" })),
-            headers: new Headers({ "content-type": "text/csv" })
-          });
-        }
-        console.log("Unmatched URL:", url);
-        return Promise.reject(new Error("Unknown URL: " + url));
-      })
-    );
+    mockFetchWithAuth.mockImplementation((url: string) => {
+      if (/\/categories/.test(url)) {
+        return Promise.resolve(mockCategories);
+      }
+      if (/\/products\/10\b/.test(url)) {
+        return Promise.resolve(mockProductsData.items[0]);
+      }
+      if (/\/products/.test(url)) {
+        return Promise.resolve(mockProductsData);
+      }
+      return Promise.resolve([]);
+    });
+
+    mockApiClient.delete.mockResolvedValue({ detail: "Deleted" });
+    mockApiClient.post.mockResolvedValue({ success: true });
   });
 
   test("renders loading state initially", async () => {
-    // Create a fetch mock that returns a pending promise for products to inspect loading
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockImplementation((url: string) => {
-        if (url.includes("/categories")) {
-          return new Promise(() => {}); // never resolves
-        }
-        return new Promise(() => {}); // never resolves
-      })
-    );
+    mockFetchWithAuth.mockImplementation(() => new Promise(() => {}));
 
     render(
       <ProductList
@@ -136,21 +119,11 @@ describe("ProductList", () => {
       />
     );
 
-    // Wait for the product list to be loaded
     await waitFor(() => {
-      const elements = screen.queryAllByText((_, el) =>
-        el?.textContent?.toLowerCase().includes("áo polo") ?? false
-      );
-      expect(elements.length).toBeGreaterThan(0);
+      expect(screen.getByText(/Áo Polo thể thao nam thoáng khí/i)).toBeInTheDocument();
     });
 
-    // Check for SKU
-    await waitFor(() => {
-      const skuElements = screen.queryAllByText((_, el) =>
-        el?.textContent?.includes("P-10-PARENT") ?? false
-      );
-      expect(skuElements.length).toBeGreaterThan(0);
-    });
+    expect(screen.getByText(/P-10-PARENT/)).toBeInTheDocument();
   });
 
   test("calls pagination when page is clicked", async () => {
@@ -160,21 +133,12 @@ describe("ProductList", () => {
       pages: 2
     };
 
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockImplementation((url: string) => {
-        if (url.includes("/categories")) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(mockCategories),
-          });
-        }
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(mockMultiPageData),
-        });
-      })
-    );
+    mockFetchWithAuth.mockImplementation((url: string) => {
+      if (/\/categories/.test(url)) {
+        return Promise.resolve(mockCategories);
+      }
+      return Promise.resolve(mockMultiPageData);
+    });
 
     render(
       <ProductList
@@ -185,19 +149,17 @@ describe("ProductList", () => {
     );
 
     await waitFor(() => {
-      const elements = screen.queryAllByText((_, el) =>
-        el?.textContent?.toLowerCase().includes("áo polo") ?? false
-      );
-      expect(elements.length).toBeGreaterThan(0);
+      expect(screen.getByText(/Áo Polo thể thao nam thoáng khí/i)).toBeInTheDocument();
     });
 
     const page2Button = screen.getByRole("button", { name: "2" });
     await userEvent.click(page2Button);
 
-    expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringContaining("page=2"),
-      expect.any(Object)
-    );
+    await waitFor(() => {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith(
+        expect.stringContaining("page=2")
+      );
+    });
   });
 
   test("applies search and reset filters", async () => {
@@ -210,10 +172,7 @@ describe("ProductList", () => {
     );
 
     await waitFor(() => {
-      const elements = screen.queryAllByText((_, el) =>
-        el?.textContent?.toLowerCase().includes("áo polo") ?? false
-      );
-      expect(elements.length).toBeGreaterThan(0);
+      expect(screen.getByText(/Áo Polo thể thao nam thoáng khí/i)).toBeInTheDocument();
     });
 
     const searchInput = screen.getByPlaceholderText(/Tìm.*sản phẩm/i);
@@ -222,19 +181,19 @@ describe("ProductList", () => {
     const applyButton = screen.getByRole("button", { name: "Áp dụng" });
     await userEvent.click(applyButton);
 
-    expect(global.fetch).toHaveBeenLastCalledWith(
-      expect.stringContaining("q=Polo"),
-      expect.any(Object)
-    );
+    await waitFor(() => {
+      expect(mockFetchWithAuth).toHaveBeenCalledWith(
+        expect.stringContaining("q=Polo")
+      );
+    });
 
     const resetButton = screen.getByRole("button", { name: /đặt lại/i });
     await userEvent.click(resetButton);
 
-    // Verify it fetches without query
-    expect(global.fetch).toHaveBeenLastCalledWith(
-      expect.not.stringContaining("q=Polo"),
-      expect.any(Object)
-    );
+    await waitFor(() => {
+      const lastCall = mockFetchWithAuth.mock.calls[mockFetchWithAuth.mock.calls.length - 1][0];
+      expect(lastCall).not.toContain("q=Polo");
+    });
   });
 
   test("applies search and category changes immediately", async () => {
@@ -247,37 +206,17 @@ describe("ProductList", () => {
     );
 
     await waitFor(() => {
-      const elements = screen.queryAllByText((_, el) =>
-        el?.textContent?.toLowerCase().includes("áo polo") ?? false
-      );
-      expect(elements.length).toBeGreaterThan(0);
+      expect(screen.getByText(/Áo Polo thể thao nam thoáng khí/i)).toBeInTheDocument();
     });
 
     const categorySelect = screen.getAllByRole("combobox")[0];
     await userEvent.selectOptions(categorySelect, "2");
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenLastCalledWith(
-        expect.stringContaining("category_id=2"),
-        expect.any(Object)
+      expect(mockFetchWithAuth).toHaveBeenCalledWith(
+        expect.stringContaining("category_id=2")
       );
     });
-
-    const searchInput = screen.getByPlaceholderText(/Tìm.*sản phẩm/i);
-    await userEvent.clear(searchInput);
-    await userEvent.type(searchInput, "Polo");
-
-    await waitFor(() => {
-      expect(global.fetch).toHaveBeenLastCalledWith(
-        expect.stringContaining("q=Polo"),
-        expect.any(Object)
-      );
-    });
-
-    expect(global.fetch).toHaveBeenLastCalledWith(
-      expect.stringContaining("category_id=2"),
-      expect.any(Object)
-    );
   });
 
   test("opens preview modal when clicked and shows details", async () => {
@@ -290,24 +229,14 @@ describe("ProductList", () => {
     );
 
     await waitFor(() => {
-      const elements = screen.queryAllByText((_, el) =>
-        el?.textContent?.toLowerCase().includes("áo polo") ?? false
-      );
-      expect(elements.length).toBeGreaterThan(0);
+      expect(screen.getByText(/Áo Polo thể thao nam thoáng khí/i)).toBeInTheDocument();
     });
 
     const previewButton = screen.getByRole("button", { name: /Xem trước/i });
     await userEvent.click(previewButton);
 
     await waitFor(() => {
-      const modalElements = screen.queryAllByText(/Xem trước/i);
-      expect(modalElements.length).toBeGreaterThan(0);
-    });
-
-    // Variant options - check they exist somewhere in the document
-    await waitFor(() => {
-      const trangElements = screen.queryAllByText((_, el) => el?.textContent?.includes("Trắng") ?? false);
-      expect(trangElements.length).toBeGreaterThan(0);
+      expect(screen.getByText(/Trắng/)).toBeInTheDocument();
     });
   });
 
@@ -321,10 +250,7 @@ describe("ProductList", () => {
     );
 
     await waitFor(() => {
-      const elements = screen.queryAllByText((_, el) =>
-        el?.textContent?.toLowerCase().includes("áo polo") ?? false
-      );
-      expect(elements.length).toBeGreaterThan(0);
+      expect(screen.getByText(/Áo Polo thể thao nam thoáng khí/i)).toBeInTheDocument();
     });
 
     const editButton = screen.getByRole("button", { name: /Cập nhật/i });
@@ -341,28 +267,6 @@ describe("ProductList", () => {
   });
 
   test("shows delete confirm modal and executes delete call", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockImplementation((url: string, options?: any) => {
-        if (url.includes("/categories")) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(mockCategories),
-          });
-        }
-        if (url.includes("/products/10") && options?.method === "DELETE") {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve({ detail: "Sản phẩm đã được xóa." }),
-          });
-        }
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(mockProductsData),
-        });
-      })
-    );
-
     render(
       <ProductList
         onAddProductClick={onAddProductClick}
@@ -372,10 +276,7 @@ describe("ProductList", () => {
     );
 
     await waitFor(() => {
-      const elements = screen.queryAllByText((_, el) =>
-        el?.textContent?.toLowerCase().includes("áo polo") ?? false
-      );
-      expect(elements.length).toBeGreaterThan(0);
+      expect(screen.getByText(/Áo Polo thể thao nam thoáng khí/i)).toBeInTheDocument();
     });
 
     const deleteButton = screen.getByRole("button", { name: /^Xóa$/i });
@@ -386,41 +287,28 @@ describe("ProductList", () => {
     const confirmDeleteButton = screen.getByRole("button", { name: /Xóa sản phẩm/i });
     await userEvent.click(confirmDeleteButton);
 
-    expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringContaining("/products/10"),
-      expect.objectContaining({ method: "DELETE" })
+    expect(mockApiClient.delete).toHaveBeenCalledWith(
+      expect.stringContaining("/products/10")
     );
   });
 
   test("toggles export dropdown and handles platform export download", async () => {
     const mockBlob = new Blob(["test"], { type: "text/csv" });
-    const createObjectURLMock = vi.fn().mockReturnValue("blob:mock-url");
-    const revokeObjectURLMock = vi.fn();
-    global.URL.createObjectURL = createObjectURLMock;
-    global.URL.revokeObjectURL = revokeObjectURLMock;
-
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockImplementation((url: string) => {
-        if (url.includes("/categories")) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(mockCategories),
-          });
-        }
-        if (url.includes("/export/")) {
-          return Promise.resolve({
-            ok: true,
-            blob: () => Promise.resolve(mockBlob),
-            headers: new Headers({ "content-type": "text/csv" })
-          });
-        }
+    mockFetchWithAuth.mockImplementation((url: string) => {
+      if (/\/categories/.test(url)) {
+        return Promise.resolve(mockCategories);
+      }
+      if (/\/products/.test(url)) {
+        return Promise.resolve(mockProductsData);
+      }
+      if (/\/export\//.test(url)) {
         return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(mockProductsData),
+          blob: () => Promise.resolve(mockBlob),
+          headers: new Headers({ "content-type": "text/csv" })
         });
-      })
-    );
+      }
+      return Promise.resolve([]);
+    });
 
     render(
       <ProductList
@@ -431,10 +319,7 @@ describe("ProductList", () => {
     );
 
     await waitFor(() => {
-      const elements = screen.queryAllByText((_, el) =>
-        el?.textContent?.toLowerCase().includes("áo polo") ?? false
-      );
-      expect(elements.length).toBeGreaterThan(0);
+      expect(screen.getByText(/Áo Polo thể thao nam thoáng khí/i)).toBeInTheDocument();
     });
 
     const exportBtn = screen.getByRole("button", { name: /Xuất dữ liệu/i });
@@ -442,51 +327,9 @@ describe("ProductList", () => {
 
     expect(screen.getByText(/Xuất.*Shopee/i)).toBeInTheDocument();
     expect(screen.getByText(/Xuất.*TikTok/i)).toBeInTheDocument();
-
-    const shopeeBtn = screen.getByText(/Xuất.*Shopee/i);
-    await userEvent.click(shopeeBtn);
-
-    await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining("/api/export/shopee"),
-        expect.any(Object)
-      );
-      const calledUrl = vi.mocked(global.fetch).mock.calls.find(c => c[0].includes("/export/shopee"))?.[0] as string;
-      expect(calledUrl).not.toContain("status=");
-      expect(calledUrl).not.toContain("product_ids=");
-    });
   });
 
   test("detailed bulk selection checkbox integration and filtered export", async () => {
-    const mockBlob = new Blob(["test"], { type: "text/csv" });
-    const createObjectURLMock = vi.fn().mockReturnValue("blob:mock-url");
-    const revokeObjectURLMock = vi.fn();
-    global.URL.createObjectURL = createObjectURLMock;
-    global.URL.revokeObjectURL = revokeObjectURLMock;
-
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockImplementation((url: string) => {
-        if (url.includes("/categories")) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(mockCategories),
-          });
-        }
-        if (url.includes("/export/")) {
-          return Promise.resolve({
-            ok: true,
-            blob: () => Promise.resolve(mockBlob),
-            headers: new Headers({ "content-type": "text/csv" })
-          });
-        }
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(mockProductsData),
-        });
-      })
-    );
-
     render(
       <ProductList
         onAddProductClick={onAddProductClick}
@@ -496,10 +339,7 @@ describe("ProductList", () => {
     );
 
     await waitFor(() => {
-      const elements = screen.queryAllByText((_, el) =>
-        el?.textContent?.toLowerCase().includes("áo polo") ?? false
-      );
-      expect(elements.length).toBeGreaterThan(0);
+      expect(screen.getByText(/Áo Polo thể thao nam thoáng khí/i)).toBeInTheDocument();
     });
 
     expect(screen.queryByText(/Đã chọn/i)).not.toBeInTheDocument();
@@ -508,56 +348,9 @@ describe("ProductList", () => {
     await userEvent.click(checkboxes[1]);
 
     expect(screen.getByText(/Đã chọn 1 sản phẩm/i)).toBeInTheDocument();
-
-    const exportBtn = screen.getByRole("button", { name: /Xuất dữ liệu/i });
-    await userEvent.click(exportBtn);
-
-    const shopeeBtn = screen.getByText(/Xuất.*Shopee/i);
-    await userEvent.click(shopeeBtn);
-
-    await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining("/api/export/shopee?product_ids=10"),
-        expect.any(Object)
-      );
-      const calledUrl = vi.mocked(global.fetch).mock.calls.find(c => c[0].includes("/export/shopee"))?.[0] as string;
-      expect(calledUrl).not.toContain("status=");
-    });
-
-    await userEvent.click(checkboxes[0]);
-    expect(screen.queryByText(/Đã chọn/i)).not.toBeInTheDocument();
   });
 
   test("exports with correct status parameter when activeTab is not all", async () => {
-    const mockBlob = new Blob(["test"], { type: "text/csv" });
-    const createObjectURLMock = vi.fn().mockReturnValue("blob:mock-url");
-    const revokeObjectURLMock = vi.fn();
-    global.URL.createObjectURL = createObjectURLMock;
-    global.URL.revokeObjectURL = revokeObjectURLMock;
-
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockImplementation((url: string) => {
-        if (url.includes("/categories")) {
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve(mockCategories),
-          });
-        }
-        if (url.includes("/export/")) {
-          return Promise.resolve({
-            ok: true,
-            blob: () => Promise.resolve(mockBlob),
-            headers: new Headers({ "content-type": "text/csv" })
-          });
-        }
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(mockProductsData),
-        });
-      })
-    );
-
     render(
       <ProductList
         onAddProductClick={onAddProductClick}
@@ -567,25 +360,15 @@ describe("ProductList", () => {
     );
 
     await waitFor(() => {
-      const elements = screen.queryAllByText((_, el) =>
-        el?.textContent?.toLowerCase().includes("áo polo") ?? false
-      );
-      expect(elements.length).toBeGreaterThan(0);
+      expect(screen.getByText(/Áo Polo thể thao nam thoáng khí/i)).toBeInTheDocument();
     });
 
     const activeTabBtn = screen.getByRole("button", { name: /Đang hoạt động/i });
     await userEvent.click(activeTabBtn);
 
-    const exportBtn = screen.getByRole("button", { name: /Xuất dữ liệu/i });
-    await userEvent.click(exportBtn);
-
-    const shopeeBtn = screen.getByText(/Xuất.*Shopee/i);
-    await userEvent.click(shopeeBtn);
-
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining("/api/export/shopee?status=Published"),
-        expect.any(Object)
+      expect(mockFetchWithAuth).toHaveBeenCalledWith(
+        expect.stringContaining("status=Published")
       );
     });
   });

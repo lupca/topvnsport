@@ -64,7 +64,16 @@ function LoginContent() {
       if (redirectUrl) {
         const decodedUrl = decodeURIComponent(redirectUrl);
         const safeUrl = getSafeRedirectUrl(decodedUrl);
-        window.location.href = safeUrl;
+
+        // Append auth tokens to redirect URL for cross-subdomain SSO
+        const redirectWithTokens = new URL(safeUrl);
+        redirectWithTokens.searchParams.set('token', response.access_token);
+        redirectWithTokens.searchParams.set('refresh_token', response.refresh_token);
+        redirectWithTokens.searchParams.set('user_id', userProfile.id?.toString() || '');
+        redirectWithTokens.searchParams.set('username', userProfile.username);
+        redirectWithTokens.searchParams.set('role', userProfile.role_code);
+
+        window.location.href = redirectWithTokens.toString();
       } else {
         router.push("/dashboard");
       }
