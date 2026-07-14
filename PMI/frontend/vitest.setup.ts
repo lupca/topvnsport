@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, configure } from "@testing-library/react";
-import { afterEach, vi } from "vitest";
+import { afterEach } from "vitest";
 
 configure({
   asyncUtilTimeout: 5000,
@@ -8,6 +8,4 @@ configure({
 
 afterEach(() => {
   cleanup();
-  vi.unstubAllGlobals();
-  vi.restoreAllMocks();
 });
