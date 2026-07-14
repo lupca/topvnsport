@@ -8,6 +8,7 @@ interface Column<T> {
   key: string;
   label: string;
   render?: (item: T) => React.ReactNode;
+  className?: string;
 }
 
 interface PaginationProps {
@@ -128,7 +129,7 @@ export default function DataTable<T extends { id: any }>({
                   className="hover:bg-gray-50 text-gray-700 transition-colors duration-150"
                 >
                   {columns.map((col) => (
-                    <td key={col.key} className="px-6 py-4 font-medium whitespace-nowrap">
+                    <td key={col.key} className={`px-6 py-4 font-medium ${col.className !== undefined ? col.className : "whitespace-nowrap"}`}>
                       {col.render ? col.render(item) : (item as any)[col.key]}
                     </td>
                   ))}

@@ -200,77 +200,58 @@ export default function BarcodeMappingsPage() {
 
   const columns = [
     {
-      key: "image_url",
-      label: "Hình",
-      render: (bm: BarcodeMapping) => (
-        bm.image_url ? (
-          <img
-            src={bm.image_url}
-            alt={bm.product_name}
-            className="w-10 h-10 object-contain rounded-lg border border-gray-200"
-          />
-        ) : (
-          <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500 border border-gray-200">
-            <ImageIcon className="w-5 h-5" />
-          </div>
-        )
-      )
-    },
-    {
-      key: "barcode",
-      label: "Mã Vạch (Barcode)",
-      render: (bm: BarcodeMapping) => (
-        <span className="font-bold text-gray-800 tracking-wider text-xs">{bm.barcode}</span>
-      )
-    },
-    {
-      key: "barcode_type",
-      label: "Loại mã",
-      render: (bm: BarcodeMapping) => (
-        <span className="text-gray-500 font-semibold">{bm.barcode_type || "N/A"}</span>
-      )
-    },
-    {
-      key: "sku_code",
-      label: "Mã SKU",
-      render: (bm: BarcodeMapping) => (
-        <span className="font-bold text-indigo-600">{bm.sku_code}</span>
-      )
-    },
-    {
-      key: "product_name",
+      key: "product_info",
       label: "Sản Phẩm",
+      className: "whitespace-normal min-w-[250px] max-w-[400px]",
       render: (bm: BarcodeMapping) => (
-        <span className="font-semibold text-gray-800">{bm.product_name}</span>
+        <div className="flex items-center gap-3">
+          {bm.image_url ? (
+            <img
+              src={bm.image_url}
+              alt={bm.product_name}
+              className="w-12 h-12 object-contain rounded-lg border border-gray-200 shrink-0"
+            />
+          ) : (
+            <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500 border border-gray-200 shrink-0">
+              <ImageIcon className="w-5 h-5" />
+            </div>
+          )}
+          <div className="flex flex-col gap-0.5">
+            <span className="font-semibold text-gray-800 line-clamp-2" title={bm.product_name}>{bm.product_name}</span>
+            <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+              <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100">{bm.sku_code}</span>
+              {bm.variant_name && <span className="text-[11px] text-gray-500 font-medium" title={bm.variant_name}>{bm.variant_name}</span>}
+            </div>
+          </div>
+        </div>
       )
     },
     {
-      key: "variant_name",
-      label: "Biến Thể",
+      key: "barcode_info",
+      label: "Mã Vạch",
       render: (bm: BarcodeMapping) => (
-        <span className="text-gray-500 font-medium">{bm.variant_name || "-"}</span>
+        <div className="flex flex-col gap-0.5 min-w-[120px]">
+          <span className="font-bold text-gray-800 tracking-wider text-[13px]">{bm.barcode}</span>
+          <span className="text-[11px] text-gray-500 font-medium bg-gray-100 w-fit px-1.5 py-0.5 rounded">{bm.barcode_type || "N/A"}</span>
+        </div>
       )
     },
     {
-      key: "cost_price",
-      label: "Giá Vốn (VND)",
+      key: "financials",
+      label: "Tài Chính",
       render: (bm: BarcodeMapping) => (
-        <span className="font-semibold text-gray-700">
-          {bm.cost_price !== null && bm.cost_price !== undefined
-            ? `${Number(bm.cost_price).toLocaleString("vi-VN")} đ`
-            : "-"}
-        </span>
-      )
-    },
-    {
-      key: "tax_rate",
-      label: "Thuế (%)",
-      render: (bm: BarcodeMapping) => (
-        <span className="text-gray-600 font-semibold">
-          {bm.tax_rate !== null && bm.tax_rate !== undefined
-            ? `${Number(bm.tax_rate)}%`
-            : "-"}
-        </span>
+        <div className="flex flex-col gap-0.5 min-w-[100px]">
+          <span className="font-semibold text-emerald-600 text-sm">
+            {bm.cost_price !== null && bm.cost_price !== undefined
+              ? `${Number(bm.cost_price).toLocaleString("vi-VN")} đ`
+              : "-"}
+          </span>
+          <span className="text-[11px] text-gray-500 font-medium">
+            Thuế: {bm.tax_rate !== null && bm.tax_rate !== undefined
+              ? `${Number(bm.tax_rate)}%`
+              : "-"}
+          </span>
+        </div>
       )
     }
   ];
