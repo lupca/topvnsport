@@ -59,48 +59,56 @@ describe("Channels settings UI", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockImplementation((url: string) => {
-        if (url.includes("/api/channels/2/config") || url.includes("/api/channels/1/config")) {
+        // Match /channels/X/config (with or without /pmi-api or /api prefix)
+        if (/\/channels\/\d+\/config/.test(url)) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve(mockConfig)
           });
         }
-        if (url.includes("/api/channels/2/category-mappings")) {
+        // Match /channels/X/category-mappings
+        if (/\/channels\/\d+\/category-mappings/.test(url)) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve(mockCategoryMappings)
           });
         }
-        if (url.includes("/api/channels/2/attribute-mappings")) {
+        // Match /channels/X/attribute-mappings
+        if (/\/channels\/\d+\/attribute-mappings/.test(url)) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve(mockAttributeMappings)
           });
         }
-        if (url.includes("/api/channels/2")) {
+        // Match /channels/X (single channel) but not /channels/X/something
+        if (/\/channels\/\d+$/.test(url)) {
           return Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({})
+            json: () => Promise.resolve(mockChannels[1]) // Return Shopee Vietnam
           });
         }
-        if (url.includes("/api/channels")) {
+        // Match /channels (list)
+        if (/\/channels\/?$/.test(url) || url.endsWith("/api/channels") || url.endsWith("/pmi-api/api/channels")) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve(mockChannels)
           });
         }
+        // Match /categories
         if (url.includes("/categories")) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve(mockCategories)
           });
         }
+        // Match /attributes
         if (url.includes("/attributes")) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve(mockPimAttributes)
           });
         }
+        console.log("Unmatched URL:", url);
         return Promise.reject(new Error("Unknown mock URL: " + url));
       })
     );
