@@ -69,10 +69,12 @@ ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "
   sudo docker network create pmi_default >/dev/null 2>&1 || true
   sudo docker network create oms_default >/dev/null 2>&1 || true
   sudo docker network create wms_default >/dev/null 2>&1 || true
+  sudo docker network create identity_default >/dev/null 2>&1 || true
   export PUBLIC_HOST='$PUBLIC_HOST'
   sudo -E docker compose -f PMI/docker-compose.prod.yml up -d --build
   sudo -E docker compose -f OMS/docker-compose.prod.yml up -d --build
   sudo -E docker compose -f WMS/docker-compose.prod.yml up -d --build
+  sudo -E docker compose -f identity-service/docker-compose.prod.yml up -d --build
   sudo -E docker compose -f web/docker-compose.prod.yml up -d --build
   sudo -E docker compose -f nginx/docker-compose.yml up -d --build
 "
@@ -84,9 +86,11 @@ ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "
     http://api-pmi.$DOMAIN_NAME/docs \
     http://api-oms.$DOMAIN_NAME/docs \
     http://api-wms.$DOMAIN_NAME/docs \
+    http://api-identity.$DOMAIN_NAME/health \
     http://pmi.$DOMAIN_NAME \
     http://oms.$DOMAIN_NAME \
     http://wms.$DOMAIN_NAME \
+    http://identity.$DOMAIN_NAME \
     http://$DOMAIN_NAME; do
     code=\$(curl -s -o /dev/null -w '%{http_code}' \"\$u\")
     echo \"\$code \$u\"

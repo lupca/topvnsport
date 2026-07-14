@@ -12,6 +12,7 @@ services:
       - pmi_default
       - oms_default
       - wms_default
+      - identity_default
 
 networks:
   pmi_default:
@@ -19,4 +20,6 @@ networks:
   oms_default:
     external: true
   wms_default:
+    external: true
+  identity_default:
     external: true

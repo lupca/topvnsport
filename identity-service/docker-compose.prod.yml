@@ -51,10 +51,10 @@ services:
     ports:
       - "13110:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:18110
-      - NEXT_PUBLIC_PMI_URL=http://localhost:13100
-      - NEXT_PUBLIC_OMS_URL=http://localhost:13101
-      - NEXT_PUBLIC_WMS_URL=http://localhost:13102
+      - NEXT_PUBLIC_API_URL=http://api-identity.topvnsport.com
+      - NEXT_PUBLIC_PMI_URL=http://pmi.topvnsport.com
+      - NEXT_PUBLIC_OMS_URL=http://oms.topvnsport.com
+      - NEXT_PUBLIC_WMS_URL=http://wms.topvnsport.com
     depends_on:
       - identity-api
     networks:
@@ -65,7 +65,7 @@ volumes:
 
 networks:
   default:
-    name: identity_prod_default
+    name: identity_default
   pmi_default:
     external: true
   oms_default:
