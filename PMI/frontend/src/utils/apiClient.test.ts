@@ -163,7 +163,7 @@ describe("apiClient", () => {
     expect(localStorage.getItem("access_token")).toBeNull();
     expect(localStorage.getItem("user_role")).toBeNull();
     expect(localStorage.getItem("user_username")).toBeNull();
-    expect(window.location.href).toBe("/login");
+    expect(window.location.href).toMatch(/^http:\/\/localhost:13110\/login\?redirect=/);
   });
 
   test("handles non-ok errors: parses error details from JSON response", async () => {
