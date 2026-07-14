@@ -144,12 +144,15 @@ export const getSafeRedirectUrl = (urlStr: string): string => {
       const omsHost = getTrustedHost(process.env.NEXT_PUBLIC_OMS_URL || "", "http://localhost:13101");
       const wmsHost = getTrustedHost(process.env.NEXT_PUBLIC_WMS_URL || "", "http://localhost:13102");
 
+      // Production hosts as fallback
+      const trustedHosts = [
+        pmiHost, omsHost, wmsHost,
+        "pmi.topvnsport.com", "oms.topvnsport.com", "wms.topvnsport.com",
+        "localhost:13100", "localhost:13101", "localhost:13102"
+      ].filter(Boolean);
+
       const targetHost = parsed.host;
-      if (
-        (pmiHost && targetHost === pmiHost) ||
-        (omsHost && targetHost === omsHost) ||
-        (wmsHost && targetHost === wmsHost)
-      ) {
+      if (trustedHosts.includes(targetHost)) {
         return urlStr;
       }
     }
