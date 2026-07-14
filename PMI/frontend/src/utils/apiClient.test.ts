@@ -1,5 +1,15 @@
 import { describe, expect, test, vi, beforeEach, afterEach } from "vitest";
 import { fetchWithAuth, apiClient, ApiError } from "./apiClient";
+import { removeAccessToken, redirectToLogin } from "@/utils/auth";
+
+vi.mock("@/utils/auth", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/utils/auth")>();
+  return {
+    ...actual,
+    removeAccessToken: vi.fn(actual.removeAccessToken),
+    redirectToLogin: vi.fn(actual.redirectToLogin),
+  };
+});
 
 describe("apiClient", () => {
   const originalLocation = window.location;
@@ -164,6 +174,68 @@ describe("apiClient", () => {
     expect(localStorage.getItem("user_role")).toBeNull();
     expect(localStorage.getItem("user_username")).toBeNull();
     expect(window.location.href).toMatch(/^http:\/\/localhost:13110\/login\?redirect=/);
+  });
+
+  test("Test fetchWithAuth redirect to Identity Service khi nhận 401", async () => {
+    const mockResponse = {
+      ok: false,
+      status: 401,
+    };
+
+    const fetchMock = vi.fn().mockResolvedValue(mockResponse);
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(fetchWithAuth("/test-401")).rejects.toThrow(ApiError);
+
+    expect(redirectToLogin).toHaveBeenCalled();
+  });
+
+  test("Test removeAccessToken được gọi trước khi redirect", async () => {
+    const orderOfCalls: string[] = [];
+    vi.mocked(removeAccessToken).mockImplementation(() => {
+      orderOfCalls.push("removeAccessToken");
+    });
+    vi.mocked(redirectToLogin).mockImplementation(() => {
+      orderOfCalls.push("redirectToLogin");
+    });
+
+    const mockResponse = {
+      ok: false,
+      status: 401,
+    };
+
+    const fetchMock = vi.fn().mockResolvedValue(mockResponse);
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(fetchWithAuth("/test-401-order")).rejects.toThrow(ApiError);
+
+    expect(removeAccessToken).toHaveBeenCalled();
+    expect(redirectToLogin).toHaveBeenCalled();
+    expect(orderOfCalls).toEqual(["removeAccessToken", "redirectToLogin"]);
+  });
+
+  test("Test không redirect khi chạy trên server (typeof window === \"undefined\")", async () => {
+    const originalWindow = global.window;
+    // @ts-ignore
+    delete global.window;
+
+    const mockResponse = {
+      ok: false,
+      status: 401,
+    };
+
+    const fetchMock = vi.fn().mockResolvedValue(mockResponse);
+    vi.stubGlobal("fetch", fetchMock);
+
+    vi.mocked(removeAccessToken).mockClear();
+    vi.mocked(redirectToLogin).mockClear();
+
+    await expect(fetchWithAuth("/test-401-server")).rejects.toThrow(ApiError);
+
+    expect(removeAccessToken).not.toHaveBeenCalled();
+    expect(redirectToLogin).not.toHaveBeenCalled();
+
+    global.window = originalWindow;
   });
 
   test("handles non-ok errors: parses error details from JSON response", async () => {

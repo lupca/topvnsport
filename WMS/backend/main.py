@@ -988,8 +988,10 @@ def get_fulfillment_order(id: str, db: Session = Depends(get_db)):
 @app.post("/products/sync")
 def sync_products(db: Session = Depends(get_db)):
     pmi_url = "http://pim-api:8000/products?limit=100"
+    pmi_api_key = os.getenv("PIM_API_KEY", "oms_wms_internal_api_key_secret_2026")
     try:
         req = urllib.request.Request(pmi_url, method="GET")
+        req.add_header("X-API-Key", pmi_api_key)
         with urllib.request.urlopen(req, timeout=5) as response:
             data = json.loads(response.read().decode("utf-8"))
             products = data.get("items", [])

@@ -10,6 +10,8 @@ PMI_URL = "http://localhost:18100"
 
 def request(url, method="GET", data=None):
     headers = {"Content-Type": "application/json"}
+    if "18100" in url or "pim-api" in url:
+        headers["X-API-Key"] = "oms_wms_internal_api_key_secret_2026"
     req_data = json.dumps(data).encode("utf-8") if data else None
     req = urllib.request.Request(url, data=req_data, headers=headers, method=method)
     try:

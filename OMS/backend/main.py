@@ -58,6 +58,7 @@ finally:
 PIM_API_URL = os.getenv("PIM_API_URL", os.getenv("PMI_URL", "http://pim-api:8000"))
 WMS_API_URL = os.getenv("WMS_API_URL", os.getenv("WMS_URL", "http://wms-api:8002"))
 DEFAULT_FULFILLMENT_WAREHOUSE_CODE = os.getenv("FULFILLMENT_WAREHOUSE_CODE", "WH-001")
+PIM_API_KEY = os.getenv("PIM_API_KEY", "oms_wms_internal_api_key_secret_2026")
 
 app = FastAPI(title="OMS Backend API", version="1.0.0")
 
@@ -112,7 +113,10 @@ def utcnow():
     return datetime.now(timezone.utc).replace(tzinfo=None)
 
 def call_api(url: str, method: str = "GET", data: dict = None):
-    headers = {"Content-Type": "application/json"}
+    headers = {
+        "Content-Type": "application/json",
+        "X-API-Key": PIM_API_KEY
+    }
     logger.info(f"Initiating inter-service API call: {method} {url}")
     try:
         with httpx.Client(timeout=5.0) as client:

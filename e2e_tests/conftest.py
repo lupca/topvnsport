@@ -43,8 +43,9 @@ def web_base_url() -> str:
 
 @pytest.fixture(scope="session")
 def api_clients(pmi_api_url: str, oms_api_url: str, wms_api_url: str) -> Iterator[ApiClients]:
+    pmi_headers = {"X-API-Key": "oms_wms_internal_api_key_secret_2026"}
     clients = ApiClients(
-        pmi=httpx.Client(base_url=pmi_api_url, timeout=httpx.Timeout(20.0, connect=10.0)),
+        pmi=httpx.Client(base_url=pmi_api_url, headers=pmi_headers, timeout=httpx.Timeout(20.0, connect=10.0)),
         oms=httpx.Client(base_url=oms_api_url, timeout=httpx.Timeout(20.0, connect=10.0)),
         wms=httpx.Client(base_url=wms_api_url, timeout=httpx.Timeout(20.0, connect=10.0)),
     )

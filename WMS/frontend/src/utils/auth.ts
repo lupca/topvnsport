@@ -17,6 +17,14 @@ export function removeAccessToken(): void {
   localStorage.removeItem('user_role');
 }
 
+function getApiUrl(): string {
+  let url = IDENTITY_URL.replace('identity.', 'api-identity.');
+  if (url.includes('localhost:13110')) {
+    url = url.replace('localhost:13110', 'localhost:18110');
+  }
+  return url;
+}
+
 export function redirectToLogin(): void {
   const currentUrl = encodeURIComponent(window.location.href);
   window.location.href = `${IDENTITY_URL}/login?redirect=${currentUrl}`;
@@ -24,7 +32,7 @@ export function redirectToLogin(): void {
 
 export async function verifyToken(token: string): Promise<boolean> {
   try {
-    const res = await fetch(`${IDENTITY_URL.replace('identity.', 'api-identity.')}/auth/verify`, {
+    const res = await fetch(`${getApiUrl()}/auth/verify`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -41,7 +49,7 @@ export async function refreshAccessToken(): Promise<string | null> {
   if (!refreshToken) return null;
 
   try {
-    const res = await fetch(`${IDENTITY_URL.replace('identity.', 'api-identity.')}/auth/refresh`, {
+    const res = await fetch(`${getApiUrl()}/auth/refresh`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

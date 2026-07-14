@@ -172,7 +172,7 @@ jobs:
         run: python -m py_compile main.py
 
   oms-frontend:
-    name: OMS Frontend Build
+    name: OMS Frontend Tests
     needs: changes
     if: needs.changes.outputs.oms == 'true' || needs.changes.outputs.shared == 'true'
     runs-on: ubuntu-latest
@@ -196,10 +196,14 @@ jobs:
           restore-keys: |
             npm-oms-
       
-      - name: Install and build
-        run: |
-          npm ci
-          npm run build
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run Vitest
+        run: npm run test
+      
+      - name: Build (verify)
+        run: npm run build
 
   # ============================================
   # STEP 4: WMS Tests
@@ -239,7 +243,7 @@ jobs:
         run: python -m py_compile main.py
 
   wms-frontend:
-    name: WMS Frontend Build
+    name: WMS Frontend Tests
     needs: changes
     if: needs.changes.outputs.wms == 'true' || needs.changes.outputs.shared == 'true'
     runs-on: ubuntu-latest
@@ -263,10 +267,14 @@ jobs:
           restore-keys: |
             npm-wms-
       
-      - name: Install and build
-        run: |
-          npm ci
-          npm run build
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run Vitest
+        run: npm run test
+      
+      - name: Build (verify)
+        run: npm run build
 
   # ============================================
   # STEP 5: Web Storefront
