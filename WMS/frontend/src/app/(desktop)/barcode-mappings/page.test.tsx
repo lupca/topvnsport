@@ -62,12 +62,11 @@ describe("BarcodeMappingsPage", () => {
     });
 
     // Check headers are present
-    expect(screen.getByText("Giá Vốn (VND)")).toBeInTheDocument();
-    expect(screen.getByText("Thuế (%)")).toBeInTheDocument();
+    expect(screen.getByText("Tài Chính")).toBeInTheDocument();
 
     // Check mapping details are rendered
     expect(screen.getByText("50.000 đ")).toBeInTheDocument();
-    expect(screen.getByText("10%")).toBeInTheDocument();
+    expect(screen.getByText("Thuế: 10%")).toBeInTheDocument();
   });
 
   test("clicking sync button calls the products sync endpoint", async () => {
