@@ -63,7 +63,8 @@ describe("ProductList", () => {
 
   beforeEach(() => {
     vi.restoreAllMocks();
-    
+    vi.unstubAllGlobals();
+
     // Mock global fetch - use regex to match URLs with any prefix (/pmi-api, /api, etc.)
     vi.stubGlobal(
       "fetch",

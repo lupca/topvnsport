@@ -46,6 +46,7 @@ const mockAuditLogs = {
 describe("Audit Log UI Component Tests", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
     mockPush.mockClear();
     vi.stubGlobal(
       "fetch",

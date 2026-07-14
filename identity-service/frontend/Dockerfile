@@ -17,7 +17,18 @@ COPY . .
 # Ensure public directory exists to prevent build failures if it is missing from source
 RUN mkdir -p public
 
+# Build-time environment variables for Next.js
+ARG NEXT_PUBLIC_API_URL=http://localhost:8000
+ARG NEXT_PUBLIC_PMI_URL=http://localhost:13100
+ARG NEXT_PUBLIC_OMS_URL=http://localhost:13101
+ARG NEXT_PUBLIC_WMS_URL=http://localhost:13102
+
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_PMI_URL=$NEXT_PUBLIC_PMI_URL
+ENV NEXT_PUBLIC_OMS_URL=$NEXT_PUBLIC_OMS_URL
+ENV NEXT_PUBLIC_WMS_URL=$NEXT_PUBLIC_WMS_URL
 ENV NEXT_TELEMETRY_DISABLED=1
+
 RUN npm run build
 
 FROM node:20-alpine AS runner

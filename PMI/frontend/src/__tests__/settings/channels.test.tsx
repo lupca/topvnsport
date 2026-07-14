@@ -55,7 +55,8 @@ const mockAttributeMappings = [
 describe("Channels settings UI", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
-    
+    vi.unstubAllGlobals();
+
     vi.stubGlobal(
       "fetch",
       vi.fn().mockImplementation((url: string) => {

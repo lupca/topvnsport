@@ -47,14 +47,14 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=http://api-identity.topvnsport.com
+        - NEXT_PUBLIC_PMI_URL=http://pmi.topvnsport.com
+        - NEXT_PUBLIC_OMS_URL=http://oms.topvnsport.com
+        - NEXT_PUBLIC_WMS_URL=http://wms.topvnsport.com
     container_name: identity-frontend-prod
     ports:
       - "13110:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=http://api-identity.topvnsport.com
-      - NEXT_PUBLIC_PMI_URL=http://pmi.topvnsport.com
-      - NEXT_PUBLIC_OMS_URL=http://oms.topvnsport.com
-      - NEXT_PUBLIC_WMS_URL=http://wms.topvnsport.com
     depends_on:
       - identity-api
     networks:

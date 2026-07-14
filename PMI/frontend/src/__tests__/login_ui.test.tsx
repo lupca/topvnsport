@@ -17,6 +17,7 @@ vi.mock("next/navigation", () => ({
 describe("LoginPage UI Component Tests", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
     mockPush.mockClear();
     
     // Clear localStorage

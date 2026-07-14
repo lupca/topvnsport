@@ -22,6 +22,7 @@ describe("ProductForm", () => {
 
   beforeEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
 
     vi.stubGlobal(
       "fetch",
