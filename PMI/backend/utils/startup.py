@@ -5,10 +5,11 @@ import models
 import minio_client
 
 def run_migrations():
-    # Create database tables
-    Base.metadata.create_all(bind=engine)
-    
-    # Run raw migrations to ensure columns exist in existing database schemas
+    # NOTE: Do NOT use Base.metadata.create_all() here!
+    # It conflicts with alembic migrations and causes "table already exists" errors.
+    # All schema changes should go through alembic migrations.
+
+    # Legacy raw migrations for backward compatibility with old databases
     with engine.begin() as conn:
         try:
             conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"))
