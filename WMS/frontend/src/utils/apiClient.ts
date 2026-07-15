@@ -50,10 +50,12 @@ export async function fetchWithAuth(path: string, options: RequestInit = {}): Pr
   const baseUrl = APP_SETTINGS.api.baseUrl;
   let url = path;
   if (!path.startsWith("http")) {
-    if (path.startsWith(baseUrl)) {
+    if (path.startsWith(baseUrl) || path.startsWith("/wms-api")) {
       url = path;
-    } else {
+    } else if (path.startsWith("/")) {
       url = `${baseUrl}${path}`;
+    } else {
+      url = `${baseUrl}/${path}`;
     }
   }
 
