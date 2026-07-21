@@ -1,9 +1,95 @@
 import { Blog, Branch, Category, Product, StringOption } from '../../types';
 import rawData from '../../data.json';
-import { delay, OMS_API_URL, PMI_API_URL, SIMULATED_LATENCY } from './constants';
+import { delay, OMS_API_URL, PMI_API_URL, SIMULATED_LATENCY, WMS_API_URL } from './constants';
 import { findExistingCustomerIdByPhone, findManualChannel, findStorefrontChannel, getChannels } from './omsHelpers';
 import { extractItems, mapPmiProduct } from './productMappers';
 import { CreateOrderPayload, OmsChannel, OmsCustomer, OmsCustomerInput, PmiProduct, SendOtpResponse, VerifyOtpResponse } from './types';
+
+async function fetchWmsStock(skuCodes: string[]): Promise<Record<string, number>> {
+  const uniqueSkus = Array.from(new Set(skuCodes.filter((sku) => Boolean(sku && sku.trim()))));
+  if (uniqueSkus.length === 0) {
+    return {};
+  }
+
+  try {
+    const url = `${WMS_API_URL}/public/stock?sku_codes=${encodeURIComponent(uniqueSkus.join(','))}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.warn(`WMS public stock endpoint returned status ${response.status}`);
+      return {};
+    }
+
+    const data = await response.json();
+    const result: Record<string, number> = {};
+
+    if (data && typeof data.stock === 'object' && data.stock !== null) {
+      for (const [sku, qty] of Object.entries(data.stock)) {
+        result[sku] = Number(qty) || 0;
+      }
+    } else if (data && Array.isArray(data.items)) {
+      for (const item of data.items) {
+        if (item && item.sku_code) {
+          result[item.sku_code] = Number(item.qty_available ?? item.qty_on_hand ?? 0);
+        }
+      }
+    }
+
+    return result;
+  } catch (error) {
+    console.warn('Failed to fetch stock from WMS:', error);
+    return {};
+  }
+}
+
+async function mergeWmsStock(products: Product[]): Promise<Product[]> {
+  const allSkus: string[] = [];
+  for (const product of products) {
+    if (product.variants && product.variants.length > 0) {
+      for (const variant of product.variants) {
+        if (variant.sku_code) {
+          allSkus.push(variant.sku_code);
+        }
+      }
+    } else if (product.defaultSku) {
+      allSkus.push(product.defaultSku);
+    }
+  }
+
+  if (allSkus.length === 0) {
+    return products;
+  }
+
+  const stockMap = await fetchWmsStock(allSkus);
+
+  return products.map((product) => {
+    let aggregateStock = 0;
+
+    const updatedVariants = product.variants?.map((variant) => {
+      let variantStock = variant.stock || 0;
+      if (variant.sku_code && Object.prototype.hasOwnProperty.call(stockMap, variant.sku_code)) {
+        variantStock = stockMap[variant.sku_code] ?? 0;
+      }
+      aggregateStock += variantStock;
+      return {
+        ...variant,
+        stock: variantStock
+      };
+    });
+
+    let finalProductStock = product.stock;
+    if (updatedVariants && updatedVariants.length > 0) {
+      finalProductStock = aggregateStock;
+    } else if (product.defaultSku && Object.prototype.hasOwnProperty.call(stockMap, product.defaultSku)) {
+      finalProductStock = stockMap[product.defaultSku] ?? 0;
+    }
+
+    return {
+      ...product,
+      stock: finalProductStock,
+      variants: updatedVariants || product.variants
+    };
+  });
+}
 
 async function getCategories(): Promise<Category[]> {
   try {
@@ -34,7 +120,8 @@ async function getProducts(): Promise<Product[]> {
 
     const data = await response.json();
     const pmiProducts = extractItems<PmiProduct>(data);
-    return pmiProducts.map((product) => mapPmiProduct(product, categories));
+    const products = pmiProducts.map((product) => mapPmiProduct(product, categories));
+    return await mergeWmsStock(products);
   } catch (error) {
     console.warn('Failed to fetch products:', error);
     return [];
@@ -51,7 +138,9 @@ async function getProductById(id: string): Promise<Product | null> {
 
     if (response.ok) {
       const pmiProduct = (await response.json()) as PmiProduct;
-      return mapPmiProduct(pmiProduct, categories);
+      const product = mapPmiProduct(pmiProduct, categories);
+      const [updatedProduct] = await mergeWmsStock([product]);
+      return updatedProduct || product;
     }
 
     if (response.status !== 404) {
@@ -276,6 +365,7 @@ async function getOrCreateStorefrontChannelId(): Promise<number> {
 export const sportApi = {
   getProducts,
   getProductById,
+  getWmsStock: fetchWmsStock,
   getBlogs,
   getCategories,
   getBlogById,

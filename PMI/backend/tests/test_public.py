@@ -104,8 +104,7 @@ def test_get_public_product_detail(client, db_session):
     variant = models.ProductVariant(
         product_id=prod.id,
         sku_code="PROD-DET-VAR",
-        price=150000.0,
-        stock=20
+        price=150000.0
     )
     db_session.add(variant)
     db_session.commit()
@@ -118,7 +117,6 @@ def test_get_public_product_detail(client, db_session):
     assert len(data["variants"]) == 1
     assert data["variants"][0]["sku_code"] == "PROD-DET-VAR"
     assert data["min_price"] == 150000.0
-    assert data["total_stock"] == 20
     
     # 2. Fetch non-existent returns 404
     resp = client.get("/public/products/999999")

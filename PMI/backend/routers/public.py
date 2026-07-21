@@ -46,7 +46,6 @@ class PublicVariantResponse(BaseModel):
     sku_code: str
     price: float
     barcode: Optional[str] = None
-    stock: int
     default_cost_price: Optional[float] = None
     default_tax_rate: Optional[float] = None
     model_config = ConfigDict(from_attributes=True)
@@ -97,7 +96,6 @@ class PublicProductResponse(BaseModel):
     # Pre-calculated values to help client
     min_price: Optional[float] = None
     max_price: Optional[float] = None
-    total_stock: int = 0
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -114,15 +112,13 @@ class PublicProductListResponse(BaseModel):
 # ============================================
 
 def compute_product_prices(product: models.Product) -> tuple:
-    """Calculate min/max price and total stock from variants"""
+    """Calculate min/max price from variants"""
     prices = [float(v.price) for v in product.variants if v.price is not None]
-    stocks = [v.stock for v in product.variants if v.stock is not None]
     
     min_price = min(prices) if prices else None
     max_price = max(prices) if prices else None
-    total_stock = sum(stocks) if stocks else 0
     
-    return min_price, max_price, total_stock
+    return min_price, max_price
 
 
 # ============================================
@@ -166,7 +162,6 @@ def get_public_products(
     category_code: Optional[str] = None,
     min_price: Optional[float] = None,
     max_price: Optional[float] = None,
-    in_stock: Optional[bool] = None,
     sort_by: str = "newest",  # newest, price_asc, price_desc, name
     page: int = 1,
     limit: int = 20,
@@ -242,7 +237,7 @@ def get_public_products(
     # Convert to response format and attach pre-calculated properties
     items = []
     for p in products:
-        min_p, max_p, total_st = compute_product_prices(p)
+        min_p, max_p = compute_product_prices(p)
         items.append(PublicProductResponse(
             id=p.id,
             product_code=p.product_code,
@@ -271,7 +266,6 @@ def get_public_products(
                     sku_code=v.sku_code,
                     price=float(v.price),
                     barcode=v.barcode,
-                    stock=v.stock,
                     default_cost_price=float(v.default_cost_price) if v.default_cost_price is not None else None,
                     default_tax_rate=float(v.default_tax_rate) if v.default_tax_rate is not None else None
                 ) for v in p.variants
@@ -302,17 +296,14 @@ def get_public_products(
                 ) for av in p.attribute_values
             ],
             min_price=min_p,
-            max_price=max_p,
-            total_stock=total_st
+            max_price=max_p
         ))
     
-    # Post-filter by price/stock if requested
+    # Post-filter by price if requested
     if min_price is not None:
         items = [p for p in items if p.min_price is not None and p.min_price >= min_price]
     if max_price is not None:
         items = [p for p in items if p.max_price is not None and p.max_price <= max_price]
-    if in_stock:
-        items = [p for p in items if p.total_stock > 0]
     
     return {
         "items": items,
@@ -355,7 +346,7 @@ def get_public_product(
             detail="Product not found"
         )
     
-    min_p, max_p, total_st = compute_product_prices(product)
+    min_p, max_p = compute_product_prices(product)
     
     return PublicProductResponse(
         id=product.id,
@@ -385,7 +376,6 @@ def get_public_product(
                 sku_code=v.sku_code,
                 price=float(v.price),
                 barcode=v.barcode,
-                stock=v.stock,
                 default_cost_price=float(v.default_cost_price) if v.default_cost_price is not None else None,
                 default_tax_rate=float(v.default_tax_rate) if v.default_tax_rate is not None else None
             ) for v in product.variants
@@ -416,8 +406,7 @@ def get_public_product(
             ) for av in product.attribute_values
         ],
         min_price=min_p,
-        max_price=max_p,
-        total_stock=total_st
+        max_price=max_p
     )
 
 

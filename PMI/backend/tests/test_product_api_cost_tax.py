@@ -19,7 +19,6 @@ def test_create_product_with_cost_tax(client: TestClient):
             "tier_2_option": None,
             "sku_code": "TEST-COST-TAX-1-VAR",
             "price": 100000.0,
-            "stock": 10,
             "barcode": "8934567890123",
             "default_cost_price": 50000.0,
             "default_tax_rate": 10.0
@@ -50,7 +49,6 @@ def test_update_variant_cost_tax(client: TestClient):
             "tier_2_option": None,
             "sku_code": "TEST-COST-TAX-2-VAR",
             "price": 100000.0,
-            "stock": 10,
             "barcode": "8934567890123",
             "default_cost_price": 50000.0,
             "default_tax_rate": 10.0
@@ -77,7 +75,6 @@ def test_update_variant_cost_tax(client: TestClient):
             "tier_2_option": None,
             "sku_code": "TEST-COST-TAX-2-VAR",
             "price": 100000.0,
-            "stock": 10,
             "barcode": "8934567890123",
             "default_cost_price": 60000.0,  # Updated
             "default_tax_rate": 8.0         # Updated
@@ -109,7 +106,6 @@ def test_public_api_returns_cost_tax(client: TestClient):
             "tier_2_option": None,
             "sku_code": "TEST-COST-TAX-3-VAR",
             "price": 100000.0,
-            "stock": 10,
             "barcode": "8934567890123",
             "default_cost_price": 50000.0,
             "default_tax_rate": 10.0

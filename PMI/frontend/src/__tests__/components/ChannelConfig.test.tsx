@@ -30,7 +30,7 @@ function Wrapper({ children, defaultValues = {} }: { children: React.ReactNode; 
     defaultValues: {
       category_id: 5,
       variants: [
-        { tier_1_option: "Đỏ", tier_2_option: null, sku_code: "PA-01-DO", price: 100000, stock: 10 }
+        { tier_1_option: "Đỏ", tier_2_option: null, sku_code: "PA-01-DO", price: 100000 }
       ],
       channel_listings: [
         {

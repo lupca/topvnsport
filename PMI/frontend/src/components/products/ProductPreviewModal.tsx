@@ -8,7 +8,6 @@ export interface Variant {
   tier_2_option: string | null;
   sku_code: string;
   price: number;
-  stock: number;
 }
 
 export interface Media {
@@ -181,7 +180,6 @@ export default function ProductPreviewModal({
                           <th className="px-4 py-2.5">Phân loại</th>
                           <th className="px-4 py-2.5">SKU phân loại</th>
                           <th className="px-4 py-2.5">Giá bán</th>
-                          <th className="px-4 py-2.5 w-24">Kho hàng</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
@@ -192,7 +190,6 @@ export default function ProductPreviewModal({
                               <td className="px-4 py-2 font-bold text-gray-700">{label || "Mặc định"}</td>
                               <td className="px-4 py-2 font-mono text-gray-500 text-[11px]">{v.sku_code}</td>
                               <td className="px-4 py-2 font-bold text-brand-primary">₫{v.price.toLocaleString("vi-VN")}</td>
-                              <td className="px-4 py-2 text-gray-500 font-semibold">{v.stock}</td>
                             </tr>
                           );
                         })}

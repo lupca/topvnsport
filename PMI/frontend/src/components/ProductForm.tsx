@@ -44,7 +44,7 @@ export function getDefaultValues(): ProductFormValues {
     dts_days: 7,
     status: "Draft",
     tier_variations: [],
-    variants: [{ tier_1_option: null, tier_2_option: null, sku_code: "", barcode: "", price: 0, stock: 0 }],
+    variants: [{ tier_1_option: null, tier_2_option: null, sku_code: "", barcode: "", price: 0 }],
     media: [],
     channel_listings: [
       { channel_code: "shopee_vn", status: "Draft", title_override: "", description_override: "", attribute_values: [], variant_overrides: [] },
@@ -252,7 +252,6 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
 
   // Mass fill state
   const [bulkPrice, setBulkPrice] = useState<string>("");
-  const [bulkStock, setBulkStock] = useState<string>("");
 
   const methods = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
@@ -424,8 +423,6 @@ export default function ProductForm({ productId, duplicateProductId, onSaveSucce
                   setUploadingTier1={setUploadingTier1}
                   bulkPrice={bulkPrice}
                   setBulkPrice={setBulkPrice}
-                  bulkStock={bulkStock}
-                  setBulkStock={setBulkStock}
                   manuallyEditedSkus={manuallyEditedSkus}
                   setManuallyEditedSkus={setManuallyEditedSkus}
                 />

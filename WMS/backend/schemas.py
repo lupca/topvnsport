@@ -1,6 +1,17 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Dict
 from pydantic import BaseModel, ConfigDict
+
+# --- Public Stock Schemas ---
+class SKUStockItem(BaseModel):
+    sku_code: str
+    qty_available: int
+    qty_on_hand: int = 0
+    qty_reserved: int = 0
+
+class PublicStockResponse(BaseModel):
+    stock: Dict[str, int]
+    items: List[SKUStockItem]
 
 # --- Warehouse Schemas ---
 class WarehouseBase(BaseModel):

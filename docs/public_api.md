@@ -64,7 +64,6 @@ GET /public/products
 | `category_code` | string | - | Lọc theo category code |
 | `min_price` | float | - | Giá tối thiểu |
 | `max_price` | float | - | Giá tối đa |
-| `in_stock` | bool | - | Chỉ lấy sản phẩm còn hàng |
 | `sort_by` | string | newest | Sắp xếp: `newest`, `price_asc`, `price_desc`, `name` |
 | `page` | int | 1 | Trang hiện tại |
 | `limit` | int | 20 | Số sản phẩm mỗi trang (max 100) |
@@ -88,8 +87,7 @@ GET /public/products
       "media": [...],
       "attribute_values": [...],
       "min_price": 3500000,
-      "max_price": 4200000,
-      "total_stock": 50
+      "max_price": 4200000
     }
   ],
   "total": 100,
@@ -158,8 +156,7 @@ GET /public/products/{identifier}
       "tier_2_option": null,
       "sku_code": "YNX-AX99-RED",
       "price": 3500000,
-      "barcode": "8901234567890",
-      "stock": 20
+      "barcode": "8901234567890"
     }
   ],
   "media": [
@@ -188,10 +185,11 @@ GET /public/products/{identifier}
     }
   ],
   "min_price": 3500000,
-  "max_price": 4200000,
-  "total_stock": 50
+  "max_price": 4200000
 }
 ```
+
+> **Lưu ý:** Stock/Inventory không được trả về từ PMI API. Để lấy số lượng tồn kho, frontend gọi WMS API (xem phần WMS Stock API bên dưới).
 
 **Examples:**
 ```bash
@@ -259,3 +257,73 @@ const response = await fetch(`${PMI_API_URL}/public/products/${id}`);
   ]
 }
 ```
+
+---
+
+## WMS Stock API
+
+Stock/Inventory được quản lý hoàn toàn bởi WMS (Warehouse Management System). Frontend cần gọi WMS API để lấy số lượng tồn kho.
+
+**Base URL:** `http://localhost:18102/public`
+
+### Lấy Stock theo SKU
+
+```
+GET /public/stock?sku_codes={sku1},{sku2},...
+```
+
+**Query Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `sku_codes` | string | Danh sách SKU codes, phân cách bởi dấu phẩy |
+
+**Response:**
+```json
+{
+  "stock": {
+    "YNX-AX99-RED": 50,
+    "YNX-AX99-BLUE": 30,
+    "UNKNOWN-SKU": 0
+  },
+  "items": [
+    {
+      "sku_code": "YNX-AX99-RED",
+      "qty_available": 50,
+      "qty_on_hand": 60,
+      "qty_reserved": 10
+    },
+    {
+      "sku_code": "YNX-AX99-BLUE",
+      "qty_available": 30,
+      "qty_on_hand": 30,
+      "qty_reserved": 0
+    },
+    {
+      "sku_code": "UNKNOWN-SKU",
+      "qty_available": 0,
+      "qty_on_hand": 0,
+      "qty_reserved": 0
+    }
+  ]
+}
+```
+
+**Fields:**
+- `qty_on_hand`: Số lượng thực tế trong kho
+- `qty_reserved`: Số lượng đã đặt cho đơn hàng đang xử lý
+- `qty_available`: Số lượng có thể bán = `qty_on_hand - qty_reserved`
+
+**Examples:**
+```bash
+# Lấy stock cho 1 SKU
+curl "http://localhost:18102/public/stock?sku_codes=YNX-AX99-RED"
+
+# Lấy stock cho nhiều SKU
+curl "http://localhost:18102/public/stock?sku_codes=YNX-AX99-RED,YNX-AX99-BLUE,YNX-AX88"
+```
+
+**Lưu ý:**
+- Endpoint không yêu cầu authentication
+- SKU không tồn tại trong WMS sẽ trả về `qty_available: 0`
+- Stock được aggregate từ tất cả locations/warehouses

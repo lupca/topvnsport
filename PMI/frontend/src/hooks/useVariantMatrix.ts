@@ -39,13 +39,12 @@ export function useVariantMatrix({ watch, setValue, manuallyEditedSkus }: UseVar
     )) as string[];
 
     // Preserve existing variant data
-    const existingMap = new Map<string, { price: number; stock: number; sku_code: string; barcode: string }>();
+    const existingMap = new Map<string, { price: number; sku_code: string; barcode: string }>();
     if (watchVariants) {
       watchVariants.forEach((v: any) => {
         const key = `${v.tier_1_option || ""}_${v.tier_2_option || ""}`;
         existingMap.set(key, {
           price: v.price,
-          stock: v.stock,
           sku_code: v.sku_code,
           barcode: v.barcode || ""
         });
@@ -68,7 +67,6 @@ export function useVariantMatrix({ watch, setValue, manuallyEditedSkus }: UseVar
           : generateSkuCode(parentSku),
         barcode: existing?.barcode || "",
         price: existing?.price ?? 0,
-        stock: existing?.stock ?? 0,
       }];
     } else if (t2_options.length === 0) {
       // 1 Tier
@@ -85,7 +83,6 @@ export function useVariantMatrix({ watch, setValue, manuallyEditedSkus }: UseVar
             : generateSkuCode(parentSku, opt1),
           barcode: existing?.barcode || "",
           price: existing?.price ?? 0,
-          stock: existing?.stock ?? 0,
         });
       });
     } else {
@@ -104,7 +101,6 @@ export function useVariantMatrix({ watch, setValue, manuallyEditedSkus }: UseVar
               : generateSkuCode(parentSku, opt1, opt2),
             barcode: existing?.barcode || "",
             price: existing?.price ?? 0,
-            stock: existing?.stock ?? 0,
           });
         });
       });

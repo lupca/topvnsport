@@ -162,9 +162,9 @@ def call_api(url: str, method: str = "GET", data: dict = None):
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
 def _fetch_inventory_snapshot(order_items: List[models.OrderItem]) -> tuple[Dict[str, Dict[str, int]], Dict[str, dict]]:
-    warehouse_url = f"{WMS_API_URL}/warehouses"
-    inventory_url = f"{WMS_API_URL}/inventory"
-    locations_url = f"{WMS_API_URL}/locations"
+    warehouse_url = f"{WMS_API_URL}/warehouses?limit=100000"
+    inventory_url = f"{WMS_API_URL}/inventory?limit=100000"
+    locations_url = f"{WMS_API_URL}/locations?limit=100000"
     headers = {"X-API-Key": PIM_API_KEY}
     with httpx.Client(timeout=10.0, headers=headers) as client:
         warehouses_resp = client.get(warehouse_url)

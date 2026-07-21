@@ -230,8 +230,7 @@ def test_product_update_records_audit_outbox(client, db_session):
                 "tier_2_option": None,
                 "sku_code": "PROD-AUDIT-TEST-VAR",
                 "price": 50000.0,
-                "barcode": "12345",
-                "stock": 10
+                "barcode": "12345"
             }
         ],
         "media": [],
@@ -436,60 +435,14 @@ def test_get_audit_logs_endpoints(client_no_auth_override, db_session):
     assert resp.json()["limit"] == 100
 
 
-def test_sync_stock_endpoint(client, db_session):
-    import models
-    from utils.auth import INTERNAL_SERVICE_TOKEN
-    from models import AuditOutbox
-
-    # Create dummy product and variant
-    product = models.Product(
-        product_code="SYNC-TEST-PROD",
-        name="Sync Test Product",
-        weight=200.0,
-        status="Published"
-    )
-    db_session.add(product)
-    db_session.commit()
-
-    variant = models.ProductVariant(
-        product_id=product.id,
-        sku_code="SYNC-TEST-VAR",
-        price=120000.0,
-        stock=15
-    )
-    db_session.add(variant)
-    db_session.commit()
-
-    # 1. Invalid API Key should return 401
+def test_sync_stock_endpoint_deprecated(client, db_session):
     resp = client.post(
         "/api/service/sync-stock",
-        json={"product_id": product.id, "stock": 50},
+        json={"product_id": 1, "stock": 50},
         headers={"X-API-Key": "invalid-key"}
     )
-    assert resp.status_code == 401
-
-    # 2. Valid API Key should succeed and update stock + log changes
-    resp = client.post(
-        "/api/service/sync-stock",
-        json={"product_id": product.id, "stock": 50},
-        headers={"X-API-Key": INTERNAL_SERVICE_TOKEN, "X-Correlation-ID": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"}
-    )
-    assert resp.status_code == 200
-    assert resp.json()["message"] == "Stock synchronized successfully"
-
-    # Refresh DB session and verify variant stock update
-    db_session.commit()
-    db_session.refresh(variant)
-    assert variant.stock == 50
-
-    # Verify audit outbox record exists
-    outbox_log = db_session.query(AuditOutbox).filter_by(
-        actor_username="stock_sync_service",
-        action_type="UPDATE"
-    ).first()
-    assert outbox_log is not None
-    assert outbox_log.correlation_id == uuid.UUID("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11")
-    assert outbox_log.changes == {"stock": [15, 50]}
+    assert resp.status_code == 404
+    assert resp.json()["detail"] == "Endpoint deprecated"
 
 
 def test_log_security_intrusion_endpoint(client_no_auth_override, db_session):

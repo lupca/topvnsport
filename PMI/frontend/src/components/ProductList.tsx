@@ -497,18 +497,6 @@ export default function ProductList({
             Giá bán
             {sortBy === "price" && (sortOrder === "asc" ? <span className="text-xs">↑</span> : <span className="text-xs">↓</span>)}
           </button>
-
-          <button 
-            onClick={() => { setSortBy("stock"); toggleSort("stock"); }}
-            className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 ${
-              sortBy === "stock" 
-                ? "bg-white text-brand-primary shadow-sm border border-gray-200" 
-                : "hover:bg-gray-100"
-            }`}
-          >
-            Tồn kho
-            {sortBy === "stock" && (sortOrder === "asc" ? <span className="text-xs">↑</span> : <span className="text-xs">↓</span>)}
-          </button>
         </div>
       </div>
 

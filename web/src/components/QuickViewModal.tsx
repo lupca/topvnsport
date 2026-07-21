@@ -68,16 +68,29 @@ export default function QuickViewModal({ product, onClose, onAddToCart }: QuickV
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-lg font-extrabold text-brand-primary font-display">{(product.salePrice || product.price).toLocaleString('vi-VN')}đ</span>
+                  <div>
+                    <span className="text-lg font-extrabold text-brand-primary font-display">{(product.salePrice || product.price).toLocaleString('vi-VN')}đ</span>
+                    {product.stock <= 0 && (
+                      <p className="text-xs text-red-500 font-semibold mt-1">Tạm hết hàng</p>
+                    )}
+                  </div>
                   <button
                     onClick={() => {
-                      onAddToCart(product);
-                      onClose();
+                      if (product.stock > 0) {
+                        onAddToCart(product);
+                        onClose();
+                      }
                     }}
-                    className="bg-brand-primary hover:bg-brand-secondary text-white text-xs font-bold uppercase tracking-wider px-6 py-2.5 rounded-full flex items-center gap-1.5 transition shadow-sm hover:shadow-md focus:outline-hidden focus:ring-2 focus:ring-brand-primary/30"
+                    disabled={product.stock <= 0}
+                    className={`text-xs font-bold uppercase tracking-wider px-6 py-2.5 rounded-full flex items-center gap-1.5 transition shadow-sm focus:outline-hidden ${
+                      product.stock <= 0
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-brand-primary hover:bg-brand-secondary text-white hover:shadow-md focus:ring-2 focus:ring-brand-primary/30'
+                    }`}
                     id="add-to-cart-quickview"
                   >
-                    <ShoppingBag className="w-4 h-4" /> Thêm vào giỏ
+                    <ShoppingBag className="w-4 h-4" />
+                    {product.stock <= 0 ? 'Hết hàng' : 'Thêm vào giỏ'}
                   </button>
                 </div>
               </div>

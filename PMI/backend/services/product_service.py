@@ -191,8 +191,7 @@ def serialize_product_aggregate(product: models.Product) -> dict:
                 "tier_1_option": v.tier_1_option,
                 "tier_2_option": v.tier_2_option,
                 "price": float(v.price) if v.price is not None else None,
-                "barcode": v.barcode,
-                "stock": v.stock
+                "barcode": v.barcode
             } for v in sorted(product.variants, key=lambda x: x.sku_code or "")
         ],
         
@@ -322,7 +321,6 @@ def update_product_aggregate(db: Session, product_id: int, product_in: schemas.P
             sku_code=sku,
             price=v.price,
             barcode=v.barcode,
-            stock=v.stock,
             default_cost_price=v.default_cost_price,
             default_tax_rate=v.default_tax_rate
         )
@@ -393,7 +391,7 @@ def update_product_aggregate(db: Session, product_id: int, product_in: schemas.P
         else:
             old_v = old_variants[sku]
             v_diff = {}
-            for f in ["price", "stock", "barcode"]:
+            for f in ["price", "barcode"]:
                 if old_v[f] != v[f]:
                     v_diff[f] = {"before": old_v[f], "after": v[f]}
             if v_diff:

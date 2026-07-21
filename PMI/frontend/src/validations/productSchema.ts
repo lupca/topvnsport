@@ -11,8 +11,7 @@ export const variantSchema = z.object({
   tier_2_option: z.string().nullable(),
   sku_code: z.string().optional().nullable().or(z.literal("")),
   price: z.coerce.number().min(0, "Giá trị phải lớn hơn hoặc bằng 0"),
-  barcode: z.string().optional().nullable(),
-  stock: z.coerce.number().min(0, "Giá trị phải lớn hơn hoặc bằng 0")
+  barcode: z.string().optional().nullable()
 });
 
 export const productMediaSchema = z.object({

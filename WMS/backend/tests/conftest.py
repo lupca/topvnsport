@@ -9,6 +9,7 @@ from sqlalchemy.orm import sessionmaker
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from database import Base, get_db
+from utils.auth import get_current_user
 from main import app
 import models
 
@@ -43,6 +44,7 @@ def client(db_session):
         finally:
             pass
     app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_current_user] = lambda: {"user_id": "1", "username": "admin"}
     with TestClient(app) as c:
         yield c
     app.dependency_overrides.clear()

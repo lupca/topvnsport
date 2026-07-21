@@ -31,7 +31,7 @@ class ProductVariantResponse(ApiModel):
     id: int
     sku_code: str
     price: float
-    stock: int
+    stock: Optional[int] = None
     tier_1_option: Optional[str] = None
     tier_2_option: Optional[str] = None
 

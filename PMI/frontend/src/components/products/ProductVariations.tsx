@@ -16,8 +16,6 @@ interface ProductVariationsProps {
   setUploadingTier1: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
   bulkPrice: string;
   setBulkPrice: (val: string) => void;
-  bulkStock: string;
-  setBulkStock: (val: string) => void;
   manuallyEditedSkus: Set<string>;
   setManuallyEditedSkus: React.Dispatch<React.SetStateAction<Set<string>>>;
 }
@@ -29,8 +27,6 @@ export default function ProductVariations({
   setUploadingTier1,
   bulkPrice,
   setBulkPrice,
-  bulkStock,
-  setBulkStock,
   manuallyEditedSkus,
   setManuallyEditedSkus
 }: ProductVariationsProps) {
@@ -73,12 +69,10 @@ export default function ProductVariations({
     if (!watchVariants) return;
 
     const price = parseFloat(bulkPrice);
-    const stock = parseInt(bulkStock);
 
     const updated = watchVariants.map((v: any) => {
       const val = { ...v };
       if (!isNaN(price)) val.price = price;
-      if (!isNaN(stock)) val.stock = stock;
       return val;
     });
 
@@ -272,15 +266,6 @@ export default function ProductVariations({
                 onChange={(e) => setBulkPrice(e.target.value)}
               />
             </div>
-            <div className="w-32">
-              <input 
-                type="number" 
-                placeholder="Kho hàng"
-                className="pim-input"
-                value={bulkStock}
-                onChange={(e) => setBulkStock(e.target.value)}
-              />
-            </div>
             <button
               type="button"
               onClick={handleMassApply}
@@ -302,7 +287,6 @@ export default function ProductVariations({
               <th className="px-6 py-4">SKU phân loại</th>
               <th className="px-6 py-4">Mã vạch (Barcode)</th>
               <th className="px-6 py-4">Giá bán *</th>
-              <th className="px-6 py-4">Kho hàng *</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -372,16 +356,6 @@ export default function ProductVariations({
                   </div>
                   {(errors.variants as any)?.[idx]?.price && (
                     <p className="text-[10px] text-rose-500 mt-0.5">{(errors.variants as any)[idx]?.price?.message}</p>
-                  )}
-                </td>
-                <td className="px-6 py-3">
-                  <input 
-                    type="number" 
-                    className="px-3 py-1.5 border border-gray-300 rounded-lg w-24 focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-primary-500"
-                    {...register(`variants.${idx}.stock` as const)}
-                  />
-                  {(errors.variants as any)?.[idx]?.stock && (
-                    <p className="text-[10px] text-rose-500 mt-0.5">{(errors.variants as any)[idx]?.stock?.message}</p>
                   )}
                 </td>
                 </tr>

@@ -107,7 +107,6 @@ def create_product(product_in: schemas.ProductCreate, db: Session = Depends(get_
                 sku_code=sku,
                 price=v.price,
                 barcode=v.barcode,
-                stock=v.stock,
                 default_cost_price=v.default_cost_price,
                 default_tax_rate=v.default_tax_rate
             )
@@ -202,11 +201,6 @@ def list_products(
             query = query.outerjoin(models.ProductVariant).group_by(models.Product.id).order_by(func.min(models.ProductVariant.price).desc())
         else:
             query = query.outerjoin(models.ProductVariant).group_by(models.Product.id).order_by(func.min(models.ProductVariant.price).asc())
-    elif sort_by == "stock":
-        if sort_order == "desc":
-            query = query.outerjoin(models.ProductVariant).group_by(models.Product.id).order_by(func.sum(models.ProductVariant.stock).desc())
-        else:
-            query = query.outerjoin(models.ProductVariant).group_by(models.Product.id).order_by(func.sum(models.ProductVariant.stock).asc())
     elif sort_by == "name":
         if sort_order == "desc":
             query = query.order_by(models.Product.name.desc())
@@ -416,8 +410,7 @@ def import_products(file: UploadFile = File(...), db: Session = Depends(get_db))
             variant = models.ProductVariant(
                 product_id=product.id,
                 sku_code=sku,
-                price=price,
-                stock=100
+                price=price
             )
             db.add(variant)
             db.flush()

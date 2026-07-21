@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from database import get_db
 import models
 import schemas
@@ -27,8 +27,11 @@ def create_warehouse(warehouse: schemas.WarehouseCreate, db: Session = Depends(g
     return new_warehouse
 
 @router.get("/warehouses", response_model=List[schemas.WarehouseResponse])
-def list_warehouses(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return db.query(models.Warehouse).offset(skip).limit(limit).all()
+def list_warehouses(skip: int = 0, limit: Optional[int] = Query(None), db: Session = Depends(get_db)):
+    query = db.query(models.Warehouse).offset(skip)
+    if limit is not None:
+        query = query.limit(limit)
+    return query.all()
 
 @router.get("/warehouses/{warehouse_id}", response_model=schemas.WarehouseResponse)
 def get_warehouse(warehouse_id: int, db: Session = Depends(get_db)):

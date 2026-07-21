@@ -50,11 +50,7 @@ export default function ProductListTable({
     return `₫${minPrice.toLocaleString("vi-VN")} - ₫${maxPrice.toLocaleString("vi-VN")}`;
   };
 
-  // Helper: Get Total Stock
-  const getTotalStock = (product: Product) => {
-    if (!product.variants || product.variants.length === 0) return 0;
-    return product.variants.reduce((sum, v) => sum + v.stock, 0);
-  };
+
 
   // Helper: Find option cover image
   const getOptionImage = (product: Product, optionName: string | null) => {
@@ -97,12 +93,7 @@ export default function ProductListTable({
                   <ArrowUpDown className="h-3 w-3 text-gray-500" />
                 </div>
               </th>
-              <th className="px-6 py-4 w-36 cursor-pointer hover:bg-gray-100" onClick={() => onToggleSort("stock")}>
-                <div className="flex items-center gap-1">
-                  Kho hàng
-                  <ArrowUpDown className="h-3 w-3 text-gray-500" />
-                </div>
-              </th>
+
               <th className="px-6 py-4 w-36">Hiệu suất</th>
               <th className="px-6 py-4 w-36">Đánh giá</th>
               <th className="px-6 py-4 w-32 text-right">Thao tác</th>
@@ -112,7 +103,7 @@ export default function ProductListTable({
           {loading ? (
             <tbody>
               <tr>
-                <td colSpan={7} className="py-20 text-center text-gray-500">
+                <td colSpan={6} className="py-20 text-center text-gray-500">
                   <div className="flex items-center justify-center gap-2">
                     <span className="animate-ping h-2.5 w-2.5 rounded-full bg-brand-primary" />
                     <span>Đang tải danh sách sản phẩm...</span>
@@ -123,7 +114,7 @@ export default function ProductListTable({
           ) : products.length === 0 ? (
             <tbody>
               <tr>
-                <td colSpan={7} className="py-20 text-center text-gray-500 space-y-2">
+                <td colSpan={6} className="py-20 text-center text-gray-500 space-y-2">
                   <p className="font-semibold text-gray-600 text-base">Không tìm thấy sản phẩm nào</p>
                   <p className="text-xs">Hãy thử thay đổi điều kiện tìm kiếm hoặc thêm sản phẩm mới.</p>
                 </td>
@@ -133,7 +124,6 @@ export default function ProductListTable({
             <tbody className="divide-y divide-gray-100">
               {products.map((product) => {
                 const cover = getCoverImage(product);
-                const totalStock = getTotalStock(product);
                 const isExpanded = !!expandedProducts[product.id];
                 const hasVariants = product.variants && product.variants.length > 1;
 
@@ -185,15 +175,6 @@ export default function ProductListTable({
                       {/* Price Range */}
                       <td className="px-6 py-4.5 align-top font-semibold text-gray-900">
                         {getPriceRange(product)}
-                      </td>
-
-                      {/* Total Stock */}
-                      <td className="px-6 py-4.5 align-top font-semibold">
-                        {totalStock === 0 ? (
-                          <span className="text-rose-500 bg-rose-50 border border-rose-100 px-2.5 py-0.5 rounded-full text-xs font-bold inline-block">Hết hàng</span>
-                        ) : (
-                          <span className="text-gray-700">{totalStock}</span>
-                        )}
                       </td>
 
                       {/* Performance (Mocked) */}
@@ -249,7 +230,7 @@ export default function ProductListTable({
                     {/* Expandable Variants Section Trigger */}
                     {hasVariants && (
                       <tr>
-                        <td colSpan={7} className="px-6 py-1 bg-gray-50/30 border-t border-gray-200/60">
+                        <td colSpan={6} className="px-6 py-1 bg-gray-50/30 border-t border-gray-200/60">
                           <button 
                             onClick={() => onToggleExpand(product.id)}
                             className="text-xs font-semibold text-gray-500 hover:text-brand-primary flex items-center gap-1.5 py-1.5 focus:outline-none transition-colors"
@@ -271,7 +252,7 @@ export default function ProductListTable({
                     {/* Expanded Sub-table */}
                     {isExpanded && hasVariants && (
                       <tr>
-                        <td colSpan={7} className="p-0 bg-gray-50">
+                        <td colSpan={6} className="p-0 bg-gray-50">
                           <div className="px-16 py-4 border-t border-b border-gray-200">
                             <table className="w-full text-left text-xs text-gray-500 border-collapse bg-surface rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                               <thead className="bg-gray-50 text-[10px] uppercase font-bold text-gray-500 border-b border-gray-200">
@@ -280,7 +261,6 @@ export default function ProductListTable({
                                   <th className="px-5 py-3">Phân loại hàng</th>
                                   <th className="px-5 py-3">Mã SKU phân loại</th>
                                   <th className="px-5 py-3 w-36">Giá bán</th>
-                                  <th className="px-5 py-3 w-32">Kho hàng</th>
                                 </tr>
                               </thead>
                               <tbody className="divide-y divide-gray-100">
@@ -313,13 +293,6 @@ export default function ProductListTable({
                                       </td>
                                       <td className="px-5 py-2 font-semibold text-gray-700">
                                         ₫{v.price.toLocaleString("vi-VN")}
-                                      </td>
-                                      <td className="px-5 py-2 font-semibold">
-                                        {v.stock === 0 ? (
-                                          <span className="text-rose-500">Hết hàng</span>
-                                        ) : (
-                                          <span className="text-gray-600">{v.stock}</span>
-                                        )}
                                       </td>
                                     </tr>
                                   );

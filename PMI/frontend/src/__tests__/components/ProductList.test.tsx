@@ -46,16 +46,14 @@ const mockProductsData = {
           tier_1_option: "Trắng",
           tier_2_option: "M",
           sku_code: "P-10-PARENT-Trang-M",
-          price: 150000,
-          stock: 25
+          price: 150000
         },
         {
           id: 102,
           tier_1_option: "Đen",
           tier_2_option: "L",
           sku_code: "P-10-PARENT-Den-L",
-          price: 160000,
-          stock: 12
+          price: 160000
         }
       ],
       tier_variations: [

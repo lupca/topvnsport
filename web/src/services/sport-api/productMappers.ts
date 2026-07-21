@@ -165,7 +165,7 @@ export function mapPmiProduct(pmiProduct: PmiProduct, categories: Category[]): P
     description: pmiProduct.description || 'Sản phẩm chính hãng.',
     attributes,
     reviews: [],
-    stock: stock > 0 ? stock : 100,
+    stock: stock > 0 ? stock : 0,
     defaultSku: variants.find((variant) => Boolean(variant.sku_code))?.sku_code,
     skuByColor: mapSkuByColor(variants),
     skuByVariant: mapSkuByVariant(variants),

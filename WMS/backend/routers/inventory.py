@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from database import get_db
@@ -7,10 +8,80 @@ import schemas
 from utils.helpers import log_stock_transaction
 
 router = APIRouter(tags=['Inventory'])
+public_router = APIRouter(tags=['Public Inventory'])
+
+@public_router.get("/public/stock", response_model=schemas.PublicStockResponse)
+def get_public_stock(
+    sku_codes: Optional[List[str]] = Query(None, description="SKU codes (single, comma-separated, or list)"),
+    db: Session = Depends(get_db)
+):
+    requested_skus: List[str] = []
+    if sku_codes:
+        for item in sku_codes:
+            if item:
+                for part in item.split(","):
+                    cleaned = part.strip()
+                    if cleaned and cleaned not in requested_skus:
+                        requested_skus.append(cleaned)
+
+    query = db.query(
+        models.Inventory.sku_code,
+        func.sum(models.Inventory.qty_on_hand).label("total_on_hand"),
+        func.sum(models.Inventory.qty_reserved).label("total_reserved"),
+        func.sum(models.Inventory.qty_on_hand - models.Inventory.qty_reserved).label("total_available")
+    )
+
+    if requested_skus:
+        query = query.filter(models.Inventory.sku_code.in_(requested_skus))
+
+    results = query.group_by(models.Inventory.sku_code).all()
+
+    stock_map = {}
+    items_map = {}
+    for row in results:
+        on_hand = int(row.total_on_hand or 0)
+        reserved = int(row.total_reserved or 0)
+        available = max(0, int(row.total_available or 0))
+        stock_map[row.sku_code] = available
+        items_map[row.sku_code] = {
+            "sku_code": row.sku_code,
+            "qty_available": available,
+            "qty_on_hand": on_hand,
+            "qty_reserved": reserved
+        }
+
+    stock_result = {}
+    items_result = []
+
+    if requested_skus:
+        for sku in requested_skus:
+            if sku in items_map:
+                stock_result[sku] = stock_map[sku]
+                items_result.append(items_map[sku])
+            else:
+                stock_result[sku] = 0
+                items_result.append({
+                    "sku_code": sku,
+                    "qty_available": 0,
+                    "qty_on_hand": 0,
+                    "qty_reserved": 0
+                })
+    else:
+        for sku, item in items_map.items():
+            stock_result[sku] = stock_map[sku]
+            items_result.append(item)
+
+    return {
+        "stock": stock_result,
+        "items": items_result
+    }
 
 @router.get("/inventory", response_model=List[schemas.InventoryResponse])
-def list_inventory(db: Session = Depends(get_db)):
-    return db.query(models.Inventory).all()
+def list_inventory(skip: int = 0, limit: Optional[int] = Query(None), db: Session = Depends(get_db)):
+    query = db.query(models.Inventory).offset(skip)
+    if limit is not None:
+        query = query.limit(limit)
+    return query.all()
 
 class InventoryAdjustInput(schemas.BaseModel):
     sku_code: str

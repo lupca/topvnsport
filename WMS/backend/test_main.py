@@ -6,6 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from database import Base, get_db
+from utils.auth import get_current_user
 from main import app
 import models
 
@@ -49,6 +50,7 @@ def client(db):
         finally:
             pass
     app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_current_user] = lambda: {"user_id": "1", "username": "admin"}
     with TestClient(app) as c:
         yield c
     app.dependency_overrides.clear()
@@ -557,6 +559,102 @@ def test_fulfillment_order_financial_fields(client, db):
     assert float(data["total_amount"]) == 900000.0
     assert len(data["pick_list_items"]) == 1
     assert float(data["pick_list_items"][0]["selling_price"]) == 450000.0
+
+
+def test_public_stock_single_sku(client, db):
+    wh = models.Warehouse(code="WH-PUB-1", name="Public WH 1", is_active=True)
+    db.add(wh)
+    db.commit()
+    loc = models.Location(warehouse_id=wh.id, location_code="LOC-PUB-1", is_active=True)
+    db.add(loc)
+    db.commit()
+    inv = models.Inventory(
+        sku_code="SKU-PUB-A",
+        product_name="Public Product A",
+        location_id=loc.id,
+        qty_on_hand=20,
+        qty_reserved=5
+    )
+    db.add(inv)
+    db.commit()
+
+    resp = client.get("/public/stock?sku_codes=SKU-PUB-A")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["stock"]["SKU-PUB-A"] == 15
+    assert len(data["items"]) == 1
+    assert data["items"][0]["sku_code"] == "SKU-PUB-A"
+    assert data["items"][0]["qty_available"] == 15
+    assert data["items"][0]["qty_on_hand"] == 20
+    assert data["items"][0]["qty_reserved"] == 5
+
+
+def test_public_stock_comma_separated_and_missing_sku(client, db):
+    wh = models.Warehouse(code="WH-PUB-2", name="Public WH 2", is_active=True)
+    db.add(wh)
+    db.commit()
+    loc = models.Location(warehouse_id=wh.id, location_code="LOC-PUB-2", is_active=True)
+    db.add(loc)
+    db.commit()
+    inv = models.Inventory(
+        sku_code="SKU-EXISTING",
+        product_name="Existing Product",
+        location_id=loc.id,
+        qty_on_hand=10,
+        qty_reserved=0
+    )
+    db.add(inv)
+    db.commit()
+
+    resp = client.get("/public/stock?sku_codes=SKU-EXISTING,SKU-MISSING")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["stock"]["SKU-EXISTING"] == 10
+    assert data["stock"]["SKU-MISSING"] == 0
+    assert len(data["items"]) == 2
+    item_map = {item["sku_code"]: item["qty_available"] for item in data["items"]}
+    assert item_map["SKU-EXISTING"] == 10
+    assert item_map["SKU-MISSING"] == 0
+
+
+def test_public_stock_multi_location_aggregation(client, db):
+    wh1 = models.Warehouse(code="WH-AGG-1", name="Agg WH 1", is_active=True)
+    wh2 = models.Warehouse(code="WH-AGG-2", name="Agg WH 2", is_active=True)
+    db.add_all([wh1, wh2])
+    db.commit()
+    loc1 = models.Location(warehouse_id=wh1.id, location_code="LOC-AGG-1", is_active=True)
+    loc2 = models.Location(warehouse_id=wh2.id, location_code="LOC-AGG-2", is_active=True)
+    db.add_all([loc1, loc2])
+    db.commit()
+
+    # Loc 1: on_hand=30, reserved=5 -> available=25
+    inv1 = models.Inventory(sku_code="SKU-MULTI-LOC", product_name="Multi Loc SKU", location_id=loc1.id, qty_on_hand=30, qty_reserved=5)
+    # Loc 2: on_hand=50, reserved=15 -> available=35
+    inv2 = models.Inventory(sku_code="SKU-MULTI-LOC", product_name="Multi Loc SKU", location_id=loc2.id, qty_on_hand=50, qty_reserved=15)
+    db.add_all([inv1, inv2])
+    db.commit()
+
+    resp = client.get("/public/stock?sku_codes=SKU-MULTI-LOC")
+    assert resp.status_code == 200
+    data = resp.json()
+    # Aggregated stock = (30 - 5) + (50 - 15) = 25 + 35 = 60
+    assert data["stock"]["SKU-MULTI-LOC"] == 60
+    assert data["items"][0]["qty_on_hand"] == 80
+    assert data["items"][0]["qty_reserved"] == 20
+    assert data["items"][0]["qty_available"] == 60
+
+
+def test_public_stock_unauthenticated(client, db):
+    # Clear get_current_user override temporarily to verify public access
+    app.dependency_overrides.pop(get_current_user, None)
+    try:
+        resp = client.get("/public/stock?sku_codes=SKU-UNAUTH")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["stock"]["SKU-UNAUTH"] == 0
+    finally:
+        app.dependency_overrides[get_current_user] = lambda: {"user_id": "1", "username": "admin"}
+
 
 
 

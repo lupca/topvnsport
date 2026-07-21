@@ -65,6 +65,18 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
     return t1Match && t2Match;
   });
 
+  const getVariantStock = (tier1: string, tier2: string): number => {
+    const variant = product.variants?.find((v) => {
+      const t1Match = !product.tier_variations?.some(tv => tv.tier_index === 1) || v.tier_1_option === tier1;
+      const t2Match = !product.tier_variations?.some(tv => tv.tier_index === 2) || v.tier_2_option === tier2;
+      return t1Match && t2Match;
+    });
+    return variant?.stock ?? product.stock ?? 0;
+  };
+
+  const currentStock = matchedVariant?.stock ?? product.stock ?? 0;
+  const isOutOfStock = currentStock <= 0;
+
   const displayBasePrice = matchedVariant ? matchedVariant.price : (product.salePrice || product.price);
   const stringPrice = (!hasStringingVariation && withStringing && selectedString) ? selectedString.price : 0;
   const totalDisplayPrice = displayBasePrice + stringPrice;
@@ -168,6 +180,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
             stringingTierIndex={stringingTierIndex}
             isDynamicStringingActive={isDynamicStringingActive}
             activeStringValue={activeStringValue}
+            isOutOfStock={isOutOfStock}
             onSetSelectedTier1={setSelectedTier1}
             onSetSelectedTier2={setSelectedTier2}
             onSetSelectedWeight={setSelectedWeight}
@@ -176,6 +189,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
             onSetSelectedString={setSelectedString}
             onSetTension={setTension}
             onAddToCart={handleAddToCart}
+            getVariantStock={getVariantStock}
           />
         </div>
       </div>
@@ -191,6 +205,7 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
         productName={product.name}
         productImage={product.image}
         totalDisplayPrice={totalDisplayPrice}
+        isOutOfStock={isOutOfStock}
         onBuyNow={handleAddToCart}
       />
 

@@ -29,7 +29,6 @@ describe("ProductVariations", () => {
   const setTier1Images = vi.fn();
   const setUploadingTier1 = vi.fn();
   const setBulkPrice = vi.fn();
-  const setBulkStock = vi.fn();
 
   beforeEach(() => {
     vi.restoreAllMocks();
@@ -45,8 +44,6 @@ describe("ProductVariations", () => {
           setUploadingTier1={setUploadingTier1}
           bulkPrice=""
           setBulkPrice={setBulkPrice}
-          bulkStock=""
-          setBulkStock={setBulkStock}
         />
       </Wrapper>
     );
@@ -66,8 +63,6 @@ describe("ProductVariations", () => {
           setUploadingTier1={setUploadingTier1}
           bulkPrice=""
           setBulkPrice={setBulkPrice}
-          bulkStock=""
-          setBulkStock={setBulkStock}
         />
       </Wrapper>
     );
@@ -85,8 +80,8 @@ describe("ProductVariations", () => {
         { tier_index: 1, name: "Màu sắc", options: ["Đỏ", "Xanh"] }
       ],
       variants: [
-        { tier_1_option: "Đỏ", tier_2_option: null, sku_code: "PROD-PARENT-DO", barcode: "123", price: 100000, stock: 10 },
-        { tier_1_option: "Xanh", tier_2_option: null, sku_code: "PROD-PARENT-XANH", barcode: "456", price: 110000, stock: 20 }
+        { tier_1_option: "Đỏ", tier_2_option: null, sku_code: "PROD-PARENT-DO", barcode: "123", price: 100000 },
+        { tier_1_option: "Xanh", tier_2_option: null, sku_code: "PROD-PARENT-XANH", barcode: "456", price: 110000 }
       ]
     };
 
@@ -99,8 +94,6 @@ describe("ProductVariations", () => {
           setUploadingTier1={setUploadingTier1}
           bulkPrice=""
           setBulkPrice={setBulkPrice}
-          bulkStock=""
-          setBulkStock={setBulkStock}
         />
       </Wrapper>
     );
@@ -115,8 +108,7 @@ describe("ProductVariations", () => {
 
     // Check inputs are rendered with default values
     const priceInputs = screen.getAllByRole("spinbutton");
-    // Under variants we have price/stock inputs (2 * 2 = 4) plus bulk price and bulk stock inputs (2) = 6 total spinbuttons
-    expect(priceInputs.length).toBe(6);
+    expect(priceInputs.length).toBe(3);
   });
 
   test("triggers mass apply logic when bulk values are entered and clicked", async () => {
@@ -131,8 +123,8 @@ describe("ProductVariations", () => {
             { tier_index: 1, name: "Màu sắc", options: ["Đỏ", "Xanh"] }
           ],
           variants: [
-            { tier_1_option: "Đỏ", tier_2_option: null, sku_code: "PROD-PARENT-DO", barcode: "", price: 0, stock: 0 },
-            { tier_1_option: "Xanh", tier_2_option: null, sku_code: "PROD-PARENT-XANH", barcode: "", price: 0, stock: 0 }
+            { tier_1_option: "Đỏ", tier_2_option: null, sku_code: "PROD-PARENT-DO", barcode: "", price: 0 },
+            { tier_1_option: "Xanh", tier_2_option: null, sku_code: "PROD-PARENT-XANH", barcode: "", price: 0 }
           ]
         }
       });
@@ -149,8 +141,6 @@ describe("ProductVariations", () => {
           setUploadingTier1={setUploadingTier1}
           bulkPrice="150000"
           setBulkPrice={setBulkPrice}
-          bulkStock="50"
-          setBulkStock={setBulkStock}
         />
       </HelperWrapper>
     );
@@ -161,9 +151,7 @@ describe("ProductVariations", () => {
     await waitFor(() => {
       const updatedVariants = formMethods.getValues("variants");
       expect(updatedVariants[0].price).toBe(150000);
-      expect(updatedVariants[0].stock).toBe(50);
       expect(updatedVariants[1].price).toBe(150000);
-      expect(updatedVariants[1].stock).toBe(50);
     });
   });
 
@@ -180,7 +168,7 @@ describe("ProductVariations", () => {
         { tier_index: 1, name: "Màu sắc", options: ["Đỏ"] }
       ],
       variants: [
-        { tier_1_option: "Đỏ", tier_2_option: null, sku_code: "PROD-PARENT-DO", barcode: "", price: 100, stock: 5 }
+        { tier_1_option: "Đỏ", tier_2_option: null, sku_code: "PROD-PARENT-DO", barcode: "", price: 100 }
       ]
     };
 
@@ -193,8 +181,6 @@ describe("ProductVariations", () => {
           setUploadingTier1={setUploadingTier1}
           bulkPrice=""
           setBulkPrice={setBulkPrice}
-          bulkStock=""
-          setBulkStock={setBulkStock}
         />
       </Wrapper>
     );

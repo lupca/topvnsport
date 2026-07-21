@@ -26,11 +26,11 @@ def api_bundle() -> ApiBundle:
     wms_url = os.getenv("WMS_API_URL", os.getenv("E2E_WMS_API_URL", "http://localhost:18102"))
     pmi_url = os.getenv("PMI_API_URL", os.getenv("E2E_PMI_API_URL", "http://localhost:18100"))
 
-    pmi_headers = {"X-API-Key": "oms_wms_internal_api_key_secret_2026"}
+    internal_headers = {"X-API-Key": "oms_wms_internal_api_key_secret_2026"}
     bundle = ApiBundle(
-        oms=httpx.Client(base_url=oms_url, timeout=30.0),
-        wms=httpx.Client(base_url=wms_url, timeout=30.0),
-        pmi=httpx.Client(base_url=pmi_url, headers=pmi_headers, timeout=30.0),
+        oms=httpx.Client(base_url=oms_url, headers=internal_headers, timeout=30.0),
+        wms=httpx.Client(base_url=wms_url, headers=internal_headers, timeout=30.0),
+        pmi=httpx.Client(base_url=pmi_url, headers=internal_headers, timeout=30.0),
     )
     try:
         yield bundle

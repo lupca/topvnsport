@@ -20,8 +20,9 @@ PMI đóng vai trò như một hệ thống PIM (Product Information Management)
   - Liên kết tới 1 `Category` và 1 `AttributeFamily`.
 - `TierVariation`: Biến thể tầng (Tối đa 2 tầng giống Shopee: Tier 1 có thể là "Màu sắc", Tier 2 là "Kích cỡ").
 - `ProductVariant`: Một sản phẩm hữu hình cụ thể.
-  - Chứa `sku_code` (Mã định danh duy nhất toàn hệ thống dùng làm khóa móc nối với OMS/WMS), `price`, `stock` (Đang trùng lặp chức năng với WMS).
+  - Chứa `sku_code` (Mã định danh duy nhất toàn hệ thống dùng làm khóa móc nối với OMS/WMS), `price`, `barcode`, `default_cost_price`, `default_tax_rate`.
   - Có các `tier_1_option` và `tier_2_option` để hiển thị trên UI.
+  - **Lưu ý:** Stock/Inventory được quản lý hoàn toàn bởi WMS, không lưu trong PMI.
 
 ### Media (Quản lý File)
 - `ProductMedia`: Lưu trữ đường link ảnh (`image_url`), cờ `is_cover` để đánh dấu ảnh bìa. Liên kết với `Product` hoặc một `ProductVariant` cụ thể (Ví dụ: Ảnh riêng cho vợt màu Xanh).

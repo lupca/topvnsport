@@ -23,7 +23,6 @@ class ProductVariantBase(BaseModel):
     sku_code: Optional[str] = Field(None, max_length=100)
     price: Decimal = Field(..., ge=0)
     barcode: Optional[str] = Field(None, max_length=255)
-    stock: int = Field(..., ge=0)
     default_cost_price: Optional[Decimal] = Field(None, ge=0, description="Giá vốn tham chiếu (VND)")
     default_tax_rate: Optional[Decimal] = Field(None, ge=0, le=100, description="Thuế suất mặc định (%)")
 

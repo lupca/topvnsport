@@ -43,12 +43,17 @@ export default function ProductCard({ product, onQuickView, onAddToCart }: Produ
     >
       {/* Product Badges */}
       <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
-        {product.badge && (
+        {product.stock <= 0 && (
+          <span className="text-[9px] font-extrabold uppercase px-2.5 py-1 rounded-sm shadow-xs bg-gray-600 text-white">
+            Hết hàng
+          </span>
+        )}
+        {product.badge && product.stock > 0 && (
           <span className={`text-[9px] font-extrabold uppercase px-2.5 py-1 rounded-sm shadow-xs ${badgeStyles[product.badge] || 'bg-gray-500 text-white'}`}>
             {product.badge}
           </span>
         )}
-        {discountPercent > 0 && (
+        {discountPercent > 0 && product.stock > 0 && (
           <span className="text-[10px] font-extrabold bg-brand-accent text-white px-2 py-0.5 rounded-sm">
             -{discountPercent}%
           </span>
@@ -73,9 +78,14 @@ export default function ProductCard({ product, onQuickView, onAddToCart }: Produ
             <Eye className="w-5 h-5" />
           </button>
           <button
-            onClick={(e) => onAddToCart(product, e)}
-            className="p-2 bg-white text-gray-800 rounded-full hover:bg-brand-primary hover:text-white shadow-md hover:scale-110 transition duration-200"
-            title="Thêm nhanh vào giỏ"
+            onClick={(e) => product.stock > 0 && onAddToCart(product, e)}
+            disabled={product.stock <= 0}
+            className={`p-2 rounded-full shadow-md transition duration-200 ${
+              product.stock <= 0
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-white text-gray-800 hover:bg-brand-primary hover:text-white hover:scale-110'
+            }`}
+            title={product.stock <= 0 ? 'Sản phẩm hết hàng' : 'Thêm nhanh vào giỏ'}
           >
             <ShoppingCart className="w-5 h-5" />
           </button>

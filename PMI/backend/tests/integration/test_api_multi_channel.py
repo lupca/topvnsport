@@ -166,7 +166,6 @@ def test_product_creation_and_export(client: TestClient, db_session: Session):
                 "tier_2_option": None,
                 "sku_code": "TEN-P01-STD",
                 "price": 2500000.0,
-                "stock": 10,
                 "barcode": "893000123456"
             }
         ],
@@ -256,7 +255,6 @@ def test_detailed_export_with_filtering_and_logistics(client: TestClient, db_ses
                 "tier_2_option": None,
                 "sku_code": "ASTROX-88D-PLAY-STD",
                 "price": 1250000.0,
-                "stock": 15,
                 "barcode": "893123456001"
             }
         ],
@@ -301,7 +299,6 @@ def test_detailed_export_with_filtering_and_logistics(client: TestClient, db_ses
                 "tier_2_option": None,
                 "sku_code": "YONEX-65Z3-WHITE-41",
                 "price": 2850000.0,
-                "stock": 8,
                 "barcode": "893123456002"
             }
         ],
@@ -394,7 +391,6 @@ def test_update_product_preserves_channel_ids(client: TestClient, db_session: Se
                 "tier_2_option": None,
                 "sku_code": "ASTROX-99-STD",
                 "price": 3200000.0,
-                "stock": 5,
                 "barcode": "893123999"
             }
         ],
@@ -440,7 +436,6 @@ def test_update_product_preserves_channel_ids(client: TestClient, db_session: Se
                 "tier_2_option": None,
                 "sku_code": "ASTROX-99-STD",
                 "price": 3250000.0,
-                "stock": 4,
                 "barcode": "893123999"
             }
         ],
@@ -496,8 +491,7 @@ def test_delete_channel_with_active_listings_blocks(client: TestClient, db_sessi
         "variants": [
             {
                 "sku_code": "SKU-DEL-01",
-                "price": 100000.0,
-                "stock": 5
+                "price": 100000.0
             }
         ],
         "channel_listings": [
@@ -533,8 +527,7 @@ def test_export_fallback_empty_category(client: TestClient, db_session: Session)
         "variants": [
             {
                 "sku_code": "NOMAP-SKU-01",
-                "price": 1500000.0,
-                "stock": 12
+                "price": 1500000.0
             }
         ],
         "channel_listings": [

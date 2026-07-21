@@ -64,6 +64,10 @@ def test_cost_tax_sync_flow(api_clients, page):
     confirm_btn.click()
     
     # 5. Xác nhận dữ liệu hiển thị trên bảng
+    search_input = page.get_by_placeholder("Tìm kiếm...")
+    expect(search_input).to_be_visible(timeout=10000)
+    search_input.fill(sku_code)
+    
     # Đợi SKU xuất hiện trên UI
     row = page.get_by_role("row").filter(has_text=sku_code)
     expect(row).to_be_visible(timeout=20000)

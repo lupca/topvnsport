@@ -50,8 +50,8 @@ describe("useFormCompletion", () => {
       })
     );
 
-    // 4 checks pass out of 10 checks: 40%
-    expect(result.current).toBe(40);
+    // 4 checks pass out of 9 checks: 44%
+    expect(result.current).toBe(44);
   });
 
   test("returns 100 for completely filled form", () => {
@@ -64,8 +64,8 @@ describe("useFormCompletion", () => {
         description: "Mô tả sản phẩm áo thun nam thể thao cao cấp.",
         weight: 200,
         variants: [
-          { price: 150000, stock: 10 },
-          { price: 160000, stock: 12 },
+          { price: 150000, sku_code: "TS-01-A" },
+          { price: 160000, sku_code: "TS-01-B" },
         ],
       };
       return mockValues[field];

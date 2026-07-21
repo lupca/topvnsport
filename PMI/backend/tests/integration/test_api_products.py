@@ -49,14 +49,12 @@ def _product_payload(category_id: int, family_id: int, attribute_id: int, parent
                 "tier_2_option": None,
                 "sku_code": f"{parent_code}-DO",
                 "price": 149000,
-                "stock": 12,
             },
             {
                 "tier_1_option": "Xanh",
                 "tier_2_option": None,
                 "sku_code": f"{parent_code}-XANH",
                 "price": 159000,
-                "stock": 8,
             },
         ],
         "media": [
@@ -137,7 +135,6 @@ def test_update_product_replaces_variants(client):
                 "tier_2_option": None,
                 "sku_code": "UPD-001-BASE",
                 "price": 199000,
-                "stock": 5,
             }
         ],
         "media": [],
@@ -224,28 +221,24 @@ def test_create_product_without_sku_code_auto_generates(client):
                 "tier_2_option": "3U",
                 "sku_code": None,  # test auto-generation
                 "price": 1200000,
-                "stock": 10,
             },
             {
                 "tier_1_option": "Do",
                 "tier_2_option": "4U",
                 "sku_code": "",  # test empty string handling
                 "price": 1250000,
-                "stock": 15,
             },
             {
                 "tier_1_option": "Xanh Lam",
                 "tier_2_option": "3U",
                 "sku_code": None,
                 "price": 1200000,
-                "stock": 8,
             },
             {
                 "tier_1_option": "Xanh Lam",
                 "tier_2_option": "4U",
                 "sku_code": None,
                 "price": 1250000,
-                "stock": 12,
             }
         ],
         "media": [],
@@ -292,7 +285,6 @@ def test_create_product_no_variations_auto_generates_default_sku(client):
                 "tier_2_option": None,
                 "sku_code": None,
                 "price": 500000,
-                "stock": 50,
             }
         ],
         "media": [],

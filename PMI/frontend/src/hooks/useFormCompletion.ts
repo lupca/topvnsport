@@ -33,9 +33,8 @@ export function useFormCompletion({
       
       // Optional but recommended (40%)
       !!coverImage,                          // 10%
-      productImages.length > 0,              // 10%
       variants?.length > 0 && variants.every(v => Number(v.price) > 0), // 10%
-      variants?.length > 0 && variants.every(v => Number(v.stock) > 0), // 10%
+      variants?.length > 0 && variants.every(v => !!v.sku_code || !!v.barcode), // 10%
     ];
     
     const completed = checks.filter(Boolean).length;

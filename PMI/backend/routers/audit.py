@@ -19,10 +19,6 @@ ALLOWED_SERVICE_KEYS = set(os.environ["ALLOWED_SERVICE_KEYS"].split(","))
 
 router = APIRouter(prefix="/api", tags=["Audit Logs"])
 
-class SyncStockRequest(BaseModel):
-    product_id: int
-    stock: int
-
 class SecurityLogRequest(BaseModel):
     path: str
 
@@ -137,52 +133,8 @@ def get_audit_logs(
     }
 
 @router.post("/service/sync-stock")
-def sync_stock(
-    body: SyncStockRequest,
-    x_api_key: str = Header(..., alias="X-API-Key"),
-    x_correlation_id: Optional[str] = Header(None, alias="X-Correlation-ID"),
-    db: Session = Depends(get_db)
-):
-    # Check X-API-Key
-    if x_api_key not in ALLOWED_SERVICE_KEYS and x_api_key != INTERNAL_SERVICE_TOKEN:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid API Key"
-        )
-
-    # Sets thread local context variables
-    actor_username_var.set("stock_sync_service")
-    actor_type_var.set("SERVICE")
-    if x_correlation_id:
-        correlation_id_var.set(x_correlation_id)
-    else:
-        correlation_id_var.set("")
-
-    # Update variants
-    product = db.query(models.Product).filter(models.Product.id == body.product_id).first()
-    if not product:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Product not found"
-        )
-
-    old_stock = sum(v.stock for v in product.variants)
-    for variant in product.variants:
-        variant.stock = body.stock
-    new_stock = sum(variant.stock for variant in product.variants)
-
-    # Log update event to outbox
-    record_audit_event(
-        db_session=db,
-        module="Product",
-        action_type="UPDATE",
-        entity_type="Product",
-        entity_id=str(product.id),
-        changes={"stock": [old_stock, new_stock]}
-    )
-
-    db.commit()
-    return {"message": "Stock synchronized successfully"}
+def sync_stock():
+    raise HTTPException(status_code=404, detail="Endpoint deprecated")
 
 @router.post("/audit-logs/security")
 def log_security_intrusion(

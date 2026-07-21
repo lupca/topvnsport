@@ -9,7 +9,6 @@ class TestProductVariantSchema:
         """Variant với đầy đủ cost và tax"""
         data = {
             "price": Decimal("100000"),
-            "stock": 10,
             "default_cost_price": Decimal("50000"),
             "default_tax_rate": Decimal("10.00")
         }
@@ -19,7 +18,7 @@ class TestProductVariantSchema:
     
     def test_variant_without_cost_tax_optional(self):
         """Cost và tax là optional"""
-        data = {"price": Decimal("100000"), "stock": 10}
+        data = {"price": Decimal("100000")}
         variant = ProductVariantBase(**data)
         assert variant.default_cost_price is None
         assert variant.default_tax_rate is None
@@ -31,7 +30,6 @@ class TestProductVariantSchema:
         with pytest.raises(ValidationError):
             ProductVariantBase(
                 price=Decimal("100000"),
-                stock=10,
                 default_cost_price=Decimal("-1000")
             )
     
@@ -41,12 +39,10 @@ class TestProductVariantSchema:
         with pytest.raises(ValidationError):
             ProductVariantBase(
                 price=Decimal("100000"),
-                stock=10,
                 default_tax_rate=Decimal("150")  # Invalid
             )
         with pytest.raises(ValidationError):
             ProductVariantBase(
                 price=Decimal("100000"),
-                stock=10,
                 default_tax_rate=Decimal("-5")  # Invalid
             )

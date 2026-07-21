@@ -80,7 +80,32 @@ def sync_products_from_pmi(db: Session = Depends(get_db)):
     """
     Đồng bộ tất cả sản phẩm từ PMI sang WMS BarcodeMapping.
     """
-    pmi_base_url = os.getenv("PMI_API_URL", "http://pim-api:8000")
+    # Resolve working PMI base URL (checking env vars first, falling back to local defaults)
+    candidate_urls = []
+    for env_var in ["PMI_API_URL", "PIM_API_URL", "PMI_URL", "E2E_PMI_API_URL"]:
+        val = os.getenv(env_var)
+        if val and val not in candidate_urls:
+            candidate_urls.append(val)
+    for default_url in ["http://pim-api:8000", "http://localhost:18100", "http://127.0.0.1:18100"]:
+        if default_url not in candidate_urls:
+            candidate_urls.append(default_url)
+
+    working_base_url = None
+    for url in candidate_urls:
+        try:
+            test_req = urllib.request.Request(f"{url}/public/products?page=1&limit=1", method="GET")
+            with urllib.request.urlopen(test_req, timeout=2) as resp:
+                if resp.status in (200, 201):
+                    working_base_url = url
+                    break
+        except Exception:
+            continue
+
+    if not working_base_url:
+        pmi_base_url = os.getenv("PMI_API_URL", os.getenv("PIM_API_URL", os.getenv("PMI_URL", os.getenv("E2E_PMI_API_URL", "http://localhost:18100"))))
+    else:
+        pmi_base_url = working_base_url
+
     synced_count = 0
     created_count = 0
     updated_count = 0
@@ -146,8 +171,7 @@ def sync_products_from_pmi(db: Session = Depends(get_db)):
                 existing = existing_mappings.get(sku)
                 
                 if not existing:
-                    colliding_sku = existing_barcodes.get(barcode)
-                    if colliding_sku and colliding_sku != sku:
+                    while (barcode in existing_barcodes and existing_barcodes[barcode] != sku) or db.query(models.BarcodeMapping).filter(models.BarcodeMapping.barcode == barcode, models.BarcodeMapping.sku_code != sku).first():
                         barcode = f"{barcode}-{sku}"
                         logger.warning(f"Barcode collision detected, using: {barcode}")
                     
@@ -173,6 +197,11 @@ def sync_products_from_pmi(db: Session = Depends(get_db)):
                     if pmi_barcode and pmi_barcode.strip():
                         old_barcode = existing.barcode
                         new_barcode = pmi_barcode.strip()
+                        if new_barcode != old_barcode:
+                            colliding_sku = existing_barcodes.get(new_barcode)
+                            if colliding_sku and colliding_sku != sku:
+                                new_barcode = f"{new_barcode}-{sku}"
+                                logger.warning(f"Barcode collision detected on update, using: {new_barcode}")
                         existing.barcode = new_barcode
                         existing.barcode_type = "EAN-13"
                         if old_barcode in existing_barcodes:

@@ -71,8 +71,7 @@ export function useProductLoad({
       tier_2_option: v.tier_2_option,
       sku_code: duplicateProductId ? "" : v.sku_code,
       price: v.price,
-      barcode: v.barcode || "",
-      stock: v.stock
+      barcode: v.barcode || ""
     }));
 
     // Extract existing SKUs as keys to mark as manually edited

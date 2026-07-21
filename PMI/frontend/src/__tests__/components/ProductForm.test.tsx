@@ -117,7 +117,7 @@ describe("ProductForm", () => {
     });
   });
 
-  test("mass applies price and stock to all variants", async () => {
+  test("mass applies price to all variants", async () => {
     render(<ProductForm onSaveSuccess={onSaveSuccess} />);
 
     await waitFor(() => {
@@ -141,18 +141,14 @@ describe("ProductForm", () => {
     });
 
     const bulkPriceInput = screen.getByPlaceholderText("Giá");
-    const bulkStockInput = screen.getByPlaceholderText("Kho hàng");
     const applyBulkButton = screen.getByRole("button", { name: "Áp dụng cho tất cả" });
 
     await userEvent.type(bulkPriceInput, "180000");
-    await userEvent.type(bulkStockInput, "45");
     await userEvent.click(applyBulkButton);
 
     const prices = screen.getAllByDisplayValue("180000");
-    const stocks = screen.getAllByDisplayValue("45");
 
     expect(prices.length).toBe(3);
-    expect(stocks.length).toBe(3);
   });
 
   test("form submit payload is valid", async () => {
@@ -209,7 +205,7 @@ describe("ProductForm", () => {
         { tier_index: 1, name: "Màu sắc", options: ["Đỏ"] }
       ],
       variants: [
-        { id: 100, tier_1_option: "Đỏ", tier_2_option: null, sku_code: "TS-PARENT-01-DO", price: 150000, barcode: "BARCODE123", stock: 15 }
+        { id: 100, tier_1_option: "Đỏ", tier_2_option: null, sku_code: "TS-PARENT-01-DO", price: 150000, barcode: "BARCODE123" }
       ],
       channel_listings: [
         { channel_code: "shopee_vn", status: "Draft", title_override: "", description_override: "", attribute_values: [], variant_overrides: [] }
@@ -293,7 +289,7 @@ describe("ProductForm", () => {
         { tier_index: 1, name: "Màu sắc", options: ["Đỏ"] }
       ],
       variants: [
-        { id: 100, tier_1_option: "Đỏ", tier_2_option: null, sku_code: "TS-PARENT-01-DO", price: 150000, barcode: "BARCODE123", stock: 15 }
+        { id: 100, tier_1_option: "Đỏ", tier_2_option: null, sku_code: "TS-PARENT-01-DO", price: 150000, barcode: "BARCODE123" }
       ],
       channel_listings: [
         { channel_code: "shopee_vn", status: "Draft", title_override: "", description_override: "", attribute_values: [], variant_overrides: [] }

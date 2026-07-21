@@ -23,6 +23,7 @@ interface ProductPurchaseSectionProps {
   stringingTierIndex?: number;
   isDynamicStringingActive: boolean;
   activeStringValue: string;
+  isOutOfStock: boolean;
   onSetSelectedTier1: (value: string) => void;
   onSetSelectedTier2: (value: string) => void;
   onSetSelectedWeight: (value: string) => void;
@@ -31,6 +32,7 @@ interface ProductPurchaseSectionProps {
   onSetSelectedString: (value: StringOption | null) => void;
   onSetTension: (value: number) => void;
   onAddToCart: () => void;
+  getVariantStock: (tier1: string, tier2: string) => number;
 }
 
 export default function ProductPurchaseSection({
@@ -52,6 +54,7 @@ export default function ProductPurchaseSection({
   stringingTierIndex,
   isDynamicStringingActive,
   activeStringValue,
+  isOutOfStock,
   onSetSelectedTier1,
   onSetSelectedTier2,
   onSetSelectedWeight,
@@ -59,7 +62,8 @@ export default function ProductPurchaseSection({
   onSetWithStringing,
   onSetSelectedString,
   onSetTension,
-  onAddToCart
+  onAddToCart,
+  getVariantStock
 }: ProductPurchaseSectionProps) {
   const navigate = useNavigate();
 
@@ -132,24 +136,40 @@ export default function ProductPurchaseSection({
               .map((tier) => {
                 const selectedValue = tier.tier_index === 1 ? selectedTier1 : selectedTier2;
                 const setValue = tier.tier_index === 1 ? onSetSelectedTier1 : onSetSelectedTier2;
+                const otherTierValue = tier.tier_index === 1 ? selectedTier2 : selectedTier1;
 
                 return (
                   <div key={tier.tier_index}>
                     <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">{tier.name}</label>
                     <div className="flex flex-wrap gap-2">
-                      {tier.options.map((option) => (
-                        <button
-                          key={option}
-                          onClick={() => setValue(option)}
-                          className={`text-xs px-3.5 py-2 rounded-lg border font-bold transition ${
-                            selectedValue === option
-                              ? 'bg-brand-primary border-brand-primary text-white shadow-md'
-                              : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
-                          }`}
-                        >
-                          {option}
-                        </button>
-                      ))}
+                      {tier.options.map((option) => {
+                        const stockForOption = tier.tier_index === 1
+                          ? getVariantStock(option, otherTierValue)
+                          : getVariantStock(otherTierValue, option);
+                        const optionOutOfStock = stockForOption <= 0;
+
+                        return (
+                          <button
+                            key={option}
+                            onClick={() => !optionOutOfStock && setValue(option)}
+                            disabled={optionOutOfStock}
+                            className={`relative text-xs px-3.5 py-2 rounded-lg border font-bold transition ${
+                              optionOutOfStock
+                                ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed opacity-60 line-through'
+                                : selectedValue === option
+                                  ? 'bg-brand-primary border-brand-primary text-white shadow-md'
+                                  : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                            }`}
+                          >
+                            {option}
+                            {optionOutOfStock && (
+                              <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[8px] px-1 py-0.5 rounded-sm font-bold">
+                                Hết
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 );
@@ -222,12 +242,26 @@ export default function ProductPurchaseSection({
           onSetTension={onSetTension}
         />
 
+        {isOutOfStock && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
+            <span className="text-red-600 font-semibold text-sm">
+              Sản phẩm này tạm hết hàng
+            </span>
+          </div>
+        )}
+
         <div className="flex flex-col sm:flex-row gap-3 pt-4">
           <button
             onClick={onAddToCart}
-            className="flex-1 btn-primary rounded-sm px-6 py-3 uppercase tracking-wider text-xs flex items-center justify-center gap-2 shadow-sm"
+            disabled={isOutOfStock}
+            className={`flex-1 rounded-sm px-6 py-3 uppercase tracking-wider text-xs flex items-center justify-center gap-2 shadow-sm transition ${
+              isOutOfStock
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'btn-primary'
+            }`}
           >
-            <ShoppingCart className="w-4.5 h-4.5" /> Thêm vào giỏ hàng
+            <ShoppingCart className="w-4.5 h-4.5" />
+            {isOutOfStock ? 'Hết hàng' : 'Thêm vào giỏ hàng'}
           </button>
 
           <button

@@ -48,8 +48,7 @@ def test_product_variant_before_insert_generator(db_session: Session):
     variant = models.ProductVariant(
         tier_1_option="Đỏ",
         tier_2_option="Size XL",
-        price=100000.0,
-        stock=5
+        price=100000.0
     )
     from models import receive_before_insert
     receive_before_insert(None, db_session.connection(), variant)
@@ -59,56 +58,18 @@ def test_product_variant_before_insert_generator(db_session: Session):
     variant2 = models.ProductVariant(
         tier_1_option="!!!",
         tier_2_option="???",
-        price=50000.0,
-        stock=10
+        price=50000.0
     )
     receive_before_insert(None, db_session.connection(), variant2)
     assert variant2.sku_code == "UNKNOWN-DEFAULT"
 
 
 def test_sync_stock_non_existent_product_flaw(client, db_session: Session):
-    """Verify that sync-stock raises 404 when product_id does not exist."""
-    # Clean products database first to set up deterministic state
-    db_session.query(models.ProductVariant).delete()
-    db_session.query(models.Product).delete()
-    db_session.commit()
-
+    """Verify that sync-stock raises 404 Endpoint deprecated."""
     headers = {"X-API-Key": INTERNAL_SERVICE_TOKEN}
-
-    # Case A: DB is empty. Querying a non-existent product should return 404.
     response = client.post("/api/service/sync-stock", json={"product_id": 9999, "stock": 42}, headers=headers)
     assert response.status_code == 404
-
-    # Verify no mock product was created
-    mock_prod = db_session.query(models.Product).first()
-    assert mock_prod is None
-
-    # Case B: A product exists in DB, but we query with a different non-existent product_id.
-    # The API should return 404 instead of updating the existing product.
-    existing_product = models.Product(
-        product_code="EXISTING-123",
-        name="Existing Product",
-        weight=10.0,
-        status="Published"
-    )
-    db_session.add(existing_product)
-    db_session.flush()
-    existing_variant = models.ProductVariant(
-        product_id=existing_product.id,
-        sku_code="SKU-123",
-        price=1000.0,
-        stock=10
-    )
-    db_session.add(existing_variant)
-    db_session.commit()
-
-    response2 = client.post("/api/service/sync-stock", json={"product_id": 8888, "stock": 99}, headers=headers)
-    assert response2.status_code == 404
-
-    # Verify the existing product's stock was NOT updated
-    db_session.commit()
-    db_session.refresh(existing_variant)
-    assert existing_variant.stock == 10
+    assert response.json()["detail"] == "Endpoint deprecated"
 
 
 def test_audit_logs_pagination_boundaries(client, db_session: Session):
@@ -250,7 +211,7 @@ def test_product_attributes_duplicate_integrity(client, db_session: Session):
         "status": "Draft",
         "family_id": fam.id,
         "variants": [
-            {"sku_code": "PROD-DUP-ATTR-VAR", "price": 1000.0, "stock": 5}
+            {"sku_code": "PROD-DUP-ATTR-VAR", "price": 1000.0}
         ],
         "attributes": [
             {"id": attr.id, "value": "Red"},

@@ -78,12 +78,13 @@ def get_dashboard_stats(db: Session = Depends(get_db), current_user: dict = Depe
 # Import Routers
 from routers.warehouses import router as warehouses_router
 from routers.barcode_mappings import router as barcode_mappings_router
-from routers.inventory import router as inventory_router
+from routers.inventory import router as inventory_router, public_router as public_inventory_router
 from routers.inbound import router as inbound_router
 from routers.fulfillment import router as fulfillment_router
 from routers.transactions import router as transactions_router
 
 # Include Routers
+app.include_router(public_inventory_router)
 app.include_router(warehouses_router, dependencies=[Depends(get_current_user)])
 app.include_router(barcode_mappings_router, dependencies=[Depends(get_current_user)])
 app.include_router(inventory_router, dependencies=[Depends(get_current_user)])
