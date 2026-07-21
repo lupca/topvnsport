@@ -85,4 +85,21 @@ describe('WMS Stock Integration & Product Mappers Tests (Requirement R2)', () =>
     // Aggregate stock should be 15 + 0 = 15
     expect(p.stock).toBe(15);
   });
+
+  test('fetchWmsStock chunks requests when querying more than 50 SKUs', async () => {
+    const fetchCalls: string[] = [];
+    global.fetch = vi.fn().mockImplementation((url: string) => {
+      fetchCalls.push(url);
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ stock: {} })
+      });
+    }) as any;
+
+    const largeSkuList = Array.from({ length: 120 }, (_, i) => `SKU-LARGE-${i}`);
+    const result = await sportApi.getWmsStock(largeSkuList);
+
+    expect(fetchCalls.length).toBe(3); // 50 + 50 + 20 = 120 SKUs
+    expect(result).toBeDefined();
+  });
 });

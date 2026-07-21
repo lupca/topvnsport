@@ -236,3 +236,26 @@ def test_wms_public_stock_edge_cases(api_clients: ApiClients, wms_api_url: str):
         empty_data = resp_empty.json()
         assert "stock" in empty_data
         assert "items" in empty_data
+
+
+def test_wms_public_stock_post_and_large_batch(api_clients: ApiClients, wms_api_url: str):
+    """
+    Verify POST /public/stock endpoint and large batch querying (100+ SKUs) to ensure no 414 URI Too Large error.
+    """
+    run_id = uuid4().hex[:8]
+    skus = [f"SKU-BATCH-{run_id}-{i}" for i in range(120)]
+
+    # Add stock for the first SKU
+    wh = WMSApi(api_clients.wms).create_warehouse(code=f"WH-BATCH-{run_id}", name=f"Batch WH {run_id}")
+    loc = WMSApi(api_clients.wms).create_location(warehouse_id=wh.id, location_code=f"LOC-BATCH-{run_id}", location_type="STORAGE")
+    api_clients.wms.post("/inventory/adjust", json={"sku_code": skus[0], "location_id": loc.id, "quantity": 77, "note": "Batch test"})
+
+    with httpx.Client(base_url=wms_api_url, timeout=10.0) as unauth_client:
+        # Test POST /public/stock with JSON body
+        resp_post = unauth_client.post("/public/stock", json={"sku_codes": skus})
+        assert resp_post.status_code == 200, f"Expected 200 OK for POST /public/stock, got {resp_post.status_code}"
+        data_post = resp_post.json()
+        assert data_post["stock"].get(skus[0]) == 77
+        assert data_post["stock"].get(skus[1]) == 0
+        assert len(data_post["items"]) == 120
+
