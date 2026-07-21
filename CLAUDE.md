@@ -14,8 +14,9 @@ Top VNSport is a multi-system e-commerce platform with centralized SSO authentic
 | **OMS** (Order Management System) | FastAPI + PostgreSQL | Next.js 14 + Tailwind | 18101 / 13101 |
 | **WMS** (Warehouse Management System) | FastAPI + PostgreSQL | Next.js 14 + Tailwind | 18102 / 13102 |
 | **web** (Customer-facing storefront) | Vite + React + Redux Toolkit | — | 3000 |
+| **MinIO** (PMI file storage) | — | — | 19005 (API) / 19006 (Console) |
 
-All backends use SQLAlchemy ORM with PostgreSQL 15. PMI is the most actively developed subsystem.
+All backends use SQLAlchemy ORM with PostgreSQL 15. PMI is the most actively developed subsystem. Stock management is handled exclusively by WMS (PMI has no stock fields).
 
 ## Common Commands
 
@@ -91,6 +92,13 @@ E2E environment overrides:
 - `E2E_OMS_API_URL` (default: `http://localhost:18101`)
 - `E2E_WMS_API_URL` (default: `http://localhost:18102`)
 
+### Linting
+```bash
+# Frontend (Next.js / Vite)
+docker compose -f PMI/docker-compose.yml exec frontend npm run lint   # PMI: next lint
+cd web && npm run lint                                                  # Storefront: tsc --noEmit
+```
+
 ### Database Migrations (PMI)
 ```bash
 cd PMI/backend
@@ -125,6 +133,9 @@ Test modes:
 - `BYPASS_TESTCONTAINERS=true` — use external DB instead of testcontainers
 - `USE_E2E_COMPOSE=true` — use the e2e docker-compose stack
 
+Default dev credentials (seeded on startup):
+- Admin: `admin` / `Admin@123`
+
 ## Architecture Details
 
 ### Gateway + Identity Service
@@ -152,6 +163,7 @@ Test modes:
 ### Inter-service Communication
 - OMS, WMS, and PMI share Docker networks (`pmi_default`, `wms_default`, `oms_default`) for cross-service API calls
 - Each system has its own Postgres database on a dedicated host port (PMI: 15433, OMS: 15434, WMS: 15435)
+- **WMS Public Stock API**: `GET /public/stock?sku_codes=SKU-A,SKU-B` — unauthenticated endpoint aggregating stock across all inventory locations; used by web storefront
 
 ### Frontend Conventions
 - All frontends: Next.js 14 + React 18 + Tailwind CSS + TypeScript
@@ -168,26 +180,6 @@ Key docs:
 - `docs/architecture_pmi.md`, `architecture_oms.md`, `architecture_wms.md` — per-system deep dives
 - `docs/e2e_testing.md` — E2E and integration testing guide
 - `docs/system_data_dictionary/` — data dictionary
-
-## Port Map
-
-| Service | Host Port |
-|---------|-----------|
-| Gateway (Nginx) | 8080 |
-| Identity API | 18110 |
-| Identity Frontend | 13110 |
-| PMI Postgres | 15433 |
-| OMS Postgres | 15434 |
-| WMS Postgres | 15435 |
-| PMI API | 18100 |
-| OMS API | 18101 |
-| WMS API | 18102 |
-| PMI Frontend | 13100 |
-| OMS Frontend | 13101 |
-| WMS Frontend | 13102 |
-| PMI MinIO API | 19005 |
-| PMI MinIO Console | 19006 |
-| Web (storefront) | 3000 |
 
 <!-- code-review-graph MCP tools -->
 ## MCP Tools: code-review-graph

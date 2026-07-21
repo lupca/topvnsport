@@ -47,7 +47,7 @@ android-studio-quail1-patch2-linux/
 web/assets/.aistudio/
 .agents
 ORIGINAL_REQUEST.md
-PROJECT.md
+
 
 # Symbolic links and test results
 .venv
