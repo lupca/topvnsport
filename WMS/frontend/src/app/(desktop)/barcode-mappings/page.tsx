@@ -37,6 +37,9 @@ export default function BarcodeMappingsPage() {
   const [isScanOpen, setIsScanOpen] = useState(false);
   const [syncing, setSyncing] = useState(false);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [limit, setLimit] = useState(APP_SETTINGS.pagination?.defaultLimit || 10);
+
   // Modal States
   const [isOpen, setIsOpen] = useState(false);
   const [editingMapping, setEditingMapping] = useState<BarcodeMapping | null>(null);
@@ -199,6 +202,17 @@ export default function BarcodeMappingsPage() {
     );
   });
 
+  const totalItems = filteredMappings.length;
+  const totalPages = Math.ceil(totalItems / limit) || 1;
+  const paginatedMappings = filteredMappings.slice(
+    (currentPage - 1) * limit,
+    currentPage * limit
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
   const columns = [
     {
       key: "product_info",
@@ -299,7 +313,7 @@ export default function BarcodeMappingsPage() {
       <DataTable<BarcodeMapping>
         title="Danh sách liên kết"
         description="Quản lý danh sách liên kết mã vạch với SKU sản phẩm"
-        data={filteredMappings}
+        data={paginatedMappings}
         columns={columns}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -308,6 +322,17 @@ export default function BarcodeMappingsPage() {
         onEditClick={(bm) => openModal(bm)}
         onDeleteClick={(bm) => handleDelete(bm.id)}
         loading={loading}
+        pagination={{
+          currentPage,
+          totalPages,
+          limit,
+          totalItems,
+          onPageChange: setCurrentPage,
+          onLimitChange: (newLimit) => {
+            setLimit(newLimit);
+            setCurrentPage(1);
+          }
+        }}
       />
 
       {/* --- Create/Edit Mapping Modal --- */}

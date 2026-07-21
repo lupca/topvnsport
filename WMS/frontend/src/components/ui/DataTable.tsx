@@ -34,6 +34,7 @@ interface DataTableProps<T> {
   onDeleteClick?: (item: T) => void;
   onCopyClick?: (item: T) => void;
   loading?: boolean;
+  showRowNumber?: boolean;
 }
 
 export default function DataTable<T extends { id: any }>({
@@ -50,7 +51,16 @@ export default function DataTable<T extends { id: any }>({
   onDeleteClick,
   onCopyClick,
   loading = false,
+  showRowNumber = true,
 }: DataTableProps<T>) {
+  const getRowNumber = (idx: number) => {
+    if (!pagination) return idx + 1;
+    return (pagination.currentPage - 1) * pagination.limit + idx + 1;
+  };
+
+  const defaultLimit = APP_SETTINGS.pagination?.defaultLimit || 10;
+  const paginationOptions = APP_SETTINGS.pagination?.options || [10, 20, 50];
+  const sortedOptions = [defaultLimit, ...paginationOptions.filter(x => x !== defaultLimit)].sort((a, b) => a - b);
   return (
     <div className="bg-surface border border-gray-200 rounded-xl shadow-sm overflow-hidden">
       {/* Table Header Controls */}
@@ -102,6 +112,9 @@ export default function DataTable<T extends { id: any }>({
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+              {showRowNumber !== false && (
+                <th className="px-4 py-4 font-semibold select-none w-12 text-center">STT</th>
+              )}
               {columns.map((col) => (
                 <th key={col.key} className="px-6 py-4 font-semibold select-none">
                   {col.label}
@@ -116,7 +129,7 @@ export default function DataTable<T extends { id: any }>({
             {data.length === 0 ? (
               <tr>
                 <td
-                  colSpan={columns.length + (onEditClick || onDeleteClick || onCopyClick ? 1 : 0)}
+                  colSpan={columns.length + (onEditClick || onDeleteClick || onCopyClick ? 1 : 0) + (showRowNumber !== false ? 1 : 0)}
                   className="px-6 py-12 text-center text-gray-500 font-medium"
                 >
                   Không tìm thấy kết quả nào.
@@ -128,6 +141,9 @@ export default function DataTable<T extends { id: any }>({
                   key={item.id || idx}
                   className="hover:bg-gray-50 text-gray-700 transition-colors duration-150"
                 >
+                  {showRowNumber !== false && (
+                    <td className="px-4 py-4 text-gray-500 text-center whitespace-nowrap">{getRowNumber(idx)}</td>
+                  )}
                   {columns.map((col) => (
                     <td key={col.key} className={`px-6 py-4 font-medium ${col.className !== undefined ? col.className : "whitespace-nowrap"}`}>
                       {col.render ? col.render(item) : (item as any)[col.key]}
@@ -188,7 +204,7 @@ export default function DataTable<T extends { id: any }>({
                 onChange={(e) => pagination.onLimitChange(Number(e.target.value))}
                 className="bg-white border border-gray-300 rounded px-2 py-1 text-gray-700 focus:outline-none focus:border-brand-primary transition-colors"
               >
-                {[APP_SETTINGS.pagination.defaultLimit, ...APP_SETTINGS.pagination.options.filter(x => x !== APP_SETTINGS.pagination.defaultLimit)].sort((a,b)=>a-b).map((val) => (
+                {sortedOptions.map((val) => (
                   <option key={val} value={val}>
                     {val}
                   </option>
@@ -199,6 +215,7 @@ export default function DataTable<T extends { id: any }>({
 
           <div className="flex items-center gap-2">
             <button
+              aria-label="Trang trước"
               disabled={pagination.currentPage === 1}
               onClick={() => pagination.onPageChange(pagination.currentPage - 1)}
               className="p-1.5 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-40 text-gray-600 transition-all"
@@ -210,6 +227,7 @@ export default function DataTable<T extends { id: any }>({
               <span className="text-gray-900 font-semibold">{pagination.totalPages}</span>
             </span>
             <button
+              aria-label="Trang sau"
               disabled={pagination.currentPage === pagination.totalPages}
               onClick={() => pagination.onPageChange(pagination.currentPage + 1)}
               className="p-1.5 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-40 text-gray-600 transition-all"

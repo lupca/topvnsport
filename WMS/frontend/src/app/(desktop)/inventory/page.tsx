@@ -51,6 +51,9 @@ export default function InventoryPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>("ALL");
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [limit, setLimit] = useState(APP_SETTINGS.pagination?.defaultLimit || 10);
+
   // Adjust Modal States
   const [isAdjustOpen, setIsAdjustOpen] = useState(false);
   const [adjustSku, setAdjustSku] = useState("");
@@ -210,6 +213,17 @@ export default function InventoryPage() {
     const matchesWh = loc?.warehouse_id.toString() === selectedWarehouseId;
     return matchesSearch && matchesWh;
   });
+
+  const totalItems = filteredInventory.length;
+  const totalPages = Math.ceil(totalItems / limit) || 1;
+  const paginatedInventory = filteredInventory.slice(
+    (currentPage - 1) * limit,
+    currentPage * limit
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedWarehouseId]);
 
   const inventoryTotals = filteredInventory.reduce(
     (totals, item) => {
@@ -430,9 +444,20 @@ export default function InventoryPage() {
       <DataTable<InventoryItem>
         title="Danh sách tồn kho"
         description="Quản lý chi tiết số lượng sản phẩm tồn kho trên từng ô kệ và vị trí"
-        data={filteredInventory}
+        data={paginatedInventory}
         columns={columns}
         loading={loading}
+        pagination={{
+          currentPage,
+          totalPages,
+          limit,
+          totalItems,
+          onPageChange: setCurrentPage,
+          onLimitChange: (newLimit) => {
+            setLimit(newLimit);
+            setCurrentPage(1);
+          }
+        }}
       />
 
       {/* --- Adjust Quantity Modal --- */}

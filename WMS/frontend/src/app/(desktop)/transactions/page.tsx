@@ -46,6 +46,9 @@ export default function TransactionsPage() {
   const [typeFilter, setTypeFilter] = useState("ALL");
   const [locationFilter, setLocationFilter] = useState("ALL");
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [limit, setLimit] = useState(APP_SETTINGS.pagination?.defaultLimit || 10);
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -93,6 +96,17 @@ export default function TransactionsPage() {
     const matchesLocation = locationFilter === "ALL" || tx.location_id.toString() === locationFilter;
     return matchesSku && matchesType && matchesLocation;
   });
+
+  const totalItems = filteredTransactions.length;
+  const totalPages = Math.ceil(totalItems / limit) || 1;
+  const paginatedTransactions = filteredTransactions.slice(
+    (currentPage - 1) * limit,
+    currentPage * limit
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [skuFilter, typeFilter, locationFilter]);
 
   const columns = [
     {
@@ -235,9 +249,20 @@ export default function TransactionsPage() {
       <DataTable<StockTransaction>
         title="Giao dịch kho hàng"
         description="Nhật ký chi tiết các giao dịch tăng giảm, dịch chuyển tồn kho thực tế"
-        data={filteredTransactions}
+        data={paginatedTransactions}
         columns={columns}
         loading={loading}
+        pagination={{
+          currentPage,
+          totalPages,
+          limit,
+          totalItems,
+          onPageChange: setCurrentPage,
+          onLimitChange: (newLimit) => {
+            setLimit(newLimit);
+            setCurrentPage(1);
+          }
+        }}
       />
     </div>
   );
