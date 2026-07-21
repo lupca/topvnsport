@@ -79,6 +79,9 @@ services:
           path: ./frontend/package.json
 
 networks:
+  default:
+    name: oms_default
+    external: true
   pmi_default:
     external: true
   wms_default:

@@ -84,9 +84,9 @@ volumes:
 
 networks:
   gateway_network:
-    driver: bridge
+    external: true
   identity_default:
-    driver: bridge
+    external: true
   pmi_default:
     external: true
   oms_default:
