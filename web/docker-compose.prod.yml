@@ -6,6 +6,7 @@ services:
       args:
         VITE_PMI_API_URL: http://api-pmi.topvnsport.com
         VITE_OMS_API_URL: http://api-oms.topvnsport.com
+        VITE_WMS_API_URL: http://api-wms.topvnsport.com
     container_name: web_frontend
     restart: always
     networks:
