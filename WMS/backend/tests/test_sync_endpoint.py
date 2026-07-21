@@ -57,6 +57,7 @@ class TestProductSyncEndpoint:
             assert data["status"] == "success"
             assert data["synced_count"] == 2
             assert data["created_count"] == 2
+            assert data["deleted_count"] == 0
     
     def test_sync_uses_real_barcode_from_pmi(self, client: TestClient, db_session, mock_pmi_response):
         """Sync dùng barcode thật từ PMI, không fake"""
@@ -123,6 +124,7 @@ class TestProductSyncEndpoint:
             data = res.json()
             assert data["updated_count"] == 1  # Existing one updated
             assert data["created_count"] == 1  # New one created
+            assert data["deleted_count"] == 0
             
             # Verify update
             db_session.refresh(existing)
@@ -143,18 +145,32 @@ class TestProductSyncEndpoint:
         db_session.commit()
         
         mock_response = {
-            "items": [{
-                "id": 1,
-                "name": "New Product",
-                "media": [],
-                "variants": [{
-                    "id": 201,
-                    "sku_code": "NEW-SKU",
-                    "barcode": "8934567890123",  # Same barcode!
-                    "default_cost_price": 50000,
-                    "default_tax_rate": 10
-                }]
-            }],
+            "items": [
+                {
+                    "id": 1,
+                    "name": "New Product",
+                    "media": [],
+                    "variants": [{
+                        "id": 201,
+                        "sku_code": "NEW-SKU",
+                        "barcode": "8934567890123",  # Same barcode as existing!
+                        "default_cost_price": 50000,
+                        "default_tax_rate": 10
+                    }]
+                },
+                {
+                    "id": 2,
+                    "name": "Different Product Updated",
+                    "media": [],
+                    "variants": [{
+                        "id": 202,
+                        "sku_code": "DIFFERENT-SKU",  # Keep existing SKU
+                        "barcode": "8934567890123",  # Same barcode
+                        "default_cost_price": 60000,
+                        "default_tax_rate": 10
+                    }]
+                }
+            ],
             "pages": 1
         }
         
@@ -165,7 +181,9 @@ class TestProductSyncEndpoint:
             mock_resp.__exit__ = MagicMock()
             mock_urlopen.return_value = mock_resp
             
-            client.post("/products/sync")
+            res = client.post("/products/sync")
+            data = res.json()
+            assert data["deleted_count"] == 0
             
             # New mapping should have modified barcode
             new_bm = db_session.query(BarcodeMapping).filter_by(sku_code="NEW-SKU").first()
@@ -196,3 +214,89 @@ class TestProductSyncEndpoint:
             data = res.json()
             assert data["synced_count"] == 2
             assert data["pages_processed"] == 2
+            assert data["deleted_count"] == 0
+
+    def test_sync_deletes_orphan_mappings(self, client: TestClient, db_session):
+        """Sync xóa mapping không còn trong PMI"""
+        from models import BarcodeMapping
+        
+        # Tạo mapping "cũ" sẽ bị xóa vì không có trong PMI response
+        orphan = BarcodeMapping(
+            barcode="ORPHAN-123",
+            barcode_type="SKU",
+            sku_code="ORPHAN-SKU",
+            product_name="Sản phẩm đã xóa ở PMI"
+        )
+        db_session.add(orphan)
+        db_session.commit()
+        orphan_id = orphan.id
+        
+        # PMI response không chứa ORPHAN-SKU
+        mock_response = {
+            "items": [{
+                "id": 1,
+                "name": "Active Product",
+                "media": [],
+                "variants": [{
+                    "id": 101,
+                    "sku_code": "ACTIVE-SKU",
+                    "barcode": None,
+                    "default_cost_price": 50000,
+                    "default_tax_rate": 10
+                }]
+            }],
+            "pages": 1
+        }
+        
+        with patch("urllib.request.urlopen") as mock_urlopen:
+            mock_resp = MagicMock()
+            mock_resp.read.return_value = json.dumps(mock_response).encode()
+            mock_resp.__enter__ = lambda s: s
+            mock_resp.__exit__ = MagicMock()
+            mock_urlopen.return_value = mock_resp
+            
+            res = client.post("/products/sync")
+            data = res.json()
+            
+            assert data["deleted_count"] == 1
+            assert data["created_count"] == 1
+            
+            # Verify orphan đã bị xóa
+            assert db_session.query(BarcodeMapping).filter_by(id=orphan_id).first() is None
+            # Verify active vẫn còn
+            assert db_session.query(BarcodeMapping).filter_by(sku_code="ACTIVE-SKU").first() is not None
+
+    def test_sync_prevents_duplicate_sku(self, client: TestClient, db_session):
+        """Sync không tạo duplicate SKU"""
+        from models import BarcodeMapping
+        
+        mock_response = {
+            "items": [{
+                "id": 1,
+                "name": "Product",
+                "media": [],
+                "variants": [{
+                    "id": 101,
+                    "sku_code": "SAME-SKU",
+                    "barcode": "111",
+                    "default_cost_price": 50000,
+                    "default_tax_rate": 10
+                }]
+            }],
+            "pages": 1
+        }
+        
+        with patch("urllib.request.urlopen") as mock_urlopen:
+            mock_resp = MagicMock()
+            mock_resp.read.return_value = json.dumps(mock_response).encode()
+            mock_resp.__enter__ = lambda s: s
+            mock_resp.__exit__ = MagicMock()
+            mock_urlopen.return_value = mock_resp
+            
+            # Sync 2 lần
+            client.post("/products/sync")
+            client.post("/products/sync")
+            
+            # Chỉ có 1 record
+            count = db_session.query(BarcodeMapping).filter_by(sku_code="SAME-SKU").count()
+            assert count == 1

@@ -115,6 +115,7 @@ def sync_products_from_pmi(db: Session = Depends(get_db)):
     # Prefetch all existing mappings to avoid N+1 query problem
     existing_mappings = {bm.sku_code: bm for bm in db.query(models.BarcodeMapping).all()}
     existing_barcodes = {bm.barcode: bm.sku_code for bm in db.query(models.BarcodeMapping).all()}
+    synced_skus = set()
     
     while True:
         pmi_url = f"{pmi_base_url}/public/products?page={page}&limit={limit}"
@@ -218,6 +219,7 @@ def sync_products_from_pmi(db: Session = Depends(get_db)):
                     existing.selling_price = selling_price
                     updated_count += 1
                 
+                synced_skus.add(sku)
                 synced_count += 1
         
         logger.info(f"Synced page {page}/{total_pages}, products so far: {synced_count}")
@@ -225,13 +227,22 @@ def sync_products_from_pmi(db: Session = Depends(get_db)):
             break
         page += 1
     
+    # Hard-delete records không còn trong PMI
+    deleted_count = 0
+    for existing_sku, bm in list(existing_mappings.items()):
+        if existing_sku not in synced_skus:
+            db.delete(bm)
+            deleted_count += 1
+            logger.info(f"Deleted orphan mapping: {existing_sku}")
+
     db.commit()
     
     return {
         "status": "success",
-        "message": f"Đồng bộ thành công {synced_count} sản phẩm",
+        "message": f"Đồng bộ thành công {synced_count} sản phẩm, xóa {deleted_count} sản phẩm",
         "synced_count": synced_count,
         "created_count": created_count,
         "updated_count": updated_count,
+        "deleted_count": deleted_count,
         "pages_processed": page
     }

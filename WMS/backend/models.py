@@ -63,7 +63,7 @@ class BarcodeMapping(Base):
     id = Column(Integer, primary_key=True, index=True)
     barcode = Column(String, unique=True, nullable=False, index=True)
     barcode_type = Column(String, nullable=True)  # e.g., EAN-13, UPC
-    sku_code = Column(String, nullable=False, index=True)
+    sku_code = Column(String, unique=True, nullable=False, index=True)
     product_name = Column(String, nullable=False)
     variant_name = Column(String, nullable=True)
     image_url = Column(String, nullable=True)
