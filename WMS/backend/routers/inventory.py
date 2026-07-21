@@ -10,16 +10,12 @@ from utils.helpers import log_stock_transaction
 router = APIRouter(tags=['Inventory'])
 public_router = APIRouter(tags=['Public Inventory'])
 
-@public_router.get("/public/stock", response_model=schemas.PublicStockResponse)
-def get_public_stock(
-    sku_codes: Optional[List[str]] = Query(None, description="SKU codes (single, comma-separated, or list)"),
-    db: Session = Depends(get_db)
-):
+def _calculate_public_stock(db: Session, raw_skus: Optional[List[str]]) -> dict:
     requested_skus: List[str] = []
-    if sku_codes:
-        for item in sku_codes:
+    if raw_skus:
+        for item in raw_skus:
             if item:
-                for part in item.split(","):
+                for part in str(item).split(","):
                     cleaned = part.strip()
                     if cleaned and cleaned not in requested_skus:
                         requested_skus.append(cleaned)
@@ -75,6 +71,21 @@ def get_public_stock(
         "stock": stock_result,
         "items": items_result
     }
+
+@public_router.get("/public/stock", response_model=schemas.PublicStockResponse)
+def get_public_stock(
+    sku_codes: Optional[List[str]] = Query(None, description="SKU codes (single, comma-separated, or list)"),
+    db: Session = Depends(get_db)
+):
+    return _calculate_public_stock(db, sku_codes)
+
+@public_router.post("/public/stock", response_model=schemas.PublicStockResponse)
+def post_public_stock(
+    payload: Optional[schemas.PublicStockRequest] = None,
+    db: Session = Depends(get_db)
+):
+    raw_skus = payload.sku_codes if payload and payload.sku_codes is not None else None
+    return _calculate_public_stock(db, raw_skus)
 
 @router.get("/inventory", response_model=List[schemas.InventoryResponse])
 def list_inventory(skip: int = 0, limit: Optional[int] = Query(None), db: Session = Depends(get_db)):

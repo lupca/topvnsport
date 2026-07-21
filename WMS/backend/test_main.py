@@ -656,5 +656,31 @@ def test_public_stock_unauthenticated(client, db):
         app.dependency_overrides[get_current_user] = lambda: {"user_id": "1", "username": "admin"}
 
 
+def test_public_stock_post_endpoint(client, db):
+    wh = models.Warehouse(code="WH-POST-1", name="POST WH 1", is_active=True)
+    db.add(wh)
+    db.commit()
+    loc = models.Location(warehouse_id=wh.id, location_code="LOC-POST-1", is_active=True)
+    db.add(loc)
+    db.commit()
+    inv = models.Inventory(
+        sku_code="SKU-POST-A",
+        product_name="Post Product A",
+        location_id=loc.id,
+        qty_on_hand=50,
+        qty_reserved=10
+    )
+    db.add(inv)
+    db.commit()
+
+    resp = client.post("/public/stock", json={"sku_codes": ["SKU-POST-A", "SKU-POST-MISSING"]})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["stock"]["SKU-POST-A"] == 40
+    assert data["stock"]["SKU-POST-MISSING"] == 0
+    assert len(data["items"]) == 2
+
+
+
 
 

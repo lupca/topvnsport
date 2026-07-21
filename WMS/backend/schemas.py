@@ -9,6 +9,9 @@ class SKUStockItem(BaseModel):
     qty_on_hand: int = 0
     qty_reserved: int = 0
 
+class PublicStockRequest(BaseModel):
+    sku_codes: Optional[List[str]] = None
+
 class PublicStockResponse(BaseModel):
     stock: Dict[str, int]
     items: List[SKUStockItem]

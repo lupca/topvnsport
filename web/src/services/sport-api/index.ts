@@ -11,34 +11,44 @@ async function fetchWmsStock(skuCodes: string[]): Promise<Record<string, number>
     return {};
   }
 
-  try {
-    const url = `${WMS_API_URL}/public/stock?sku_codes=${encodeURIComponent(uniqueSkus.join(','))}`;
-    const response = await fetch(url);
-    if (!response.ok) {
-      console.warn(`WMS public stock endpoint returned status ${response.status}`);
-      return {};
-    }
+  const CHUNK_SIZE = 50;
+  const chunks: string[][] = [];
+  for (let i = 0; i < uniqueSkus.length; i += CHUNK_SIZE) {
+    chunks.push(uniqueSkus.slice(i, i + CHUNK_SIZE));
+  }
 
-    const data = await response.json();
-    const result: Record<string, number> = {};
+  const result: Record<string, number> = {};
 
-    if (data && typeof data.stock === 'object' && data.stock !== null) {
-      for (const [sku, qty] of Object.entries(data.stock)) {
-        result[sku] = Number(qty) || 0;
+  const fetchChunk = async (chunk: string[]) => {
+    try {
+      const url = `${WMS_API_URL}/public/stock?sku_codes=${encodeURIComponent(chunk.join(','))}`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        console.warn(`WMS public stock endpoint returned status ${response.status}`);
+        return;
       }
-    } else if (data && Array.isArray(data.items)) {
-      for (const item of data.items) {
-        if (item && item.sku_code) {
-          result[item.sku_code] = Number(item.qty_available ?? item.qty_on_hand ?? 0);
+
+      const data = await response.json();
+
+      if (data && typeof data.stock === 'object' && data.stock !== null) {
+        for (const [sku, qty] of Object.entries(data.stock)) {
+          result[sku] = Number(qty) || 0;
+        }
+      } else if (data && Array.isArray(data.items)) {
+        for (const item of data.items) {
+          if (item && item.sku_code) {
+            result[item.sku_code] = Number(item.qty_available ?? item.qty_on_hand ?? 0);
+          }
         }
       }
+    } catch (error) {
+      console.warn('Failed to fetch stock from WMS chunk:', error);
     }
+  };
 
-    return result;
-  } catch (error) {
-    console.warn('Failed to fetch stock from WMS:', error);
-    return {};
-  }
+  await Promise.all(chunks.map((chunk) => fetchChunk(chunk)));
+
+  return result;
 }
 
 async function mergeWmsStock(products: Product[]): Promise<Product[]> {
