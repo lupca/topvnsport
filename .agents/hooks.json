@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "write_to_file|replace_file_content|multi_replace_file_content",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat >/dev/null || true; /home/lupca/.local/bin/code-review-graph update --skip-flows --repo \"/home/lupca/projects/topvnsport\" || true",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat >/dev/null || true; /home/lupca/.local/bin/code-review-graph status --repo \"/home/lupca/projects/topvnsport\" || echo 'Failed to get code-review-graph status'",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
