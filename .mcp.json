@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "code-review-graph": {
+      "command": "/home/lupca/.local/share/code-review-graph-venv/bin/python3",
+      "args": [
+        "-m",
+        "code_review_graph",
+        "serve"
+      ],
+      "cwd": "/home/lupca/projects/topvnsport",
+      "type": "stdio"
+    }
+  }
+}
