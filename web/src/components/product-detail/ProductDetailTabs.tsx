@@ -41,7 +41,7 @@ export default function ProductDetailTabs({ product, isRacket, activeTab, onTabC
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-8 space-y-4 text-sm text-gray-700 leading-relaxed">
               <p className="font-semibold text-gray-900 text-base">Cảm giác đánh thực tế & Phân tích chuyên sâu:</p>
-              <p>{product.description}</p>
+              <div className="whitespace-pre-line leading-relaxed">{product.description}</div>
               <div className="space-y-2 mt-4">
                 <p className="font-bold text-gray-900 text-xs uppercase text-brand-primary">Điểm nổi bật:</p>
                 <ul className="list-disc pl-5 space-y-1.5">
