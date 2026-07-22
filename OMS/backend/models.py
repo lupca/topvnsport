@@ -44,6 +44,7 @@ class Order(Base):
     note = Column(Text, nullable=True)
     created_by = Column(String, nullable=True)
     created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
     discount_amount = Column(Numeric(10, 2), default=0)
     promotion_code = Column(String(50), nullable=True)
 
