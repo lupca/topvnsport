@@ -490,4 +490,8 @@ def update_product_aggregate(db: Session, product_id: int, product_in: schemas.P
         raw_details=raw_details
     )
 
+    from services.promotion_service import recompute_variant_prices
+    recompute_variant_prices(db, variant_ids=[str(v.id) for v in db_product.variants if v.id])
+
     return db_product
+

@@ -261,6 +261,37 @@ def update_product(product_id: int, product_in: schemas.ProductUpdate, db: Sessi
                 raise HTTPException(status_code=400, detail="Unique constraint violation: duplicate identifier detected.")
         raise HTTPException(status_code=500, detail=f"Database transaction failed: {error_msg}")
 
+@router.put("/api/products/{product_id}/variants/{variant_id}")
+@router.put("/products/{product_id}/variants/{variant_id}")
+def update_product_variant_endpoint(product_id: int, variant_id: int, payload: dict, db: Session = Depends(get_db)):
+    variant = db.query(models.ProductVariant).filter(
+        models.ProductVariant.id == variant_id,
+        models.ProductVariant.product_id == product_id
+    ).first()
+    if not variant:
+        raise HTTPException(status_code=404, detail="Product variant not found")
+    
+    if "price" in payload:
+        variant.price = payload["price"]
+    if "stock" in payload:
+        variant.stock = payload["stock"]
+    if "sku_code" in payload:
+        variant.sku_code = payload["sku_code"]
+    
+    from services.promotion_service import recompute_variant_prices
+    recompute_variant_prices(db, variant_ids=[str(variant.id)])
+
+    db.commit()
+    db.refresh(variant)
+
+    return {
+        "id": variant.id,
+        "product_id": variant.product_id,
+        "sku_code": variant.sku_code,
+        "price": float(variant.price),
+    }
+
+
 @router.delete("/products/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
 @audit_action(module="Product", action_type="DELETE")
 def delete_product(product_id: int, db: Session = Depends(get_db)):

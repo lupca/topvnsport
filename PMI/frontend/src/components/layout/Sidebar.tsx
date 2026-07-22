@@ -18,7 +18,8 @@ import {
   HelpCircle,
   Users,
   Shield,
-  History
+  History,
+  Tag
 } from "lucide-react";
 import { popupService } from "@/components/ui/popupService";
 
@@ -58,6 +59,7 @@ export default function Sidebar({ userRole }: SidebarProps = {}) {
       items: [
         { name: "Dashboard", href: "/", icon: LayoutDashboard },
         { name: "Sản phẩm", href: "/catalog", icon: Package },
+        { name: "Khuyến mãi", href: "/promotions", icon: Tag },
       ],
     },
     {

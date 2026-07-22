@@ -14,8 +14,15 @@ interface ProductCardProps {
 
 export default function ProductCard({ product, onQuickView, onAddToCart }: ProductCardProps) {
   const navigate = useNavigate();
-  const displayPrice = product.salePrice || product.price;
-  const discountPercent = product.salePrice ? Math.round(((product.price - product.salePrice) / product.price) * 100) : 0;
+  const hasActivePromotion = Boolean(
+    product.hasActivePromotion ||
+    (product.computedPrice !== undefined && product.originalPrice !== undefined && product.computedPrice < product.originalPrice) ||
+    (product.salePrice !== undefined && product.salePrice < product.price)
+  );
+
+  const originalPrice = product.originalPrice ?? product.price;
+  const salePrice = product.computedPrice ?? product.salePrice ?? product.price;
+  const discountPercent = product.percentageDiscount ?? (hasActivePromotion && originalPrice > 0 ? Math.round(((originalPrice - salePrice) / originalPrice) * 100) : 0);
 
   // Visual helper for racket playstyles
   const characteristicStyles = {
@@ -53,8 +60,11 @@ export default function ProductCard({ product, onQuickView, onAddToCart }: Produ
             {product.badge}
           </span>
         )}
-        {discountPercent > 0 && product.stock > 0 && (
-          <span className="text-[10px] font-extrabold bg-brand-accent text-white px-2 py-0.5 rounded-sm">
+        {hasActivePromotion && discountPercent > 0 && product.stock > 0 && (
+          <span
+            className="text-[10px] font-extrabold bg-red-600 text-white px-2 py-0.5 rounded-sm shadow-xs"
+            data-testid="discount-badge"
+          >
             -{discountPercent}%
           </span>
         )}
@@ -107,19 +117,19 @@ export default function ProductCard({ product, onQuickView, onAddToCart }: Produ
           </h3>
 
           {/* Core Technical Indicator Tags (for Rackets / Paddles) */}
-          {product.category === 'Vợt' && (
+          {product.category === 'Vợt' && product.specs && (
             <div className="py-2 grid grid-cols-2 gap-x-2 gap-y-1 border-t border-b border-gray-50 my-2 text-[10px] text-gray-500 font-mono">
               <div className="flex items-center gap-1">
                 <span className="text-gray-400">Trọng lượng:</span>
-                <span className="font-semibold text-gray-700">{product.specs.weight.split(' ')[0]}</span>
+                <span className="font-semibold text-gray-700">{product.specs?.weight?.split(' ')[0] ?? 'N/A'}</span>
               </div>
               <div className="flex items-center gap-1">
                 <span className="text-gray-400">Điểm CB:</span>
-                <span className="font-semibold text-gray-700">{product.specs.balance}mm</span>
+                <span className="font-semibold text-gray-700">{product.specs?.balance ?? 0}mm</span>
               </div>
               <div className="flex items-center gap-1 col-span-2">
                 <span className="text-gray-400">Độ cứng:</span>
-                <span className="font-semibold text-gray-700 truncate max-w-[120px]">{product.specs.stiffness.split(' ')[0]}</span>
+                <span className="font-semibold text-gray-700 truncate max-w-[120px]">{product.specs?.stiffness?.split(' ')[0] ?? 'N/A'}</span>
               </div>
             </div>
           )}
@@ -134,8 +144,8 @@ export default function ProductCard({ product, onQuickView, onAddToCart }: Produ
           {/* Characteristics Badge */}
           {product.characteristics && (
             <div className="my-1">
-              <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${characteristicStyles[product.characteristics].bg}`}>
-                <span className={`w-1 h-1 rounded-full ${characteristicStyles[product.characteristics].dot}`}></span>
+              <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${characteristicStyles[product.characteristics]?.bg || 'bg-gray-100 text-gray-700'}`}>
+                <span className={`w-1 h-1 rounded-full ${characteristicStyles[product.characteristics]?.dot || 'bg-gray-500'}`}></span>
                 {product.characteristics}
               </span>
             </div>
@@ -145,12 +155,18 @@ export default function ProductCard({ product, onQuickView, onAddToCart }: Produ
         {/* Pricing Block */}
         <div className="mt-4 flex items-end justify-between pt-2 border-t border-gray-50">
           <div>
-            <span className="text-base font-extrabold text-brand-primary font-display">
-              {displayPrice.toLocaleString('vi-VN')}đ
-            </span>
-            {product.salePrice && (
-              <span className="text-xs text-gray-400 line-through block leading-none">
-                {product.price.toLocaleString('vi-VN')}đ
+            {hasActivePromotion ? (
+              <>
+                <span className="text-base font-bold text-red-600 font-display block leading-tight" data-testid="sale-price">
+                  {(salePrice ?? 0).toLocaleString('vi-VN')}đ
+                </span>
+                <span className="text-xs text-gray-400 line-through block leading-none" data-testid="original-price">
+                  {(originalPrice ?? 0).toLocaleString('vi-VN')}đ
+                </span>
+              </>
+            ) : (
+              <span className="text-base font-extrabold text-brand-primary font-display" data-testid="regular-price">
+                {(originalPrice ?? 0).toLocaleString('vi-VN')}đ
               </span>
             )}
           </div>

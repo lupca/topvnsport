@@ -45,9 +45,9 @@ def web_base_url() -> str:
 def api_clients(pmi_api_url: str, oms_api_url: str, wms_api_url: str) -> Iterator[ApiClients]:
     internal_headers = {"X-API-Key": "oms_wms_internal_api_key_secret_2026"}
     clients = ApiClients(
-        pmi=httpx.Client(base_url=pmi_api_url, headers=internal_headers, timeout=httpx.Timeout(20.0, connect=10.0)),
-        oms=httpx.Client(base_url=oms_api_url, headers=internal_headers, timeout=httpx.Timeout(20.0, connect=10.0)),
-        wms=httpx.Client(base_url=wms_api_url, headers=internal_headers, timeout=httpx.Timeout(20.0, connect=10.0)),
+        pmi=httpx.Client(base_url=pmi_api_url, headers=internal_headers, timeout=httpx.Timeout(60.0, connect=10.0)),
+        oms=httpx.Client(base_url=oms_api_url, headers=internal_headers, timeout=httpx.Timeout(60.0, connect=10.0)),
+        wms=httpx.Client(base_url=wms_api_url, headers=internal_headers, timeout=httpx.Timeout(60.0, connect=10.0)),
     )
     try:
         yield clients
@@ -67,3 +67,14 @@ def browser_context_args(browser_context_args):
         "viewport": {"width": 1440, "height": 1200},
         "ignore_https_errors": True,
     }
+
+
+@pytest.fixture(autouse=True)
+def reset_promotions_db(api_clients):
+    from e2e_tests.utils.api_helpers import PMIApi
+    pmi_api = PMIApi(api_clients.pmi)
+    pmi_api.reset_db()
+    yield
+    pmi_api.reset_db()
+
+

@@ -56,6 +56,10 @@ export interface Product {
   category: string;
   price: number;
   salePrice?: number;
+  computedPrice?: number;
+  originalPrice?: number;
+  percentageDiscount?: number;
+  hasActivePromotion?: boolean;
   specs: ProductSpecs;
   series?: string; // e.g., "ASTROX", "Axforce", "Exbolt"
   characteristics?: 'Tấn Công' | 'Phòng Thủ' | 'Toàn Diện' | 'Người Mới'; // For rackets/paddles
@@ -92,6 +96,10 @@ export interface ProductVariant {
   price: number;
   barcode?: string | null;
   stock: number;
+  computedPrice?: number;
+  originalPrice?: number;
+  percentageDiscount?: number;
+  hasActivePromotion?: boolean;
 }
 
 

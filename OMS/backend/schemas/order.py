@@ -56,6 +56,8 @@ class OrderBase(BaseModel):
     shipping_address: str
     note: Optional[str] = None
     created_by: Optional[str] = None
+    discount_amount: Decimal = Decimal("0")
+    promotion_code: Optional[str] = None
 
 class OrderCreate(OrderBase):
     items: List[OrderItemCreate]
@@ -87,6 +89,7 @@ class OrderCreateInput(BaseModel):
     created_by: Optional[str] = None
     items: List[OrderItemInput]
     verification_token: Optional[str] = None
+    promotion_code: Optional[str] = None
 
 
 class OrderUpdateInput(BaseModel):

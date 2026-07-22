@@ -185,6 +185,48 @@ class PMIApi:
     def get_product_by_sku(self, sku_code: str) -> dict[str, Any]:
         return self._request_json("GET", f"/api/products/by-sku/{sku_code}")
 
+    def reset_db(self) -> dict[str, Any]:
+        return self._request_json("POST", "/api/test/reset-db")
+
+    def create_promotion(self, payload: dict[str, Any]) -> dict[str, Any]:
+        return self._request_json("POST", "/api/promotions", payload)
+
+    def get_promotion(self, promotion_id: str) -> dict[str, Any]:
+        return self._request_json("GET", f"/api/promotions/{promotion_id}")
+
+    def list_promotions(self, params: Optional[dict[str, Any]] = None) -> dict[str, Any] | list[Any]:
+        return self._request_json("GET", "/api/promotions", params=params)
+
+    def update_promotion(self, promotion_id: str, payload: dict[str, Any]) -> dict[str, Any]:
+        return self._request_json("PUT", f"/api/promotions/{promotion_id}", payload)
+
+    def delete_promotion(self, promotion_id: str) -> dict[str, Any]:
+        return self._request_json("DELETE", f"/api/promotions/{promotion_id}")
+
+    def activate_promotion(self, promotion_id: str) -> dict[str, Any]:
+        return self._request_json("POST", f"/api/promotions/{promotion_id}/activate")
+
+    def pause_promotion(self, promotion_id: str) -> dict[str, Any]:
+        return self._request_json("POST", f"/api/promotions/{promotion_id}/pause")
+
+    def resume_promotion(self, promotion_id: str) -> dict[str, Any]:
+        return self._request_json("POST", f"/api/promotions/{promotion_id}/resume")
+
+    def end_promotion(self, promotion_id: str) -> dict[str, Any]:
+        return self._request_json("POST", f"/api/promotions/{promotion_id}/end")
+
+    def preview_promotion(self, payload: dict[str, Any]) -> dict[str, Any]:
+        return self._request_json("POST", "/api/promotions/preview", payload)
+
+    def parse_intent(self, prompt: str) -> dict[str, Any]:
+        return self._request_json("POST", "/api/promotions/parse-intent", {"prompt": prompt})
+
+    def get_computed_price(self, variant_id: str) -> dict[str, Any]:
+        return self._request_json("GET", f"/api/variants/{variant_id}/computed-price")
+
+    def get_bulk_computed_prices(self, variant_ids: list[str]) -> dict[str, Any]:
+        return self._request_json("POST", "/api/computed-prices/bulk", {"variant_ids": variant_ids})
+
     def _request_json(
         self,
         method: str,
@@ -207,6 +249,7 @@ class PMIApi:
     ) -> T:
         data = self._request_json(method, path, payload)
         return model.model_validate(data)
+
 
 
 @dataclass

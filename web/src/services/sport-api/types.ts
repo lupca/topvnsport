@@ -9,6 +9,11 @@ export type PmiVariant = {
   tier_2_option?: string | null;
   sku_code?: string;
   barcode?: string | null;
+  computed_price?: number;
+  original_price?: number;
+  percentage_discount?: number;
+  has_active_promotion?: boolean;
+  promotion_id?: string | number;
 };
 
 export type PmiMedia = {
@@ -51,6 +56,10 @@ export type PmiProduct = {
   variants?: PmiVariant[];
   media?: PmiMedia[];
   tier_variations?: PmiTierVariation[];
+  computed_price?: number;
+  original_price?: number;
+  percentage_discount?: number;
+  has_active_promotion?: boolean;
 };
 
 export type CreateOrderItem = {
@@ -66,7 +75,41 @@ export type CreateOrderPayload = {
   note?: string;
   items: CreateOrderItem[];
   verification_token?: string;
+  promotion_code?: string;
 };
+
+export type ValidatePromotionInput = {
+  code: string;
+  order_subtotal: number;
+};
+
+export type ValidatePromotionResult = {
+  valid: boolean;
+  promotion_name?: string;
+  discount_type?: 'PERCENTAGE' | 'FIXED_AMOUNT';
+  discount_value?: number;
+  discount_amount?: number;
+  max_discount?: number;
+  min_order_value?: number;
+  error_message?: string;
+};
+
+export type PromotionItem = {
+  id: number;
+  code: string;
+  name: string;
+  description?: string;
+  discount_type: 'PERCENTAGE' | 'FIXED_AMOUNT';
+  discount_value: number;
+  min_order_value?: number;
+  max_discount?: number;
+  usage_limit?: number;
+  used_count: number;
+  starts_at: string;
+  expires_at: string;
+  is_active: boolean;
+};
+
 
 export type SendOtpResponse = {
   success: boolean;

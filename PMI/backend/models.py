@@ -452,3 +452,96 @@ class AuditLog(Base):
     raw_details = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.datetime.now(datetime.timezone.utc), server_default=func.now(), nullable=False, index=True)
     processed_at = Column(DateTime(timezone=True), default=lambda: datetime.datetime.now(datetime.timezone.utc), server_default=func.now(), nullable=False)
+
+
+# ----------------------------------------------------------------------
+# Promotion System Models & Enums
+# ----------------------------------------------------------------------
+
+class DiscountType(str, enum.Enum):
+    PERCENTAGE = "PERCENTAGE"
+    FIXED_AMOUNT = "FIXED_AMOUNT"
+    FIXED_PRICE = "FIXED_PRICE"
+
+
+class PromotionStatus(str, enum.Enum):
+    DRAFT = "DRAFT"
+    SCHEDULED = "SCHEDULED"
+    ACTIVE = "ACTIVE"
+    PAUSED = "PAUSED"
+    ENDED = "ENDED"
+
+
+class ScopeType(str, enum.Enum):
+    ALL = "ALL"
+    CATEGORY = "CATEGORY"
+    PRODUCT = "PRODUCT"
+    VARIANT = "VARIANT"
+
+
+class Promotion(Base):
+    __tablename__ = "promotions"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    code = Column(String(100), unique=True, nullable=False, index=True)
+    name = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    discount_type = Column(Enum(DiscountType, name="discount_type_enum"), nullable=False)
+    discount_value = Column(Numeric(12, 2), nullable=False)
+    max_discount = Column(Numeric(12, 2), nullable=True)
+    priority = Column(Integer, default=0, nullable=False)
+    status = Column(Enum(PromotionStatus, name="promotion_status_enum"), default=PromotionStatus.DRAFT, nullable=False, index=True)
+    starts_at = Column(DateTime(timezone=True), nullable=True)
+    ends_at = Column(DateTime(timezone=True), nullable=True)
+    intent = Column(Text, nullable=True)
+    ai_reasoning = Column(Text, nullable=True)
+    created_by = Column(String(100), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.datetime.now(datetime.timezone.utc), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.datetime.now(datetime.timezone.utc), onupdate=lambda: datetime.datetime.now(datetime.timezone.utc), server_default=func.now(), nullable=False)
+
+    # Relationships
+    scopes = relationship("PromotionScope", back_populates="promotion", cascade="all, delete-orphan")
+    computed_prices = relationship("PromotionComputedPrice", back_populates="promotion", cascade="all, delete-orphan")
+    usage_logs = relationship("PromotionUsageLog", back_populates="promotion", cascade="all, delete-orphan")
+
+
+class PromotionScope(Base):
+    __tablename__ = "promotion_scope"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    promotion_id = Column(String(36), ForeignKey("promotions.id", ondelete="CASCADE"), nullable=False, index=True)
+    scope_type = Column(Enum(ScopeType, name="scope_type_enum"), nullable=False)
+    target_id = Column(String(100), nullable=True)  # Category ID, Product ID, or Variant ID; NULL when scope_type == ALL
+    is_exclusion = Column(Boolean, default=False, nullable=False)
+
+    # Relationships
+    promotion = relationship("Promotion", back_populates="scopes")
+
+
+class PromotionComputedPrice(Base):
+    __tablename__ = "promotion_computed_prices"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    variant_id = Column(String(100), nullable=False, index=True)
+    promotion_id = Column(String(36), ForeignKey("promotions.id", ondelete="CASCADE"), nullable=True, index=True)
+    original_price = Column(Numeric(12, 2), nullable=False)
+    computed_price = Column(Numeric(12, 2), nullable=False)
+    discount_amount = Column(Numeric(12, 2), nullable=False)
+    percentage_discount = Column(Numeric(5, 2), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.datetime.now(datetime.timezone.utc), onupdate=lambda: datetime.datetime.now(datetime.timezone.utc), server_default=func.now(), nullable=False)
+
+    # Relationships
+    promotion = relationship("Promotion", back_populates="computed_prices")
+
+
+class PromotionUsageLog(Base):
+    __tablename__ = "promotion_usage_log"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    promotion_id = Column(String(36), ForeignKey("promotions.id", ondelete="CASCADE"), nullable=False, index=True)
+    variant_id = Column(String(100), nullable=False, index=True)
+    applied_at = Column(DateTime(timezone=True), default=lambda: datetime.datetime.now(datetime.timezone.utc), server_default=func.now(), nullable=False)
+
+    # Relationships
+    promotion = relationship("Promotion", back_populates="usage_logs")
+

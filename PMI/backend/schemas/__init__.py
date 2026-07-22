@@ -70,6 +70,18 @@ from .product import (
     DashboardStatsResponse,
     ProductBySkuResponse,
 )
+from .promotion import (
+    DiscountType,
+    PromotionStatus,
+    ScopeType,
+    PromotionScopeSchema,
+    PromotionCreate,
+    PromotionUpdate,
+    PromotionResponse,
+    ComputedPriceResponse,
+    ParseIntentRequest,
+    ParseIntentResponse,
+)
 
 # Rebuild models with forward references
 ProductCreate.model_rebuild()
@@ -78,6 +90,8 @@ ProductChannelListingCreate.model_rebuild()
 ProductChannelListingResponse.model_rebuild()
 AttributeGroupResponse.model_rebuild()
 AttributeFamilyResponse.model_rebuild()
+PromotionCreate.model_rebuild()
+PromotionResponse.model_rebuild()
 
 __all__ = [
     # Category
@@ -147,4 +161,15 @@ __all__ = [
     "ActivityDataItem",
     "DashboardStatsResponse",
     "ProductBySkuResponse",
+    # Promotion
+    "DiscountType",
+    "PromotionStatus",
+    "ScopeType",
+    "PromotionScopeSchema",
+    "PromotionCreate",
+    "PromotionUpdate",
+    "PromotionResponse",
+    "ComputedPriceResponse",
+    "ParseIntentRequest",
+    "ParseIntentResponse",
 ]

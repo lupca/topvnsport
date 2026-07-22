@@ -3,7 +3,7 @@ import rawData from '../../data.json';
 import { delay, OMS_API_URL, PMI_API_URL, SIMULATED_LATENCY, WMS_API_URL } from './constants';
 import { findExistingCustomerIdByPhone, findManualChannel, findStorefrontChannel, getChannels } from './omsHelpers';
 import { extractItems, mapPmiProduct } from './productMappers';
-import { CreateOrderPayload, OmsChannel, OmsCustomer, OmsCustomerInput, PmiProduct, SendOtpResponse, VerifyOtpResponse } from './types';
+import { CreateOrderPayload, OmsChannel, OmsCustomer, OmsCustomerInput, PmiProduct, PromotionItem, SendOtpResponse, ValidatePromotionResult, VerifyOtpResponse } from './types';
 
 async function fetchWmsStock(skuCodes: string[]): Promise<Record<string, number>> {
   const uniqueSkus = Array.from(new Set(skuCodes.filter((sku) => Boolean(sku && sku.trim()))));
@@ -372,6 +372,48 @@ async function getOrCreateStorefrontChannelId(): Promise<number> {
   throw new Error(`Failed to resolve channel: ${errorText}`);
 }
 
+async function validatePromotion(code: string, orderSubtotal: number): Promise<ValidatePromotionResult> {
+  try {
+    const response = await fetch(`${OMS_API_URL}/public/promotions/validate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        code,
+        order_subtotal: orderSubtotal
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ detail: 'Không thể xác thực mã giảm giá' }));
+      return {
+        valid: false,
+        error_message: errorData.detail || 'Không thể xác thực mã giảm giá'
+      };
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.warn('Failed to validate promotion:', error);
+    return {
+      valid: false,
+      error_message: 'Không thể kết nối đến hệ thống xác thực mã giảm giá.'
+    };
+  }
+}
+
+async function getActivePromotions(): Promise<PromotionItem[]> {
+  try {
+    const response = await fetch(`${OMS_API_URL}/public/promotions/active`);
+    if (!response.ok) {
+      return [];
+    }
+    return await response.json();
+  } catch (error) {
+    console.warn('Failed to fetch active promotions:', error);
+    return [];
+  }
+}
+
 export const sportApi = {
   getProducts,
   getProductById,
@@ -387,6 +429,9 @@ export const sportApi = {
   verifyOtp,
   findOrCreateCustomer,
   getOrCreateManualChannelId,
-  getOrCreateStorefrontChannelId
+  getOrCreateStorefrontChannelId,
+  validatePromotion,
+  getActivePromotions
 };
+
 

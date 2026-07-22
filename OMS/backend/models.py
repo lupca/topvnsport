@@ -44,12 +44,44 @@ class Order(Base):
     note = Column(Text, nullable=True)
     created_by = Column(String, nullable=True)
     created_at = Column(DateTime, default=utcnow)
-    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
+    discount_amount = Column(Numeric(10, 2), default=0)
+    promotion_code = Column(String(50), nullable=True)
 
     customer = relationship("Customer", back_populates="orders")
     channel = relationship("Channel", back_populates="orders")
     items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
     fulfillment_orders = relationship("FulfillmentOrder", back_populates="order", cascade="all, delete-orphan")
+
+
+class Promotion(Base):
+    __tablename__ = "promotions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    code = Column(String(50), unique=True, nullable=False, index=True)
+    name = Column(String(200), nullable=False)
+    description = Column(Text, nullable=True)
+    discount_type = Column(String(20), nullable=False)  # "PERCENTAGE" | "FIXED_AMOUNT"
+    discount_value = Column(Numeric(10, 2), nullable=False)
+    min_order_value = Column(Numeric(10, 2), nullable=True)
+    max_discount = Column(Numeric(10, 2), nullable=True)
+    usage_limit = Column(Integer, nullable=True)
+    used_count = Column(Integer, default=0)
+    starts_at = Column(DateTime, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=utcnow)
+
+
+class PromotionUsage(Base):
+    __tablename__ = "promotion_usages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    promotion_id = Column(Integer, ForeignKey("promotions.id"), nullable=False)
+    order_id = Column(Integer, ForeignKey("orders.id"), nullable=False)
+    customer_phone = Column(String(20), nullable=False)
+    discount_amount = Column(Numeric(10, 2), nullable=False)
+    used_at = Column(DateTime, default=utcnow)
+
 
 
 class OrderItem(Base):

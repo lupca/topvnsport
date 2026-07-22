@@ -1,4 +1,4 @@
-import { Category, Product, ProductAttribute } from '../../types';
+import { Category, Product, ProductAttribute, ProductVariant } from '../../types';
 import { slugifyProductName } from '../../utils/productSlug';
 import { NO_IMAGE_URL } from './constants';
 import { ApiListResponse, PmiAttributeValue, PmiProduct, PmiVariant } from './types';
@@ -87,9 +87,43 @@ function mapSkuByVariant(variants: PmiVariant[]): Record<string, string> {
   }, {});
 }
 
+export function mapProductVariant(variant: PmiVariant, productId: number): ProductVariant {
+  const price = Number(variant.price || 0);
+  const originalPrice = variant.original_price !== undefined && variant.original_price !== null
+    ? Number(variant.original_price)
+    : price;
+  const computedPrice = variant.computed_price !== undefined && variant.computed_price !== null
+    ? Number(variant.computed_price)
+    : originalPrice;
+  const hasActivePromotion = Boolean(
+    variant.has_active_promotion ||
+    (variant.computed_price !== undefined && variant.original_price !== undefined && Number(variant.computed_price) < Number(variant.original_price))
+  );
+  const percentageDiscount = variant.percentage_discount !== undefined && variant.percentage_discount !== null
+    ? Number(variant.percentage_discount)
+    : (hasActivePromotion && originalPrice > 0 ? Math.round(((originalPrice - computedPrice) / originalPrice) * 100) : 0);
+
+  return {
+    id: variant.id,
+    product_id: productId,
+    tier_1_option: variant.tier_1_option || null,
+    tier_2_option: variant.tier_2_option || null,
+    sku_code: variant.sku_code || '',
+    price,
+    barcode: variant.barcode || null,
+    stock: Number(variant.stock || 0),
+    computedPrice,
+    originalPrice,
+    percentageDiscount,
+    hasActivePromotion
+  };
+}
+
 export function mapPmiProduct(pmiProduct: PmiProduct, categories: Category[]): Product {
   const variants = pmiProduct.variants || [];
-  const prices = variants.map((variant) => Number(variant.price || 0)).filter((price) => price > 0);
+  const mappedVariants = variants.map((v) => mapProductVariant(v, Number(pmiProduct.id)));
+
+  const prices = variants.map((variant) => Number(variant.price ?? 0)).filter((price) => !isNaN(price) && price >= 0);
   const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
   const stock = variants.reduce((sum, variant) => sum + Number(variant.stock || 0), 0);
   const colors = [...new Set(variants.map((variant) => variant.tier_1_option || 'Tiêu chuẩn'))] as string[];
@@ -132,18 +166,27 @@ export function mapPmiProduct(pmiProduct: PmiProduct, categories: Category[]): P
 
   const parsedBalance = Number(attrByCode.balance);
   const parsedMaxTension = Number(attrByCode.maxTension);
-  const resolvedPrice = minPrice > 0 ? minPrice : 100000;
+  const resolvedPrice = minPrice;
 
-  const mappedVariants = variants.map((variant) => ({
-    id: variant.id,
-    product_id: Number(pmiProduct.id),
-    tier_1_option: variant.tier_1_option || null,
-    tier_2_option: variant.tier_2_option || null,
-    sku_code: variant.sku_code || '',
-    price: Number(variant.price || 0),
-    barcode: variant.barcode || null,
-    stock: Number(variant.stock || 0)
-  }));
+  const hasActivePromotion = Boolean(
+    pmiProduct.has_active_promotion || mappedVariants.some((v) => v.hasActivePromotion)
+  );
+
+  const originalPrice = pmiProduct.original_price !== undefined && pmiProduct.original_price !== null
+    ? Number(pmiProduct.original_price)
+    : resolvedPrice;
+
+  const activeComputedPrices = mappedVariants
+    .filter((v) => v.hasActivePromotion && v.computedPrice !== undefined)
+    .map((v) => v.computedPrice as number);
+
+  const computedPrice = pmiProduct.computed_price !== undefined && pmiProduct.computed_price !== null
+    ? Number(pmiProduct.computed_price)
+    : (activeComputedPrices.length > 0 ? Math.min(...activeComputedPrices) : originalPrice);
+
+  const percentageDiscount = pmiProduct.percentage_discount !== undefined && pmiProduct.percentage_discount !== null
+    ? Number(pmiProduct.percentage_discount)
+    : (hasActivePromotion && originalPrice > 0 ? Math.round(((originalPrice - computedPrice) / originalPrice) * 100) : 0);
 
   return {
     id: String(pmiProduct.id),
@@ -155,7 +198,11 @@ export function mapPmiProduct(pmiProduct: PmiProduct, categories: Category[]): P
     media: mappedMedia,
     category,
     price: resolvedPrice,
-    salePrice: minPrice > 0 ? minPrice : undefined,
+    salePrice: hasActivePromotion ? computedPrice : (minPrice > 0 ? minPrice : undefined),
+    computedPrice: hasActivePromotion ? computedPrice : undefined,
+    originalPrice: hasActivePromotion ? originalPrice : undefined,
+    percentageDiscount: hasActivePromotion ? percentageDiscount : undefined,
+    hasActivePromotion,
     specs: {
       weight: attrByCode.weightClass || (pmiProduct.weight ? String(pmiProduct.weight) : 'Tiêu chuẩn'),
       stiffness: attrByCode.stiffness || 'Tiêu chuẩn',
@@ -174,3 +221,5 @@ export function mapPmiProduct(pmiProduct: PmiProduct, categories: Category[]): P
     variants: mappedVariants
   };
 }
+
+export const mapPmiProductToStorefront = mapPmiProduct;

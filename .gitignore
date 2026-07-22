@@ -56,3 +56,8 @@ PMI/frontend/test-results/
 PMI/frontend/test_output.txt
 # Added by code-review-graph
 .code-review-graph/
+
+# Bugfix pipeline scratch (agent handoff artifacts)
+.bugfix/
+# Stray empty file created by a bad redirect / container mount
+PMI/backend/postgres

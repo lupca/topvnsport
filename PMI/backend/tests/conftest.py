@@ -60,6 +60,9 @@ def postgres_container() -> Generator[PostgresContainer, None, None]:
 def app_module(postgres_container):
     os.environ["DATABASE_URL"] = postgres_container.get_connection_url()
     os.environ["TESTING"] = "true"
+    os.environ.setdefault("JWT_SECRET_KEY", "secretkey123456789012345678901234567890")
+    os.environ.setdefault("INTERNAL_SERVICE_TOKEN", "test_internal_service_token_12345")
+    os.environ.setdefault("ALLOWED_SERVICE_KEYS", "test_key_1,test_key_2")
 
     for mod_name in list(sys.modules.keys()):
         if (

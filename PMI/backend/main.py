@@ -13,12 +13,15 @@ from routers.attributes import router as attributes_router
 from routers.auth import router as auth_router
 from routers.audit import router as audit_router
 from routers.public import router as public_router
+from routers.promotions import router as promotions_router
 
 from utils.middleware import RequestContextMiddleware
 from contextlib import asynccontextmanager
 
 from services.audit_worker import AuditWorker
+from services.promotion_scheduler import PromotionScheduler
 import threading
+import os
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -27,11 +30,20 @@ async def lifespan(app: FastAPI):
     worker = AuditWorker(interval=0.5)
     worker_thread = threading.Thread(target=worker.start_loop, daemon=True)
     worker_thread.start()
+
+    scheduler_interval = float(os.getenv("PROMOTION_SCHEDULER_INTERVAL", "1.0"))
+    scheduler = PromotionScheduler(interval=scheduler_interval)
+    scheduler_thread = threading.Thread(target=scheduler.start_loop, daemon=True)
+    scheduler_thread.start()
+
     try:
         yield
     finally:
         worker.stop_loop()
         worker_thread.join()
+
+        scheduler.stop_loop()
+        scheduler_thread.join()
 
 app = FastAPI(title="PIM API Microservice", lifespan=lifespan)
 
@@ -97,6 +109,7 @@ app.include_router(upload_router, dependencies=[Depends(get_current_identity)])
 app.include_router(attributes_router, dependencies=[Depends(get_current_identity)])
 app.include_router(audit_router)
 app.include_router(public_router)
+app.include_router(promotions_router)
 
 import os
 if os.getenv("ENV") == "test" or os.getenv("TESTING") == "true":

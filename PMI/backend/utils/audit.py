@@ -154,7 +154,10 @@ def audit_action(module: str, action_type: str, read_only: bool = False):
                             if entity_id_val is None:
                                 for obj in session.identity_map.values():
                                     if obj.__class__.__name__.lower() == module.lower():
-                                        entity_id_val = getattr(obj, "id", None)
+                                        try:
+                                            entity_id_val = getattr(obj, "id", None)
+                                        except Exception:
+                                            pass
                                         break
 
                         entity_type = None
@@ -164,6 +167,8 @@ def audit_action(module: str, action_type: str, read_only: bool = False):
                             entity_type = "Category"
                         elif module.lower() == "channel":
                             entity_type = "Channel"
+                        elif module.lower() == "promotion":
+                            entity_type = "Promotion"
 
                         record_audit_event(
                             db_session=session,
@@ -196,6 +201,8 @@ def audit_action(module: str, action_type: str, read_only: bool = False):
                             entity_type = "Category"
                         elif module.lower() == "channel":
                             entity_type = "Channel"
+                        elif module.lower() == "promotion":
+                            entity_type = "Promotion"
 
                         record_audit_event(
                             db_session=db,
@@ -251,7 +258,10 @@ def audit_action(module: str, action_type: str, read_only: bool = False):
                             if entity_id_val is None:
                                 for obj in session.identity_map.values():
                                     if obj.__class__.__name__.lower() == module.lower():
-                                        entity_id_val = getattr(obj, "id", None)
+                                        try:
+                                            entity_id_val = getattr(obj, "id", None)
+                                        except Exception:
+                                            pass
                                         break
 
                         entity_type = None
@@ -261,6 +271,8 @@ def audit_action(module: str, action_type: str, read_only: bool = False):
                             entity_type = "Category"
                         elif module.lower() == "channel":
                             entity_type = "Channel"
+                        elif module.lower() == "promotion":
+                            entity_type = "Promotion"
 
                         record_audit_event(
                             db_session=session,
@@ -293,6 +305,8 @@ def audit_action(module: str, action_type: str, read_only: bool = False):
                             entity_type = "Category"
                         elif module.lower() == "channel":
                             entity_type = "Channel"
+                        elif module.lower() == "promotion":
+                            entity_type = "Promotion"
 
                         record_audit_event(
                             db_session=db,
