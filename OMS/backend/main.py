@@ -659,42 +659,7 @@ def create_order(payload: schemas.OrderCreateInput, db: Session = Depends(get_db
         )
         order_items.append(db_item)
         
-    # 4. Handle Promotion / Discount calculation
-    discount_amount = Decimal("0.00")
-    promotion_obj = None
-    if payload.promotion_code:
-        code_clean = payload.promotion_code.strip().upper()
-        promotion_obj = db.query(models.Promotion).filter(
-            models.Promotion.code == code_clean,
-            models.Promotion.is_active == True
-        ).first()
-        if not promotion_obj:
-            raise HTTPException(status_code=400, detail="Mã giảm giá không tồn tại hoặc đã bị vô hiệu hóa.")
-        
-        now = utcnow()
-        if promotion_obj.starts_at > now or promotion_obj.expires_at < now:
-            raise HTTPException(status_code=400, detail="Mã giảm giá đã hết hạn hoặc chưa đến thời gian áp dụng.")
-        
-        if promotion_obj.usage_limit is not None and promotion_obj.used_count >= promotion_obj.usage_limit:
-            raise HTTPException(status_code=400, detail="Mã giảm giá đã lượt sử dụng.")
-        
-        subtotal_sum = total_amount
-        if promotion_obj.min_order_value is not None and subtotal_sum < promotion_obj.min_order_value:
-            raise HTTPException(status_code=400, detail=f"Đơn hàng chưa đạt giá trị tối thiểu ({promotion_obj.min_order_value:,.0f}đ) để áp dụng mã này.")
-        
-        if promotion_obj.discount_type == "PERCENTAGE":
-            discount_amount = (subtotal_sum * promotion_obj.discount_value) / Decimal("100")
-            if promotion_obj.max_discount is not None and discount_amount > promotion_obj.max_discount:
-                discount_amount = promotion_obj.max_discount
-        else:
-            discount_amount = promotion_obj.discount_value
-        
-        if discount_amount > subtotal_sum:
-            discount_amount = subtotal_sum
-
-    final_total = (total_amount - discount_amount) + payload.shipping_fee
-    if final_total < Decimal("0.00"):
-        final_total = Decimal("0.00")
+    final_total = total_amount + payload.shipping_fee
     
     # 5. Create Order
     new_order = models.Order(
@@ -707,8 +672,6 @@ def create_order(payload: schemas.OrderCreateInput, db: Session = Depends(get_db
         shipping_address=payload.shipping_address,
         note=payload.note,
         created_by=payload.created_by,
-        discount_amount=discount_amount,
-        promotion_code=payload.promotion_code.strip().upper() if payload.promotion_code else None
     )
     db.add(new_order)
     db.flush()
@@ -717,16 +680,6 @@ def create_order(payload: schemas.OrderCreateInput, db: Session = Depends(get_db
         item.order_id = new_order.id
         db.add(item)
     
-    if promotion_obj:
-        promotion_obj.used_count += 1
-        usage = models.PromotionUsage(
-            promotion_id=promotion_obj.id,
-            order_id=new_order.id,
-            customer_phone=customer.phone,
-            discount_amount=discount_amount
-        )
-        db.add(usage)
-
     db.commit()
     db.refresh(new_order)
     return new_order
@@ -1288,119 +1241,3 @@ def update_sms_config(payload: schemas.SmsConfigUpdate, db: Session = Depends(ge
     
     masked_value = mask_token(config.config_value)
     return {"config_key": config.config_key, "config_value": masked_value}
-
-# --- PROMOTION ENDPOINTS ---
-
-@app.post("/promotions", response_model=schemas.PromotionOut, status_code=status.HTTP_201_CREATED)
-def create_promotion(payload: schemas.PromotionCreate, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    code_clean = payload.code.strip().upper()
-    existing = db.query(models.Promotion).filter(models.Promotion.code == code_clean).first()
-    if existing:
-        raise HTTPException(status_code=400, detail="Mã khuyến mãi đã tồn tại.")
-    
-    new_promo = models.Promotion(
-        code=code_clean,
-        name=payload.name,
-        description=payload.description,
-        discount_type=payload.discount_type,
-        discount_value=payload.discount_value,
-        min_order_value=payload.min_order_value,
-        max_discount=payload.max_discount,
-        usage_limit=payload.usage_limit,
-        starts_at=payload.starts_at,
-        expires_at=payload.expires_at,
-        is_active=payload.is_active
-    )
-    db.add(new_promo)
-    db.commit()
-    db.refresh(new_promo)
-    return new_promo
-
-@app.get("/promotions", response_model=List[schemas.PromotionOut])
-def list_promotions(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    return db.query(models.Promotion).order_by(models.Promotion.created_at.desc()).all()
-
-@app.get("/promotions/{promo_id}", response_model=schemas.PromotionOut)
-def get_promotion(promo_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    promo = db.query(models.Promotion).filter(models.Promotion.id == promo_id).first()
-    if not promo:
-        raise HTTPException(status_code=404, detail="Không tìm thấy khuyến mãi.")
-    return promo
-
-@app.put("/promotions/{promo_id}", response_model=schemas.PromotionOut)
-def update_promotion(promo_id: int, payload: schemas.PromotionUpdate, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    promo = db.query(models.Promotion).filter(models.Promotion.id == promo_id).first()
-    if not promo:
-        raise HTTPException(status_code=404, detail="Không tìm thấy khuyến mãi.")
-    
-    update_data = payload.model_dump(exclude_unset=True)
-    for field, value in update_data.items():
-        setattr(promo, field, value)
-    
-    db.commit()
-    db.refresh(promo)
-    return promo
-
-@app.delete("/promotions/{promo_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_promotion(promo_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    promo = db.query(models.Promotion).filter(models.Promotion.id == promo_id).first()
-    if not promo:
-        raise HTTPException(status_code=404, detail="Không tìm thấy khuyến mãi.")
-    db.delete(promo)
-    db.commit()
-    return None
-
-@app.get("/public/promotions/active", response_model=List[schemas.PromotionOut])
-def list_active_promotions(db: Session = Depends(get_db)):
-    now = utcnow()
-    return db.query(models.Promotion).filter(
-        models.Promotion.is_active == True,
-        models.Promotion.starts_at <= now,
-        models.Promotion.expires_at >= now
-    ).order_by(models.Promotion.created_at.desc()).all()
-
-@app.post("/public/promotions/validate", response_model=schemas.ValidatePromotionResult)
-def validate_promotion(payload: schemas.ValidatePromotionInput, db: Session = Depends(get_db)):
-    code_clean = payload.code.strip().upper()
-    promo = db.query(models.Promotion).filter(
-        models.Promotion.code == code_clean,
-        models.Promotion.is_active == True
-    ).first()
-
-    if not promo:
-        return schemas.ValidatePromotionResult(valid=False, error_message="Mã giảm giá không tồn tại hoặc không còn hoạt động.")
-
-    now = utcnow()
-    if promo.starts_at > now:
-        return schemas.ValidatePromotionResult(valid=False, error_message="Chương trình khuyến mãi chưa bắt đầu.")
-    if promo.expires_at < now:
-        return schemas.ValidatePromotionResult(valid=False, error_message="Mã giảm giá đã hết hạn.")
-    if promo.usage_limit is not None and promo.used_count >= promo.usage_limit:
-        return schemas.ValidatePromotionResult(valid=False, error_message="Mã giảm giá đã hết lượt sử dụng.")
-    if promo.min_order_value is not None and payload.order_subtotal < promo.min_order_value:
-        return schemas.ValidatePromotionResult(
-            valid=False,
-            error_message=f"Đơn hàng cần đạt tối thiểu {promo.min_order_value:,.0f}đ để sử dụng mã này."
-        )
-
-    # Calculate discount amount
-    if promo.discount_type == "PERCENTAGE":
-        discount = (payload.order_subtotal * promo.discount_value) / Decimal("100")
-        if promo.max_discount is not None and discount > promo.max_discount:
-            discount = promo.max_discount
-    else:
-        discount = promo.discount_value
-
-    if discount > payload.order_subtotal:
-        discount = payload.order_subtotal
-
-    return schemas.ValidatePromotionResult(
-        valid=True,
-        promotion_name=promo.name,
-        discount_type=promo.discount_type,
-        discount_value=promo.discount_value,
-        discount_amount=discount,
-        max_discount=promo.max_discount,
-        min_order_value=promo.min_order_value
-    )
-

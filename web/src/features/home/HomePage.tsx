@@ -10,8 +10,6 @@ import { getProductCategoryCounts, getTopLevelProductCategories } from '../../ut
 import { addCartItem, buildDefaultCartItem, openCart, setQuickViewProduct } from '../cart/cartSlice';
 import { categoryTileThemes, getCategoryMonogram, getCategorySubtitle } from './categoryTileThemes';
 
-import { sportApi } from '../../services/sportApi';
-import { PromotionItem } from '../../services/sport-api/types';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -24,16 +22,6 @@ export default function HomePage() {
   const categoryCounts = getProductCategoryCounts(products);
 
   const [timeLeft, setTimeLeft] = useState({ hours: 12, minutes: 45, seconds: 30 });
-  const [activePromo, setActivePromo] = useState<PromotionItem | null>(null);
-
-  useEffect(() => {
-    sportApi.getActivePromotions().then(promos => {
-      if (promos && promos.length > 0) {
-        setActivePromo(promos[0]);
-      }
-    }).catch(err => console.warn('Active promo fetch error:', err));
-  }, []);
-
   useEffect(() => {
     const interval = setInterval(() => {
       setTimeLeft(prev => {
@@ -124,17 +112,13 @@ export default function HomePage() {
 
           <div className="space-y-2 text-center lg:text-left">
             <span className="bg-white/10 text-white border border-white/20 text-[10px] font-black uppercase px-3 py-1 rounded-full tracking-wider">
-              {activePromo ? `CHƯƠNG TRÌNH KHUYẾN MÃI` : `GIỜ VÀNG SĂN DEAL CHẤT`}
+              GIỜ VÀNG SĂN DEAL CHẤT
             </span>
             <h3 className="font-display font-black text-2xl md:text-3xl tracking-tight uppercase leading-none">
-              {activePromo ? activePromo.name : `XẢ KHO CỰC HẠN - GIẢM GIÁ 30%`}
+              XẢ KHO CỰC HẠN - GIẢM GIÁ 30%
             </h3>
             <p className="text-xs text-red-100 font-medium">
-              {activePromo ? (
-                <>Nhập mã <strong className="bg-white text-black px-2 py-0.5 rounded font-mono font-bold text-xs">{activePromo.code}</strong> khi thanh toán để nhận ưu đãi!</>
-              ) : (
-                `Bảo hành chính hãng đầy đủ, đổi trả thuận tiện tại hơn 80 chi nhánh.`
-              )}
+              Bảo hành chính hãng đầy đủ, đổi trả thuận tiện tại hơn 80 chi nhánh.
             </p>
           </div>
 

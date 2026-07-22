@@ -34,15 +34,6 @@ from .order import (
     FulfillmentStatusUpdate,
 )
 
-from .promotion import (
-    PromotionBase,
-    PromotionCreate,
-    PromotionUpdate,
-    PromotionOut,
-    ValidatePromotionInput,
-    ValidatePromotionResult,
-)
-
 __all__ = [
     # Customer / Channel
     "CustomerBase",
@@ -76,12 +67,4 @@ __all__ = [
     "OrderUpdateInput",
     "OrderStatusUpdate",
     "FulfillmentStatusUpdate",
-    # Promotion
-    "PromotionBase",
-    "PromotionCreate",
-    "PromotionUpdate",
-    "PromotionOut",
-    "ValidatePromotionInput",
-    "ValidatePromotionResult",
 ]
-

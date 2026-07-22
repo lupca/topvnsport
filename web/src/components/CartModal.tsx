@@ -43,16 +43,6 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const [verificationToken, setVerificationToken] = useState('');
 
-  // Promotion Fields
-  const [couponCode, setCouponCode] = useState('');
-  const [appliedPromo, setAppliedPromo] = useState<{
-    code: string;
-    name: string;
-    discountAmount: number;
-  } | null>(null);
-  const [promoError, setPromoError] = useState('');
-  const [isValidatingPromo, setIsValidatingPromo] = useState(false);
-
   if (!isOpen) return null;
 
   // Calculate prices
@@ -61,38 +51,8 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
     return acc + (item.price + stringCost) * item.quantity;
   }, 0);
 
-  const discountAmount = appliedPromo ? appliedPromo.discountAmount : 0;
   const shippingCost = shippingMethod === 'standard' ? 30000 : 50000;
-  const orderTotal = Math.max(0, itemsTotal - discountAmount) + shippingCost;
-
-  const handleApplyCoupon = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!couponCode.trim()) return;
-
-    setIsValidatingPromo(true);
-    setPromoError('');
-
-    const res = await sportApi.validatePromotion(couponCode.trim(), itemsTotal);
-    setIsValidatingPromo(false);
-
-    if (res.valid && res.discount_amount !== undefined) {
-      setAppliedPromo({
-        code: couponCode.trim().toUpperCase(),
-        name: res.promotion_name || couponCode.trim().toUpperCase(),
-        discountAmount: res.discount_amount
-      });
-      setPromoError('');
-    } else {
-      setPromoError(res.error_message || 'Mã giảm giá không hợp lệ.');
-      setAppliedPromo(null);
-    }
-  };
-
-  const handleRemoveCoupon = () => {
-    setAppliedPromo(null);
-    setCouponCode('');
-    setPromoError('');
-  };
+  const orderTotal = itemsTotal + shippingCost;
 
   const handleCheckoutSubmit = async (e?: React.FormEvent, tokenOverride?: string) => {
     if (e) e.preventDefault();
@@ -142,7 +102,6 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
         shipping_address: shippingAddress,
         note: shippingMethod === 'fast' ? 'Đơn web - Giao hỏa tốc' : 'Đơn web - Giao tiêu chuẩn',
         verification_token: activeToken,
-        promotion_code: appliedPromo?.code
       });
 
       setCreatedOrderNumber(order?.order_number || '');
@@ -166,8 +125,6 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
     setStep(1);
     setCreatedOrderNumber('');
     setVerificationToken('');
-    setAppliedPromo(null);
-    setCouponCode('');
     onClose();
   };
 
@@ -234,45 +191,6 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
                         </div>
                       );
                     })}
-                  </div>
-
-                  {/* Coupon / Promotion Section */}
-                  <div className="bg-gray-50 p-3 rounded-lg border border-gray-150 space-y-2">
-                    <span className="text-[11px] font-bold text-gray-700 uppercase tracking-wider block">Mã giảm giá / Voucher</span>
-                    {appliedPromo ? (
-                      <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 p-2.5 rounded-md text-xs text-emerald-800 font-medium">
-                        <div>
-                          <p className="font-bold font-mono text-emerald-900">{appliedPromo.code} - {appliedPromo.name}</p>
-                          <p className="text-[10px] text-emerald-700">Giảm: -{appliedPromo.discountAmount.toLocaleString('vi-VN')}đ</p>
-                        </div>
-                        <button
-                          onClick={handleRemoveCoupon}
-                          className="text-xs font-bold text-red-600 hover:underline ml-2"
-                        >
-                          Hủy bỏ
-                        </button>
-                      </div>
-                    ) : (
-                      <form onSubmit={handleApplyCoupon} className="flex gap-2">
-                        <input
-                          type="text"
-                          placeholder="Nhập mã (ví dụ: SUMMER30)"
-                          value={couponCode}
-                          onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                          className="flex-1 bg-white border border-gray-200 rounded-md px-3 py-1.5 text-xs uppercase font-mono tracking-wider focus:outline-none focus:border-brand-primary"
-                        />
-                        <button
-                          type="submit"
-                          disabled={isValidatingPromo || !couponCode.trim()}
-                          className="bg-brand-primary hover:bg-brand-secondary text-white text-xs font-bold px-3 py-1.5 rounded-md transition disabled:opacity-50"
-                        >
-                          {isValidatingPromo ? '...' : 'Áp dụng'}
-                        </button>
-                      </form>
-                    )}
-                    {promoError && (
-                      <p className="text-[10px] font-bold text-red-600 leading-tight">{promoError}</p>
-                    )}
                   </div>
 
                   {/* Trust warning */}
@@ -394,7 +312,6 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
                 <p>• <strong>Số điện thoại:</strong> {phone}</p>
                 <p>• <strong>Địa chỉ giao:</strong> {address}, {city}</p>
                 <p>• <strong>Phương thức giao:</strong> {shippingMethod === 'standard' ? 'Giao hàng chuẩn (COD)' : 'Giao hàng hỏa tốc'}</p>
-                {appliedPromo && <p>• <strong>Mã ưu đãi:</strong> {appliedPromo.code} (-{appliedPromo.discountAmount.toLocaleString('vi-VN')}đ)</p>}
                 <p className="text-sm font-bold text-brand-primary border-t border-gray-200 pt-2 mt-2">
                   Tổng hóa đơn thanh toán: {orderTotal.toLocaleString('vi-VN')}đ
                 </p>
@@ -418,12 +335,6 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
                 <span>Tổng tiền hàng:</span>
                 <strong className="text-gray-900">{itemsTotal.toLocaleString('vi-VN')}đ</strong>
               </div>
-              {appliedPromo && (
-                <div className="flex justify-between text-emerald-600 font-bold">
-                  <span>Giảm giá ({appliedPromo.code}):</span>
-                  <span>-{discountAmount.toLocaleString('vi-VN')}đ</span>
-                </div>
-              )}
               <div className="flex justify-between">
                 <span>Phí vận chuyển:</span>
                 <strong className="text-gray-900">{shippingCost.toLocaleString('vi-VN')}đ</strong>
@@ -487,4 +398,3 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
     </div>
   );
 }
-
