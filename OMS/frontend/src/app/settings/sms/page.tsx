@@ -50,19 +50,19 @@ const ZALO_CONFIG_FIELDS: Array<{
   },
   {
     name: "zalo_secret_key",
-    label: "Zalo Secret Key",
+    label: "Zalo APP Secret Key",
     placeholder: "Ghi đè để nhập secret key mới...",
     sensitive: true,
   },
   {
     name: "zalo_access_token",
-    label: "Zalo Access Token",
+    label: "Zalo OA Access Token",
     placeholder: "Ghi đè để nhập access token mới...",
     sensitive: true,
   },
   {
     name: "zalo_refresh_token",
-    label: "Zalo Refresh Token",
+    label: "Zalo OA Refresh Token",
     placeholder: "Ghi đè để nhập refresh token mới...",
     sensitive: true,
   },

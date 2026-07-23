@@ -121,7 +121,7 @@ class SystemConfig(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     config_key = Column(String(100), unique=True, nullable=False, index=True)
-    config_value = Column(EncryptedString(500), nullable=True)  # Fernet encrypted
+    config_value = Column(EncryptedString(), nullable=True)  # Fernet encrypted (unbounded: ciphertext ~4/3 of plaintext + 57B, can exceed 500)
     description = Column(String(255), nullable=True)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
 
