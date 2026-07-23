@@ -57,6 +57,8 @@ def db():
             except OSError:
                 pass
 
+from utils.auth import get_current_user
+
 @pytest.fixture(scope="function")
 def client(db):
     def override_get_db():
@@ -65,6 +67,7 @@ def client(db):
         finally:
             pass
     app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_current_user] = lambda: {"user_id": "1", "username": "admin", "role": "admin"}
     with TestClient(app) as c:
         yield c
     app.dependency_overrides.clear()
