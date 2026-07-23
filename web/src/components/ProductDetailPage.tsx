@@ -77,10 +77,25 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
   const currentStock = matchedVariant?.stock ?? product.stock ?? 0;
   const isOutOfStock = currentStock <= 0;
 
-  const displayBasePrice = matchedVariant ? matchedVariant.price : (product.salePrice || product.price);
+  const baseOriginalPrice = product.originalPrice ?? product.price;
+  const baseSalePrice = product.computedPrice ?? product.salePrice ?? product.price;
+
+  const originalPriceToUse = matchedVariant?.originalPrice ?? matchedVariant?.price ?? baseOriginalPrice;
+  const salePriceToUse = matchedVariant?.computedPrice ?? matchedVariant?.price ?? baseSalePrice;
+
+  const displayBasePrice = salePriceToUse;
+  const displayOriginalPrice = originalPriceToUse;
+  
+  const hasDiscount = Boolean(
+    (matchedVariant?.hasActivePromotion || product.hasActivePromotion) ||
+    (displayBasePrice < displayOriginalPrice)
+  );
+
+  const discountPercent = matchedVariant?.percentageDiscount ?? product.percentageDiscount ?? 
+    (hasDiscount && displayOriginalPrice > 0 ? Math.round(((displayOriginalPrice - displayBasePrice) / displayOriginalPrice) * 100) : 0);
+
   const stringPrice = (!hasStringingVariation && withStringing && selectedString) ? selectedString.price : 0;
   const totalDisplayPrice = displayBasePrice + stringPrice;
-  const displayOriginalPrice = displayBasePrice * (product.price / (product.salePrice || product.price));
 
   const resolvedColor = product.tier_variations && product.tier_variations.length > 0
     ? selectedTier1
@@ -166,6 +181,8 @@ export default function ProductDetailPage({ product, stringOptions, onAddToCartW
             isRacket={isRacket}
             totalDisplayPrice={totalDisplayPrice}
             displayOriginalPrice={displayOriginalPrice}
+            hasDiscount={hasDiscount}
+            discountPercent={discountPercent}
             stringPrice={stringPrice}
             selectedTier1={selectedTier1}
             selectedTier2={selectedTier2}

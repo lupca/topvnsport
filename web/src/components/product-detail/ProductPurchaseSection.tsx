@@ -9,6 +9,8 @@ interface ProductPurchaseSectionProps {
   isRacket: boolean;
   totalDisplayPrice: number;
   displayOriginalPrice: number;
+  hasDiscount: boolean;
+  discountPercent: number;
   stringPrice: number;
   selectedTier1: string;
   selectedTier2: string;
@@ -40,6 +42,8 @@ export default function ProductPurchaseSection({
   isRacket,
   totalDisplayPrice,
   displayOriginalPrice,
+  hasDiscount,
+  discountPercent,
   stringPrice,
   selectedTier1,
   selectedTier2,
@@ -115,16 +119,16 @@ export default function ProductPurchaseSection({
               <span className="text-2xl md:text-3xl font-extrabold text-brand-primary font-display">
                 {totalDisplayPrice.toLocaleString('vi-VN')}đ
               </span>
-              {product.salePrice && (
+              {hasDiscount && (
                 <span className="text-sm text-gray-400 line-through mb-1.5 font-medium">
                   {(displayOriginalPrice + stringPrice).toLocaleString('vi-VN')}đ
                 </span>
               )}
             </div>
           </div>
-          {product.salePrice && (
+          {hasDiscount && discountPercent > 0 && (
             <span className="bg-brand-primary text-white text-[11px] font-black px-3 py-1.5 rounded-full">
-              TIẾT KIỆM {Math.round(((product.price - product.salePrice) / product.price) * 100)}%
+              TIẾT KIỆM {discountPercent}%
             </span>
           )}
         </div>
