@@ -5,38 +5,15 @@
 
 ---
 
-## 1. OTP BYPASS BUTTON IN PRODUCTION (CRITICAL)
+## 1. OTP BYPASS BUTTON IN PRODUCTION (RESOLVED)
 
 **File:** `web/src/components/OtpModal.tsx`, lines 150-156
 
-```typescript
-<button
-  type="button"
-  onClick={() => onSuccess('BYPASS_OTP_TOKEN')}
-  className="text-xs text-brand-primary font-bold hover:underline uppercase"
->
-  Bỏ qua xác nhận
-</button>
-```
+**Former impact:** Nút test từng cho phép khách hàng bỏ qua xác minh OTP và gửi một
+token hard-code đến backend.
 
-**Impact:** Khách hàng có thể click "Bỏ qua xác nhận" để bypass OTP verification hoàn toàn. Token "BYPASS_OTP_TOKEN" được gửi thẳng đến backend!
-
-**Fix - Remove entirely or guard with env:**
-```typescript
-// Option A: Remove the button completely
-// Delete lines 150-156
-
-// Option B: Only show in development
-{import.meta.env.DEV && (
-  <button
-    type="button"
-    onClick={() => onSuccess('BYPASS_OTP_TOKEN')}
-    className="text-xs text-gray-400"
-  >
-    [DEV] Skip OTP
-  </button>
-)}
-```
+**Resolution:** Nút và token hard-code đã bị xóa hoàn toàn. Storefront chỉ tiếp tục
+checkout sau khi `/api/sms/verify-otp` trả về một token xác minh hợp lệ.
 
 ---
 

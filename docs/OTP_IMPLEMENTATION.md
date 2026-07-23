@@ -49,15 +49,18 @@ Hệ thống sử dụng các Model SQLAlchemy sau trong `OMS/backend/models.py`
      - Kiểm tra số điện thoại của token có khớp với số điện thoại đặt hàng.
   3. Sau khi tất cả Pass, hệ thống gán `used_at = now()` (Atomicity) và tiến hành ghi nhận đơn hàng.
 
-## 4. Các điểm lưu ý về Tích hợp & Kiểm thử (Bypass Mode)
+## 4. Các điểm lưu ý về Tích hợp & Kiểm thử
 
-Để tạo thuận lợi cho đội QA/Tester và quá trình phát triển E2E mà không bị giới hạn hoặc block từ dịch vụ SpeedSMS, hệ thống hỗ trợ **Bypass Flow**:
+Luồng E2E không bỏ qua bước xác minh OTP:
 
-- Trên Frontend (`OtpModal.tsx`), có một nút **"Bỏ qua xác nhận (Chỉ dùng cho Test)"**.
-- Khi nhấn nút này, UI sẽ ngầm sinh ra mã token giả định là `"BYPASS_OTP_TOKEN"`.
-- Backend (`OMS/backend/main.py`) được lập trình để chấp nhận mọi đơn hàng có `verification_token == "BYPASS_OTP_TOKEN"` mà không cần xác vấn database. 
-- *Lưu ý: Khi lên Môi trường Production, nút Bypass này cần được loại bỏ.*
+- Frontend luôn gọi API gửi và xác minh OTP như luồng thật.
+- Trong môi trường development chưa cấu hình Zalo, backend mô phỏng riêng bước giao
+  OTP qua nhà cung cấp và lưu mã cho endpoint test `/api/sms/test-last-otp`.
+- Test lấy mã từ endpoint development, gọi `/api/sms/verify-otp` và dùng
+  `verification_token` UUID được lưu trong database để tạo đơn hàng.
+- Production không cung cấp endpoint lấy OTP test và vẫn bắt buộc có cấu hình Zalo.
 
 ## 5. Các cấu hình Môi trường (.env)
 - `FERNET_KEY`: Chuỗi base64 độ dài 32 byte để mã hóa token cấu hình trong DB.
-- `INTEGRITY_MODE`: Khi gán bằng `development`, hệ thống cho phép bật một số API phục vụ E2E Testing (như lấy lại OTP test mà không cần gọi API thực tế).
+- `INTEGRITY_MODE`: Khi gán bằng `development`, hệ thống bật API và cơ chế mô phỏng
+  giao OTP phục vụ E2E; xác minh OTP và tiêu thụ token vẫn dùng database thật.

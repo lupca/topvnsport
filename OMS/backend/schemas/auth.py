@@ -1,15 +1,25 @@
+from typing import Optional
+
 from pydantic import BaseModel
 
 # SystemConfig Schemas
-class SmsConfigUpdate(BaseModel):
-    config_value: str
+class ZaloConfigUpdate(BaseModel):
+    zalo_app_id: Optional[str] = None
+    zalo_secret_key: Optional[str] = None
+    zalo_access_token: Optional[str] = None
+    zalo_refresh_token: Optional[str] = None
+    zalo_template_id: Optional[str] = None
 
-class SmsConfigOut(BaseModel):
-    config_key: str
-    config_value: str
+
+class ZaloConfigOut(BaseModel):
+    zalo_app_id: str
+    zalo_secret_key: str
+    zalo_access_token: str
+    zalo_refresh_token: str
+    zalo_template_id: str
 
 
-# SMS OTP Request/Response Schemas
+# OTP Request/Response Schemas
 class SendOtpRequest(BaseModel):
     phone_number: str
 

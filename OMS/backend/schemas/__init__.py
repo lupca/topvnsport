@@ -11,8 +11,8 @@ from .common import (
     PaginatedChannels,
 )
 from .auth import (
-    SmsConfigUpdate,
-    SmsConfigOut,
+    ZaloConfigUpdate,
+    ZaloConfigOut,
     SendOtpRequest,
     VerifyOtpRequest,
     VerifyOtpResponse,
@@ -46,9 +46,9 @@ __all__ = [
     "ChannelOut",
     "PaginatedCustomers",
     "PaginatedChannels",
-    # SMS / OTP
-    "SmsConfigUpdate",
-    "SmsConfigOut",
+    # Zalo / OTP
+    "ZaloConfigUpdate",
+    "ZaloConfigOut",
     "SendOtpRequest",
     "VerifyOtpRequest",
     "VerifyOtpResponse",

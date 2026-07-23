@@ -368,6 +368,104 @@ def test_cors_headers(client):
     assert resp.headers.get("access-control-allow-origin") == "http://localhost:13101"
 
 
+def test_get_zalo_config_returns_all_masked_fields(client, db):
+    config_values = {
+        "zalo_app_id": "zalo-app-id-123",
+        "zalo_secret_key": "zalo-secret-key-123",
+        "zalo_access_token": "zalo-access-token-123",
+        "zalo_refresh_token": "zalo-refresh-token-123",
+        "zalo_template_id": "zalo-template-id-123",
+    }
+    db.add_all(
+        [
+            models.SystemConfig(config_key=config_key, config_value=config_value)
+            for config_key, config_value in config_values.items()
+        ]
+    )
+    db.commit()
+
+    response = client.get(
+        "/api/configs/sms",
+        headers={"X-User-Id": "1", "X-User-Username": "admin"},
+    )
+
+    assert response.status_code == 200
+    assert set(response.json()) == set(config_values)
+    for config_key, config_value in response.json().items():
+        assert config_value.startswith(config_values[config_key][:5])
+        assert "*" in config_value
+        assert config_value != config_values[config_key]
+
+
+def test_update_zalo_config_only_persists_unmasked_fields(client, db):
+    original_refresh_token = "original-refresh-token"
+    db.add(
+        models.SystemConfig(
+            config_key="zalo_refresh_token",
+            config_value=original_refresh_token,
+        )
+    )
+    db.commit()
+
+    response = client.put(
+        "/api/configs/sms",
+        headers={"X-User-Id": "1", "X-User-Username": "admin"},
+        json={
+            "zalo_access_token": "new-access-token",
+            "zalo_refresh_token": "origi***************",
+        },
+    )
+
+    assert response.status_code == 200
+    assert set(response.json()) == {
+        "zalo_app_id",
+        "zalo_secret_key",
+        "zalo_access_token",
+        "zalo_refresh_token",
+        "zalo_template_id",
+    }
+    access_token = db.query(models.SystemConfig).filter(
+        models.SystemConfig.config_key == "zalo_access_token"
+    ).one()
+    refresh_token = db.query(models.SystemConfig).filter(
+        models.SystemConfig.config_key == "zalo_refresh_token"
+    ).one()
+    assert access_token.config_value == "new-access-token"
+    assert refresh_token.config_value == original_refresh_token
+
+
+def test_zalo_webhook_uses_admin_secret_key(client, db, monkeypatch):
+    secret_key = "admin-configured-zalo-secret"
+    monkeypatch.delenv("OA_SECRET_KEY", raising=False)
+    db.add(
+        models.SystemConfig(
+            config_key="zalo_secret_key",
+            config_value=secret_key,
+        )
+    )
+    db.commit()
+
+    payload = {"event_name": "webhook_verification"}
+    raw_body = json.dumps(payload, separators=(",", ":")).encode("utf-8")
+    signature = hmac.new(
+        secret_key.encode("utf-8"),
+        raw_body,
+        hashlib.sha256,
+    ).hexdigest()
+
+    response = client.post(
+        "/api/sms/zalo-webhook",
+        content=raw_body,
+        headers={
+            "Content-Type": "application/json",
+            "X-Zalo-Signature": signature,
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {"success": True, "updated": False}
+
+
 @pytest.fixture(scope="function")
 def configure_zalo_otp(db):
     access_token = models.SystemConfig(
@@ -384,6 +482,42 @@ def configure_zalo_otp(db):
     db.add(template_id)
     db.commit()
     return access_token
+
+
+def test_send_otp_development_without_zalo_config(client, db, monkeypatch):
+    def unexpected_provider_call(*args, **kwargs):
+        raise AssertionError("Development OTP should not call Zalo without config")
+
+    monkeypatch.setenv("INTEGRITY_MODE", "development")
+    monkeypatch.setattr(
+        "services.zalo_service.send_zalo_otp",
+        unexpected_provider_call,
+    )
+
+    phone = "0901111111"
+    response = client.post("/api/sms/send-otp", json={"phone_number": phone})
+
+    assert response.status_code == 200
+    otp_record = db.query(models.OtpVerification).filter(
+        models.OtpVerification.phone_number == "84901111111"
+    ).first()
+    assert otp_record is not None
+    assert otp_record.provider_status == "success"
+    assert otp_record.zalo_message_id.startswith("development-")
+
+
+def test_send_otp_production_requires_zalo_config(client, monkeypatch):
+    monkeypatch.delenv("INTEGRITY_MODE", raising=False)
+    monkeypatch.delenv("ENV", raising=False)
+
+    response = client.post(
+        "/api/sms/send-otp",
+        json={"phone_number": "0902222222"},
+    )
+
+    assert response.status_code == 500
+    assert "Cấu hình dịch vụ Zalo OTP chưa đầy đủ" in response.json()["detail"]
+
 
 def test_send_otp_rate_limit_and_lockout(client, db, configure_zalo_otp, monkeypatch):
     monkeypatch.setattr(

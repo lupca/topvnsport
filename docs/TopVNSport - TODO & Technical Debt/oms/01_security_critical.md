@@ -7,27 +7,16 @@
 
 ## Các Vấn Đề Bảo Mật Nghiêm Trọng
 
-### 1. HARDCODED OTP BYPASS TOKEN (CRITICAL)
+### 1. HARDCODED OTP BYPASS TOKEN (RESOLVED)
 
 **File:** `OMS/backend/main.py`, line 589
 
-```python
-if payload.verification_token != "BYPASS_OTP_TOKEN":
-    # Verify OTP...
-```
+**Former impact:** Một token hard-code từng cho phép tạo đơn hàng mà không xác minh
+điện thoại và từng bị lộ trong frontend.
 
-**Impact:** Bất kỳ ai biết token "BYPASS_OTP_TOKEN" có thể đặt hàng mà không cần xác minh điện thoại. Token này cũng được hiển thị trong frontend!
-
-**Fix:**
-```python
-# Xóa hoàn toàn bypass logic
-# Hoặc chỉ cho phép trong development mode
-if os.getenv("ENV") == "development" and payload.verification_token == os.getenv("DEV_BYPASS_TOKEN"):
-    pass  # Allow bypass only in dev with env var
-else:
-    # Always verify OTP in production
-    otp_record = db.query(models.OtpVerification)...
-```
+**Resolution:** Logic ngoại lệ đã bị xóa. Mọi đơn hàng storefront hiện phải tra cứu
+`verification_token` trong `OtpVerification`, khớp số điện thoại, còn hạn và chưa
+được sử dụng.
 
 ---
 
@@ -199,6 +188,6 @@ curl -H "Origin: http://evil.com" -X OPTIONS http://localhost:18101/api/orders
 
 # Test OTP bypass removed
 curl -X POST http://localhost:18101/api/orders \
-  -d '{"verification_token": "BYPASS_OTP_TOKEN", ...}'
+  -d '{"verification_token": "known-invalid-token", ...}'
 # Should return 401/403, not success
 ```

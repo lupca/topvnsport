@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import json
-import re
 from uuid import uuid4
 
 from playwright.sync_api import expect
@@ -10,32 +8,6 @@ from e2e_tests.utils.api_helpers import OMSApi, PMIApi, WMSApi, wait_until
 
 
 E2E_IMAGE_URL = "https://placehold.co/600x600/png?text=E2E+Racket"
-
-
-def _mock_successful_otp_api(page) -> None:
-    page.route(
-        re.compile(r".*/api/sms/send-otp$"),
-        lambda route: route.fulfill(
-            status=200,
-            content_type="application/json",
-            body=json.dumps({"success": True}),
-        ),
-    )
-    page.route(
-        re.compile(r".*/api/sms/verify-otp$"),
-        lambda route: route.fulfill(
-            status=200,
-            content_type="application/json",
-            body=json.dumps(
-                {
-                    "success": True,
-                    "verification_token": "BYPASS_OTP_TOKEN",
-                }
-            ),
-        ),
-    )
-
-
 def test_full_flow(api_clients, page, web_base_url):
     run_id = uuid4().hex[:8]
     product_name = f"Vợt Lining E2E Test {run_id}"
@@ -52,8 +24,6 @@ def test_full_flow(api_clients, page, web_base_url):
     customer_phone = f"09{int(run_id, 16) % 10**8:08d}"
     customer_name = f"E2E Customer {run_id}"
     customer_address = f"E2E Street {run_id}"
-    _mock_successful_otp_api(page)
-
     pmi = PMIApi(api_clients.pmi)
     oms = OMSApi(api_clients.oms)
     wms = WMSApi(api_clients.wms)
@@ -119,7 +89,14 @@ def test_full_flow(api_clients, page, web_base_url):
     otp_modal = page.locator("#otp-verification-modal")
     expect(otp_modal).to_be_visible(timeout=10_000)
 
-    page.get_by_placeholder("Nhập 6 số OTP").fill("123456")
+    otp_response = api_clients.oms.get(
+        "/api/sms/test-last-otp",
+        params={"phone": customer_phone},
+    )
+    otp_response.raise_for_status()
+    otp_code = otp_response.json()["otp_code"]
+
+    page.get_by_placeholder("Nhập 6 số OTP").fill(otp_code)
     page.get_by_role("button", name="Xác nhận OTP", exact=True).click()
 
     expect(page.get_by_text("ĐẶT HÀNG THÀNH CÔNG!")).to_be_visible(timeout=20_000)

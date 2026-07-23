@@ -114,21 +114,6 @@ def test_storefront_otp_checkout_flow(api_clients, page, web_base_url):
     customer_name = f"OTP Buyer {run_id}"
     customer_address = f"E2E OTP Street {run_id}"
 
-    page.route(
-        re.compile(r".*/api/sms/send-otp$"),
-        lambda route: _fulfill_json(route, {"success": True}),
-    )
-    page.route(
-        re.compile(r".*/api/sms/verify-otp$"),
-        lambda route: _fulfill_json(
-            route,
-            {
-                "success": True,
-                "verification_token": "BYPASS_OTP_TOKEN",
-            },
-        ),
-    )
-
     pmi = PMIApi(api_clients.pmi)
     oms = OMSApi(api_clients.oms)
     wms = WMSApi(api_clients.wms)
@@ -198,7 +183,14 @@ def test_storefront_otp_checkout_flow(api_clients, page, web_base_url):
     expect(resend_button).to_be_disabled(timeout=5000)
     expect(resend_button).to_contain_text("Gửi lại sau")
 
-    page.get_by_placeholder("Nhập 6 số OTP").fill("123456")
+    otp_response = api_clients.oms.get(
+        "/api/sms/test-last-otp",
+        params={"phone": customer_phone},
+    )
+    otp_response.raise_for_status()
+    otp_code = otp_response.json()["otp_code"]
+
+    page.get_by_placeholder("Nhập 6 số OTP").fill(otp_code)
     page.get_by_role("button", name="Xác nhận OTP", exact=True).click()
 
     # Verify successful checkout transition

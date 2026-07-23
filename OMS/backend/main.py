@@ -143,7 +143,7 @@ def refresh_zalo_tokens_job() -> None:
             )
         }
         app_id_config = configs.get("zalo_app_id")
-        secret_config = configs.get("zalo_app_secret") or configs.get("zalo_secret_key")
+        secret_config = configs.get("zalo_secret_key") or configs.get("zalo_app_secret")
         refresh_config = configs.get("zalo_refresh_token")
 
         if not all(
@@ -736,32 +736,31 @@ def create_order(payload: schemas.OrderCreateInput, db: Session = Depends(get_db
         if not payload.verification_token:
             raise HTTPException(status_code=403, detail="Verification token is missing.")
 
-        if payload.verification_token != "BYPASS_OTP_TOKEN":
-            otp_ver = db.query(models.OtpVerification).filter(
-                models.OtpVerification.verification_token == payload.verification_token
-            ).first()
+        otp_ver = db.query(models.OtpVerification).filter(
+            models.OtpVerification.verification_token == payload.verification_token
+        ).first()
 
-            if not otp_ver:
-                raise HTTPException(status_code=403, detail="Invalid verification token.")
+        if not otp_ver:
+            raise HTTPException(status_code=403, detail="Invalid verification token.")
 
-            # Match token to customer phone number
-            norm_customer_phone = utils.phone_helper.normalize_phone(customer.phone)
-            norm_token_phone = utils.phone_helper.normalize_phone(otp_ver.phone_number)
-            if norm_customer_phone != norm_token_phone:
-                raise HTTPException(status_code=403, detail="Verification token does not match customer phone number.")
+        # Match token to customer phone number
+        norm_customer_phone = utils.phone_helper.normalize_phone(customer.phone)
+        norm_token_phone = utils.phone_helper.normalize_phone(otp_ver.phone_number)
+        if norm_customer_phone != norm_token_phone:
+            raise HTTPException(status_code=403, detail="Verification token does not match customer phone number.")
 
-            # Lifecycle Checks
-            if otp_ver.verified_at is None:
-                raise HTTPException(status_code=403, detail="Verification token has not been verified.")
-            if otp_ver.used_at is not None:
-                raise HTTPException(status_code=403, detail="Verification token has already been used.")
-            if otp_ver.verification_expires_at < utcnow():
-                raise HTTPException(status_code=403, detail="Verification token has expired.")
+        # Lifecycle Checks
+        if otp_ver.verified_at is None:
+            raise HTTPException(status_code=403, detail="Verification token has not been verified.")
+        if otp_ver.used_at is not None:
+            raise HTTPException(status_code=403, detail="Verification token has already been used.")
+        if otp_ver.verification_expires_at < utcnow():
+            raise HTTPException(status_code=403, detail="Verification token has expired.")
 
-            # Atomically consume the token inside the same transaction
-            otp_ver.used_at = utcnow()
-            otp_ver.status = "CONSUMED"
-            db.flush()
+        # Atomically consume the token inside the same transaction
+        otp_ver.used_at = utcnow()
+        otp_ver.status = "CONSUMED"
+        db.flush()
         
     # Auto-generate order_number if not provided
     if not payload.order_number:
@@ -1178,6 +1177,10 @@ async def send_otp(payload: schemas.SendOtpRequest, db: Session = Depends(get_db
     phone = payload.phone_number
     normalized_phone = utils.phone_helper.normalize_phone(phone)
     now_time = utcnow()
+    is_development = (
+        os.getenv("INTEGRITY_MODE") == "development"
+        or os.getenv("ENV") == "development"
+    )
 
     # Retrieve or create SmsRateLimit for sending
     db_limit = db.query(models.SmsRateLimit).filter(
@@ -1252,7 +1255,8 @@ async def send_otp(payload: schemas.SendOtpRequest, db: Session = Depends(get_db
     zalo_access_token = zalo_configs.get("zalo_access_token")
     zalo_template_id = zalo_configs.get("zalo_template_id")
 
-    if not zalo_access_token or not zalo_template_id:
+    has_zalo_config = bool(zalo_access_token and zalo_template_id)
+    if not has_zalo_config and not is_development:
         raise HTTPException(
             status_code=500,
             detail="Cấu hình dịch vụ Zalo OTP chưa đầy đủ. Vui lòng liên hệ quản trị viên.",
@@ -1269,20 +1273,29 @@ async def send_otp(payload: schemas.SendOtpRequest, db: Session = Depends(get_db
     db.commit()
 
     # Store for test-last-otp endpoint in development
-    if os.getenv("INTEGRITY_MODE") == "development" or os.getenv("ENV") == "development":
+    if is_development:
         LAST_OTPS[normalized_phone] = otp_code
 
     # 6. Async call to Zalo (handling potential synchronous monkeypatch)
-    res = services.zalo_service.send_zalo_otp(
-        normalized_phone,
-        otp_code,
-        zalo_access_token,
-        zalo_template_id,
-    )
-    if inspect.isawaitable(res):
-        result = await res
+    if is_development and not has_zalo_config:
+        result = {
+            "status": "success",
+            "error_code": 0,
+            "provider_response": {"mode": "development"},
+            "failed_reason": None,
+            "message_id": f"development-{uuid.uuid4()}",
+        }
     else:
-        result = res
+        res = services.zalo_service.send_zalo_otp(
+            normalized_phone,
+            otp_code,
+            zalo_access_token,
+            zalo_template_id,
+        )
+        if inspect.isawaitable(res):
+            result = await res
+        else:
+            result = res
 
     # 7. Update verification log with provider outcome
     error_code = result.get("error_code")
@@ -1406,9 +1419,16 @@ def _extract_zalo_message_id(payload: dict) -> Optional[str]:
 @app.post("/api/sms/zalo-webhook")
 async def zalo_webhook(request: Request, db: Session = Depends(get_db)):
     raw_body = await request.body()
-    oa_secret_key = os.getenv("OA_SECRET_KEY")
+    secret_config = db.query(models.SystemConfig).filter(
+        models.SystemConfig.config_key == "zalo_secret_key"
+    ).first()
+    oa_secret_key = (
+        secret_config.config_value
+        if secret_config and secret_config.config_value
+        else os.getenv("OA_SECRET_KEY")
+    )
     if not oa_secret_key:
-        logger.error("OA_SECRET_KEY is not configured; rejecting Zalo webhook.")
+        logger.error("Zalo webhook secret is not configured; rejecting webhook.")
         raise HTTPException(
             status_code=503,
             detail="Webhook Zalo chưa được cấu hình.",
@@ -1469,34 +1489,68 @@ async def zalo_webhook(request: Request, db: Session = Depends(get_db)):
     return {"success": True, "updated": True}
 
 
-@app.get("/api/configs/sms", response_model=schemas.SmsConfigOut)
-def get_sms_config(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    config = db.query(models.SystemConfig).filter(
-        models.SystemConfig.config_key == "zalo_access_token"
-    ).first()
-    if not config:
-        return {"config_key": "zalo_access_token", "config_value": ""}
-    
-    masked_value = mask_token(config.config_value)
-    return {"config_key": config.config_key, "config_value": masked_value}
+ZALO_CONFIG_DESCRIPTIONS = {
+    "zalo_app_id": "Zalo App ID",
+    "zalo_secret_key": "Zalo App Secret Key",
+    "zalo_access_token": "Zalo OA Access Token",
+    "zalo_refresh_token": "Zalo OA Refresh Token",
+    "zalo_template_id": "Zalo ZBS OTP Template ID",
+}
 
-@app.put("/api/configs/sms", response_model=schemas.SmsConfigOut)
-def update_sms_config(payload: schemas.SmsConfigUpdate, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    config = db.query(models.SystemConfig).filter(
-        models.SystemConfig.config_key == "zalo_access_token"
-    ).first()
-    if not config:
-        config = models.SystemConfig(
-            config_key="zalo_access_token",
-            config_value=payload.config_value,
-            description="Zalo OA Access Token"
+
+def get_masked_zalo_config(db: Session) -> dict:
+    configs = {
+        config.config_key: config.config_value or ""
+        for config in db.query(models.SystemConfig).filter(
+            models.SystemConfig.config_key.in_(ZALO_CONFIG_DESCRIPTIONS)
         )
-        db.add(config)
-    else:
-        config.config_value = payload.config_value
-    
-    db.commit()
-    db.refresh(config)
-    
-    masked_value = mask_token(config.config_value)
-    return {"config_key": config.config_key, "config_value": masked_value}
+    }
+    return {
+        config_key: mask_token(configs.get(config_key, ""))
+        for config_key in ZALO_CONFIG_DESCRIPTIONS
+    }
+
+
+@app.get("/api/configs/sms", response_model=schemas.ZaloConfigOut)
+def get_sms_config(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    return get_masked_zalo_config(db)
+
+
+@app.put("/api/configs/sms", response_model=schemas.ZaloConfigOut)
+def update_sms_config(
+    payload: schemas.ZaloConfigUpdate,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    submitted_values = payload.model_dump(exclude_none=True)
+    updates = {
+        config_key: config_value
+        for config_key, config_value in submitted_values.items()
+        if "*" not in config_value
+    }
+
+    if updates:
+        existing_configs = {
+            config.config_key: config
+            for config in db.query(models.SystemConfig).filter(
+                models.SystemConfig.config_key.in_(updates)
+            )
+        }
+        for config_key, config_value in updates.items():
+            config = existing_configs.get(config_key)
+            if config is None:
+                db.add(
+                    models.SystemConfig(
+                        config_key=config_key,
+                        config_value=config_value,
+                        description=ZALO_CONFIG_DESCRIPTIONS[config_key],
+                    )
+                )
+            else:
+                config.config_value = config_value
+        db.commit()
+
+    return get_masked_zalo_config(db)
