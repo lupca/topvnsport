@@ -18,20 +18,18 @@ export default function OtpModal({ isOpen, phoneNumber, onClose, onSuccess }: Ot
 
   useEffect(() => {
     if (!isOpen) return;
-    
-    // Automatically trigger OTP send on modal open
+
     setOtpCode('');
-    setErrorMessage('');
-    triggerSendOtp();
+    setCooldown(60);
   }, [isOpen]);
 
   useEffect(() => {
-    if (cooldown === 0) return;
+    if (!isOpen) return;
     const timer = setInterval(() => {
-      setCooldown((prev) => prev - 1);
+      setCooldown((prev) => Math.max(prev - 1, 0));
     }, 1000);
     return () => clearInterval(timer);
-  }, [cooldown]);
+  }, [isOpen]);
 
   const triggerSendOtp = async () => {
     setIsSending(true);
@@ -146,15 +144,6 @@ export default function OtpModal({ isOpen, phoneNumber, onClose, onSuccess }: Ot
               </button>
             </div>
 
-            <div className="mt-4 pt-4 border-t border-gray-100 text-center">
-              <button
-                type="button"
-                onClick={() => onSuccess('BYPASS_OTP_TOKEN')}
-                className="text-xs text-brand-primary font-bold hover:underline uppercase"
-              >
-                Bỏ qua xác nhận
-              </button>
-            </div>
           </form>
         </div>
       </div>

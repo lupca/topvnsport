@@ -1,18 +1,23 @@
 import os
+import asyncio
+import hmac
+import inspect
 import json
 import logging
 import math
+import threading
 from datetime import datetime, timezone, timedelta
 from decimal import Decimal
 from typing import Dict, List, Optional
 import httpx
+from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import FastAPI, Depends, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import func, cast, Date
+from sqlalchemy import func, cast, Date, inspect as sa_inspect, text
 
 import models
 from utils.auth import get_current_user, get_optional_user
@@ -25,7 +30,7 @@ import hashlib
 import uuid
 import utils.phone_helper
 import utils.crypto
-import services.sms_service
+import services.zalo_service
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
@@ -33,6 +38,44 @@ logger = logging.getLogger("oms_backend")
 
 # Create DB tables
 Base.metadata.create_all(bind=engine)
+
+
+def ensure_zalo_otp_schema() -> None:
+    """Add the Zalo message mapping column for existing OMS databases."""
+    inspector = sa_inspect(engine)
+    columns = {
+        column["name"]
+        for column in inspector.get_columns(models.OtpVerification.__tablename__)
+    }
+    if "zalo_message_id" not in columns:
+        with engine.begin() as connection:
+            if engine.dialect.name == "postgresql":
+                connection.execute(
+                    text(
+                        "ALTER TABLE otp_verifications "
+                        "ADD COLUMN IF NOT EXISTS zalo_message_id VARCHAR(100)"
+                    )
+                )
+            else:
+                connection.execute(
+                    text(
+                        "ALTER TABLE otp_verifications "
+                        "ADD COLUMN zalo_message_id VARCHAR(100)"
+                    )
+                )
+
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                "CREATE INDEX IF NOT EXISTS "
+                "ix_otp_verifications_zalo_message_id "
+                "ON otp_verifications (zalo_message_id)"
+            )
+        )
+
+
+ensure_zalo_otp_schema()
+
 
 # Seed initial channels data (Manual, Shopee, TikTok Shop, Lazada)
 db_seed = SessionLocal()
@@ -72,6 +115,108 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+_zalo_refresh_lock = threading.Lock()
+zalo_token_scheduler: Optional[BackgroundScheduler] = None
+
+
+def refresh_zalo_tokens_job() -> None:
+    """Refresh and atomically persist the rotated Zalo OA token pair."""
+    if not _zalo_refresh_lock.acquire(blocking=False):
+        logger.info("Skipping overlapping Zalo token refresh.")
+        return
+
+    db = SessionLocal()
+    try:
+        configs = {
+            config.config_key: config
+            for config in db.query(models.SystemConfig).filter(
+                models.SystemConfig.config_key.in_(
+                    [
+                        "zalo_access_token",
+                        "zalo_refresh_token",
+                        "zalo_app_id",
+                        "zalo_app_secret",
+                        "zalo_secret_key",
+                    ]
+                )
+            )
+        }
+        app_id_config = configs.get("zalo_app_id")
+        secret_config = configs.get("zalo_app_secret") or configs.get("zalo_secret_key")
+        refresh_config = configs.get("zalo_refresh_token")
+
+        if not all(
+            config and config.config_value
+            for config in (app_id_config, secret_config, refresh_config)
+        ):
+            logger.warning("Zalo token refresh skipped because its configuration is incomplete.")
+            return
+
+        refresh_result = services.zalo_service.refresh_zalo_token(
+            app_id_config.config_value,
+            secret_config.config_value,
+            refresh_config.config_value,
+        )
+        result = (
+            asyncio.run(refresh_result)
+            if inspect.isawaitable(refresh_result)
+            else refresh_result
+        )
+        if (
+            result.get("status") != "success"
+            or not result.get("access_token")
+            or not result.get("refresh_token")
+        ):
+            logger.error("Zalo token refresh failed: %s", result.get("failed_reason"))
+            return
+
+        access_config = configs.get("zalo_access_token")
+        if access_config is None:
+            access_config = models.SystemConfig(
+                config_key="zalo_access_token",
+                description="Zalo OA Access Token",
+            )
+            db.add(access_config)
+
+        access_config.config_value = result["access_token"]
+        refresh_config.config_value = result["refresh_token"]
+        db.commit()
+        logger.info("Zalo OA tokens refreshed successfully.")
+    except Exception:
+        db.rollback()
+        logger.exception("Unexpected error while refreshing Zalo OA tokens.")
+    finally:
+        db.close()
+        _zalo_refresh_lock.release()
+
+
+@app.on_event("startup")
+def start_zalo_token_scheduler() -> None:
+    global zalo_token_scheduler
+    if zalo_token_scheduler and zalo_token_scheduler.running:
+        return
+
+    zalo_token_scheduler = BackgroundScheduler()
+    zalo_token_scheduler.add_job(
+        refresh_zalo_tokens_job,
+        trigger="interval",
+        hours=20,
+        id="zalo_token_refresh",
+        replace_existing=True,
+        max_instances=1,
+        coalesce=True,
+    )
+    zalo_token_scheduler.start()
+
+
+@app.on_event("shutdown")
+def stop_zalo_token_scheduler() -> None:
+    global zalo_token_scheduler
+    if zalo_token_scheduler and zalo_token_scheduler.running:
+        zalo_token_scheduler.shutdown(wait=False)
+    zalo_token_scheduler = None
+
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc: RequestValidationError):
@@ -1095,13 +1240,23 @@ async def send_otp(payload: schemas.SendOtpRequest, db: Session = Depends(get_db
     otp_hash = hash_otp(otp_code)
     expires_at = now_time + timedelta(minutes=5)
 
-    # 5. Fetch SMS config
-    sms_config = db.query(models.SystemConfig).filter(
-        models.SystemConfig.config_key == "speed_sms_token"
-    ).first()
-    
-    if not sms_config or not sms_config.config_value:
-        raise HTTPException(status_code=500, detail="Có lỗi kết nối dịch vụ SMS. Vui lòng liên hệ quản trị viên.")
+    # 5. Fetch Zalo ZBS configuration
+    zalo_configs = {
+        config.config_key: config.config_value
+        for config in db.query(models.SystemConfig).filter(
+            models.SystemConfig.config_key.in_(
+                ["zalo_access_token", "zalo_template_id"]
+            )
+        )
+    }
+    zalo_access_token = zalo_configs.get("zalo_access_token")
+    zalo_template_id = zalo_configs.get("zalo_template_id")
+
+    if not zalo_access_token or not zalo_template_id:
+        raise HTTPException(
+            status_code=500,
+            detail="Cấu hình dịch vụ Zalo OTP chưa đầy đủ. Vui lòng liên hệ quản trị viên.",
+        )
 
     # Create verification record (pending status)
     otp_ver = models.OtpVerification(
@@ -1117,23 +1272,45 @@ async def send_otp(payload: schemas.SendOtpRequest, db: Session = Depends(get_db
     if os.getenv("INTEGRITY_MODE") == "development" or os.getenv("ENV") == "development":
         LAST_OTPS[normalized_phone] = otp_code
 
-    # 6. Async call to SpeedSMS (handling potential synchronous monkeypatch)
-    import inspect
-    res = services.sms_service.send_speed_sms(normalized_phone, otp_code, sms_config.config_value)
-    if inspect.iscoroutine(res):
+    # 6. Async call to Zalo (handling potential synchronous monkeypatch)
+    res = services.zalo_service.send_zalo_otp(
+        normalized_phone,
+        otp_code,
+        zalo_access_token,
+        zalo_template_id,
+    )
+    if inspect.isawaitable(res):
         result = await res
     else:
         result = res
 
     # 7. Update verification log with provider outcome
-    otp_ver.provider_status = result["status"]
-    otp_ver.provider_response = str(result["provider_response"])
-    otp_ver.failed_reason = result["failed_reason"]
+    error_code = result.get("error_code")
+    try:
+        error_code = int(error_code) if error_code is not None else None
+    except (TypeError, ValueError):
+        error_code = None
+    error_message = services.zalo_service.ZALO_ERROR_MESSAGES.get(
+        error_code,
+        result.get("failed_reason")
+        or "Không thể gửi mã OTP qua Zalo. Vui lòng thử lại.",
+    )
+
+    otp_ver.provider_status = result.get("status", "failed")
+    otp_ver.provider_response = json.dumps(
+        result.get("provider_response", result),
+        ensure_ascii=False,
+        default=str,
+    )
+    otp_ver.failed_reason = (
+        error_message if result.get("status") != "success" else None
+    )
+    otp_ver.zalo_message_id = result.get("message_id")
     otp_ver.sent_at = utcnow()
     db.commit()
 
-    if result["status"] != "success":
-        raise HTTPException(status_code=500, detail=f"Failed to send SMS: {result['failed_reason']}")
+    if result.get("status") != "success":
+        raise HTTPException(status_code=400, detail=error_message)
 
     return {"success": True}
 
@@ -1210,13 +1387,95 @@ def verify_otp(payload: schemas.VerifyOtpRequest, db: Session = Depends(get_db))
             detail=f"Mã OTP không chính xác. Incorrect OTP. {5 - db_limit.attempt_count} attempts remaining."
         )
 
+
+def _extract_zalo_message_id(payload: dict) -> Optional[str]:
+    for key in ("message_id", "msg_id"):
+        value = payload.get(key)
+        if value is not None:
+            return str(value)
+
+    for key in ("data", "message", "recipient", "sender"):
+        nested = payload.get(key)
+        if isinstance(nested, dict):
+            message_id = _extract_zalo_message_id(nested)
+            if message_id:
+                return message_id
+    return None
+
+
+@app.post("/api/sms/zalo-webhook")
+async def zalo_webhook(request: Request, db: Session = Depends(get_db)):
+    raw_body = await request.body()
+    oa_secret_key = os.getenv("OA_SECRET_KEY")
+    if not oa_secret_key:
+        logger.error("OA_SECRET_KEY is not configured; rejecting Zalo webhook.")
+        raise HTTPException(
+            status_code=503,
+            detail="Webhook Zalo chưa được cấu hình.",
+        )
+
+    supplied_signature = (
+        request.headers.get("X-Zalo-Signature")
+        or request.headers.get("X-ZEvent-Signature")
+        or request.headers.get("X-Zalo-Webhook-Signature")
+        or ""
+    )
+    if supplied_signature.lower().startswith("sha256="):
+        supplied_signature = supplied_signature[7:]
+
+    expected_signature = hmac.new(
+        oa_secret_key.encode("utf-8"),
+        raw_body,
+        hashlib.sha256,
+    ).hexdigest()
+    if not hmac.compare_digest(expected_signature, supplied_signature.lower()):
+        raise HTTPException(
+            status_code=401,
+            detail="Chữ ký webhook Zalo không hợp lệ.",
+        )
+
+    try:
+        payload = json.loads(raw_body)
+    except (TypeError, ValueError):
+        raise HTTPException(
+            status_code=400,
+            detail="Dữ liệu webhook Zalo không hợp lệ.",
+        )
+    if not isinstance(payload, dict):
+        raise HTTPException(
+            status_code=400,
+            detail="Dữ liệu webhook Zalo không hợp lệ.",
+        )
+
+    event_name = payload.get("event_name") or payload.get("event")
+    if event_name != "user_received_message":
+        return {"success": True, "updated": False}
+
+    message_id = _extract_zalo_message_id(payload)
+    if not message_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Webhook Zalo thiếu mã tin nhắn.",
+        )
+
+    otp_ver = db.query(models.OtpVerification).filter(
+        models.OtpVerification.zalo_message_id == message_id
+    ).order_by(models.OtpVerification.created_at.desc()).first()
+    if not otp_ver:
+        return {"success": True, "updated": False}
+
+    otp_ver.provider_status = "DELIVERED"
+    db.commit()
+    return {"success": True, "updated": True}
+
+
 @app.get("/api/configs/sms", response_model=schemas.SmsConfigOut)
 def get_sms_config(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     config = db.query(models.SystemConfig).filter(
-        models.SystemConfig.config_key == "speed_sms_token"
+        models.SystemConfig.config_key == "zalo_access_token"
     ).first()
     if not config:
-        return {"config_key": "speed_sms_token", "config_value": ""}
+        return {"config_key": "zalo_access_token", "config_value": ""}
     
     masked_value = mask_token(config.config_value)
     return {"config_key": config.config_key, "config_value": masked_value}
@@ -1224,13 +1483,13 @@ def get_sms_config(db: Session = Depends(get_db), current_user: dict = Depends(g
 @app.put("/api/configs/sms", response_model=schemas.SmsConfigOut)
 def update_sms_config(payload: schemas.SmsConfigUpdate, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     config = db.query(models.SystemConfig).filter(
-        models.SystemConfig.config_key == "speed_sms_token"
+        models.SystemConfig.config_key == "zalo_access_token"
     ).first()
     if not config:
         config = models.SystemConfig(
-            config_key="speed_sms_token",
+            config_key="zalo_access_token",
             config_value=payload.config_value,
-            description="SpeedSMS API Integration Token"
+            description="Zalo OA Access Token"
         )
         db.add(config)
     else:

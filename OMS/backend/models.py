@@ -143,7 +143,8 @@ class OtpVerification(Base):
     verification_token = Column(String(255), nullable=True, unique=True, index=True)
     verification_expires_at = Column(DateTime, nullable=True)
     
-    # SMS Provider Metadata
+    # OTP Provider Metadata
+    zalo_message_id = Column(String(100), nullable=True, index=True)
     provider_status = Column(String(50), nullable=True)
     provider_response = Column(Text, nullable=True)
     failed_reason = Column(String(255), nullable=True)

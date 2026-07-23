@@ -63,9 +63,18 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
 
     const activeToken = tokenOverride || verificationToken;
 
-    // Intercept flow: open OTP Verification first if token doesn't exist
+    // Send the initial OTP before opening the verification modal so provider
+    // errors (for example, a phone number without Zalo) block checkout here.
     if (!activeToken) {
-      setIsOtpModalOpen(true);
+      setIsSubmitting(true);
+      try {
+        await sportApi.sendOtp(phone);
+        setIsOtpModalOpen(true);
+      } catch (err: any) {
+        await popupService.alert(err.message);
+      } finally {
+        setIsSubmitting(false);
+      }
       return;
     }
 
