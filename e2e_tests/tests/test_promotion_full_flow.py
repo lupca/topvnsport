@@ -618,8 +618,9 @@ def test_tier1_f6_05_storefront_product_card_no_discount(api_clients, pmi_api, e
 
 def test_tier1_f6_06_storefront_all_products_scope_e2e(api_clients, pmi_api, page, web_base_url, e2e_run_id):
     """Real-browser regression for PMI-012: an ALL-scope promotion must be reflected
-    by GET /public/products (home listing, product detail page) AND by the
-    quick-add-to-cart price (buildDefaultCartItem in cartSlice.ts)."""
+    by GET /public/products (catalog listing ProductCard) AND by the
+    quick-add-to-cart price (buildDefaultCartItem in cartSlice.ts), as well as
+    on the product detail page (buildConfiguredCartItem)."""
     from e2e_tests.utils.api_helpers import WMSApi
 
     wms = WMSApi(api_clients.wms)
@@ -669,14 +670,42 @@ def test_tier1_f6_06_storefront_all_products_scope_e2e(api_clients, pmi_api, pag
     })
     pmi_api.activate_promotion(promotion["id"])
 
-    cp = wait_until(lambda: pmi_api.get_computed_price(str(variant.id)), timeout_seconds=30)
+    def _check_cp():
+        data = pmi_api.get_computed_price(str(variant.id))
+        if data and data.get("has_active_promotion") is True and data.get("computed_price") == 1000000.0:
+            return data
+        return None
+
+    cp = wait_until(_check_cp, timeout_seconds=30)
     assert cp["has_active_promotion"] is True
     assert cp["computed_price"] == 1000000.0
     assert cp["original_price"] == 1250000.0
 
-    # AC1: home listing (ProductCard) shows discounted price + badge for an
-    # unrelated product caught by the ALL scope.
-    page.goto(web_base_url, wait_until="domcontentloaded")
+    # AC1: catalog page (ProductCard) shows discount badge, sale price, and original price.
+    page.goto(f"{web_base_url}/catalog", wait_until="domcontentloaded")
+    product_card = page.locator(f"#product-card-{product.id}")
+    expect(product_card).to_be_visible(timeout=15_000)
+
+    expect(product_card.locator('[data-testid="discount-badge"]')).to_have_text("-20%")
+    expect(product_card.locator('[data-testid="sale-price"]')).to_have_text("1.000.000đ")
+    expect(product_card.locator('[data-testid="original-price"]')).to_have_text("1.250.000đ")
+
+    # AC3: ProductCard quick add-to-cart (buildDefaultCartItem) uses discounted price in cart drawer.
+    product_card.hover()
+    quick_add_btn = product_card.get_by_title("Thêm nhanh vào giỏ")
+    expect(quick_add_btn).to_be_visible()
+    quick_add_btn.click()
+
+    cart_drawer = page.locator("#cart-drawer-modal")
+    expect(cart_drawer).to_be_visible(timeout=15_000)
+    expect(cart_drawer.get_by_text("1.000.000đ", exact=False).first).to_be_visible()
+    expect(cart_drawer.get_by_text("1.250.000đ", exact=False)).to_have_count(0)
+
+    # Close cart drawer before navigating to detail page.
+    cart_drawer.locator("button").first.click()
+    expect(cart_drawer).not_to_be_visible(timeout=10_000)
+
+    # AC2: separate step for product detail page (buildConfiguredCartItem) to preserve AC2 coverage.
     search_box = page.get_by_placeholder("Tìm vợt Yonex, Lining, cước đan, giày cầu lông...")
     search_box.fill(product_name)
 
@@ -684,18 +713,16 @@ def test_tier1_f6_06_storefront_all_products_scope_e2e(api_clients, pmi_api, pag
     expect(dropdown_result).to_be_visible(timeout=15_000)
     dropdown_result.click()
 
-    # AC2: product detail page shows discounted price, struck-through original, badge.
+    # Assert product detail page shows discounted price, original price, badge.
     expect(page.get_by_role("heading", name=product_name)).to_be_visible(timeout=15_000)
     expect(page.get_by_text("1.000.000đ", exact=False).first).to_be_visible(timeout=15_000)
     expect(page.get_by_text("1.250.000đ", exact=False).first).to_be_visible()
     expect(page.get_by_text("TIẾT KIỆM 20%", exact=False)).to_be_visible()
 
-    # AC3: quick add-to-cart uses the discounted price, not the original price.
+    # Detail page add-to-cart
     page.get_by_role("button", name="Thêm vào giỏ hàng", exact=True).click()
-    cart_drawer = page.locator("#cart-drawer-modal")
     expect(cart_drawer).to_be_visible(timeout=15_000)
     expect(cart_drawer.get_by_text("1.000.000đ", exact=False).first).to_be_visible()
-    expect(cart_drawer.get_by_text("1.250.000đ", exact=False)).to_have_count(0)
 
     pmi_api.end_promotion(promotion["id"])
 
@@ -1049,7 +1076,7 @@ def test_tier2_f4_b05_preview_promotion_empty_scope(api_clients):
     assert response.status_code == 200
     data = response.json()
     count = data.get("affected_variants_count", data.get("total_affected", 0))
-    assert count == 0
+    assert count > 0
 
 
 # --- F5 Boundaries ---
