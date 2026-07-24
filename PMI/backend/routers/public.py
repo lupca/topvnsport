@@ -11,6 +11,7 @@ from database import get_db
 import models
 from pydantic import BaseModel, ConfigDict
 from datetime import datetime
+from services import promotion_service
 
 router = APIRouter(prefix="/public", tags=["Public API"])
 
@@ -48,6 +49,10 @@ class PublicVariantResponse(BaseModel):
     barcode: Optional[str] = None
     default_cost_price: Optional[float] = None
     default_tax_rate: Optional[float] = None
+    computed_price: Optional[float] = None
+    has_active_promotion: bool = False
+    original_price: Optional[float] = None
+    percentage_discount: Optional[float] = None
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -119,6 +124,23 @@ def compute_product_prices(product: models.Product) -> tuple:
     max_price = max(prices) if prices else None
     
     return min_price, max_price
+
+
+def get_public_variant_prices(db: Session, products: List[models.Product]) -> dict:
+    """Get computed prices for every variant in the current response batch."""
+    variant_ids = [variant.id for product in products for variant in product.variants]
+    return promotion_service.get_bulk_computed_prices(db, variant_ids)
+
+
+def get_public_promotion_fields(computed_prices: dict, variant_id: int) -> dict:
+    """Select only promotion fields exposed by the public variant schema."""
+    computed = computed_prices.get(str(variant_id), {})
+    return {
+        "computed_price": computed.get("computed_price"),
+        "has_active_promotion": computed.get("has_active_promotion", False),
+        "original_price": computed.get("original_price"),
+        "percentage_discount": computed.get("percentage_discount"),
+    }
 
 
 # ============================================
@@ -233,6 +255,7 @@ def get_public_products(
     # Load all categories once for fast path calculations
     all_categories = db.query(models.Category).all()
     cat_dict = {c.id: c for c in all_categories}
+    computed_prices = get_public_variant_prices(db, products)
     
     # Convert to response format and attach pre-calculated properties
     items = []
@@ -267,7 +290,8 @@ def get_public_products(
                     price=float(v.price),
                     barcode=v.barcode,
                     default_cost_price=float(v.default_cost_price) if v.default_cost_price is not None else None,
-                    default_tax_rate=float(v.default_tax_rate) if v.default_tax_rate is not None else None
+                    default_tax_rate=float(v.default_tax_rate) if v.default_tax_rate is not None else None,
+                    **get_public_promotion_fields(computed_prices, v.id)
                 ) for v in p.variants
             ],
             media=[
@@ -347,6 +371,7 @@ def get_public_product(
         )
     
     min_p, max_p = compute_product_prices(product)
+    computed_prices = get_public_variant_prices(db, [product])
     
     return PublicProductResponse(
         id=product.id,
@@ -377,7 +402,8 @@ def get_public_product(
                 price=float(v.price),
                 barcode=v.barcode,
                 default_cost_price=float(v.default_cost_price) if v.default_cost_price is not None else None,
-                default_tax_rate=float(v.default_tax_rate) if v.default_tax_rate is not None else None
+                default_tax_rate=float(v.default_tax_rate) if v.default_tax_rate is not None else None,
+                **get_public_promotion_fields(computed_prices, v.id)
             ) for v in product.variants
         ],
         media=[

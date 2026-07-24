@@ -1,6 +1,9 @@
+import importlib
 import pytest
+import uuid
 import models
 from fastapi.testclient import TestClient
+from services.promotion_service import recompute_variant_prices
 
 def test_get_public_categories(client, db_session):
     # Create test categories
@@ -121,3 +124,81 @@ def test_get_public_product_detail(client, db_session):
     # 2. Fetch non-existent returns 404
     resp = client.get("/public/products/999999")
     assert resp.status_code == 404
+
+
+def test_public_products_include_active_all_products_promotion(client, db_session, mocker):
+    cat = models.Category(
+        name="Promotion Test Category",
+        code=f"PROMO_PUBLIC_{uuid.uuid4().hex[:8]}"
+    )
+    db_session.add(cat)
+    db_session.flush()
+
+    product = models.Product(
+        product_code=f"PROMO-PUBLIC-{uuid.uuid4().hex[:8]}",
+        slug=f"promo-public-{uuid.uuid4().hex[:8]}",
+        name="Public Promotion Product",
+        status="Published",
+        category_id=cat.id,
+        weight=100.0,
+    )
+    db_session.add(product)
+    db_session.flush()
+
+    variants = [
+        models.ProductVariant(
+            product_id=product.id,
+            sku_code=f"PROMO-PUBLIC-V1-{uuid.uuid4().hex[:8]}",
+            price=100000.0,
+        ),
+        models.ProductVariant(
+            product_id=product.id,
+            sku_code=f"PROMO-PUBLIC-V2-{uuid.uuid4().hex[:8]}",
+            price=250000.0,
+        ),
+    ]
+    db_session.add_all(variants)
+    db_session.flush()
+
+    promotion = models.Promotion(
+        id=str(uuid.uuid4()),
+        code=f"PUBLIC_ALL_{uuid.uuid4().hex[:8]}",
+        name="Public All Products Promotion",
+        discount_type=models.DiscountType.PERCENTAGE,
+        discount_value=20.0,
+        status=models.PromotionStatus.ACTIVE,
+    )
+    promotion.scopes.append(
+        models.PromotionScope(
+            id=str(uuid.uuid4()),
+            scope_type=models.ScopeType.ALL,
+        )
+    )
+    db_session.add(promotion)
+    db_session.flush()
+    recompute_variant_prices(db_session, [str(variant.id) for variant in variants])
+    public_router = importlib.import_module("routers.public")
+    bulk_price_spy = mocker.spy(public_router.promotion_service, "get_bulk_computed_prices")
+
+    list_response = client.get("/public/products", params={"q": product.name})
+    assert list_response.status_code == 200
+    list_product = next(item for item in list_response.json()["items"] if item["id"] == product.id)
+    assert bulk_price_spy.call_count == 1
+    assert bulk_price_spy.call_args.args[1] == [variant.id for variant in variants]
+
+    detail_response = client.get(f"/public/products/{product.slug}")
+    assert detail_response.status_code == 200
+    detail_product = detail_response.json()
+    assert bulk_price_spy.call_count == 2
+    assert bulk_price_spy.call_args.args[1] == [variant.id for variant in variants]
+
+    for response_product in (list_product, detail_product):
+        response_variants = {
+            variant["id"]: variant for variant in response_product["variants"]
+        }
+        assert response_variants[variants[0].id]["computed_price"] == 80000.0
+        assert response_variants[variants[0].id]["original_price"] == 100000.0
+        assert response_variants[variants[0].id]["percentage_discount"] == 20.0
+        assert response_variants[variants[0].id]["has_active_promotion"] is True
+        assert response_variants[variants[1].id]["computed_price"] == 200000.0
+        assert response_variants[variants[1].id]["has_active_promotion"] is True
