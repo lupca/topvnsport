@@ -141,10 +141,13 @@ def create_promotion(
                 try:
                     st_enum = ScopeType(st_val.upper())
                 except ValueError:
-                    raise HTTPException(
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                        detail=f"Invalid scope_type: {st_val}"
-                    )
+                    if st_val.upper() in ("ALL_PRODUCTS", "ALL_PRODUCT"):
+                        st_enum = ScopeType.ALL
+                    else:
+                        raise HTTPException(
+                            status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=f"Invalid scope_type: {st_val}"
+                        )
                 if st_enum != ScopeType.ALL and not scope_data.target_id:
                     raise HTTPException(
                         status_code=status.HTTP_400_BAD_REQUEST,

@@ -289,3 +289,88 @@ def test_parse_intent_various_patterns(client):
     assert d3["scopes"][0]["scope_type"] == "VARIANT"
     assert d3["scopes"][0]["target_id"] == "105"
 
+    # 4. All products intent
+    res4 = client.post("/api/promotions/parse-intent", json={"prompt": "Giảm 20% cho tất cả sản phẩm", "created_by": "USER"})
+    assert res4.status_code == status.HTTP_200_OK
+    d4 = res4.json()
+    assert d4["discount_type"] == "PERCENTAGE"
+    assert d4["discount_value"] == 20.0
+    assert d4["scopes"][0]["scope_type"] == "ALL"
+
+
+def test_all_products_scope_promotion_compute_and_bulk_prices(db_session, client):
+    """
+    PMI-011: Verifies AC1, AC2, AC3 for promotions targeting ALL_PRODUCTS / empty scope filters.
+    """
+    from services.promotion_service import eval_variant_promotion_match, calculate_discount, recompute_variant_prices, get_bulk_computed_prices
+
+    cat = Category(name="All Prod Cat", code=f"CAT_ALLP_{uuid.uuid4().hex[:6]}")
+    db_session.add(cat)
+    db_session.flush()
+
+    p1 = Product(product_code=f"P1_ALLP_{uuid.uuid4().hex[:6]}", name="Prod 1", category_id=cat.id, weight=10.0)
+    p2 = Product(product_code=f"P2_ALLP_{uuid.uuid4().hex[:6]}", name="Prod 2", category_id=None, weight=10.0)
+    db_session.add_all([p1, p2])
+    db_session.flush()
+
+    v1 = ProductVariant(product_id=p1.id, sku_code=f"SKU_1_ALLP_{uuid.uuid4().hex[:6]}", price=100000.0)
+    v2 = ProductVariant(product_id=p2.id, sku_code=f"SKU_2_ALLP_{uuid.uuid4().hex[:6]}", price=200000.0)
+    db_session.add_all([v1, v2])
+    db_session.flush()
+
+    # AC1: eval_variant_promotion_match returns True for ALL variants (both with ScopeType.ALL and empty scopes)
+    promo_all = Promotion(
+        id=str(uuid.uuid4()),
+        code=f"ALL_20_OFF_{uuid.uuid4().hex[:6]}",
+        name="20% Off All Products",
+        discount_type=DiscountType.PERCENTAGE,
+        discount_value=20.0,
+        status=PromotionStatus.ACTIVE
+    )
+    promo_all.scopes.append(PromotionScope(id=str(uuid.uuid4()), promotion_id=promo_all.id, scope_type=ScopeType.ALL))
+    db_session.add(promo_all)
+    db_session.flush()
+
+    ancestor_map = {}
+    assert eval_variant_promotion_match(v1, promo_all, ancestor_map) is True
+    assert eval_variant_promotion_match(v2, promo_all, ancestor_map) is True
+
+    # Empty scopes (unrestricted) also matches all variants
+    promo_empty_scope = Promotion(
+        id=str(uuid.uuid4()),
+        code=f"EMPTY_SCOPE_{uuid.uuid4().hex[:6]}",
+        name="Unrestricted Promo",
+        discount_type=DiscountType.PERCENTAGE,
+        discount_value=20.0,
+        status=PromotionStatus.ACTIVE
+    )
+    assert eval_variant_promotion_match(v1, promo_empty_scope, ancestor_map) is True
+
+    # AC2: calculate_discount returns computed_price 20% lower than original_price
+    comp_price, disc_amt, pct_disc = calculate_discount(v1.price, promo_all.discount_type, promo_all.discount_value)
+    assert comp_price == 80000.0
+    assert disc_amt == 20000.0
+    assert pct_disc == 20.0
+
+    # AC3: recompute + get_bulk_computed_prices returns hasActivePromotion=true + computedPrice 20% off
+    recompute_variant_prices(db_session, variant_ids=[str(v1.id), str(v2.id)])
+
+    bulk_res = get_bulk_computed_prices(db_session, [str(v1.id), str(v2.id)])
+    assert str(v1.id) in bulk_res
+    assert bulk_res[str(v1.id)]["has_active_promotion"] is True
+    assert bulk_res[str(v1.id)]["computed_price"] == 80000.0
+
+    assert str(v2.id) in bulk_res
+    assert bulk_res[str(v2.id)]["has_active_promotion"] is True
+    assert bulk_res[str(v2.id)]["computed_price"] == 160000.0
+
+    # Via API endpoint
+    endpoint_res = client.post("/api/computed-prices/bulk", json={"variant_ids": [str(v1.id), str(v2.id)]})
+    assert endpoint_res.status_code == status.HTTP_200_OK
+    data = endpoint_res.json()
+    assert data[str(v1.id)]["has_active_promotion"] is True
+    assert data[str(v1.id)]["computed_price"] == 80000.0
+    assert data[str(v2.id)]["has_active_promotion"] is True
+    assert data[str(v2.id)]["computed_price"] == 160000.0
+
+
