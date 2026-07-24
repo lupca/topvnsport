@@ -6,7 +6,7 @@ import logging
 from typing import List, Optional, Dict, Any
 
 logger = logging.getLogger(__name__)
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Body
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.orm.exc import StaleDataError
 from sqlalchemy.exc import OperationalError
@@ -217,6 +217,68 @@ def parse_intent(
     Process natural language prompt into structured promotion fields.
     """
     return parse_promotion_intent(payload.prompt, payload.created_by)
+
+
+@router.post(
+    "/api/computed-prices/bulk",
+    response_model=dict
+)
+@router.get(
+    "/api/computed-prices/bulk",
+    response_model=dict
+)
+@router.post(
+    "/api/promotions/bulk-prices",
+    response_model=dict
+)
+@router.get(
+    "/api/promotions/bulk-prices",
+    response_model=dict
+)
+@router.post(
+    "/promotions/bulk-prices",
+    response_model=dict
+)
+@router.get(
+    "/promotions/bulk-prices",
+    response_model=dict
+)
+def get_bulk_prices(
+    payload: Optional[Dict[str, Any]] = Body(None),
+    variant_ids: Optional[List[str]] = Query(None),
+    db: Session = Depends(get_db)
+):
+    """
+    Fetch bulk computed prices for list of variant IDs.
+    Supports both POST (JSON body) and GET (Query param or JSON body).
+    """
+    raw_variant_ids = None
+    if payload and isinstance(payload, dict) and "variant_ids" in payload:
+        raw_variant_ids = payload.get("variant_ids")
+    elif variant_ids is not None:
+        raw_variant_ids = []
+        for v in variant_ids:
+            if isinstance(v, str) and "," in v:
+                raw_variant_ids.extend([x.strip() for x in v.split(",") if x.strip()])
+            else:
+                raw_variant_ids.append(v)
+    elif payload is not None and not isinstance(payload, dict):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Request payload must be a dictionary"
+        )
+
+    if raw_variant_ids is None or not isinstance(raw_variant_ids, list):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="variant_ids must be a list"
+        )
+    if len(raw_variant_ids) > 500:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Bulk calculation exceeds maximum batch size of 500 variants"
+        )
+    return get_bulk_computed_prices(db, raw_variant_ids)
 
 
 @router.get(
@@ -664,40 +726,3 @@ def get_variant_price(
         )
     return res
 
-
-@router.post(
-    "/api/computed-prices/bulk",
-    response_model=dict
-)
-@router.post(
-    "/api/promotions/bulk-prices",
-    response_model=dict
-)
-@router.post(
-    "/promotions/bulk-prices",
-    response_model=dict
-)
-def get_bulk_prices(
-    payload: Dict[str, Any],
-    db: Session = Depends(get_db)
-):
-    """
-    Fetch bulk computed prices for list of variant IDs.
-    """
-    if not isinstance(payload, dict):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Request payload must be a dictionary"
-        )
-    variant_ids = payload.get("variant_ids")
-    if variant_ids is None or not isinstance(variant_ids, list):
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="variant_ids must be a list"
-        )
-    if len(variant_ids) > 500:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Bulk calculation exceeds maximum batch size of 500 variants"
-        )
-    return get_bulk_computed_prices(db, variant_ids)

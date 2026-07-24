@@ -400,12 +400,30 @@ def test_all_products_scope_alias_and_bulk_prices_endpoints(client):
     })
     assert res2.status_code == status.HTTP_200_OK, res2.text
 
-    # Test /api/promotions/bulk-prices & /promotions/bulk-prices aliases
+    # Test /api/promotions/bulk-prices & /promotions/bulk-prices aliases (POST & GET)
     res_b1 = client.post("/api/promotions/bulk-prices", json={"variant_ids": ["99999"]})
     assert res_b1.status_code == status.HTTP_200_OK
 
     res_b2 = client.post("/promotions/bulk-prices", json={"variant_ids": ["99999"]})
     assert res_b2.status_code == status.HTTP_200_OK
+
+    # GET route assertions (regression test for AC3 / 405 Method Not Allowed)
+    res_g1 = client.get("/promotions/bulk-prices?variant_ids=99999")
+    assert res_g1.status_code == status.HTTP_200_OK
+
+    res_g2 = client.get("/api/promotions/bulk-prices?variant_ids=99999")
+    assert res_g2.status_code == status.HTTP_200_OK
+
+    res_g3 = client.get("/api/computed-prices/bulk?variant_ids=99999")
+    assert res_g3.status_code == status.HTTP_200_OK
+
+    res_g4 = client.get("/promotions/bulk-prices?variant_ids=99998,99999")
+    assert res_g4.status_code == status.HTTP_200_OK
+
+    res_g5 = client.request("GET", "/promotions/bulk-prices", json={"variant_ids": ["99999"]})
+    assert res_g5.status_code == status.HTTP_200_OK
+
+
 
 
 def test_mixed_scope_intent_parsing(client):
