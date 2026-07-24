@@ -3,6 +3,10 @@
 ## Mức độ: CRITICAL
 ## Estimated Effort: High (1-2 days)
 
+## Audit 2026-07-25
+
+⚠️ **Partially resolved; domain authorization remains active.** Identity Service now persists roles/permissions and protects staff/role administration (`0d22c38`, `identity-service/backend/routers/staff.py` and `roles.py`). PMI authentication accepts `X-User-*`/JWT identities in `PMI/backend/utils/dependency.py`, but `PMI/backend/main.py` applies only `get_current_identity` globally; route-level permission checks for product/category mutation are not present. Keep this item open, narrowed to PMI authorization policy enforcement.
+
 ---
 
 ## Mô Tả Vấn Đề

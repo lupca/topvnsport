@@ -3,6 +3,10 @@
 ## Mức độ: HIGH
 ## Estimated Effort: Medium (3-5 days)
 
+## Audit 2026-07-25
+
+⚠️ **Partially implemented.** `b279b90`/`6dfd1b1` delivered the Nginx gateway, `auth_request`, header stripping/injection, health endpoints, access logging, and rate limiting. Production still exposes HTTP only (`gateway/docker-compose.prod.yml:15-18`); no TLS termination, circuit breaker, API versioning, or unified health aggregation is implemented. Keep this as an active hardening proposal and remove the obsolete “nginx is only a reverse proxy” wording.
+
 ---
 
 ## Vấn Đề Hiện Tại

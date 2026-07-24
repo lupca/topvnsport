@@ -3,6 +3,10 @@
 ## Mức độ: MEDIUM
 ## Estimated Effort: Low (2-3 hours)
 
+## Audit 2026-07-25
+
+❌ **Still active.** Repository-wide source search found no `ErrorBoundary`, `error.tsx`, or `global-error.tsx` under the four storefront/admin frontends. The proposed fallback component and coverage tests have not been implemented.
+
 ---
 
 ## Mô Tả Vấn Đề

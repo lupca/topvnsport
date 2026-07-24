@@ -3,6 +3,10 @@
 ## Mức độ: CRITICAL
 ## Estimated Effort: Medium (2-4 hours)
 
+## Audit 2026-07-25
+
+❌ **Still active.** `PMI/docker-compose.prod.yml:4-56` retains plaintext PostgreSQL, MinIO, JWT, internal-token and service-key values. The same committed fallback pattern appears in OMS/WMS/Identity compose files. The document’s proposed env-file migration and secret rotation have not been completed; update the remediation scope to include all production compose files and remove fallbacks, not only PMI.
+
 ---
 
 ## Mô Tả Vấn Đề

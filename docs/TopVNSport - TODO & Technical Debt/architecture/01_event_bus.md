@@ -3,6 +3,10 @@
 ## Mức độ: HIGH
 ## Estimated Effort: High (1-2 weeks)
 
+## Audit 2026-07-25
+
+❌ **Proposal only.** No Redis Streams/RabbitMQ client, shared event-bus module, consumer worker, or event-bus compose service exists outside this document. OMS/WMS integration remains synchronous HTTP, so the proposal is still valid.
+
 ---
 
 ## Vấn Đề Hiện Tại

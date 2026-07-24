@@ -541,3 +541,6 @@ async def get_order_from_oms(order_id: int):
 - [ ] Test WMS gọi OMS với service token
 - [ ] Test user login flow qua Gateway
 - [ ] Test permission denied scenarios
+## Audit 2026-07-25
+
+**Status:** Historical implementation/runbook. The Identity Service baseline described here is present in `identity-service/`; use the top-level `architecture/03_identity_service.md` for current status. The checklist is not a current completion gate.

@@ -3,6 +3,10 @@
 ## Mức độ: MEDIUM
 ## Estimated Effort: Medium (1 week)
 
+## Audit 2026-07-25
+
+❌ **Proposal only.** The repository contains application logging and PMI’s audit outbox/worker, but no centralized OpenTelemetry tracing, Prometheus/Grafana/Loki/Tempo stack, shared metrics module, or observability compose configuration. The proposal remains active.
+
 ---
 
 ## Vấn Đề Hiện Tại

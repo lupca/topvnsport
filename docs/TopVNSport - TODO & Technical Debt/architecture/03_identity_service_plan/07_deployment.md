@@ -478,3 +478,6 @@ docker exec identity-api python -c "from database import engine; print(engine.po
 - [ ] Verify service-to-service calls work
 - [ ] Monitor error rates for 24h
 - [ ] Document any issues encountered
+## Audit 2026-07-25
+
+**Status:** Historical implementation/runbook. The Identity Service baseline described here is present in `identity-service/`; use the top-level `architecture/03_identity_service.md` for current status. The checklist is not a current completion gate.

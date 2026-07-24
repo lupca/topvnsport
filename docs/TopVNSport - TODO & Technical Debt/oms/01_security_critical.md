@@ -3,6 +3,19 @@
 ## Mức độ: CRITICAL
 ## Estimated Effort: High (1-2 days)
 
+## Audit 2026-07-25
+
+| Finding | Current status | Evidence |
+|---|---|---|
+| OTP bypass | ✅ Resolved | `0906aea` removed the storefront bypass button/token; `abc27d7` removed the OMS backdoor. `OMS/backend/routers/orders.py:60-88` validates and consumes the verification token. |
+| OMS authentication | ✅ Resolved for protected routes | `b279b90`/`6eca152` introduced gateway/Identity authentication. Customer, order, channel, dashboard and config mutations now depend on `get_current_user`; storefront create-order and OTP endpoints remain intentionally public. |
+| Fernet secret | ⚠️ Deployment risk remains | `OMS/backend/models.py:100-103` requires `FERNET_KEY`, but `OMS/docker-compose.prod.yml` still supplies a committed fallback `${FERNET_KEY:-...}`. Rotate and require the production secret with no fallback. |
+| CORS | ❌ Open | `OMS/backend/main.py:208-214` still uses `allow_origins=["*"]` with credentials. Gateway CORS handling does not remove the backend misconfiguration. |
+| SMS/Zalo config mutation | ⚠️ Authenticated, not admin-only | `OMS/backend/routers/config.py:42-49` requires `get_current_user`, but does not enforce an admin role/permission. |
+| Development OTP endpoint | ⚠️ Environment-gated only | `OMS/backend/routers/otp.py:42-50` registers `/test-last-otp` when `INTEGRITY_MODE` or `ENV` is `development`; there is no explicit allow-list flag. Keep disabled in production and tighten the gate. |
+
+The former “no authentication on any endpoint” and OTP-bypass descriptions below are retained as historical context; they are not active findings.
+
 ---
 
 ## Các Vấn Đề Bảo Mật Nghiêm Trọng

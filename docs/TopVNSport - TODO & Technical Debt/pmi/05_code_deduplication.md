@@ -3,6 +3,10 @@
 ## Mức độ: HIGH
 ## Estimated Effort: High (2-3 days)
 
+## Audit 2026-07-25
+
+❌ **Still active.** No `packages/`, pnpm workspace, or shared UI package exists in the repository. The repeated frontend components and per-application clients remain; the architecture shared-package proposal is therefore still a proposal, not an implementation.
+
 ---
 
 ## Mô Tả Vấn Đề

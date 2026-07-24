@@ -3,6 +3,10 @@
 ## Mức độ: CRITICAL
 ## Estimated Effort: Medium (3-5 hours)
 
+## Audit 2026-07-25
+
+❌ **Still active.** Database host ports remain published in `PMI/docker-compose.prod.yml`, `OMS/docker-compose.prod.yml`, and `WMS/docker-compose.prod.yml`. Production gateway configuration still exposes only port 80 (`gateway/docker-compose.prod.yml:15-18`) and comments out 443; `gateway/nginx/conf.d/locations.prod.conf` has no TLS server block. The original risk and remediation proposal remain valid.
+
 ---
 
 ## Mô Tả Vấn Đề

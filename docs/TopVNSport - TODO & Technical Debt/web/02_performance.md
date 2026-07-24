@@ -3,6 +3,10 @@
 ## Mức độ: MEDIUM
 ## Estimated Effort: Medium (4-6 hours)
 
+## Audit 2026-07-25
+
+❌ **Still active.** `web/src/App.tsx` synchronously imports all route components; `web/vite.config.ts` has no manual chunks; `Header.tsx:55-72` filters/rebuilds search text on every keystroke; and no React error boundary or image optimization layer was found. `CatalogPage.tsx` and product detail code already use some `useMemo`, so the issue should distinguish existing memoization from the missing route splitting/debounce/chunking work.
+
 ---
 
 ## 1. NO CODE SPLITTING / LAZY LOADING

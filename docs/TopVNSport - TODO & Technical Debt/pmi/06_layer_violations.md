@@ -3,6 +3,10 @@
 ## Mức độ: HIGH
 ## Estimated Effort: Medium (4-6 hours)
 
+## Audit 2026-07-25
+
+❌ **Still active.** `PMI/backend/services/product_service.py:3,94,143,263` still imports and raises FastAPI `HTTPException`; the service layer has not been converted to transport-neutral business exceptions. The proposed exception module/handler remains unimplemented.
+
 ---
 
 ## Mô Tả Vấn Đề

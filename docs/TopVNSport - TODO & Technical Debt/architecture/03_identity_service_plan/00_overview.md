@@ -107,3 +107,6 @@ Xây dựng hệ thống SSO tập trung cho Staff trên PMI, OMS, WMS với ki�
 | [05_oms_wms_integration.md](./05_oms_wms_integration.md) | OMS/WMS integration |
 | [06_test_specifications.md](./06_test_specifications.md) | Test cases cho toàn hệ thống |
 | [07_deployment.md](./07_deployment.md) | Deployment & migration plan |
+## Audit 2026-07-25
+
+**Status:** Historical implementation/runbook. The Identity Service baseline described here is present in `identity-service/`; use the top-level `architecture/03_identity_service.md` for current status. The unchecked checklist is not a current completion gate.

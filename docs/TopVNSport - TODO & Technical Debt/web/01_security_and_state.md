@@ -1,7 +1,19 @@
 # TODO: Web Storefront - Security & State Management
 
-## Mức độ: CRITICAL/HIGH
+## Mức độ: HIGH
 ## Estimated Effort: Medium (4-6 hours)
+
+## Audit 2026-07-25
+
+| Finding | Current status | Evidence |
+|---|---|---|
+| OTP bypass | ✅ Resolved | `0906aea` removed the bypass button from `web/src/components/OtpModal.tsx`; checkout uses the verified token. |
+| Cart persistence and quantity update | ❌ Open | `web/src/features/cart/cartSlice.ts:17-49` keeps items in Redux memory and exposes no quantity-update reducer. |
+| Cart ID collision | ❌ Open | `cartSlice.ts:55-86` still uses `Date.now()` in IDs. |
+| OTP token persistence | ❌ Open | `web/src/components/CartModal.tsx:44` keeps the token in React state only. |
+| App-data failure state | ❌ Open | `appDataSlice.ts:43-45` only clears `isLoading`; it stores no error and `App.tsx` only logs the rejected thunk. |
+| Artificial latency | ❌ Open | `web/src/services/sport-api/constants.ts:1` exports `SIMULATED_LATENCY = 200` for all builds. |
+| Checkout validation | ❌ Open | `CartModal.tsx` builds the order payload without a client-side schema. |
 
 ---
 

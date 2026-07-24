@@ -247,3 +247,6 @@ node -e "const {DataTable} = require('@topvnsport/ui-kit'); console.log('OK:', t
 - [ ] pnpm install links packages correctly
 - [ ] Build order is correct (packages first)
 - [ ] All 8 workspace tests pass
+## Audit 2026-07-25
+
+**Status:** Proposal not implemented. No `packages/` directory, workspace configuration, or shared-package source corresponding to this plan was found at audit time. The checklist remains backlog; see `05_shared_packages/00_overview.md`.

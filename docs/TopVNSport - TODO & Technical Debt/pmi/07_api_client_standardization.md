@@ -3,6 +3,10 @@
 ## Mức độ: HIGH
 ## Estimated Effort: Medium (4-6 hours)
 
+## Audit 2026-07-25
+
+⚠️ **Partially resolved.** OMS has a centralized `OMS/frontend/src/utils/api.ts`; WMS has `WMS/frontend/src/utils/apiClient.ts` and its pages use `fetchWithAuth`. PMI remains centralized in `PMI/frontend/src/utils/apiClient.ts`. Web still uses direct `fetch()` across `web/src/services/sport-api/` and `useComputedPrice.ts`, so the cross-frontend standardization item remains open and the old “WMS has no client” wording is obsolete.
+
 ---
 
 ## Mô Tả Vấn Đề

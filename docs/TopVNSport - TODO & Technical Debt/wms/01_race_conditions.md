@@ -3,6 +3,10 @@
 ## Mức độ: HIGH
 ## Estimated Effort: High (1-2 days)
 
+## Audit 2026-07-25
+
+⚠️ **Partially resolved; several integrity gaps remain.** Inventory and fulfillment cancellation/shipping paths use `with_for_update()` in places, but inbound receive still updates `InboundItem.received_qty` without a row lock (`WMS/backend/routers/inbound.py:69-84`) and scan-pick still does so without a lock (`fulfillment.py:160-186`). Over-picking (`fulfillment.py:180-182`), force-complete picking (`fulfillment.py:203-207`), the incorrect `PICKING` notification (`fulfillment.py:203-214`), and direct OMS notification/rollback coupling remain. A unique constraint exists for `(sku_code, location_id)` in `models.py:39-43`, but no atomic upsert/outbox implementation was found.
+
 ---
 
 ## 1. RACE CONDITION: Receive Scan (No Row Locking)

@@ -523,3 +523,6 @@ factory-boy==3.3.0
 - [ ] Setup Docker Compose
 - [ ] Test manual với curl/Postman
 - [ ] Document API với OpenAPI (auto-generated)
+## Audit 2026-07-25
+
+**Status:** Historical implementation/runbook. The Identity Service baseline described here is present in `identity-service/`; use the top-level `architecture/03_identity_service.md` for current status. The checklist is not a current completion gate.

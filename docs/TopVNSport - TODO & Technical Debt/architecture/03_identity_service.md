@@ -3,6 +3,10 @@
 ## Mức độ: HIGH
 ## Estimated Effort: High (2-3 weeks)
 
+## Audit 2026-07-25
+
+✅ **Implemented baseline.** `0d22c38` added the Identity Service backend/frontend, roles, permissions, JWT verification, and tests; `e5461a5` migrated PMI; `b279b90`/`6eca152` integrated OMS/WMS and gateway auth. The detailed files under `03_identity_service_plan/` are now historical implementation/runbook documents. Production secret fallback and service-level permission enforcement remain separate open findings tracked in PMI/OMS debt docs.
+
 ---
 
 ## Implementation Status (2026-07-14)

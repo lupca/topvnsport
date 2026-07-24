@@ -3,6 +3,10 @@
 ## Mức độ: MEDIUM
 ## Estimated Effort: High (1-2 days)
 
+## Audit 2026-07-25
+
+⚠️ **Partially resolved; still active.** PMI and WMS compose files have database/MinIO health checks, and the gateway/Identity services expose health checks. OMS production compose still lacks a database health check. No compose resource limits, Redis cache, database replication, or dedicated observability stack were found. The audit/outbox implementation is real (`PMI/backend/models.py`, `services/audit_worker.py`), so the old “audit system does not exist” framing should be narrowed to remaining duplication in `PMI/backend/utils/audit.py:129-334`.
+
 ---
 
 ## Mô Tả Các Vấn Đề

@@ -3,6 +3,10 @@
 ## Mức độ: HIGH
 ## Estimated Effort: High (1-2 days)
 
+## Audit 2026-07-25
+
+All six findings remain active unless noted otherwise. `OMS/backend/routers/orders.py:90-102` still derives order numbers from a count without retry/serialization; `services/inventory_service.py:81-128` still separates the inventory snapshot from fulfillment creation; and `orders.py:64-88` checks OTP use without `with_for_update()`. Customer/channel deletion, multi-fulfillment cancellation, and input constraints are also still present in `routers/customers.py:96-113`, `routers/channels.py:100-113`, `routers/orders.py:375-395`, and `schemas/order.py:75-89`. `OMS/backend/test_main.py:test_order_creation_otp_security` covers the bypass regression, but no concurrent order-number or token-consumption test was found.
+
 ---
 
 ## 1. RACE CONDITION: Order Number Generation

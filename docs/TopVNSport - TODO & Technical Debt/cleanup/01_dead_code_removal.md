@@ -3,6 +3,10 @@
 ## Mức độ: LOW
 ## Estimated Effort: Low (1-2 hours)
 
+## Audit 2026-07-25
+
+❌ **Still active.** All listed candidate files still exist, including `web/src/App.refactor.tsx`, both `.bak` schemas, `PMI/backend/refactor_script.py`, `OMS/verify_oms.py`, `PMI/backend/tests/timing_test_benchmark.py`, and `PMI/backend/services/worker.py`. The four listed npm packages remain in `web/package.json`; the `.env.example` entries are referenced by the app README and should not be called dead without a product decision. `services/worker.py` is still imported by worker tests, so removal requires updating those imports first. No files were deleted during this audit.
+
 ---
 
 ## Unused Files To Remove

@@ -728,3 +728,6 @@ def admin_auth_header(auth_token):
 | PMI Frontend - Auth | 85% | login redirect, token refresh |
 | E2E - Login Flow | N/A | Full flow coverage |
 | E2E - Cross-System | N/A | SSO verification |
+## Audit 2026-07-25
+
+**Status:** Historical implementation/runbook. The Identity Service baseline described here is present in `identity-service/`; use the top-level `architecture/03_identity_service.md` for current status. The checklist is not a current completion gate.

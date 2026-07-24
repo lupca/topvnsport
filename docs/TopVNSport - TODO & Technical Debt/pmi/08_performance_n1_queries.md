@@ -3,6 +3,10 @@
 ## Mức độ: MEDIUM
 ## Estimated Effort: Medium (3-5 hours)
 
+## Audit 2026-07-25
+
+⚠️ **Partially resolved; still active.** Product list/detail paths now use `selectinload`, but `PMI/backend/routers/products.py:321-378` still performs multiple follow-up media/tier queries for one SKU and `PMI/backend/routers/categories.py:40-61` walks ancestors with one query per level. Batch delete now commits once (`products.py:310-318`), so the former commit-inside-loop example is obsolete and should be removed from the issue narrative.
+
 ---
 
 ## Mô Tả Vấn Đề

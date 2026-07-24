@@ -125,3 +125,6 @@ Full testing strategy: `/docs/TopVNSport - TODO & Technical Debt/architecture/03
 | Migration | Missing | R5 added with migration script |
 | Seed data | Missing | Default roles + admin account |
 | Acceptance criteria | 4 items | 11 items with specific checks |
+## Audit 2026-07-25
+
+**Status:** Historical implementation/runbook. The Identity Service baseline described here is present in `identity-service/`; use the top-level `architecture/03_identity_service.md` for current status. The checklist is not a current completion gate.
