@@ -8,6 +8,7 @@ from typing import Any, Iterator
 
 import httpx
 import pytest
+from playwright.sync_api import expect
 
 from e2e_tests.utils.api_helpers import PMIApi, wait_until
 
@@ -613,6 +614,90 @@ def test_tier1_f6_05_storefront_product_card_no_discount(api_clients, pmi_api, e
     assert cp["has_active_promotion"] is False
     assert cp["original_price"] == 150000.0
     assert cp["computed_price"] == 150000.0
+
+
+def test_tier1_f6_06_storefront_all_products_scope_e2e(api_clients, pmi_api, page, web_base_url, e2e_run_id):
+    """Real-browser regression for PMI-012: an ALL-scope promotion must be reflected
+    by GET /public/products (home listing, product detail page) AND by the
+    quick-add-to-cart price (buildDefaultCartItem in cartSlice.ts)."""
+    from e2e_tests.utils.api_helpers import WMSApi
+
+    wms = WMSApi(api_clients.wms)
+    uid = uuid4().hex[:6]
+    product_name = f"Vot E2E AllScope {uid}"
+    sku_code = f"SKU-ALLSCOPE-{uid}"
+    category = pmi_api.create_category(name=f"Cat-AllScope-{uid}", code=f"CAT-ALLSCOPE-{uid}")
+    family = pmi_api.create_attribute_family(name=f"Fam-AllScope-{uid}", code=f"FAM-ALLSCOPE-{uid}")
+    product = pmi_api.create_product_with_variants(
+        product_code=f"PROD-ALLSCOPE-{uid}",
+        name=product_name,
+        category_id=category.id,
+        family_id=family.id,
+        sku_code=sku_code,
+        price=1250000.0,
+        stock=50,
+    )
+    variant = product.variants[0]
+
+    # Stock lives in WMS, not PMI (see CLAUDE.md) — the storefront hides the
+    # add-to-cart button unless WMS reports on-hand stock for the SKU.
+    warehouse = wms.create_warehouse(code=f"WH-ALLSCOPE-{uid}", name="WH E2E AllScope")
+    storage_location = wms.create_location(
+        warehouse_id=warehouse.id, location_code=f"LOC-ALLSCOPE-STORAGE-{uid}", location_type="STORAGE"
+    )
+    inbound = wms.create_inbound_shipment(
+        inbound_number=f"INB-ALLSCOPE-{uid}",
+        warehouse_id=warehouse.id,
+        sku_code=sku_code,
+        product_name=product_name,
+        expected_qty=50,
+    )
+    wms.receive_inbound_shipment(inbound.id, sku_code=sku_code, received_qty=50, location_id=storage_location.id)
+    wms.put_away_inbound_item(inbound.id, sku_code=sku_code, location_id=storage_location.id)
+    wms.complete_inbound_shipment(inbound.id)
+    wait_until(
+        lambda: wms.get_inventory_record(sku_code=sku_code, location_id=storage_location.id),
+        timeout_seconds=45,
+    )
+
+    promotion = pmi_api.create_promotion({
+        "code": f"ALLSCOPE_E2E_{uid}",
+        "name": "All Products E2E Storefront Promotion",
+        "discount_type": "PERCENTAGE",
+        "discount_value": 20.0,
+        "scopes": [{"scope_type": "ALL", "target_id": None, "is_exclusion": False}],
+    })
+    pmi_api.activate_promotion(promotion["id"])
+
+    cp = wait_until(lambda: pmi_api.get_computed_price(str(variant.id)), timeout_seconds=30)
+    assert cp["has_active_promotion"] is True
+    assert cp["computed_price"] == 1000000.0
+    assert cp["original_price"] == 1250000.0
+
+    # AC1: home listing (ProductCard) shows discounted price + badge for an
+    # unrelated product caught by the ALL scope.
+    page.goto(web_base_url, wait_until="domcontentloaded")
+    search_box = page.get_by_placeholder("Tìm vợt Yonex, Lining, cước đan, giày cầu lông...")
+    search_box.fill(product_name)
+
+    dropdown_result = page.locator("#topvnsport-header").get_by_text(product_name, exact=True)
+    expect(dropdown_result).to_be_visible(timeout=15_000)
+    dropdown_result.click()
+
+    # AC2: product detail page shows discounted price, struck-through original, badge.
+    expect(page.get_by_role("heading", name=product_name)).to_be_visible(timeout=15_000)
+    expect(page.get_by_text("1.000.000đ", exact=False).first).to_be_visible(timeout=15_000)
+    expect(page.get_by_text("1.250.000đ", exact=False).first).to_be_visible()
+    expect(page.get_by_text("TIẾT KIỆM 20%", exact=False)).to_be_visible()
+
+    # AC3: quick add-to-cart uses the discounted price, not the original price.
+    page.get_by_role("button", name="Thêm vào giỏ hàng", exact=True).click()
+    cart_drawer = page.locator("#cart-drawer-modal")
+    expect(cart_drawer).to_be_visible(timeout=15_000)
+    expect(cart_drawer.get_by_text("1.000.000đ", exact=False).first).to_be_visible()
+    expect(cart_drawer.get_by_text("1.250.000đ", exact=False)).to_have_count(0)
+
+    pmi_api.end_promotion(promotion["id"])
 
 
 # ============================================================================
