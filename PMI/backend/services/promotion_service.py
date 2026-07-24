@@ -199,21 +199,21 @@ def calculate_discount(
 def get_promo_specificity(promo: Union[Promotion, dict, Any]) -> int:
     """
     Returns specificity score for promotion scope rules:
-    VARIANT = 4, PRODUCT = 3, CATEGORY = 2, ALL = 1, None = 0.
+    VARIANT = 4, PRODUCT = 3, CATEGORY = 2, ALL / empty scope = 1.
     Used for tie-breaking promotions with identical priority.
     """
     scopes = getattr(promo, "scopes", []) or []
     if isinstance(promo, dict):
         scopes = promo.get("scopes", [])
     if not scopes:
-        return 0
+        return 1
     inc_scopes = []
     for s in scopes:
         is_ex = getattr(s, "is_exclusion", False) if not isinstance(s, dict) else s.get("is_exclusion", False)
         if not is_ex:
             inc_scopes.append(s)
     if not inc_scopes:
-        return 0
+        return 1
     types = set()
     for s in inc_scopes:
         st = getattr(s, "scope_type", None) if not isinstance(s, dict) else s.get("scope_type")
@@ -229,7 +229,7 @@ def get_promo_specificity(promo: Union[Promotion, dict, Any]) -> int:
         return 2
     if "ALL" in types or "ALL_PRODUCTS" in types or "ALL_PRODUCT" in types:
         return 1
-    return 0
+    return 1
 
 
 # ----------------------------------------------------------------------
@@ -638,24 +638,25 @@ def parse_promotion_intent(prompt: str, created_by: Optional[str] = "AI_AGENT") 
 
     # 6. Infer Scopes
     scopes = []
-    if any(kw in prompt_lower for kw in ["tất cả", "toàn bộ", "all products", "all product", "khắp cửa hàng"]):
-        scopes.append(PromotionScopeSchema(scope_type=ScopeType.ALL, target_id=None, is_exclusion=False))
-        reasoning_lines.append("Áp dụng cho tất cả sản phẩm (ScopeType.ALL).")
-    elif "danh mục" in prompt_lower or "category" in prompt_lower:
-        cat_match = re.search(r'(?:danh mục|category)\s*(\d+)', prompt_lower)
+    cat_match = re.search(r'(?:danh mục|category)\s*(\d+)', prompt_lower)
+    var_match = re.search(r'(?:biến thể|variant)\s*(\d+)', prompt_lower)
+    prod_match = re.search(r'(?:sản phẩm|product)\s*(\d+)', prompt_lower)
+
+    if "danh mục" in prompt_lower or "category" in prompt_lower:
         target_id = cat_match.group(1) if cat_match else "1"
         scopes.append(PromotionScopeSchema(scope_type=ScopeType.CATEGORY, target_id=target_id, is_exclusion=False))
         reasoning_lines.append(f"Áp dụng danh mục target_id = {target_id}.")
-    elif "sản phẩm" in prompt_lower or "product" in prompt_lower:
-        prod_match = re.search(r'(?:sản phẩm|product)\s*(\d+)', prompt_lower)
-        target_id = prod_match.group(1) if prod_match else "10"
-        scopes.append(PromotionScopeSchema(scope_type=ScopeType.PRODUCT, target_id=target_id, is_exclusion=False))
-        reasoning_lines.append(f"Áp dụng sản phẩm target_id = {target_id}.")
     elif "biến thể" in prompt_lower or "variant" in prompt_lower:
-        var_match = re.search(r'(?:biến thể|variant)\s*(\d+)', prompt_lower)
         target_id = var_match.group(1) if var_match else "101"
         scopes.append(PromotionScopeSchema(scope_type=ScopeType.VARIANT, target_id=target_id, is_exclusion=False))
         reasoning_lines.append(f"Áp dụng biến thể target_id = {target_id}.")
+    elif prod_match:
+        target_id = prod_match.group(1)
+        scopes.append(PromotionScopeSchema(scope_type=ScopeType.PRODUCT, target_id=target_id, is_exclusion=False))
+        reasoning_lines.append(f"Áp dụng sản phẩm target_id = {target_id}.")
+    elif any(kw in prompt_lower for kw in ["tất cả", "toàn bộ", "all products", "all product", "khắp cửa hàng"]) or ("sản phẩm" in prompt_lower and not prod_match):
+        scopes.append(PromotionScopeSchema(scope_type=ScopeType.ALL, target_id=None, is_exclusion=False))
+        reasoning_lines.append("Áp dụng cho tất cả sản phẩm (ScopeType.ALL).")
     else:
         scopes.append(PromotionScopeSchema(scope_type=ScopeType.ALL, target_id=None, is_exclusion=False))
         reasoning_lines.append("Áp dụng cho tất cả sản phẩm (ScopeType.ALL).")

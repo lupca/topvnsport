@@ -669,6 +669,14 @@ def get_variant_price(
     "/api/computed-prices/bulk",
     response_model=dict
 )
+@router.post(
+    "/api/promotions/bulk-prices",
+    response_model=dict
+)
+@router.post(
+    "/promotions/bulk-prices",
+    response_model=dict
+)
 def get_bulk_prices(
     payload: Dict[str, Any],
     db: Session = Depends(get_db)

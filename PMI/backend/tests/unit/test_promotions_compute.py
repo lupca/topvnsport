@@ -374,3 +374,94 @@ def test_all_products_scope_promotion_compute_and_bulk_prices(db_session, client
     assert data[str(v2.id)]["computed_price"] == 160000.0
 
 
+def test_all_products_scope_alias_and_bulk_prices_endpoints(client):
+    """
+    Regression test: Verifies ALL_PRODUCTS / ALL_PRODUCT aliases in promotion payload
+    do not trigger 422 errors, and verifies /api/promotions/bulk-prices & /promotions/bulk-prices endpoints.
+    """
+    code_1 = f"ALIAS_1_{uuid.uuid4().hex[:6]}"
+    res1 = client.post("/api/promotions", json={
+        "code": code_1,
+        "name": "Alias Promo 1",
+        "discount_type": "PERCENTAGE",
+        "discount_value": 20.0,
+        "scopes": [{"scope_type": "ALL_PRODUCTS"}]
+    })
+    assert res1.status_code == status.HTTP_201_CREATED, res1.text
+    d1 = res1.json()
+    assert d1["scopes"][0]["scope_type"] == "ALL"
+
+    code_2 = f"ALIAS_2_{uuid.uuid4().hex[:6]}"
+    res2 = client.post("/api/promotions/preview", json={
+        "code": code_2,
+        "discount_type": "PERCENTAGE",
+        "discount_value": 15.0,
+        "scopes": [{"scope_type": "ALL_PRODUCT"}]
+    })
+    assert res2.status_code == status.HTTP_200_OK, res2.text
+
+    # Test /api/promotions/bulk-prices & /promotions/bulk-prices aliases
+    res_b1 = client.post("/api/promotions/bulk-prices", json={"variant_ids": ["99999"]})
+    assert res_b1.status_code == status.HTTP_200_OK
+
+    res_b2 = client.post("/promotions/bulk-prices", json={"variant_ids": ["99999"]})
+    assert res_b2.status_code == status.HTTP_200_OK
+
+
+def test_mixed_scope_intent_parsing(client):
+    """
+    Regression test: Verifies parse_promotion_intent correctly assigns specific scopes
+    (CATEGORY, PRODUCT, VARIANT) when target IDs are specified, without widening to ALL.
+    """
+    # 1. Mixed prompt with "tất cả sản phẩm" AND category target -> CATEGORY
+    res1 = client.post("/api/promotions/parse-intent", json={
+        "prompt": "Giảm 20% cho tất cả sản phẩm thuộc danh mục 5"
+    })
+    assert res1.status_code == status.HTTP_200_OK
+    d1 = res1.json()
+    assert d1["scopes"][0]["scope_type"] == "CATEGORY"
+    assert d1["scopes"][0]["target_id"] == "5"
+
+    # 2. Mixed prompt with "tất cả sản phẩm" AND product ID -> PRODUCT
+    res2 = client.post("/api/promotions/parse-intent", json={
+        "prompt": "Giảm 15% cho tất cả sản phẩm 12"
+    })
+    assert res2.status_code == status.HTTP_200_OK
+    d2 = res2.json()
+    assert d2["scopes"][0]["scope_type"] == "PRODUCT"
+    assert d2["scopes"][0]["target_id"] == "12"
+
+    # 3. Mixed prompt with variant ID -> VARIANT
+    res3 = client.post("/api/promotions/parse-intent", json={
+        "prompt": "Giảm 10% cho tất cả biến thể 105"
+    })
+    assert res3.status_code == status.HTTP_200_OK
+    d3 = res3.json()
+    assert d3["scopes"][0]["scope_type"] == "VARIANT"
+    assert d3["scopes"][0]["target_id"] == "105"
+
+    # 4. Pure all-products prompt -> ALL
+    res4 = client.post("/api/promotions/parse-intent", json={
+        "prompt": "Giảm 20% cho tất cả sản phẩm"
+    })
+    assert res4.status_code == status.HTTP_200_OK
+    d4 = res4.json()
+    assert d4["scopes"][0]["scope_type"] == "ALL"
+    assert d4["scopes"][0]["target_id"] is None
+
+
+def test_empty_vs_all_scope_specificity_tie_breaking():
+    """
+    Regression test: Verifies empty scopes and explicit ALL scopes have consistent specificity score 1.
+    """
+    from services.promotion_service import get_promo_specificity
+    from models import Promotion, PromotionScope, ScopeType
+
+    p_empty = Promotion(scopes=[])
+    p_all = Promotion(scopes=[PromotionScope(scope_type=ScopeType.ALL)])
+
+    assert get_promo_specificity(p_empty) == 1
+    assert get_promo_specificity(p_all) == 1
+
+
+

@@ -293,7 +293,7 @@ def test_specificity_scoring_hierarchy():
     assert get_promo_specificity(p_product) == 3
     assert get_promo_specificity(p_category) == 2
     assert get_promo_specificity(p_all) == 1
-    assert get_promo_specificity(p_none) == 0
+    assert get_promo_specificity(p_none) == 1
 
     # Hybrid promotion (Inclusion CATEGORY + Exclusion VARIANT)
     # Exclusion scope ignored for specificity calculation

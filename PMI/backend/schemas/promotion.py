@@ -68,11 +68,25 @@ class PromotionScopeSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+    @field_validator('scope_type', mode='before')
+    @classmethod
+    def normalize_scope_type(cls, v):
+        if isinstance(v, str):
+            v_upper = v.strip().upper()
+            if v_upper in ("ALL_PRODUCTS", "ALL_PRODUCT"):
+                return ScopeType.ALL
+            try:
+                return ScopeType(v_upper)
+            except ValueError:
+                pass
+        return v
+
     @model_validator(mode='after')
     def validate_target_id_for_scope(self) -> 'PromotionScopeSchema':
         if self.scope_type != ScopeType.ALL and not self.target_id:
             raise ValueError(f"target_id is required when scope_type is {self.scope_type}")
         return self
+
 
 
 # ----------------------------------------------------------------------
