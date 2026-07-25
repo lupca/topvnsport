@@ -9,10 +9,10 @@ services:
     restart: always
     environment:
       - ENV=production
-      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@database-topvnsport.cluster-copm008y8icu.us-east-1.rds.amazonaws.com:5432/oms}
-      - FERNET_KEY
+      - DATABASE_URL=${DATABASE_URL:?DATABASE_URL is required}
+      - FERNET_KEY=${FERNET_KEY:?FERNET_KEY is required}
       - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-https://oms.topvnsport.com}
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-identity_jwt_secret_key_2026_change_me_in_prod}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:?JWT_SECRET_KEY is required}
     networks:
       - default
       - pmi_default

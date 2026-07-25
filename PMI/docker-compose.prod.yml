@@ -8,7 +8,7 @@ services:
     container_name: pim-api
     restart: always
     environment:
-      - JWT_SECRET_KEY=identity_jwt_secret_key_2026_change_me_in_prod
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:?JWT_SECRET_KEY is required}
       - INTERNAL_SERVICE_TOKEN=prod_oms_wms_internal_api_key_must_change
       - ALLOWED_SERVICE_KEYS=prod-service-api-key-must-change
 

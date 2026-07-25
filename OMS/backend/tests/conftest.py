@@ -1,6 +1,7 @@
 import os
 os.environ.setdefault("INTEGRITY_MODE", "development")
 os.environ.setdefault("ENV", "development")
+os.environ.setdefault("DATABASE_URL", "sqlite:////tmp/oms_router_tests.db")
 os.environ.setdefault("FERNET_KEY", "2Jf7oG7N4zFv2j3GmY5V0rLq9xW8pC1aB6dE3hK7nQw=")
 os.environ.setdefault("ALLOW_TEST_OTP_ENDPOINT", "true")
 os.environ["TESTING"] = "1"

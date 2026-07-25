@@ -349,6 +349,12 @@ jobs:
   validate-compose:
     name: Validate Compose Files
     runs-on: ubuntu-latest
+    env:
+      # Non-secret values used only to exercise Compose interpolation in CI.
+      FERNET_KEY: 2Jf7oG7N4zFv2j3GmY5V0rLq9xW8pC1aB6dE3hK7nQw=
+      JWT_SECRET_KEY: ci-compose-jwt-key-not-for-production
+      DATABASE_URL: postgresql://postgres:postgres@example.invalid:5432/oms
+      CORS_ALLOWED_ORIGINS: https://oms.topvnsport.com
     steps:
       - uses: actions/checkout@v4
 
@@ -373,6 +379,9 @@ jobs:
               fi
             fi
           done
+
+      - name: Test deployment env upsert
+        run: bash tests/test_deploy_env_upsert.sh
 
       - name: Validate all production compose files
         run: |

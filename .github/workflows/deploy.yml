@@ -33,6 +33,8 @@ jobs:
           EC2_USER: ${{ secrets.EC2_USER }}
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
           PUBLIC_HOST: ${{ secrets.PUBLIC_HOST }}
+          FERNET_KEY: ${{ secrets.FERNET_KEY }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
         run: |
           chmod +x deploy_prod.sh
           ./deploy_prod.sh

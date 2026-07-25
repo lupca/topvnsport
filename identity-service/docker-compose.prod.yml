@@ -9,7 +9,7 @@ services:
     ports:
       - "18110:8000"
     environment:
-      - JWT_SECRET_KEY=identity_jwt_secret_key_2026_change_me_in_prod
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:?JWT_SECRET_KEY is required}
       - JWT_ALGORITHM=HS256
       - ACCESS_TOKEN_EXPIRE_MINUTES=60
       - REFRESH_TOKEN_EXPIRE_DAYS=7

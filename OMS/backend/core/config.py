@@ -1,7 +1,6 @@
 import os
 
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgresql://postgres:postgres@database-topvnsport.cluster-copm008y8icu.us-east-1.rds.amazonaws.com:5432/oms"
-)
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL environment variable is required")
 ENV = os.getenv("ENV", "development")

@@ -4,8 +4,13 @@ import secrets
 from typing import Optional
 from jose import jwt, JWTError
 
-# JWT Configurations loaded from environment variables
-JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "super_secret_key_change_me_in_production")
+# JWT configuration is shared with the other production services. Keep the
+# development fallback distinct from every production secret.
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+if not JWT_SECRET_KEY:
+    if os.getenv("ENV") == "production":
+        raise RuntimeError("JWT_SECRET_KEY environment variable is required in production mode!")
+    JWT_SECRET_KEY = "identity-dev-only-jwt-key-not-for-production"
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "15"))
 REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7"))
