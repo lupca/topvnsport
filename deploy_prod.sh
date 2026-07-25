@@ -7,6 +7,15 @@ DEPLOY_REVISION="$(git -C "$ROOT_DIR" rev-parse --short=12 HEAD 2>/dev/null || e
 : "${EC2_HOST:?EC2_HOST is required (example: ec2-xx-xx-xx-xx.compute-1.amazonaws.com)}"
 : "${FERNET_KEY:?FERNET_KEY is required}"
 : "${JWT_SECRET_KEY:?JWT_SECRET_KEY is required}"
+: "${RDS_HOST:?RDS_HOST is required}"
+: "${RDS_USER:?RDS_USER is required}"
+: "${RDS_PASSWORD:?RDS_PASSWORD is required}"
+: "${RDS_SSLMODE:?RDS_SSLMODE is required}"
+
+if [[ "$RDS_SSLMODE" != "require" ]]; then
+  echo "RDS_SSLMODE must be require"
+  exit 1
+fi
 
 if [[ ! "$FERNET_KEY" =~ ^[A-Za-z0-9_-]{43}=$ ]]; then
   echo "FERNET_KEY must be a valid 32-byte urlsafe-base64 Fernet key"
@@ -42,6 +51,9 @@ upsert_env_var() {
     sed -i -f "$sed_script" "$file"
     rm -f "$sed_script"
   else
+    if [[ -s "$file" ]] && [[ "$(tail -c 1 "$file" | od -An -t x1)" != *0a* ]]; then
+      printf '\n' >> "$file"
+    fi
     printf '%s=%s\n' "$key" "$value" >> "$file"
   fi
 }
@@ -128,12 +140,36 @@ FERNET_VALUE
 write_secret "\$DEPLOY_PATH/OMS/.env" JWT_SECRET_KEY <<'JWT_VALUE'
 ${JWT_SECRET_KEY}
 JWT_VALUE
+write_secret "\$DEPLOY_PATH/OMS/.env" RDS_HOST <<'RDS_HOST_VALUE'
+${RDS_HOST}
+RDS_HOST_VALUE
+write_secret "\$DEPLOY_PATH/OMS/.env" RDS_USER <<'RDS_USER_VALUE'
+${RDS_USER}
+RDS_USER_VALUE
+write_secret "\$DEPLOY_PATH/OMS/.env" RDS_PASSWORD <<'RDS_PASSWORD_VALUE'
+${RDS_PASSWORD}
+RDS_PASSWORD_VALUE
+write_secret "\$DEPLOY_PATH/OMS/.env" RDS_SSLMODE <<'RDS_SSLMODE_VALUE'
+${RDS_SSLMODE}
+RDS_SSLMODE_VALUE
 write_secret "\$DEPLOY_PATH/PMI/.env" JWT_SECRET_KEY <<'JWT_VALUE'
 ${JWT_SECRET_KEY}
 JWT_VALUE
 write_secret "\$DEPLOY_PATH/WMS/.env" JWT_SECRET_KEY <<'JWT_VALUE'
 ${JWT_SECRET_KEY}
 JWT_VALUE
+write_secret "\$DEPLOY_PATH/WMS/.env" RDS_HOST <<'RDS_HOST_VALUE'
+${RDS_HOST}
+RDS_HOST_VALUE
+write_secret "\$DEPLOY_PATH/WMS/.env" RDS_USER <<'RDS_USER_VALUE'
+${RDS_USER}
+RDS_USER_VALUE
+write_secret "\$DEPLOY_PATH/WMS/.env" RDS_PASSWORD <<'RDS_PASSWORD_VALUE'
+${RDS_PASSWORD}
+RDS_PASSWORD_VALUE
+write_secret "\$DEPLOY_PATH/WMS/.env" RDS_SSLMODE <<'RDS_SSLMODE_VALUE'
+${RDS_SSLMODE}
+RDS_SSLMODE_VALUE
 write_secret "\$DEPLOY_PATH/identity-service/.env" JWT_SECRET_KEY <<'JWT_VALUE'
 ${JWT_SECRET_KEY}
 JWT_VALUE
@@ -198,7 +234,7 @@ ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "
 "
 
 echo "[4.1/5] Post-deploy smoke checks"
-ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "DEPLOY_PATH='$DEPLOY_PATH' bash -se" <<'REMOTE'
+ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "DEPLOY_PATH='$DEPLOY_PATH' DOMAIN_NAME='$DOMAIN_NAME' bash -se" <<'REMOTE'
 set -euo pipefail
 
 if [[ "$DEPLOY_PATH" == ~/* ]]; then
@@ -237,7 +273,26 @@ finally:
 PY
 
 # Generate a token with identity-service and verify OMS accepts the shared key.
-smoke_token="$(sudo docker exec identity-api-prod python -c 'from utils.jwt import create_access_token; print(create_access_token(0, "deploy-smoke", "admin"))')"
+smoke_token="$(sudo docker exec -i identity-api-prod python - <<'PY'
+from database import SessionLocal
+from models import StaffAccount
+from utils.jwt import create_access_token
+
+db = SessionLocal()
+try:
+    staff = (
+        db.query(StaffAccount)
+        .filter(StaffAccount.is_active.is_(True))
+        .order_by(StaffAccount.id)
+        .first()
+    )
+    if staff is None:
+        raise SystemExit("Identity JWT smoke check found no active staff account")
+    print(create_access_token(staff.id, staff.username, staff.role_code or ""))
+finally:
+    db.close()
+PY
+)"
 smoke_status="$(curl -sS -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $smoke_token" "http://api-oms.$DOMAIN_NAME/api/configs/sms")"
 unset smoke_token
 echo "Identity->OMS JWT smoke check: $smoke_status"

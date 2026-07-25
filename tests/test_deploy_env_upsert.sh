@@ -32,4 +32,11 @@ upsert_env_var "$appended" FERNET_KEY 'new-value'
 test "$(grep -c '^FERNET_KEY=' "$appended")" -eq 1
 test "$(tail -n 1 "$appended")" = 'FERNET_KEY=new-value'
 
+no_trailing_newline="$test_dir/no-trailing-newline.env"
+printf '%s' $'FIRST=one\nSECOND=two' > "$no_trailing_newline"
+upsert_env_var "$no_trailing_newline" FERNET_KEY 'new=/+value='
+expected_no_trailing_newline="$test_dir/expected-no-trailing-newline.env"
+printf '%s' $'FIRST=one\nSECOND=two\nFERNET_KEY=new=/+value=\n' > "$expected_no_trailing_newline"
+cmp -s "$no_trailing_newline" "$expected_no_trailing_newline"
+
 echo "deploy env upsert tests passed"

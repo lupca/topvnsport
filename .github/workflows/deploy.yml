@@ -35,6 +35,10 @@ jobs:
           PUBLIC_HOST: ${{ secrets.PUBLIC_HOST }}
           FERNET_KEY: ${{ secrets.FERNET_KEY }}
           JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          RDS_HOST: ${{ secrets.RDS_HOST }}
+          RDS_USER: ${{ secrets.RDS_USER }}
+          RDS_PASSWORD: ${{ secrets.RDS_PASSWORD }}
+          RDS_SSLMODE: ${{ secrets.RDS_SSLMODE }}
         run: |
           chmod +x deploy_prod.sh
           ./deploy_prod.sh

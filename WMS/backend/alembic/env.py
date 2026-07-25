@@ -20,7 +20,7 @@ if config.config_file_name is not None:
 
 config.set_main_option(
     "sqlalchemy.url",
-    os.getenv("DATABASE_URL", "postgresql://postgres:postgres@database-topvnsport.cluster-copm008y8icu.us-east-1.rds.amazonaws.com:5432/wms"),
+    os.environ["DATABASE_URL"],
 )
 
 target_metadata = Base.metadata

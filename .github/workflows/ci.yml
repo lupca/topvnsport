@@ -354,6 +354,10 @@ jobs:
       FERNET_KEY: 2Jf7oG7N4zFv2j3GmY5V0rLq9xW8pC1aB6dE3hK7nQw=
       JWT_SECRET_KEY: ci-compose-jwt-key-not-for-production
       DATABASE_URL: postgresql://postgres:postgres@example.invalid:5432/oms
+      RDS_HOST: rds-validation.example.invalid
+      RDS_USER: postgres
+      RDS_PASSWORD: ci-only-not-a-production-secret
+      RDS_SSLMODE: require
       CORS_ALLOWED_ORIGINS: https://oms.topvnsport.com
     steps:
       - uses: actions/checkout@v4
