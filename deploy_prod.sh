@@ -90,6 +90,7 @@ ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "
   echo "Running database migrations..."
   sudo docker exec pim-api alembic upgrade head || true
   sudo docker exec wms-api alembic upgrade head || true
+  sudo docker exec oms_backend alembic upgrade head
 "
 
 echo "[4/5] Health checks"

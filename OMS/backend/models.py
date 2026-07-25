@@ -86,7 +86,7 @@ class FulfillmentOrder(Base):
 
 
 import os
-from sqlalchemy.types import TypeDecorator, String as SqlString
+from sqlalchemy.types import TypeDecorator
 from cryptography.fernet import Fernet
 
 logger = logging.getLogger(__name__)
@@ -95,7 +95,7 @@ class EncryptedString(TypeDecorator):
     """
     Encrypts a string value at rest using Fernet.
     """
-    impl = SqlString
+    impl = Text
     cache_ok = True
 
     def __init__(self, *args, **kwargs):

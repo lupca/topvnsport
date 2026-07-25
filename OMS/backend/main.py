@@ -10,11 +10,9 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import inspect as sa_inspect, text
-
 import models
 import services.zalo_service
-from database import engine, Base, SessionLocal
+from database import SessionLocal
 from utils.api_utils import (
     PIM_API_URL,
     WMS_API_URL,
@@ -41,46 +39,6 @@ from routers import (
 # Setup logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger("oms_backend")
-
-# Create DB tables
-Base.metadata.create_all(bind=engine)
-
-
-def ensure_zalo_otp_schema() -> None:
-    """Add the Zalo message mapping column for existing OMS databases."""
-    inspector = sa_inspect(engine)
-    columns = {
-        column["name"]
-        for column in inspector.get_columns(models.OtpVerification.__tablename__)
-    }
-    if "zalo_message_id" not in columns:
-        with engine.begin() as connection:
-            if engine.dialect.name == "postgresql":
-                connection.execute(
-                    text(
-                        "ALTER TABLE otp_verifications "
-                        "ADD COLUMN IF NOT EXISTS zalo_message_id VARCHAR(100)"
-                    )
-                )
-            else:
-                connection.execute(
-                    text(
-                        "ALTER TABLE otp_verifications "
-                        "ADD COLUMN zalo_message_id VARCHAR(100)"
-                    )
-                )
-
-    with engine.begin() as connection:
-        connection.execute(
-            text(
-                "CREATE INDEX IF NOT EXISTS "
-                "ix_otp_verifications_zalo_message_id "
-                "ON otp_verifications (zalo_message_id)"
-            )
-        )
-
-
-ensure_zalo_otp_schema()
 
 # Seed initial channels data
 db_seed = SessionLocal()
