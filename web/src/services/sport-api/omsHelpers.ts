@@ -1,27 +1,5 @@
 import { OMS_API_URL } from './constants';
-import { OmsChannel, OmsPaginatedChannels, OmsPaginatedCustomers } from './types';
-
-function normalizePhone(value: string): string {
-  return value.replace(/\D/g, '');
-}
-
-export async function findExistingCustomerIdByPhone(phone: string): Promise<number | null> {
-  const normalizedPhone = normalizePhone(phone);
-  const searchRes = await fetch(
-    `${OMS_API_URL}/customers?search=${encodeURIComponent(phone)}&limit=100`
-  );
-
-  if (!searchRes.ok) {
-    return null;
-  }
-
-  const data = (await searchRes.json()) as OmsPaginatedCustomers;
-  const existing = (data.items || []).find(
-    (customer) => normalizePhone(customer.phone || '') === normalizedPhone
-  );
-
-  return existing ? existing.id : null;
-}
+import { OmsChannel, OmsPaginatedChannels } from './types';
 
 export async function getChannels(search?: string): Promise<OmsChannel[]> {
   const query = search

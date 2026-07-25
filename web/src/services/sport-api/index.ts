@@ -1,7 +1,7 @@
 import { Blog, Branch, Category, Product, StringOption } from '../../types';
 import rawData from '../../data.json';
 import { delay, OMS_API_URL, PMI_API_URL, SIMULATED_LATENCY, WMS_API_URL } from './constants';
-import { findExistingCustomerIdByPhone, findManualChannel, findStorefrontChannel, getChannels } from './omsHelpers';
+import { findManualChannel, findStorefrontChannel, getChannels } from './omsHelpers';
 import { extractItems, mapPmiProduct } from './productMappers';
 import { CreateOrderPayload, OmsChannel, OmsCustomer, OmsCustomerInput, PmiProduct, SendOtpResponse, VerifyOtpResponse } from './types';
 
@@ -273,25 +273,17 @@ async function verifyOtp(phoneNumber: string, otpCode: string): Promise<VerifyOt
 }
 
 async function findOrCreateCustomer(customer: OmsCustomerInput): Promise<number> {
-  const existingCustomerId = await findExistingCustomerIdByPhone(customer.phone);
-  if (existingCustomerId !== null) {
-    return existingCustomerId;
-  }
-
   const createResponse = await fetch(`${OMS_API_URL}/customers`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(customer)
   });
 
-  if (createResponse.ok) {
+  if (createResponse.ok || createResponse.status === 409) {
     const created = (await createResponse.json()) as OmsCustomer;
-    return created.id;
-  }
-
-  const fallbackCustomerId = await findExistingCustomerIdByPhone(customer.phone);
-  if (fallbackCustomerId !== null) {
-    return fallbackCustomerId;
+    if (created && typeof created.id === 'number') {
+      return created.id;
+    }
   }
 
   const errorText = await createResponse.text();

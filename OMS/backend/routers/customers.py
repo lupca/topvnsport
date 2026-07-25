@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -13,7 +13,17 @@ router = APIRouter(prefix="/customers", tags=["Customers"])
 
 
 @router.post("", response_model=schemas.CustomerOut, status_code=status.HTTP_201_CREATED)
-def create_customer(customer: schemas.CustomerCreate, db: Session = Depends(get_db), current_user: Optional[dict] = Depends(get_optional_user)):
+def create_customer(
+    customer: schemas.CustomerCreate,
+    response: Response,
+    db: Session = Depends(get_db),
+    current_user: Optional[dict] = Depends(get_optional_user)
+):
+    existing = db.query(models.Customer).filter(models.Customer.phone == customer.phone).first()
+    if existing:
+        response.status_code = status.HTTP_200_OK
+        return existing
+
     db_customer = models.Customer(
         name=customer.name,
         phone=customer.phone,
@@ -27,9 +37,13 @@ def create_customer(customer: schemas.CustomerCreate, db: Session = Depends(get_
         return db_customer
     except IntegrityError:
         db.rollback()
+        existing = db.query(models.Customer).filter(models.Customer.phone == customer.phone).first()
+        if existing:
+            response.status_code = status.HTTP_200_OK
+            return existing
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Customer with this phone number already exists."
+            detail="Customer creation failed."
         )
 
 

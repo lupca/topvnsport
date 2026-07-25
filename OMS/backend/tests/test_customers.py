@@ -37,3 +37,32 @@ def test_customers_crud(client, db):
     # Confirm deleted
     resp = client.get(f"/customers/{cust_id}")
     assert resp.status_code == 404
+
+
+def test_create_customer_idempotent(client, db):
+    payload = {
+        "name": "Nguyen Van B",
+        "phone": "0382426669",
+        "email": "nvb@example.com",
+        "address": "789 Nguyen Hue"
+    }
+
+    # 1. First call creates customer -> returns 201 with customer id
+    resp1 = client.post("/customers", json=payload)
+    assert resp1.status_code == 201
+    data1 = resp1.json()
+    assert "id" in data1
+    cust_id = data1["id"]
+
+    # 2. Second call with same phone -> returns 200 with existing customer id
+    payload_existing = {
+        "name": "Nguyen Van B Updated Name",
+        "phone": "0382426669",
+        "email": "nvb_new@example.com",
+        "address": "789 Nguyen Hue"
+    }
+    resp2 = client.post("/customers", json=payload_existing)
+    assert resp2.status_code == 200
+    data2 = resp2.json()
+    assert data2["id"] == cust_id
+
