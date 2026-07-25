@@ -142,9 +142,32 @@ jobs:
     needs: changes
     if: needs.changes.outputs.oms == 'true' || needs.changes.outputs.shared == 'true'
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: oms_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d oms_db"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
     defaults:
       run:
         working-directory: OMS/backend
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/oms_db
+      OMS_TEST_POSTGRES_URL: postgresql://postgres:postgres@localhost:5432/oms_db
+      FERNET_KEY: 2Jf7oG7N4zFv2j3GmY5V0rLq9xW8pC1aB6dE3hK7nQw=
+      INTEGRITY_MODE: development
+      ENV: development
+      ALLOW_TEST_OTP_ENDPOINT: 'true'
+      JWT_SECRET_KEY: ci-test-jwt-secret-key-not-for-prod
     
     steps:
       - uses: actions/checkout@v4
@@ -170,6 +193,9 @@ jobs:
       
       - name: Python syntax check
         run: python -m py_compile main.py
+
+      - name: Run pytest
+        run: pytest -v --tb=short
 
   oms-frontend:
     name: OMS Frontend Tests
