@@ -204,9 +204,17 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="OMS Backend API", version="1.0.0", lifespan=lifespan)
 
 # CORS Middleware
+cors_origins = [
+    origin.strip()
+    for origin in os.getenv(
+        "CORS_ALLOWED_ORIGINS",
+        "https://oms.topvnsport.com,http://localhost:13101,http://localhost:3000,http://127.0.0.1:13101",
+    ).split(",")
+    if origin.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

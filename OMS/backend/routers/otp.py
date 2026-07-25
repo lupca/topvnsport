@@ -42,6 +42,8 @@ def mask_token(token: str) -> str:
 if os.getenv("INTEGRITY_MODE") == "development" or os.getenv("ENV") == "development":
     @router.get("/test-last-otp")
     def get_test_last_otp(phone: str, db: Session = Depends(get_db)):
+        if os.getenv("ALLOW_TEST_OTP_ENDPOINT", "").lower() != "true":
+            raise HTTPException(status_code=404, detail="Not found")
         normalized_phone = utils.phone_helper.normalize_phone(phone)
         otp_code = LAST_OTPS.get(normalized_phone)
         if not otp_code:

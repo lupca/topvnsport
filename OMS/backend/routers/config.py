@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 import models
@@ -45,6 +45,9 @@ def update_sms_config(
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user),
 ):
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin role required")
+
     submitted_values = payload.model_dump(exclude_none=True)
     updates = {
         config_key: config_value

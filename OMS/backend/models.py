@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import logging
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, Numeric
 from sqlalchemy.orm import relationship
 from database import Base
@@ -88,6 +89,8 @@ import os
 from sqlalchemy.types import TypeDecorator, String as SqlString
 from cryptography.fernet import Fernet
 
+logger = logging.getLogger(__name__)
+
 class EncryptedString(TypeDecorator):
     """
     Encrypts a string value at rest using Fernet.
@@ -99,8 +102,13 @@ class EncryptedString(TypeDecorator):
         super().__init__(*args, **kwargs)
         key = os.getenv("FERNET_KEY")
         if not key:
-            key = "lz_K8Z8d1d-0iO-4yN2Vb11234567890abcdefghijk="
-        self.fernet = Fernet(key.encode() if isinstance(key, str) else key)
+            raise RuntimeError(
+                "FERNET_KEY environment variable is required to initialize encrypted configuration storage"
+            )
+        try:
+            self.fernet = Fernet(key.encode() if isinstance(key, str) else key)
+        except (TypeError, ValueError) as exc:
+            raise RuntimeError("FERNET_KEY must be a valid Fernet key") from exc
 
     def process_bind_param(self, value, dialect):
         if value is None:
@@ -112,8 +120,9 @@ class EncryptedString(TypeDecorator):
             return None
         try:
             return self.fernet.decrypt(value.encode()).decode()
-        except Exception as e:
-            raise ValueError(f"Decryption failed: {e}")
+        except Exception as exc:
+            logger.exception("Failed to decrypt an encrypted system configuration value")
+            raise ValueError("Fernet decryption failed for an encrypted system configuration value") from exc
 
 
 class SystemConfig(Base):

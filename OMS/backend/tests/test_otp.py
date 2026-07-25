@@ -18,6 +18,14 @@ def test_otp_helpers():
     assert mask_token("123") == "***"
 
 
+def test_test_last_otp_requires_explicit_flag(client, monkeypatch):
+    monkeypatch.setenv("ALLOW_TEST_OTP_ENDPOINT", "false")
+
+    response = client.get("/api/sms/test-last-otp?phone=0987654321")
+
+    assert response.status_code == 404
+
+
 def test_send_and_verify_otp_flow(client, db):
     phone = "0987654321"
 
