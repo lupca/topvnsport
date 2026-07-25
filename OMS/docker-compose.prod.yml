@@ -1,19 +1,6 @@
 version: '3.8'
 
 services:
-  oms_db:
-    image: postgres:15-alpine
-    container_name: oms_db
-    restart: always
-    environment:
-      POSTGRES_DB: oms_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "15434:5432"
-    volumes:
-      - oms_db_data:/var/lib/postgresql/data
-
   oms_backend:
     build:
       context: ./backend
@@ -21,12 +8,11 @@ services:
     container_name: oms_backend
     restart: always
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@oms_db:5432/oms_db
+      - ENV=production
+      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@database-topvnsport.cluster-copm008y8icu.us-east-1.rds.amazonaws.com:5432/oms}
       - FERNET_KEY
       - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-https://oms.topvnsport.com}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY:-identity_jwt_secret_key_2026_change_me_in_prod}
-    depends_on:
-      - oms_db
     networks:
       - default
       - pmi_default
@@ -58,6 +44,3 @@ networks:
     external: true
   wms_default:
     external: true
-
-volumes:
-  oms_db_data:

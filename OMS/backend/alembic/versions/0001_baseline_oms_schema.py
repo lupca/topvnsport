@@ -4,13 +4,15 @@ Revision ID: 0001_baseline
 Revises:
 Create Date: 2026-07-25
 
-For a database that already has the OMS schema, mark this revision as applied
-without recreating tables:
+For a database that already has the OMS schema, ``alembic upgrade head`` is
+safe: the baseline checks for existing tables and indexes before creating
+them, then applies the later drift-fixing revisions. A manual stamp is also
+available when the operator has independently verified the schema:
 
     alembic stamp 0001_baseline
 
-Use ``alembic upgrade head`` only for an empty database.  Later revisions can
-then be applied to either database.
+For a new database, ``alembic upgrade head`` creates the complete schema.
+Later revisions can be applied to either database.
 """
 
 from alembic import op
@@ -23,8 +25,26 @@ branch_labels = None
 depends_on = None
 
 
+def _create_table_if_missing(table_name, *elements):
+    if not sa.inspect(op.get_bind()).has_table(table_name):
+        op.create_table(table_name, *elements)
+
+
+def _create_index_if_missing(index_name, table_name, columns, unique=False):
+    inspector = sa.inspect(op.get_bind())
+    column_names = {column["name"] for column in inspector.get_columns(table_name)}
+    # A legacy database may be missing the column for a later revision (the
+    # Zalo column is handled by 0002). Do not make the baseline fail before
+    # that revision gets a chance to add it.
+    if any(column not in column_names for column in columns):
+        return
+    indexes = inspector.get_indexes(table_name)
+    if not any(index["name"] == index_name for index in indexes):
+        op.create_index(index_name, table_name, columns, unique=unique)
+
+
 def upgrade() -> None:
-    op.create_table(
+    _create_table_if_missing(
         "customers",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("name", sa.String(), nullable=False),
@@ -34,10 +54,10 @@ def upgrade() -> None:
         sa.Column("created_at", sa.DateTime(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index("ix_customers_id", "customers", ["id"], unique=False)
-    op.create_index("ix_customers_phone", "customers", ["phone"], unique=True)
+    _create_index_if_missing("ix_customers_id", "customers", ["id"], unique=False)
+    _create_index_if_missing("ix_customers_phone", "customers", ["phone"], unique=True)
 
-    op.create_table(
+    _create_table_if_missing(
         "channels",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("code", sa.String(), nullable=False),
@@ -45,10 +65,10 @@ def upgrade() -> None:
         sa.Column("is_active", sa.Boolean(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index("ix_channels_id", "channels", ["id"], unique=False)
-    op.create_index("ix_channels_code", "channels", ["code"], unique=True)
+    _create_index_if_missing("ix_channels_id", "channels", ["id"], unique=False)
+    _create_index_if_missing("ix_channels_code", "channels", ["code"], unique=True)
 
-    op.create_table(
+    _create_table_if_missing(
         "system_configs",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("config_key", sa.String(length=100), nullable=False),
@@ -59,10 +79,10 @@ def upgrade() -> None:
         sa.Column("updated_at", sa.DateTime(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index("ix_system_configs_id", "system_configs", ["id"], unique=False)
-    op.create_index("ix_system_configs_config_key", "system_configs", ["config_key"], unique=True)
+    _create_index_if_missing("ix_system_configs_id", "system_configs", ["id"], unique=False)
+    _create_index_if_missing("ix_system_configs_config_key", "system_configs", ["config_key"], unique=True)
 
-    op.create_table(
+    _create_table_if_missing(
         "orders",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("order_number", sa.String(), nullable=False),
@@ -80,10 +100,10 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["customer_id"], ["customers.id"]),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index("ix_orders_id", "orders", ["id"], unique=False)
-    op.create_index("ix_orders_order_number", "orders", ["order_number"], unique=True)
+    _create_index_if_missing("ix_orders_id", "orders", ["id"], unique=False)
+    _create_index_if_missing("ix_orders_order_number", "orders", ["order_number"], unique=True)
 
-    op.create_table(
+    _create_table_if_missing(
         "fulfillment_orders",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("order_id", sa.Integer(), nullable=False),
@@ -97,15 +117,15 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["order_id"], ["orders.id"]),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index("ix_fulfillment_orders_id", "fulfillment_orders", ["id"], unique=False)
-    op.create_index(
+    _create_index_if_missing("ix_fulfillment_orders_id", "fulfillment_orders", ["id"], unique=False)
+    _create_index_if_missing(
         "ix_fulfillment_orders_fulfillment_number",
         "fulfillment_orders",
         ["fulfillment_number"],
         unique=True,
     )
 
-    op.create_table(
+    _create_table_if_missing(
         "order_items",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("order_id", sa.Integer(), nullable=False),
@@ -119,9 +139,9 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["order_id"], ["orders.id"]),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index("ix_order_items_id", "order_items", ["id"], unique=False)
+    _create_index_if_missing("ix_order_items_id", "order_items", ["id"], unique=False)
 
-    op.create_table(
+    _create_table_if_missing(
         "otp_verifications",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("phone_number", sa.String(length=20), nullable=False),
@@ -140,22 +160,22 @@ def upgrade() -> None:
         sa.Column("created_at", sa.DateTime(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index("ix_otp_verifications_id", "otp_verifications", ["id"], unique=False)
-    op.create_index("ix_otp_verifications_phone_number", "otp_verifications", ["phone_number"], unique=False)
-    op.create_index(
+    _create_index_if_missing("ix_otp_verifications_id", "otp_verifications", ["id"], unique=False)
+    _create_index_if_missing("ix_otp_verifications_phone_number", "otp_verifications", ["phone_number"], unique=False)
+    _create_index_if_missing(
         "ix_otp_verifications_verification_token",
         "otp_verifications",
         ["verification_token"],
         unique=True,
     )
-    op.create_index(
+    _create_index_if_missing(
         "ix_otp_verifications_zalo_message_id",
         "otp_verifications",
         ["zalo_message_id"],
         unique=False,
     )
 
-    op.create_table(
+    _create_table_if_missing(
         "sms_rate_limits",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("phone_number", sa.String(length=20), nullable=False),
@@ -165,8 +185,8 @@ def upgrade() -> None:
         sa.Column("lockout_until", sa.DateTime(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index("ix_sms_rate_limits_id", "sms_rate_limits", ["id"], unique=False)
-    op.create_index("ix_sms_rate_limits_phone_number", "sms_rate_limits", ["phone_number"], unique=False)
+    _create_index_if_missing("ix_sms_rate_limits_id", "sms_rate_limits", ["id"], unique=False)
+    _create_index_if_missing("ix_sms_rate_limits_phone_number", "sms_rate_limits", ["phone_number"], unique=False)
 
 
 def downgrade() -> None:

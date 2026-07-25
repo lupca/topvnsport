@@ -86,10 +86,11 @@ ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "
   echo "Waiting for Gateway to be healthy..."
   timeout 60 bash -c 'until curl -sf http://localhost/health > /dev/null 2>&1; do sleep 2; done' || true
 
-  # Run database migrations for PMI and WMS
+  # Fail the deployment if any service migration fails; serving with a stale
+  # schema is more dangerous than stopping the rollout for operator recovery.
   echo "Running database migrations..."
-  sudo docker exec pim-api alembic upgrade head || true
-  sudo docker exec wms-api alembic upgrade head || true
+  sudo docker exec pim-api alembic upgrade head
+  sudo docker exec wms-api alembic upgrade head
   sudo docker exec oms_backend alembic upgrade head
 "
 

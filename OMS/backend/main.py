@@ -40,27 +40,36 @@ from routers import (
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger("oms_backend")
 
-# Seed initial channels data
-db_seed = SessionLocal()
-try:
-    channels_to_seed = [
-        ("MANUAL", "Manual"),
-        ("STOREFRONT", "Storefront"),
-        ("SHOPEE", "Shopee"),
-        ("TIKTOK_SHOP", "TikTok Shop"),
-        ("LAZADA", "Lazada"),
-    ]
-    for code, name in channels_to_seed:
-        existing_channel = db_seed.query(models.Channel).filter(models.Channel.code == code).first()
-        if not existing_channel:
-            db_seed.add(models.Channel(code=code, name=name, is_active=True))
-    db_seed.commit()
-    logger.info("Successfully seeded initial channels data.")
-except Exception as e:
-    logger.error(f"Error seeding channels data: {e}")
-    db_seed.rollback()
-finally:
-    db_seed.close()
+def seed_initial_channels() -> None:
+    """Seed required channels after migrations have created their table."""
+    if os.getenv("TESTING") == "1":
+        return
+
+    db_seed = SessionLocal()
+    try:
+        channels_to_seed = [
+            ("MANUAL", "Manual"),
+            ("STOREFRONT", "Storefront"),
+            ("SHOPEE", "Shopee"),
+            ("TIKTOK_SHOP", "TikTok Shop"),
+            ("LAZADA", "Lazada"),
+        ]
+        for code, name in channels_to_seed:
+            existing_channel = (
+                db_seed.query(models.Channel)
+                .filter(models.Channel.code == code)
+                .first()
+            )
+            if not existing_channel:
+                db_seed.add(models.Channel(code=code, name=name, is_active=True))
+        db_seed.commit()
+        logger.info("Successfully seeded initial channels data.")
+    except Exception:
+        db_seed.rollback()
+        logger.exception("Error seeding initial channels data")
+        raise
+    finally:
+        db_seed.close()
 
 
 _zalo_refresh_lock = threading.Lock()
@@ -141,6 +150,7 @@ def refresh_zalo_tokens_job() -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global zalo_token_scheduler
+    seed_initial_channels()
     if not (zalo_token_scheduler and zalo_token_scheduler.running):
         zalo_token_scheduler = BackgroundScheduler()
         zalo_token_scheduler.add_job(
