@@ -229,10 +229,24 @@ ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "
 
   # Fail the deployment if any service migration fails; serving with a stale
   # schema is more dangerous than stopping the rollout for operator recovery.
-  echo "Running database migrations..."
-  sudo docker exec pim-api alembic upgrade head
-  sudo docker exec wms-api alembic upgrade head
-  sudo docker exec oms_backend alembic upgrade head
+  # Every service is attempted before we give up, though: stopping at the first
+  # failure used to leave the later services on their old schema for no reason,
+  # which is how a missing alembic binary in wms-api once prevented the OMS
+  # migration from running at all.
+  echo \"Running database migrations...\"
+  migration_failures=''
+  for migration_target in pim-api wms-api oms_backend; do
+    if sudo docker exec \"\$migration_target\" alembic upgrade head; then
+      echo \"  migration ok: \$migration_target\"
+    else
+      echo \"  migration FAILED: \$migration_target\"
+      migration_failures=\"\$migration_failures \$migration_target\"
+    fi
+  done
+  if [ -n \"\$migration_failures\" ]; then
+    echo \"Database migrations failed for:\$migration_failures\"
+    exit 1
+  fi
 "
 
 echo "[4/5] Health checks"
