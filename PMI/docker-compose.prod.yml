@@ -9,7 +9,7 @@ services:
     restart: always
     environment:
       - JWT_SECRET_KEY=${JWT_SECRET_KEY:?JWT_SECRET_KEY is required}
-      - INTERNAL_SERVICE_TOKEN=prod_oms_wms_internal_api_key_must_change
+      - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN:-oms_wms_internal_api_key_secret_2026}
       - ALLOWED_SERVICE_KEYS=prod-service-api-key-must-change
 
   frontend:
