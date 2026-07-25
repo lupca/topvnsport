@@ -180,13 +180,13 @@ def test_get_product_by_sku_returns_variant_info(client):
     assert body["product_name"] == payload["name"]
 
 
-def test_upload_endpoint_uses_mocked_minio(client):
+def test_upload_endpoint_uses_mocked_storage(client):
     files = {"file": ("sample.jpg", b"fake-image-bytes", "image/jpeg")}
 
     response = client.post("/upload", files=files)
 
     assert response.status_code == 200
-    assert response.json()["image_url"].endswith("/pim-media/test-image.jpg")
+    assert response.json()["image_url"].endswith("/test-image.jpg")
 
 
 def test_create_product_without_sku_code_auto_generates(client):
@@ -394,4 +394,3 @@ def test_product_validation_vietnamese(client):
     dts_error = next(e for e in errors if "dts_days" in e["loc"])
     assert "Giá trị phải nhỏ hơn hoặc bằng" in dts_error["msg"]
     assert dts_error["type"] == "less_than_equal"
-

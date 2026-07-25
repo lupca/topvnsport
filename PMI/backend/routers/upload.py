@@ -1,6 +1,6 @@
 import uuid
 from fastapi import APIRouter, HTTPException, File, UploadFile
-import minio_client
+from utils import storage
 from utils.audit import audit_action
 
 router = APIRouter(tags=['Upload'])
@@ -13,8 +13,7 @@ async def upload_image(file: UploadFile = File(...)):
         file_ext = file.filename.split(".")[-1]
         unique_filename = f"{uuid.uuid4()}.{file_ext}"
         
-        # Upload using the minio helper
-        image_url = minio_client.upload_file(
+        image_url = storage.upload_file(
             file_data=content,
             file_name=unique_filename,
             content_type=file.content_type
@@ -22,4 +21,3 @@ async def upload_image(file: UploadFile = File(...)):
         return {"image_url": image_url}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Image upload failed: {str(e)}")
-

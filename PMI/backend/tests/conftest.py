@@ -38,7 +38,7 @@ def postgres_container() -> Generator[PostgresContainer, None, None]:
         import subprocess
         import time
         compose_file = os.path.join(os.path.dirname(__file__), "../../docker-compose.e2e.yml")
-        subprocess.run(["docker", "compose", "-f", compose_file, "up", "-d", "db", "minio"], check=True)
+        subprocess.run(["docker", "compose", "-f", compose_file, "up", "-d", "db"], check=True)
         time.sleep(3) # Wait for containers to be ready
         url = "postgresql://postgres:postgres@localhost:15434/pim_e2e_db"
         class E2EContainer:
@@ -69,7 +69,7 @@ def app_module(postgres_container):
             mod_name.startswith("routers")
             or mod_name.startswith("services")
             or mod_name.startswith("utils")
-            or mod_name in ["main", "database", "models", "schemas", "minio_client"]
+            or mod_name in ["main", "database", "models", "schemas", "storage"]
         ):
             sys.modules.pop(mod_name, None)
 
@@ -87,13 +87,13 @@ def setup_database(app_module):
 
 
 @pytest.fixture()
-def mock_minio(mocker):
-    minio_client = importlib.import_module("minio_client")
-    mocker.patch.object(minio_client, "init_bucket", return_value=None)
+def mock_storage(mocker):
+    storage = importlib.import_module("utils.storage")
+    mocker.patch.object(storage, "init_bucket", return_value=True)
     return mocker.patch.object(
-        minio_client,
+        storage,
         "upload_file",
-        return_value="http://localhost:19005/pim-media/test-image.jpg",
+        return_value="https://topvnsport-assets.s3.us-east-1.amazonaws.com/test-image.jpg",
     )
 
 
@@ -132,7 +132,7 @@ def db_session(app_module):
 
 
 @pytest.fixture()
-def client(app_module, mock_minio, db_session) -> Generator[TestClient, None, None]:
+def client(app_module, mock_storage, db_session) -> Generator[TestClient, None, None]:
     def override_get_db():
         yield db_session
         
@@ -157,7 +157,7 @@ def client(app_module, mock_minio, db_session) -> Generator[TestClient, None, No
 
 
 @pytest.fixture()
-def client_no_auth_override(app_module, mock_minio, db_session) -> Generator[TestClient, None, None]:
+def client_no_auth_override(app_module, mock_storage, db_session) -> Generator[TestClient, None, None]:
     def override_get_db():
         yield db_session
 

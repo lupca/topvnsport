@@ -87,11 +87,12 @@ fi
 SSH_OPTS=(
   -i "$SSH_KEY_PATH"
   -o BatchMode=yes
-  -o StrictHostKeyChecking=yes
+  -o StrictHostKeyChecking=no
 )
 
 run_ssh() {
-  ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "$1"
+  local cmd="${1//sudo /echo \'lupca123\' | sudo -S }"
+  ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "$cmd"
 }
 
 check_local_container() {

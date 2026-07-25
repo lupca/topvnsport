@@ -2,7 +2,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 from database import engine, Base, get_db
 import models
-import minio_client
+from utils import storage
 
 def run_migrations():
     # NOTE: Do NOT use Base.metadata.create_all() here!
@@ -249,7 +249,7 @@ def _seed_channel_mappings(db: Session):
 
 
 def startup_populate():
-    minio_client.init_bucket()
+    storage.init_bucket()
     
     db = next(get_db())
     try:
@@ -397,4 +397,3 @@ def startup_populate():
         print(f"Error seeding database: {e}")
     finally:
         db.close()
-

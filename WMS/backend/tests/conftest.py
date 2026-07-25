@@ -1,19 +1,22 @@
 import os
 import sys
+
+DB_FILE = "/tmp/test_wms_subdir.db"
+os.environ.setdefault("DATABASE_URL", f"sqlite:///{DB_FILE}")
+
+# Add WMS/backend to path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-
-# Add WMS/backend to path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from database import Base, get_db
 from utils.auth import get_current_user
 from main import app
 import models
 
-DB_FILE = "/tmp/test_wms_subdir.db"
 SQLALCHEMY_DATABASE_URL = f"sqlite:///{DB_FILE}"
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}

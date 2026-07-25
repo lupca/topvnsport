@@ -1,4 +1,8 @@
 import os
+
+DB_FILE = "/tmp/test.db"
+os.environ.setdefault("DATABASE_URL", f"sqlite:///{DB_FILE}")
+
 import pytest
 from unittest.mock import patch
 from fastapi.testclient import TestClient

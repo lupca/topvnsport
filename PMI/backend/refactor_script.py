@@ -24,7 +24,7 @@ def main():
         "from sqlalchemy.orm import Session\n",
         "from database import engine, Base, get_db\n",
         "import models\n",
-        "import minio_client\n\n"
+        "from utils import storage\n\n"
     ]
     
     migrations_func = ["def run_migrations():\n"] + ["    " + l for l in get(14, 90)]
@@ -102,7 +102,7 @@ def main():
     up_imports = [
         "import uuid\n",
         "from fastapi import APIRouter, HTTPException, File, UploadFile\n",
-        "import minio_client\n\n",
+        "from utils import storage\n\n",
         "router = APIRouter(tags=['Upload'])\n\n"
     ]
     up_code = get(1142, 1158)

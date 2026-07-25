@@ -1,63 +1,16 @@
 services:
-  db:
-    image: postgres:15-alpine
-    container_name: pim-db
-    restart: always
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=pim_db
-    ports:
-      - "15433:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  minio:
-    image: minio/minio
-    container_name: pim-minio
-    restart: always
-    environment:
-      - MINIO_ROOT_USER=minioadmin
-      - MINIO_ROOT_PASSWORD=minioadmin
-    ports:
-      - "19005:9000"
-      - "19006:9001"
-    volumes:
-      - miniodata:/data
-    command: server /data --console-address ":9001"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
   api:
     build:
       context: ./backend
       dockerfile: Dockerfile.prod
+    env_file:
+      - ./backend/.env.prod
     container_name: pim-api
     restart: always
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/pim_db
-      - MINIO_ENDPOINT=minio:9000
-      - MINIO_PUBLIC_BASE_URL=http://media.topvnsport.com
-      - MINIO_ACCESS_KEY=minioadmin
-      - MINIO_SECRET_KEY=minioadmin
-      - MINIO_SECURE=False
-      - MINIO_BUCKET=pim-media
       - JWT_SECRET_KEY=identity_jwt_secret_key_2026_change_me_in_prod
       - INTERNAL_SERVICE_TOKEN=prod_oms_wms_internal_api_key_must_change
       - ALLOWED_SERVICE_KEYS=prod-service-api-key-must-change
-    depends_on:
-      db:
-        condition: service_healthy
-      minio:
-        condition: service_healthy
 
   frontend:
     build:
@@ -73,10 +26,6 @@ services:
     networks:
       - default
       - wms_default
-
-volumes:
-  pgdata:
-  miniodata:
 
 networks:
   default:
