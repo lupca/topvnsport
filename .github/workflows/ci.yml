@@ -351,7 +351,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
+      # PMI/identity prod compose declare `env_file: .env.prod`, which is
+      # gitignored and therefore absent on the runner. `docker compose config`
+      # treats a missing env_file as a hard error, so seed them from the
+      # committed .example files. CI-only: nothing here reaches production.
+      - name: Seed missing env files for validation
+        run: |
+          for pair in \
+            "PMI/backend/.env.prod.example:PMI/backend/.env.prod" \
+            "identity-service/.env.prod.example:identity-service/.env.prod"; do
+            example="${pair%%:*}"
+            target="${pair##*:}"
+            if [ ! -f "$target" ]; then
+              if [ -f "$example" ]; then
+                cp "$example" "$target"
+                echo "seeded $target from $example"
+              else
+                : > "$target"
+                echo "created empty $target ($example missing)"
+              fi
+            fi
+          done
+
       - name: Validate all production compose files
         run: |
           docker compose -f PMI/docker-compose.prod.yml config > /dev/null
