@@ -173,6 +173,27 @@ RDS_SSLMODE_VALUE
 write_secret "\$DEPLOY_PATH/identity-service/.env" JWT_SECRET_KEY <<'JWT_VALUE'
 ${JWT_SECRET_KEY}
 JWT_VALUE
+write_secret "\$DEPLOY_PATH/PMI/backend/.env.prod" DATABASE_URL <<'PMI_DATABASE_URL_VALUE'
+postgresql://${RDS_USER}:${RDS_PASSWORD}@${RDS_HOST}:5432/pmi?sslmode=${RDS_SSLMODE}
+PMI_DATABASE_URL_VALUE
+write_secret "\$DEPLOY_PATH/PMI/backend/.env.prod" AWS_DEFAULT_REGION <<'PMI_AWS_DEFAULT_REGION_VALUE'
+us-east-1
+PMI_AWS_DEFAULT_REGION_VALUE
+write_secret "\$DEPLOY_PATH/PMI/backend/.env.prod" AWS_REGION <<'PMI_AWS_REGION_VALUE'
+us-east-1
+PMI_AWS_REGION_VALUE
+write_secret "\$DEPLOY_PATH/PMI/backend/.env.prod" S3_BUCKET <<'PMI_S3_BUCKET_VALUE'
+topvnsport-assets
+PMI_S3_BUCKET_VALUE
+write_secret "\$DEPLOY_PATH/PMI/backend/.env.prod" AWS_S3_BUCKET <<'PMI_AWS_S3_BUCKET_VALUE'
+topvnsport-assets
+PMI_AWS_S3_BUCKET_VALUE
+write_secret "\$DEPLOY_PATH/PMI/backend/.env.prod" S3_PRESIGNED_URL_EXPIRY <<'PMI_S3_PRESIGNED_URL_EXPIRY_VALUE'
+3600
+PMI_S3_PRESIGNED_URL_EXPIRY_VALUE
+write_secret "\$DEPLOY_PATH/identity-service/.env.prod" DATABASE_URL <<'IDENTITY_DATABASE_URL_VALUE'
+postgresql://${RDS_USER}:${RDS_PASSWORD}@${RDS_HOST}:5432/identity?sslmode=${RDS_SSLMODE}
+IDENTITY_DATABASE_URL_VALUE
 REMOTE
 
 echo "[3/5] Build and start production stacks"
