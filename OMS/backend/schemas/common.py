@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import List, Optional
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
+
+PHONE_REGEX = r"^(0|\+84|84)[35789]\d{8}$"
 
 # Customer Schemas
 class CustomerBase(BaseModel):
@@ -10,11 +12,11 @@ class CustomerBase(BaseModel):
     address: Optional[str] = None
 
 class CustomerCreate(CustomerBase):
-    pass
+    phone: str = Field(..., pattern=PHONE_REGEX)
 
 class CustomerUpdate(BaseModel):
     name: Optional[str] = None
-    phone: Optional[str] = None
+    phone: Optional[str] = Field(None, pattern=PHONE_REGEX)
     email: Optional[str] = None
     address: Optional[str] = None
 

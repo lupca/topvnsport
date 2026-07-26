@@ -1,6 +1,8 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+PHONE_REGEX = r"^(0|\+84|84)[35789]\d{8}$"
 
 # SystemConfig Schemas
 class ZaloConfigUpdate(BaseModel):
@@ -21,10 +23,10 @@ class ZaloConfigOut(BaseModel):
 
 # OTP Request/Response Schemas
 class SendOtpRequest(BaseModel):
-    phone_number: str
+    phone_number: str = Field(..., pattern=PHONE_REGEX)
 
 class VerifyOtpRequest(BaseModel):
-    phone_number: str
+    phone_number: str = Field(..., pattern=PHONE_REGEX)
     otp_code: str
 
 class VerifyOtpResponse(BaseModel):

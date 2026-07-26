@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 from typing import List, Optional
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from .common import CustomerOut, ChannelOut
 
@@ -10,7 +10,7 @@ class OrderItemBase(BaseModel):
     sku_code: str
     product_name: str
     variant_name: Optional[str] = None
-    quantity: int
+    quantity: int = Field(..., ge=1, le=9999)
     unit_price: Decimal
     subtotal: Decimal
     image_url: Optional[str] = None
@@ -52,13 +52,13 @@ class OrderBase(BaseModel):
     channel_id: int
     status: str
     total_amount: Decimal
-    shipping_fee: Decimal
+    shipping_fee: Decimal = Field(..., ge=0)
     shipping_address: str
     note: Optional[str] = None
     created_by: Optional[str] = None
 
 class OrderCreate(OrderBase):
-    items: List[OrderItemCreate]
+    items: List[OrderItemCreate] = Field(..., min_length=1)
 
 class OrderOut(OrderBase):
     id: int
@@ -74,28 +74,28 @@ class OrderOut(OrderBase):
 
 class OrderItemInput(BaseModel):
     sku_code: str
-    quantity: int
+    quantity: int = Field(..., ge=1, le=9999)
 
 
 class OrderCreateInput(BaseModel):
     order_number: Optional[str] = None
     customer_id: int
     channel_id: int
-    shipping_fee: Decimal
+    shipping_fee: Decimal = Field(..., ge=0)
     shipping_address: str
     note: Optional[str] = None
     created_by: Optional[str] = None
-    items: List[OrderItemInput]
+    items: List[OrderItemInput] = Field(..., min_length=1)
     verification_token: Optional[str] = None
 
 
 class OrderUpdateInput(BaseModel):
     customer_id: Optional[int] = None
     channel_id: Optional[int] = None
-    shipping_fee: Optional[Decimal] = None
+    shipping_fee: Optional[Decimal] = Field(None, ge=0)
     shipping_address: Optional[str] = None
     note: Optional[str] = None
-    items: Optional[List[OrderItemInput]] = None
+    items: Optional[List[OrderItemInput]] = Field(None, min_length=1)
 
 
 class OrderStatusUpdate(BaseModel):

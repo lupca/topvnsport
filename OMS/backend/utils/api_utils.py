@@ -81,9 +81,15 @@ async def validation_exception_handler(request, exc: RequestValidationError):
         elif err_type == "less_than_equal":
             limit = ctx.get("limit_value") or ctx.get("le")
             translated_msg = f"Giá trị phải nhỏ hơn hoặc bằng {limit}"
-        elif err_type == "string_too_short":
+        elif err_type in ("string_too_short", "too_short"):
             min_length = ctx.get("min_length")
-            translated_msg = f"Độ dài tối thiểu là {min_length} ký tự"
+            field_type = ctx.get("field_type", "")
+            if field_type == "List" or "List" in msg or "danh sách" in msg.lower():
+                translated_msg = f"Danh sách phải chứa ít nhất {min_length} phần tử"
+            else:
+                translated_msg = f"Độ dài tối thiểu là {min_length} ký tự"
+        elif err_type == "string_pattern_mismatch":
+            translated_msg = "Định dạng không hợp lệ"
         elif err_type == "value_error":
             if msg.startswith("Value error, "):
                 translated_msg = msg[len("Value error, "):]

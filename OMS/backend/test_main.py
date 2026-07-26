@@ -347,7 +347,7 @@ def test_auto_generated_order_number(client, db, monkeypatch):
     db.commit()
 
     def mock_call_api(url, method="GET", data=None):
-        return {"price": 10.0}
+        return {"product_name": "Auto Item", "price": 10.0}
     monkeypatch.setattr("main.call_api", mock_call_api)
 
     payload = {
@@ -355,7 +355,7 @@ def test_auto_generated_order_number(client, db, monkeypatch):
         "channel_id": chan.id,
         "shipping_fee": 5.0,
         "shipping_address": "Addr",
-        "items": []
+        "items": [{"sku_code": "SKU-AUTO", "quantity": 1}]
     }
     resp = client.post("/orders", json=payload)
     assert resp.status_code == 201
@@ -896,7 +896,7 @@ def test_order_creation_otp_security(client, db, monkeypatch):
 
 def test_validation_errors_translation_vietnamese(client):
     # Missing name when creating customer
-    resp = client.post("/customers", json={"phone": "123456"})
+    resp = client.post("/customers", json={"phone": "0912345678"})
     assert resp.status_code == 422
     errors = resp.json()["detail"]
     name_error = next(e for e in errors if "name" in e["loc"])
@@ -947,4 +947,72 @@ def test_partial_wms_cancellation_pending(client, db, monkeypatch):
     db.refresh(fo2)
     assert fo1.status == "CANCELLED"
     assert fo2.status == "PENDING"
+
+
+def test_schema_input_validations_oms_009(client, db):
+    # 1. Invalid quantity < 1 (ge=1)
+    resp = client.post("/orders", json={
+        "customer_id": 1,
+        "channel_id": 1,
+        "shipping_fee": 10.0,
+        "shipping_address": "123 Street",
+        "items": [{"sku_code": "SKU-1", "quantity": 0}]
+    })
+    assert resp.status_code == 422
+    errs = resp.json()["detail"]
+    assert any("quantity" in e["loc"] for e in errs)
+
+    # 2. Invalid quantity > 9999 (le=9999)
+    resp = client.post("/orders", json={
+        "customer_id": 1,
+        "channel_id": 1,
+        "shipping_fee": 10.0,
+        "shipping_address": "123 Street",
+        "items": [{"sku_code": "SKU-1", "quantity": 10000}]
+    })
+    assert resp.status_code == 422
+    errs = resp.json()["detail"]
+    assert any("quantity" in e["loc"] for e in errs)
+
+    # 3. Invalid negative shipping_fee (ge=0)
+    resp = client.post("/orders", json={
+        "customer_id": 1,
+        "channel_id": 1,
+        "shipping_fee": -5.0,
+        "shipping_address": "123 Street",
+        "items": [{"sku_code": "SKU-1", "quantity": 1}]
+    })
+    assert resp.status_code == 422
+    errs = resp.json()["detail"]
+    assert any("shipping_fee" in e["loc"] for e in errs)
+
+    # 4. Empty items list (min_items=1)
+    resp = client.post("/orders", json={
+        "customer_id": 1,
+        "channel_id": 1,
+        "shipping_fee": 10.0,
+        "shipping_address": "123 Street",
+        "items": []
+    })
+    assert resp.status_code == 422
+    errs = resp.json()["detail"]
+    assert any("items" in e["loc"] for e in errs)
+
+    # 5. Invalid customer phone format
+    resp = client.post("/customers", json={
+        "name": "Invalid Phone Customer",
+        "phone": "invalid-phone"
+    })
+    assert resp.status_code == 422
+    errs = resp.json()["detail"]
+    assert any("phone" in e["loc"] for e in errs)
+
+    # 6. Valid customer phone formats succeed schema validation
+    resp_valid = client.post("/customers", json={
+        "name": "Valid Phone Customer",
+        "phone": "0987654321",
+        "email": "valid@example.com"
+    })
+    assert resp_valid.status_code == 201
+
 
