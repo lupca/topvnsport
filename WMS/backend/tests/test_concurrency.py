@@ -5,11 +5,15 @@ from fastapi.testclient import TestClient
 from main import app
 from database import get_db, Base
 import models
-from tests.conftest import engine, TestingSessionLocal
+from tests.conftest import engine, TestingSessionLocal, SQLALCHEMY_DATABASE_URL
 from utils.auth import get_current_user
+
+IS_SQLITE = SQLALCHEMY_DATABASE_URL.startswith("sqlite")
 
 @pytest.fixture
 def setup_db():
+    if "wms_db" in SQLALCHEMY_DATABASE_URL and "wms_test_db" not in SQLALCHEMY_DATABASE_URL:
+        raise RuntimeError("Refusing to run tests or drop tables on live database!")
     Base.metadata.create_all(bind=engine)
     session = TestingSessionLocal()
     try:
@@ -26,6 +30,7 @@ def get_fresh_db():
     finally:
         db.close()
 
+@pytest.mark.skipif(IS_SQLITE, reason="FOR UPDATE concurrency row locking requires PostgreSQL")
 def test_concurrent_receive_scan(setup_db):
     db_session = setup_db
     app.dependency_overrides[get_db] = get_fresh_db
@@ -70,6 +75,7 @@ def test_concurrent_receive_scan(setup_db):
     app.dependency_overrides.clear()
 
 
+@pytest.mark.skipif(IS_SQLITE, reason="FOR UPDATE concurrency row locking requires PostgreSQL")
 def test_concurrent_pick_scan(setup_db):
     db_session = setup_db
     app.dependency_overrides[get_db] = get_fresh_db
@@ -123,6 +129,7 @@ def test_concurrent_pick_scan(setup_db):
     app.dependency_overrides.clear()
 
 
+@pytest.mark.skipif(IS_SQLITE, reason="FOR UPDATE concurrency row locking requires PostgreSQL")
 @pytest.mark.asyncio
 async def test_async_concurrent_receive_scan(setup_db):
     db_session = setup_db

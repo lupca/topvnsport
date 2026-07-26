@@ -186,6 +186,7 @@ def scan_pick_fulfillment_order(id: str, payload: FulfillmentScanPickInput, db: 
         item.status = "picking"
         
     db.commit()
+    db.refresh(item)
     return {
         "status": "success",
         "sku_code": item.sku_code,

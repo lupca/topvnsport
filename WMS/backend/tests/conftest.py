@@ -7,21 +7,22 @@ DEFAULT_TEST_PG_URL = "postgresql://postgres:postgres@localhost:15435/wms_test_d
 def get_database_url():
     test_url = os.getenv("TEST_DATABASE_URL")
     if test_url:
-        return test_url
-    
-    env_db_url = os.getenv("DATABASE_URL")
-    if env_db_url:
-        if "sqlite" in env_db_url:
-            return env_db_url
-        if "/wms_db" in env_db_url:
-            pg_url = env_db_url.replace("/wms_db", "/wms_test_db")
-        elif not env_db_url.endswith("/wms_test_db") and "postgresql" in env_db_url:
-            parts = env_db_url.rsplit('/', 1)
-            pg_url = f"{parts[0]}/wms_test_db"
-        else:
-            pg_url = env_db_url
+        pg_url = test_url
     else:
-        pg_url = DEFAULT_TEST_PG_URL
+        env_db_url = os.getenv("DATABASE_URL")
+        if env_db_url:
+            pg_url = env_db_url
+        else:
+            pg_url = DEFAULT_TEST_PG_URL
+
+    if "sqlite" in pg_url:
+        return pg_url
+
+    if "/wms_db" in pg_url:
+        pg_url = pg_url.replace("/wms_db", "/wms_test_db")
+    elif not pg_url.endswith("/wms_test_db") and "postgresql" in pg_url:
+        parts = pg_url.rsplit('/', 1)
+        pg_url = f"{parts[0]}/wms_test_db"
 
     try:
         from sqlalchemy import create_engine
@@ -48,6 +49,9 @@ def get_database_url():
 SQLALCHEMY_DATABASE_URL = get_database_url()
 os.environ["DATABASE_URL"] = SQLALCHEMY_DATABASE_URL
 
+if "wms_db" in SQLALCHEMY_DATABASE_URL and "wms_test_db" not in SQLALCHEMY_DATABASE_URL:
+    raise RuntimeError(f"CRITICAL SAFETY ERROR: Test database URL points to live database '{SQLALCHEMY_DATABASE_URL}'!")
+
 # Add WMS/backend to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -72,6 +76,8 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 
 @pytest.fixture(scope="function")
 def db_session():
+    if "wms_db" in SQLALCHEMY_DATABASE_URL and "wms_test_db" not in SQLALCHEMY_DATABASE_URL:
+        raise RuntimeError("Refusing to run tests or drop tables on live database!")
     Base.metadata.create_all(bind=engine)
     db_session = TestingSessionLocal()
     try:
