@@ -104,13 +104,15 @@ def receive_scan_inbound_shipment(id: int, payload: InboundReceiveScanInput, db:
     item = db.query(models.InboundItem).filter(
         models.InboundItem.inbound_shipment_id == id,
         models.InboundItem.sku_code == bm.sku_code
-    ).first()
+    ).with_for_update().first()
     if not item:
         raise HTTPException(status_code=400, detail=f"SKU {bm.sku_code} not expected in this shipment")
-    item.received_qty += payload.quantity
+    item.received_qty = models.InboundItem.received_qty + payload.quantity
     item.status = "receiving"
     shipment.status = "receiving"
+    db.flush()
     db.commit()
+    db.refresh(item)
     return {
         "status": "success",
         "sku_code": item.sku_code,

@@ -173,11 +173,13 @@ def scan_pick_fulfillment_order(id: str, payload: FulfillmentScanPickInput, db: 
     item = db.query(models.PickListItem).filter(
         models.PickListItem.fulfillment_order_id == fo.id,
         models.PickListItem.sku_code == bm.sku_code
-    ).first()
+    ).with_for_update().first()
     if not item:
         raise HTTPException(status_code=400, detail=f"SKU {bm.sku_code} not in this fulfillment order's pick list")
         
-    item.picked_qty += payload.quantity
+    item.picked_qty = models.PickListItem.picked_qty + payload.quantity
+    db.flush()
+    db.refresh(item)
     if item.picked_qty >= item.quantity:
         item.status = "picked"
     else:
