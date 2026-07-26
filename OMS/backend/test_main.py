@@ -902,3 +902,49 @@ def test_validation_errors_translation_vietnamese(client):
     name_error = next(e for e in errors if "name" in e["loc"])
     assert name_error["msg"] == "Trường này là bắt buộc"
     assert name_error["type"] == "missing"
+
+
+def test_partial_wms_cancellation_pending(client, db, monkeypatch):
+    import main
+    from fastapi import HTTPException
+
+    cust = models.Customer(name="Split Customer", phone="0933333333")
+    chan = models.Channel(code="MANUAL_SPLIT", name="Manual Split", is_active=True)
+    db.add_all([cust, chan])
+    db.commit()
+
+    order = models.Order(
+        order_number="ORD-SPLIT-001",
+        customer_id=cust.id,
+        channel_id=chan.id,
+        status="PROCESSING",
+        total_amount=500.0,
+        shipping_fee=20.0,
+        shipping_address="789 Blvd"
+    )
+    db.add(order)
+    db.commit()
+
+    fo1 = models.FulfillmentOrder(order_id=order.id, fulfillment_number="FM-SPLIT-1", warehouse_code="WH01", status="PENDING")
+    fo2 = models.FulfillmentOrder(order_id=order.id, fulfillment_number="FM-SPLIT-2", warehouse_code="WH02", status="PENDING")
+    db.add_all([fo1, fo2])
+    db.commit()
+
+    def mock_call_api(url, method="GET", json_data=None, headers=None):
+        if "FM-SPLIT-1/cancel" in url:
+            return {"status": "cancelled"}
+        elif "FM-SPLIT-2/cancel" in url:
+            raise HTTPException(status_code=500, detail="WMS unavailable")
+        return {}
+
+    monkeypatch.setattr(main, "call_api", mock_call_api)
+
+    resp = client.post(f"/orders/{order.id}/cancel")
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "CANCELLATION_PENDING"
+
+    db.refresh(fo1)
+    db.refresh(fo2)
+    assert fo1.status == "CANCELLED"
+    assert fo2.status == "PENDING"
+

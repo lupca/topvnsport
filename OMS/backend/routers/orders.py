@@ -23,10 +23,11 @@ router = APIRouter(prefix="/orders", tags=["Orders"])
 ALLOWED_TRANSITIONS = {
     "DRAFT": ["CONFIRMED", "CANCELLED"],
     "CONFIRMED": ["PROCESSING", "CANCELLED"],
-    "PROCESSING": ["PICKING", "CANCELLED"],
-    "PICKING": ["PACKED", "CANCELLED"],
-    "PACKED": ["SHIPPED", "CANCELLED"],
+    "PROCESSING": ["PICKING", "CANCELLED", "CANCELLATION_PENDING"],
+    "PICKING": ["PACKED", "CANCELLED", "CANCELLATION_PENDING"],
+    "PACKED": ["SHIPPED", "CANCELLED", "CANCELLATION_PENDING"],
     "SHIPPED": ["COMPLETED"],
+    "CANCELLATION_PENDING": ["CANCELLED"],
     "CANCELLED": [],
     "COMPLETED": []
 }
@@ -410,16 +411,24 @@ def cancel_order(id: int, db: Session = Depends(get_db), current_user: dict = De
     if order.status in ["SHIPPED", "CANCELLED", "COMPLETED"]:
         raise HTTPException(status_code=400, detail=f"Cannot cancel order in {order.status} status")
         
-    if order.status in ["PROCESSING", "PICKING", "PACKED"]:
+    has_partial_failure = False
+    if order.status in ["PROCESSING", "PICKING", "PACKED", "CANCELLATION_PENDING"]:
         for fo in order.fulfillment_orders:
+            if fo.status == "CANCELLED":
+                continue
             wms_cancel_url = f"{WMS_API_URL}/fulfillment-orders/{fo.fulfillment_number}/cancel"
             try:
                 _call_api(wms_cancel_url, "POST")
-            except HTTPException as e:
-                raise HTTPException(status_code=e.status_code, detail=f"WMS cancel failed: {e.detail}")
-            fo.status = "CANCELLED"
+                fo.status = "CANCELLED"
+            except Exception as e:
+                logger.error(f"Failed to cancel WMS fulfillment order {fo.fulfillment_number}: {e}")
+                has_partial_failure = True
             
-    order.status = "CANCELLED"
+    if has_partial_failure:
+        order.status = "CANCELLATION_PENDING"
+    else:
+        order.status = "CANCELLED"
+
     db.commit()
     db.refresh(order)
     return order

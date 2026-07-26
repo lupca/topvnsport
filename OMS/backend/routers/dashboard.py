@@ -14,7 +14,7 @@ router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 @router.get("/stats")
 def get_dashboard_stats(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     order_count = db.query(models.Order).count()
-    customer_count = db.query(models.Customer).count()
+    customer_count = db.query(models.Customer).filter(models.Customer.is_deleted == False).count()
     
     revenue_query = db.query(func.sum(models.Order.total_amount)).filter(models.Order.status != "CANCELLED").scalar()
     revenue = float(revenue_query) if revenue_query is not None else 0.0

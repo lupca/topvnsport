@@ -33,3 +33,39 @@ def test_channels_crud(client, db):
     # Confirm deleted
     resp = client.get(f"/channels/{channel_id}")
     assert resp.status_code == 404
+
+
+def test_delete_channel_with_active_orders_conflict(client, db):
+    import models
+    # 1. Create Channel & Customer
+    channel = models.Channel(code="SHOPEE_VN", name="Shopee VN", is_active=True)
+    cust = models.Customer(name="Channel Customer", phone="0911223344")
+    db.add_all([channel, cust])
+    db.commit()
+
+    # 2. Create Active Order for Channel
+    order = models.Order(
+        order_number="ORD-CHAN-0001",
+        customer_id=cust.id,
+        channel_id=channel.id,
+        status="CONFIRMED",
+        total_amount=200.0,
+        shipping_fee=15.0,
+        shipping_address="456 Avenue"
+    )
+    db.add(order)
+    db.commit()
+
+    # 3. Attempt Delete Channel -> 409 Conflict
+    resp = client.delete(f"/channels/{channel.id}")
+    assert resp.status_code == 409
+    assert "active orders" in resp.json()["detail"]
+
+    # 4. Remove Order -> Delete Channel should succeed
+    db.delete(order)
+    db.commit()
+
+    resp_after = client.delete(f"/channels/{channel.id}")
+    assert resp_after.status_code == 204
+    db_chan = db.query(models.Channel).filter(models.Channel.id == channel.id).first()
+    assert db_chan is None

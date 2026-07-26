@@ -16,6 +16,8 @@ class Customer(Base):
     email = Column(String, nullable=True)
     address = Column(Text, nullable=True)
     created_at = Column(DateTime, default=utcnow)
+    is_deleted = Column(Boolean, default=False, nullable=False)
+    deleted_at = Column(DateTime, nullable=True)
 
     orders = relationship("Order", back_populates="customer")
 

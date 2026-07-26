@@ -105,6 +105,18 @@ def delete_channel(channel_id: int, db: Session = Depends(get_db), current_user:
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Channel not found"
         )
+    
+    active_orders_count = db.query(models.Order).filter(
+        models.Order.channel_id == channel_id,
+        models.Order.status != "CANCELLED"
+    ).count()
+
+    if active_orders_count > 0:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Cannot delete channel with {active_orders_count} active orders"
+        )
+
     db.delete(channel)
     db.commit()
     return

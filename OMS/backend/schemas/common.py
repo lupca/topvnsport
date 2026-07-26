@@ -21,6 +21,8 @@ class CustomerUpdate(BaseModel):
 class CustomerOut(CustomerBase):
     id: int
     created_at: datetime
+    is_deleted: bool = False
+    deleted_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
 

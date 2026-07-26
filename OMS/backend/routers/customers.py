@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 import models
 import schemas
 from database import get_db
+from utils.api_utils import utcnow
 from utils.auth import get_current_user, get_optional_user
 
 router = APIRouter(prefix="/customers", tags=["Customers"])
@@ -21,6 +22,14 @@ def create_customer(
 ):
     existing = db.query(models.Customer).filter(models.Customer.phone == customer.phone).first()
     if existing:
+        if existing.is_deleted:
+            existing.is_deleted = False
+            existing.deleted_at = None
+            existing.name = customer.name
+            existing.email = customer.email
+            existing.address = customer.address
+            db.commit()
+            db.refresh(existing)
         response.status_code = status.HTTP_200_OK
         return existing
 
@@ -39,6 +48,14 @@ def create_customer(
         db.rollback()
         existing = db.query(models.Customer).filter(models.Customer.phone == customer.phone).first()
         if existing:
+            if existing.is_deleted:
+                existing.is_deleted = False
+                existing.deleted_at = None
+                existing.name = customer.name
+                existing.email = customer.email
+                existing.address = customer.address
+                db.commit()
+                db.refresh(existing)
             response.status_code = status.HTTP_200_OK
             return existing
         raise HTTPException(
@@ -53,7 +70,7 @@ def list_customers(
     limit: int = 20,
     search: Optional[str] = None,
     db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    query = db.query(models.Customer)
+    query = db.query(models.Customer).filter(models.Customer.is_deleted == False)
     if search:
         search_filter = f"%{search}%"
         query = query.filter(
@@ -79,7 +96,7 @@ def list_customers(
 
 @router.get("/{customer_id}", response_model=schemas.CustomerOut)
 def retrieve_customer(customer_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    customer = db.query(models.Customer).filter(models.Customer.id == customer_id).first()
+    customer = db.query(models.Customer).filter(models.Customer.id == customer_id, models.Customer.is_deleted == False).first()
     if not customer:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -90,7 +107,7 @@ def retrieve_customer(customer_id: int, db: Session = Depends(get_db), current_u
 
 @router.put("/{customer_id}", response_model=schemas.CustomerOut)
 def update_customer(customer_id: int, customer_data: schemas.CustomerUpdate, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    customer = db.query(models.Customer).filter(models.Customer.id == customer_id).first()
+    customer = db.query(models.Customer).filter(models.Customer.id == customer_id, models.Customer.is_deleted == False).first()
     if not customer:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -115,12 +132,26 @@ def update_customer(customer_id: int, customer_data: schemas.CustomerUpdate, db:
 
 @router.delete("/{customer_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_customer(customer_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    customer = db.query(models.Customer).filter(models.Customer.id == customer_id).first()
+    customer = db.query(models.Customer).filter(models.Customer.id == customer_id, models.Customer.is_deleted == False).first()
     if not customer:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Customer not found"
         )
-    db.delete(customer)
+    
+    active_orders_count = db.query(models.Order).filter(
+        models.Order.customer_id == customer_id,
+        models.Order.status != "CANCELLED"
+    ).count()
+
+    if active_orders_count > 0:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Cannot delete customer with {active_orders_count} active orders"
+        )
+
+    customer.is_deleted = True
+    customer.deleted_at = utcnow()
     db.commit()
     return
+
