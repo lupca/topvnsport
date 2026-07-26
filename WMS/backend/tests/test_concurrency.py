@@ -16,7 +16,6 @@ def setup_db():
         yield session
     finally:
         session.close()
-        engine.dispose()
         Base.metadata.drop_all(bind=engine)
         engine.dispose()
 

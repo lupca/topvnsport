@@ -2,21 +2,48 @@ import os
 import sys
 
 DB_FILE = "/tmp/test_wms_subdir.db"
-DEFAULT_PG_URL = "postgresql://postgres:postgres@localhost:15435/wms_db"
+DEFAULT_TEST_PG_URL = "postgresql://postgres:postgres@localhost:15435/wms_test_db"
 
 def get_database_url():
-    url = os.getenv("TEST_DATABASE_URL") or os.getenv("DATABASE_URL")
-    if url:
-        return url
+    test_url = os.getenv("TEST_DATABASE_URL")
+    if test_url:
+        return test_url
+    
+    env_db_url = os.getenv("DATABASE_URL")
+    if env_db_url:
+        if "sqlite" in env_db_url:
+            return env_db_url
+        if "/wms_db" in env_db_url:
+            pg_url = env_db_url.replace("/wms_db", "/wms_test_db")
+        elif not env_db_url.endswith("/wms_test_db") and "postgresql" in env_db_url:
+            parts = env_db_url.rsplit('/', 1)
+            pg_url = f"{parts[0]}/wms_test_db"
+        else:
+            pg_url = env_db_url
+    else:
+        pg_url = DEFAULT_TEST_PG_URL
+
     try:
         from sqlalchemy import create_engine
-        temp_engine = create_engine(DEFAULT_PG_URL, connect_args={"connect_timeout": 2})
+        temp_engine = create_engine(pg_url, connect_args={"connect_timeout": 2})
         with temp_engine.connect() as conn:
             pass
         temp_engine.dispose()
-        return DEFAULT_PG_URL
+        return pg_url
     except Exception:
-        return f"sqlite:///{DB_FILE}"
+        try:
+            from sqlalchemy import create_engine, text
+            base_pg = pg_url.rsplit('/', 1)[0] + '/postgres'
+            admin_engine = create_engine(base_pg, connect_args={"connect_timeout": 2}, isolation_level="AUTOCOMMIT")
+            with admin_engine.connect() as conn:
+                db_name = pg_url.rsplit('/', 1)[1]
+                conn.execute(text(f"CREATE DATABASE {db_name}"))
+            admin_engine.dispose()
+            return pg_url
+        except Exception:
+            pass
+
+    return f"sqlite:///{DB_FILE}"
 
 SQLALCHEMY_DATABASE_URL = get_database_url()
 os.environ["DATABASE_URL"] = SQLALCHEMY_DATABASE_URL
@@ -36,7 +63,7 @@ import models
 
 if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
     engine = create_engine(
-        SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+        SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False, "timeout": 30}
     )
 else:
     engine = create_engine(SQLALCHEMY_DATABASE_URL, pool_pre_ping=True)
@@ -51,7 +78,6 @@ def db_session():
         yield db_session
     finally:
         db_session.close()
-        engine.dispose()
         Base.metadata.drop_all(bind=engine)
         engine.dispose()
         if SQLALCHEMY_DATABASE_URL.startswith("sqlite") and os.path.exists(DB_FILE):
