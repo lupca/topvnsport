@@ -1,19 +1,41 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 import models
 import schemas
 from database import get_db
+from utils.api_utils import utcnow
 from utils.auth import get_current_user, get_optional_user
 
 router = APIRouter(prefix="/channels", tags=["Channels"])
 
 
 @router.post("", response_model=schemas.ChannelOut, status_code=status.HTTP_201_CREATED)
-def create_channel(channel: schemas.ChannelCreate, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
+def create_channel(
+    channel: schemas.ChannelCreate,
+    response: Response,
+    db: Session = Depends(get_db),
+    current_user: Optional[dict] = Depends(get_optional_user)
+):
+    existing = db.query(models.Channel).filter(models.Channel.code == channel.code).first()
+    if existing:
+        if existing.is_deleted:
+            existing.is_deleted = False
+            existing.deleted_at = None
+            existing.name = channel.name
+            existing.is_active = channel.is_active
+            db.commit()
+            db.refresh(existing)
+            response.status_code = status.HTTP_200_OK
+            return existing
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Channel with this code already exists."
+        )
+
     db_channel = models.Channel(
         code=channel.code,
         name=channel.name,
@@ -26,6 +48,16 @@ def create_channel(channel: schemas.ChannelCreate, db: Session = Depends(get_db)
         return db_channel
     except IntegrityError:
         db.rollback()
+        existing = db.query(models.Channel).filter(models.Channel.code == channel.code).first()
+        if existing and existing.is_deleted:
+            existing.is_deleted = False
+            existing.deleted_at = None
+            existing.name = channel.name
+            existing.is_active = channel.is_active
+            db.commit()
+            db.refresh(existing)
+            response.status_code = status.HTTP_200_OK
+            return existing
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Channel with this code already exists."
@@ -38,7 +70,7 @@ def list_channels(
     limit: int = 20,
     search: Optional[str] = None,
     db: Session = Depends(get_db), current_user: Optional[dict] = Depends(get_optional_user)):
-    query = db.query(models.Channel).filter(models.Channel.is_active == True)
+    query = db.query(models.Channel).filter(models.Channel.is_deleted == False)
     if search:
         search_filter = f"%{search}%"
         query = query.filter(
@@ -62,8 +94,8 @@ def list_channels(
 
 
 @router.get("/{channel_id}", response_model=schemas.ChannelOut)
-def retrieve_channel(channel_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    channel = db.query(models.Channel).filter(models.Channel.id == channel_id, models.Channel.is_active == True).first()
+def retrieve_channel(channel_id: int, db: Session = Depends(get_db), current_user: Optional[dict] = Depends(get_optional_user)):
+    channel = db.query(models.Channel).filter(models.Channel.id == channel_id, models.Channel.is_deleted == False).first()
     if not channel:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -73,8 +105,8 @@ def retrieve_channel(channel_id: int, db: Session = Depends(get_db), current_use
 
 
 @router.put("/{channel_id}", response_model=schemas.ChannelOut)
-def update_channel(channel_id: int, channel_data: schemas.ChannelUpdate, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    channel = db.query(models.Channel).filter(models.Channel.id == channel_id, models.Channel.is_active == True).first()
+def update_channel(channel_id: int, channel_data: schemas.ChannelUpdate, db: Session = Depends(get_db), current_user: Optional[dict] = Depends(get_optional_user)):
+    channel = db.query(models.Channel).filter(models.Channel.id == channel_id, models.Channel.is_deleted == False).first()
     if not channel:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -98,8 +130,8 @@ def update_channel(channel_id: int, channel_data: schemas.ChannelUpdate, db: Ses
 
 
 @router.delete("/{channel_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_channel(channel_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    channel = db.query(models.Channel).filter(models.Channel.id == channel_id, models.Channel.is_active == True).first()
+def delete_channel(channel_id: int, db: Session = Depends(get_db), current_user: Optional[dict] = Depends(get_optional_user)):
+    channel = db.query(models.Channel).filter(models.Channel.id == channel_id, models.Channel.is_deleted == False).first()
     if not channel:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -117,6 +149,7 @@ def delete_channel(channel_id: int, db: Session = Depends(get_db), current_user:
             detail=f"Cannot delete channel with {active_orders_count} active orders"
         )
 
-    channel.is_active = False
+    channel.is_deleted = True
+    channel.deleted_at = utcnow()
     db.commit()
     return

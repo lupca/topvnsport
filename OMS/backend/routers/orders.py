@@ -23,9 +23,9 @@ router = APIRouter(prefix="/orders", tags=["Orders"])
 ALLOWED_TRANSITIONS = {
     "DRAFT": ["CONFIRMED", "CANCELLED"],
     "CONFIRMED": ["PROCESSING", "CANCELLED"],
-    "PROCESSING": ["PICKING", "CANCELLED", "CANCELLATION_PENDING"],
-    "PICKING": ["PACKED", "CANCELLED", "CANCELLATION_PENDING"],
-    "PACKED": ["SHIPPED", "CANCELLED", "CANCELLATION_PENDING"],
+    "PROCESSING": ["PICKING", "CANCELLED"],
+    "PICKING": ["PACKED", "CANCELLED"],
+    "PACKED": ["SHIPPED", "CANCELLED"],
     "SHIPPED": ["COMPLETED"],
     "CANCELLATION_PENDING": ["CANCELLED"],
     "CANCELLED": [],
@@ -51,7 +51,7 @@ def create_order(payload: schemas.OrderCreateInput, db: Session = Depends(get_db
         raise HTTPException(status_code=400, detail="Customer not found")
         
     # 2. Validate channel
-    channel = db.query(models.Channel).filter(models.Channel.id == payload.channel_id).first()
+    channel = db.query(models.Channel).filter(models.Channel.id == payload.channel_id, models.Channel.is_deleted == False).first()
     if not channel:
         raise HTTPException(status_code=400, detail="Channel not found")
     if not channel.is_active:
@@ -245,7 +245,7 @@ def update_order(id: int, payload: schemas.OrderUpdateInput, db: Session = Depen
         order.customer_id = payload.customer_id
         
     if payload.channel_id is not None:
-        channel = db.query(models.Channel).filter(models.Channel.id == payload.channel_id).first()
+        channel = db.query(models.Channel).filter(models.Channel.id == payload.channel_id, models.Channel.is_deleted == False).first()
         if not channel:
             raise HTTPException(status_code=400, detail="Channel not found")
         if not channel.is_active:

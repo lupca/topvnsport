@@ -29,6 +29,8 @@ class Channel(Base):
     code = Column(String, unique=True, index=True, nullable=False)
     name = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
+    is_deleted = Column(Boolean, default=False, nullable=False)
+    deleted_at = Column(DateTime, nullable=True)
 
     orders = relationship("Order", back_populates="channel")
 

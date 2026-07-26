@@ -44,6 +44,8 @@ class ChannelUpdate(BaseModel):
 
 class ChannelOut(ChannelBase):
     id: int
+    is_deleted: bool = False
+    deleted_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
 

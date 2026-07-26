@@ -59,6 +59,8 @@ const getStatusBadgeClass = (status: string) => {
       return "bg-emerald-50 text-emerald-700 border-emerald-200";
     case "CANCELLED":
       return "bg-rose-50 text-rose-700 border-rose-200";
+    case "CANCELLATION_PENDING":
+      return "bg-amber-50 text-amber-700 border-amber-200";
     default:
       return "bg-gray-100 text-gray-600 border-gray-300";
   }
@@ -587,6 +589,7 @@ function OrdersPageContent() {
               {ORDER_STATUS_STEPS.map((st) => (
                 <option key={st} value={st}>{st}</option>
               ))}
+              <option value="CANCELLATION_PENDING">CANCELLATION_PENDING</option>
               <option value="CANCELLED">CANCELLED</option>
             </select>
 
@@ -1099,12 +1102,24 @@ function OrdersPageContent() {
                       );
                     })}
 
-                    {currentOrder.status === "CANCELLED" && (
-                      <div className="px-4 py-2 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-2">
-                        <XCircle className="w-5 h-5 text-rose-600" />
+                    {(currentOrder.status === "CANCELLED" || currentOrder.status === "CANCELLATION_PENDING") && (
+                      <div className={`px-4 py-2 border rounded-xl flex items-center gap-2 ${
+                        currentOrder.status === "CANCELLED" ? "bg-rose-50 border-rose-200" : "bg-amber-50 border-amber-200"
+                      }`}>
+                        <XCircle className={`w-5 h-5 ${
+                          currentOrder.status === "CANCELLED" ? "text-rose-600" : "text-amber-600"
+                        }`} />
                         <div>
-                          <div className="text-[10px] font-extrabold text-rose-600 uppercase">ĐÃ HỦY ĐƠN (CANCELLED)</div>
-                          <div className="text-xs text-rose-500">Đơn hàng không được xử lý tiếp</div>
+                          <div className={`text-[10px] font-extrabold uppercase ${
+                            currentOrder.status === "CANCELLED" ? "text-rose-600" : "text-amber-700"
+                          }`}>
+                            {currentOrder.status === "CANCELLED" ? "ĐÃ HỦY ĐƠN (CANCELLED)" : "CHỜ HỦY ĐƠN (CANCELLATION_PENDING)"}
+                          </div>
+                          <div className={`text-xs ${
+                            currentOrder.status === "CANCELLED" ? "text-rose-500" : "text-amber-600"
+                          }`}>
+                            {currentOrder.status === "CANCELLED" ? "Đơn hàng không được xử lý tiếp" : "Đơn hàng đang chờ hủy trên kho (WMS)"}
+                          </div>
                         </div>
                       </div>
                     )}

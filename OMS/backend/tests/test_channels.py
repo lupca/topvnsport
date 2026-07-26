@@ -9,6 +9,7 @@ def test_channels_crud(client, db):
     assert resp.status_code == 201
     channel_data = resp.json()
     assert channel_data["code"] == "TIKTOK_SHOP_VN"
+    assert channel_data["is_deleted"] is False
     channel_id = channel_data["id"]
 
     # 2. List Channels
@@ -30,9 +31,56 @@ def test_channels_crud(client, db):
     resp = client.delete(f"/channels/{channel_id}")
     assert resp.status_code == 204
 
-    # Confirm deleted
+    # Confirm soft deleted (404 via API)
     resp = client.get(f"/channels/{channel_id}")
     assert resp.status_code == 404
+
+
+def test_channel_toggle_is_active_does_not_hide_channel(client, db):
+    import models
+
+    # 1. Create Channel with is_active = True
+    payload = {
+        "code": "TIKTOK_ACTIVE_TOGGLE",
+        "name": "TikTok Active Toggle",
+        "is_active": True
+    }
+    resp = client.post("/channels", json=payload)
+    assert resp.status_code == 201
+    chan_id = resp.json()["id"]
+
+    # 2. Toggle is_active to False via PUT
+    resp_update = client.put(f"/channels/{chan_id}", json={"is_active": False})
+    assert resp_update.status_code == 200
+    assert resp_update.json()["is_active"] is False
+
+    # 3. Channel should STILL appear in GET /channels and GET /channels/{id}
+    resp_list = client.get("/channels")
+    assert resp_list.status_code == 200
+    items = resp_list.json()["items"]
+    found = [c for c in items if c["id"] == chan_id]
+    assert len(found) == 1
+    assert found[0]["is_active"] is False
+
+    resp_get = client.get(f"/channels/{chan_id}")
+    assert resp_get.status_code == 200
+    assert resp_get.json()["is_active"] is False
+
+    # 4. Verify order creation with inactive channel is rejected with 400
+    cust = models.Customer(name="Active Cust", phone="0912345678")
+    db.add(cust)
+    db.commit()
+
+    order_payload = {
+        "customer_id": cust.id,
+        "channel_id": chan_id,
+        "shipping_fee": 10.0,
+        "shipping_address": "123 Street",
+        "items": [{"sku_code": "SKU-TEST-001", "quantity": 1}]
+    }
+    resp_order = client.post("/orders", json=order_payload)
+    assert resp_order.status_code == 400
+    assert "inactive" in resp_order.json()["detail"].lower()
 
 
 def test_delete_channel_with_active_orders_conflict(client, db):
@@ -69,7 +117,8 @@ def test_delete_channel_with_active_orders_conflict(client, db):
     assert resp_after.status_code == 204
     db_chan = db.query(models.Channel).filter(models.Channel.id == channel.id).first()
     assert db_chan is not None
-    assert db_chan.is_active is False
+    assert db_chan.is_deleted is True
+    assert db_chan.deleted_at is not None
 
 
 def test_delete_channel_with_completed_orders_allowed(client, db):
@@ -96,5 +145,30 @@ def test_delete_channel_with_completed_orders_allowed(client, db):
     assert resp.status_code == 204
     db_chan = db.query(models.Channel).filter(models.Channel.id == channel.id).first()
     assert db_chan is not None
-    assert db_chan.is_active is False
+    assert db_chan.is_deleted is True
+    assert db_chan.deleted_at is not None
 
+
+def test_manual_transition_to_cancellation_pending_forbidden(client, db):
+    import models
+    cust = models.Customer(name="Trans Customer", phone="0977665544")
+    chan = models.Channel(code="TRANS_CHAN", name="Trans Channel", is_active=True)
+    db.add_all([cust, chan])
+    db.commit()
+
+    order = models.Order(
+        order_number="ORD-TRANS-001",
+        customer_id=cust.id,
+        channel_id=chan.id,
+        status="PROCESSING",
+        total_amount=100.0,
+        shipping_fee=10.0,
+        shipping_address="123 St"
+    )
+    db.add(order)
+    db.commit()
+
+    # Try setting status to CANCELLATION_PENDING manually via status endpoint -> Should fail (400)
+    resp = client.patch(f"/orders/{order.id}/status", json={"status": "CANCELLATION_PENDING"})
+    assert resp.status_code == 400
+    assert "Illegal transition" in resp.json()["detail"] or "Invalid status" in resp.json()["detail"]

@@ -23,6 +23,8 @@ export interface Channel {
   code: string;
   name: string;
   is_active: boolean;
+  is_deleted?: boolean;
+  deleted_at?: string;
 }
 
 export interface ChannelCreateInput {
@@ -58,7 +60,7 @@ export interface Order {
   order_number: string;
   customer_id: number;
   channel_id: number;
-  status: 'DRAFT' | 'CONFIRMED' | 'PROCESSING' | 'PICKING' | 'PACKED' | 'SHIPPED' | 'COMPLETED' | 'CANCELLED';
+  status: 'DRAFT' | 'CONFIRMED' | 'PROCESSING' | 'PICKING' | 'PACKED' | 'SHIPPED' | 'COMPLETED' | 'CANCELLED' | 'CANCELLATION_PENDING';
   total_amount: number;
   shipping_fee: number;
   shipping_address: string;
