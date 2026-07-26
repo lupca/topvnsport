@@ -2,7 +2,8 @@ from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel, ConfigDict, Field
 
-PHONE_REGEX = r"^(0|\+84|84)[35789]\d{8}$"
+from utils.phone_helper import PHONE_REGEX
+
 
 # Customer Schemas
 class CustomerBase(BaseModel):

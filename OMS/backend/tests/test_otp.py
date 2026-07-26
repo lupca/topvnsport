@@ -49,3 +49,26 @@ def test_send_and_verify_otp_flow(client, db):
     assert resp_verify.status_code == 200
     assert resp_verify.json()["success"] is True
     assert "verification_token" in resp_verify.json()
+
+
+def test_send_and_verify_otp_with_untrimmed_and_formatted_phone(client, db):
+    # Test formats mentioned by reviewer: trailing space, internal spaces, hyphens
+    untrimmed_phones = ["0912345678 ", "091 234 5679", "091-234-5680"]
+
+    for raw_phone in untrimmed_phones:
+        resp = client.post("/api/sms/send-otp", json={"phone_number": raw_phone})
+        assert resp.status_code == 200, f"Failed for raw phone: {raw_phone}"
+        assert resp.json()["success"] is True
+
+    # Verify that test-last-otp works with normalized phone number 84912345678 / 0912345678
+    resp_last = client.get("/api/sms/test-last-otp?phone=0912345678")
+    assert resp_last.status_code == 200
+    otp_code = resp_last.json()["otp_code"]
+
+    # Verify OTP using formatted phone input (e.g. "091 234 5678")
+    resp_verify = client.post("/api/sms/verify-otp", json={"phone_number": "091 234 5678", "otp_code": otp_code})
+    assert resp_verify.status_code == 200
+    assert resp_verify.json()["success"] is True
+    assert "verification_token" in resp_verify.json()
+
+
