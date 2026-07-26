@@ -18,7 +18,7 @@ def create_channel(
     channel: schemas.ChannelCreate,
     response: Response,
     db: Session = Depends(get_db),
-    current_user: Optional[dict] = Depends(get_optional_user)
+    current_user: dict = Depends(get_current_user)
 ):
     existing = db.query(models.Channel).filter(models.Channel.code == channel.code).first()
     if existing:
@@ -94,7 +94,7 @@ def list_channels(
 
 
 @router.get("/{channel_id}", response_model=schemas.ChannelOut)
-def retrieve_channel(channel_id: int, db: Session = Depends(get_db), current_user: Optional[dict] = Depends(get_optional_user)):
+def retrieve_channel(channel_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     channel = db.query(models.Channel).filter(models.Channel.id == channel_id, models.Channel.is_deleted == False).first()
     if not channel:
         raise HTTPException(
@@ -105,7 +105,7 @@ def retrieve_channel(channel_id: int, db: Session = Depends(get_db), current_use
 
 
 @router.put("/{channel_id}", response_model=schemas.ChannelOut)
-def update_channel(channel_id: int, channel_data: schemas.ChannelUpdate, db: Session = Depends(get_db), current_user: Optional[dict] = Depends(get_optional_user)):
+def update_channel(channel_id: int, channel_data: schemas.ChannelUpdate, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     channel = db.query(models.Channel).filter(models.Channel.id == channel_id, models.Channel.is_deleted == False).first()
     if not channel:
         raise HTTPException(
@@ -130,7 +130,7 @@ def update_channel(channel_id: int, channel_data: schemas.ChannelUpdate, db: Ses
 
 
 @router.delete("/{channel_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_channel(channel_id: int, db: Session = Depends(get_db), current_user: Optional[dict] = Depends(get_optional_user)):
+def delete_channel(channel_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     channel = db.query(models.Channel).filter(models.Channel.id == channel_id, models.Channel.is_deleted == False).first()
     if not channel:
         raise HTTPException(

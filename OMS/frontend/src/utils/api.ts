@@ -23,8 +23,6 @@ export interface Channel {
   code: string;
   name: string;
   is_active: boolean;
-  is_deleted?: boolean;
-  deleted_at?: string;
 }
 
 export interface ChannelCreateInput {

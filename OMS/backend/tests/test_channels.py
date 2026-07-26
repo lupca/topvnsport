@@ -9,7 +9,8 @@ def test_channels_crud(client, db):
     assert resp.status_code == 201
     channel_data = resp.json()
     assert channel_data["code"] == "TIKTOK_SHOP_VN"
-    assert channel_data["is_deleted"] is False
+    assert "is_deleted" not in channel_data
+    assert "deleted_at" not in channel_data
     channel_id = channel_data["id"]
 
     # 2. List Channels
@@ -172,3 +173,42 @@ def test_manual_transition_to_cancellation_pending_forbidden(client, db):
     resp = client.patch(f"/orders/{order.id}/status", json={"status": "CANCELLATION_PENDING"})
     assert resp.status_code == 400
     assert "Illegal transition" in resp.json()["detail"] or "Invalid status" in resp.json()["detail"]
+
+
+def test_create_channel_resurrect_returns_200(client, db):
+    import models
+
+    # 1. First call creates channel -> 201 Created
+    payload = {
+        "code": "RESURRECT_CHAN",
+        "name": "Resurrect Channel Initial",
+        "is_active": True
+    }
+    resp1 = client.post("/channels", json=payload)
+    assert resp1.status_code == 201
+    chan_id = resp1.json()["id"]
+
+    # 2. Delete the channel -> soft deleted (204)
+    resp_del = client.delete(f"/channels/{chan_id}")
+    assert resp_del.status_code == 204
+
+    db_chan = db.query(models.Channel).filter(models.Channel.id == chan_id).first()
+    assert db_chan.is_deleted is True
+
+    # 3. Post creation with same channel code -> resurrects soft-deleted channel and returns 200 OK
+    payload_resurrect = {
+        "code": "RESURRECT_CHAN",
+        "name": "Resurrect Channel Restored",
+        "is_active": True
+    }
+    resp2 = client.post("/channels", json=payload_resurrect)
+    assert resp2.status_code == 200
+    data2 = resp2.json()
+    assert data2["id"] == chan_id
+    assert data2["name"] == "Resurrect Channel Restored"
+    assert "is_deleted" not in data2
+
+    db.refresh(db_chan)
+    assert db_chan.is_deleted is False
+    assert db_chan.deleted_at is None
+
