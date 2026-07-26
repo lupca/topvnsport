@@ -13,6 +13,8 @@ def test_customers_crud(client, db):
     assert resp.status_code == 201
     cust_data = resp.json()
     assert cust_data["name"] == "Nguyen Van A"
+    assert "is_deleted" not in cust_data
+    assert "deleted_at" not in cust_data
     cust_id = cust_data["id"]
 
     # 2. List Customers
@@ -106,4 +108,82 @@ def test_delete_customer_with_active_orders_conflict(client, db):
     assert resp_after.status_code == 204
     db_cust = db.query(models.Customer).filter(models.Customer.id == cust.id).first()
     assert db_cust.is_deleted is True
+
+
+def test_delete_customer_with_completed_orders_allowed(client, db):
+    cust = models.Customer(name="Completed Customer", phone="0977665544")
+    channel = models.Channel(code="COMPLETED_TEST", name="Completed Test", is_active=True)
+    db.add_all([cust, channel])
+    db.commit()
+
+    order = models.Order(
+        order_number="ORD-COMP-0001",
+        customer_id=cust.id,
+        channel_id=channel.id,
+        status="COMPLETED",
+        total_amount=100.0,
+        shipping_fee=10.0,
+        shipping_address="123 Street"
+    )
+    db.add(order)
+    db.commit()
+
+    # Deleting customer with COMPLETED order should succeed (204)
+    resp = client.delete(f"/customers/{cust.id}")
+    assert resp.status_code == 204
+    db_cust = db.query(models.Customer).filter(models.Customer.id == cust.id).first()
+    assert db_cust.is_deleted is True
+
+
+def test_cannot_create_or_update_order_for_deleted_customer(client, db, monkeypatch):
+    from unittest.mock import MagicMock
+    import main
+
+    # Mock PMI API call
+    mock_call_api = MagicMock(return_value={
+        "product_name": "Test Product",
+        "variant_name": "Default",
+        "price": 50.0,
+        "image_url": None
+    })
+    monkeypatch.setattr(main, "call_api", mock_call_api)
+
+    cust = models.Customer(name="Deleted Customer", phone="0966554433", is_deleted=True)
+    channel = models.Channel(code="MANUAL_TEST", name="Manual Test", is_active=True)
+    db.add_all([cust, channel])
+    db.commit()
+
+    # 1. Attempt to create order for deleted customer -> 400 Customer not found
+    order_payload = {
+        "customer_id": cust.id,
+        "channel_id": channel.id,
+        "shipping_fee": 10.0,
+        "shipping_address": "456 Street",
+        "items": [{"sku_code": "SKU-001", "quantity": 1}]
+    }
+    resp = client.post("/orders", json=order_payload)
+    assert resp.status_code == 400
+    assert resp.json()["detail"] == "Customer not found"
+
+    # 2. Attempt to update order customer_id to deleted customer -> 400 Customer not found
+    active_cust = models.Customer(name="Active Customer 2", phone="0955443322")
+    db.add(active_cust)
+    db.commit()
+
+    order = models.Order(
+        order_number="ORD-UPDATE-0001",
+        customer_id=active_cust.id,
+        channel_id=channel.id,
+        status="DRAFT",
+        total_amount=60.0,
+        shipping_fee=10.0,
+        shipping_address="789 Street"
+    )
+    db.add(order)
+    db.commit()
+
+    update_resp = client.put(f"/orders/{order.id}", json={"customer_id": cust.id})
+    assert update_resp.status_code == 400
+    assert update_resp.json()["detail"] == "Customer not found"
+
 

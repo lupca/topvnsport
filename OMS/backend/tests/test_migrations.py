@@ -68,6 +68,12 @@ def test_upgrade_head_repairs_existing_postgres_schema_without_data_loss(monkeyp
                 text("ALTER TABLE otp_verifications DROP COLUMN zalo_message_id")
             )
             connection.execute(
+                text("ALTER TABLE customers DROP COLUMN IF EXISTS is_deleted")
+            )
+            connection.execute(
+                text("ALTER TABLE customers DROP COLUMN IF EXISTS deleted_at")
+            )
+            connection.execute(
                 text(
                     "INSERT INTO system_configs (config_key, config_value) "
                     "VALUES (:key, :value)"
@@ -109,6 +115,12 @@ def test_upgrade_head_repairs_existing_postgres_schema_without_data_loss(monkeyp
                 index["name"] == "ix_otp_verifications_zalo_message_id"
                 for index in inspect(connection).get_indexes("otp_verifications")
             )
+
+            customer_columns = {
+                column["name"] for column in inspect(connection).get_columns("customers")
+            }
+            assert "is_deleted" in customer_columns
+            assert "deleted_at" in customer_columns
     finally:
         if test_engine is not None:
             test_engine.dispose()

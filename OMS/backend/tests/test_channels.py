@@ -68,4 +68,33 @@ def test_delete_channel_with_active_orders_conflict(client, db):
     resp_after = client.delete(f"/channels/{channel.id}")
     assert resp_after.status_code == 204
     db_chan = db.query(models.Channel).filter(models.Channel.id == channel.id).first()
-    assert db_chan is None
+    assert db_chan is not None
+    assert db_chan.is_active is False
+
+
+def test_delete_channel_with_completed_orders_allowed(client, db):
+    import models
+    channel = models.Channel(code="LAZADA_VN", name="Lazada VN", is_active=True)
+    cust = models.Customer(name="Lazada Customer", phone="0933445566")
+    db.add_all([channel, cust])
+    db.commit()
+
+    order = models.Order(
+        order_number="ORD-LAZ-0001",
+        customer_id=cust.id,
+        channel_id=channel.id,
+        status="COMPLETED",
+        total_amount=300.0,
+        shipping_fee=20.0,
+        shipping_address="789 Boulevard"
+    )
+    db.add(order)
+    db.commit()
+
+    # Deleting channel with COMPLETED order should succeed (204)
+    resp = client.delete(f"/channels/{channel.id}")
+    assert resp.status_code == 204
+    db_chan = db.query(models.Channel).filter(models.Channel.id == channel.id).first()
+    assert db_chan is not None
+    assert db_chan.is_active is False
+

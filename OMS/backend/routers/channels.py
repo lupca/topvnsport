@@ -38,7 +38,7 @@ def list_channels(
     limit: int = 20,
     search: Optional[str] = None,
     db: Session = Depends(get_db), current_user: Optional[dict] = Depends(get_optional_user)):
-    query = db.query(models.Channel)
+    query = db.query(models.Channel).filter(models.Channel.is_active == True)
     if search:
         search_filter = f"%{search}%"
         query = query.filter(
@@ -63,7 +63,7 @@ def list_channels(
 
 @router.get("/{channel_id}", response_model=schemas.ChannelOut)
 def retrieve_channel(channel_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    channel = db.query(models.Channel).filter(models.Channel.id == channel_id).first()
+    channel = db.query(models.Channel).filter(models.Channel.id == channel_id, models.Channel.is_active == True).first()
     if not channel:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -74,7 +74,7 @@ def retrieve_channel(channel_id: int, db: Session = Depends(get_db), current_use
 
 @router.put("/{channel_id}", response_model=schemas.ChannelOut)
 def update_channel(channel_id: int, channel_data: schemas.ChannelUpdate, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    channel = db.query(models.Channel).filter(models.Channel.id == channel_id).first()
+    channel = db.query(models.Channel).filter(models.Channel.id == channel_id, models.Channel.is_active == True).first()
     if not channel:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -99,7 +99,7 @@ def update_channel(channel_id: int, channel_data: schemas.ChannelUpdate, db: Ses
 
 @router.delete("/{channel_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_channel(channel_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    channel = db.query(models.Channel).filter(models.Channel.id == channel_id).first()
+    channel = db.query(models.Channel).filter(models.Channel.id == channel_id, models.Channel.is_active == True).first()
     if not channel:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -108,7 +108,7 @@ def delete_channel(channel_id: int, db: Session = Depends(get_db), current_user:
     
     active_orders_count = db.query(models.Order).filter(
         models.Order.channel_id == channel_id,
-        models.Order.status != "CANCELLED"
+        models.Order.status.notin_(["CANCELLED", "COMPLETED"])
     ).count()
 
     if active_orders_count > 0:
@@ -117,6 +117,6 @@ def delete_channel(channel_id: int, db: Session = Depends(get_db), current_user:
             detail=f"Cannot delete channel with {active_orders_count} active orders"
         )
 
-    db.delete(channel)
+    channel.is_active = False
     db.commit()
     return

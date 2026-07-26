@@ -19,7 +19,7 @@ def upgrade() -> None:
     bind = op.get_bind()
     columns = [c["name"] for c in sa.inspect(bind).get_columns("customers")]
     if "is_deleted" not in columns:
-        op.add_column("customers", sa.Column("is_deleted", sa.Boolean(), server_default=sa.text("0"), nullable=False))
+        op.add_column("customers", sa.Column("is_deleted", sa.Boolean(), server_default=sa.false(), nullable=False))
     if "deleted_at" not in columns:
         op.add_column("customers", sa.Column("deleted_at", sa.DateTime(), nullable=True))
 

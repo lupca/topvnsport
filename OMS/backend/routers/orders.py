@@ -46,7 +46,7 @@ def _allocate_order_items(*args, **kwargs):
 @router.post("", response_model=schemas.OrderOut, status_code=status.HTTP_201_CREATED)
 def create_order(payload: schemas.OrderCreateInput, db: Session = Depends(get_db), current_user: Optional[dict] = Depends(get_optional_user)):
     # 1. Validate customer
-    customer = db.query(models.Customer).filter(models.Customer.id == payload.customer_id).first()
+    customer = db.query(models.Customer).filter(models.Customer.id == payload.customer_id, models.Customer.is_deleted == False).first()
     if not customer:
         raise HTTPException(status_code=400, detail="Customer not found")
         
@@ -239,7 +239,7 @@ def update_order(id: int, payload: schemas.OrderUpdateInput, db: Session = Depen
         raise HTTPException(status_code=400, detail=f"Cannot edit order in status {order.status}")
         
     if payload.customer_id is not None:
-        customer = db.query(models.Customer).filter(models.Customer.id == payload.customer_id).first()
+        customer = db.query(models.Customer).filter(models.Customer.id == payload.customer_id, models.Customer.is_deleted == False).first()
         if not customer:
             raise HTTPException(status_code=400, detail="Customer not found")
         order.customer_id = payload.customer_id
