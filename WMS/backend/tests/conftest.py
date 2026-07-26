@@ -2,7 +2,24 @@ import os
 import sys
 
 DB_FILE = "/tmp/test_wms_subdir.db"
-os.environ.setdefault("DATABASE_URL", f"sqlite:///{DB_FILE}")
+DEFAULT_PG_URL = "postgresql://postgres:postgres@localhost:15435/wms_db"
+
+def get_database_url():
+    url = os.getenv("TEST_DATABASE_URL") or os.getenv("DATABASE_URL")
+    if url:
+        return url
+    try:
+        from sqlalchemy import create_engine
+        temp_engine = create_engine(DEFAULT_PG_URL, connect_args={"connect_timeout": 2})
+        with temp_engine.connect() as conn:
+            pass
+        temp_engine.dispose()
+        return DEFAULT_PG_URL
+    except Exception:
+        return f"sqlite:///{DB_FILE}"
+
+SQLALCHEMY_DATABASE_URL = get_database_url()
+os.environ["DATABASE_URL"] = SQLALCHEMY_DATABASE_URL
 
 # Add WMS/backend to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -17,10 +34,13 @@ from utils.auth import get_current_user
 from main import app
 import models
 
-SQLALCHEMY_DATABASE_URL = f"sqlite:///{DB_FILE}"
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
-)
+if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(
+        SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+    )
+else:
+    engine = create_engine(SQLALCHEMY_DATABASE_URL, pool_pre_ping=True)
+
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 @pytest.fixture(scope="function")
@@ -31,9 +51,10 @@ def db_session():
         yield db_session
     finally:
         db_session.close()
+        engine.dispose()
         Base.metadata.drop_all(bind=engine)
         engine.dispose()
-        if os.path.exists(DB_FILE):
+        if SQLALCHEMY_DATABASE_URL.startswith("sqlite") and os.path.exists(DB_FILE):
             try:
                 os.remove(DB_FILE)
             except OSError:

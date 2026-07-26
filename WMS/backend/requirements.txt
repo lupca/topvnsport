@@ -7,5 +7,6 @@ pydantic
 python-multipart
 pydantic-settings
 pytest
+pytest-asyncio
 httpx
 python-jose[cryptography]==3.3.0

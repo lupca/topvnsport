@@ -111,8 +111,8 @@ def receive_scan_inbound_shipment(id: int, payload: InboundReceiveScanInput, db:
     item.status = "receiving"
     shipment.status = "receiving"
     db.flush()
-    db.commit()
     db.refresh(item)
+    db.commit()
     return {
         "status": "success",
         "sku_code": item.sku_code,
