@@ -6,6 +6,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import Date, cast, func
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 import models
@@ -55,59 +56,8 @@ def create_order(payload: schemas.OrderCreateInput, db: Session = Depends(get_db
     if not channel.is_active:
         raise HTTPException(status_code=400, detail="Channel is inactive")
 
-    # --- SECURE OTP VERIFICATION INTEGRATION ---
-    is_storefront = channel.code == "STOREFRONT"
-    if is_storefront:
-        if not payload.verification_token:
-            raise HTTPException(status_code=403, detail="Verification token is missing.")
-
-        otp_ver = db.query(models.OtpVerification).filter(
-            models.OtpVerification.verification_token == payload.verification_token
-        ).first()
-
-        if not otp_ver:
-            raise HTTPException(status_code=403, detail="Invalid verification token.")
-
-        # Match token to customer phone number
-        norm_customer_phone = utils.phone_helper.normalize_phone(customer.phone)
-        norm_token_phone = utils.phone_helper.normalize_phone(otp_ver.phone_number)
-        if norm_customer_phone != norm_token_phone:
-            raise HTTPException(status_code=403, detail="Verification token does not match customer phone number.")
-
-        # Lifecycle Checks
-        if otp_ver.verified_at is None:
-            raise HTTPException(status_code=403, detail="Verification token has not been verified.")
-        if otp_ver.used_at is not None:
-            raise HTTPException(status_code=403, detail="Verification token has already been used.")
-        if otp_ver.verification_expires_at < utcnow():
-            raise HTTPException(status_code=403, detail="Verification token has expired.")
-
-        # Atomically consume the token inside the same transaction
-        otp_ver.used_at = utcnow()
-        otp_ver.status = "CONSUMED"
-        db.flush()
-        
-    # Auto-generate order_number if not provided
-    if not payload.order_number:
-        today_str = datetime.now(timezone.utc).strftime("%Y%m%d")
-        prefix = f"ORD-{today_str}-"
-        count_today = db.query(models.Order).filter(models.Order.order_number.like(f"{prefix}%")).count()
-        suffix_int = count_today + 1
-        while True:
-            candidate = f"{prefix}{suffix_int:04d}"
-            existing = db.query(models.Order).filter(models.Order.order_number == candidate).first()
-            if not existing:
-                order_number = candidate
-                break
-            suffix_int += 1
-    else:
-        order_number = payload.order_number
-        existing = db.query(models.Order).filter(models.Order.order_number == order_number).first()
-        if existing:
-            raise HTTPException(status_code=400, detail="Order number already exists")
-        
     # 3. Validate items & call PMI API
-    order_items = []
+    order_items_data = []
     total_amount = Decimal("0.00")
     for item in payload.items:
         pmi_url = f"{PIM_API_URL}/api/products/by-sku/{item.sku_code}"
@@ -117,41 +67,115 @@ def create_order(payload: schemas.OrderCreateInput, db: Session = Depends(get_db
         subtotal = unit_price * item.quantity
         total_amount += subtotal
         
-        db_item = models.OrderItem(
-            sku_code=item.sku_code,
-            product_name=pmi_data.get("product_name"),
-            variant_name=pmi_data.get("variant_name"),
-            quantity=item.quantity,
-            unit_price=unit_price,
-            subtotal=subtotal,
-            image_url=pmi_data.get("image_url")
-        )
-        order_items.append(db_item)
+        order_items_data.append({
+            "sku_code": item.sku_code,
+            "product_name": pmi_data.get("product_name"),
+            "variant_name": pmi_data.get("variant_name"),
+            "quantity": item.quantity,
+            "unit_price": unit_price,
+            "subtotal": subtotal,
+            "image_url": pmi_data.get("image_url")
+        })
         
     final_total = total_amount + payload.shipping_fee
-    
-    # 5. Create Order
-    new_order = models.Order(
-        order_number=order_number,
-        customer_id=payload.customer_id,
-        channel_id=payload.channel_id,
-        status="DRAFT",
-        total_amount=final_total,
-        shipping_fee=payload.shipping_fee,
-        shipping_address=payload.shipping_address,
-        note=payload.note,
-        created_by=payload.created_by,
-    )
-    db.add(new_order)
-    db.flush()
-    
-    for item in order_items:
-        item.order_id = new_order.id
-        db.add(item)
-    
-    db.commit()
-    db.refresh(new_order)
-    return new_order
+    is_storefront = channel.code == "STOREFRONT"
+    norm_customer_phone = utils.phone_helper.normalize_phone(customer.phone)
+
+    MAX_RETRIES = 10
+    for attempt in range(MAX_RETRIES):
+        try:
+            # --- SECURE OTP VERIFICATION INTEGRATION ---
+            if is_storefront:
+                if not payload.verification_token:
+                    raise HTTPException(status_code=403, detail="Verification token is missing.")
+
+                otp_ver = db.query(models.OtpVerification).filter(
+                    models.OtpVerification.verification_token == payload.verification_token
+                ).with_for_update().first()
+
+                if not otp_ver:
+                    raise HTTPException(status_code=403, detail="Invalid verification token.")
+
+                # Match token to customer phone number
+                norm_token_phone = utils.phone_helper.normalize_phone(otp_ver.phone_number)
+                if norm_customer_phone != norm_token_phone:
+                    raise HTTPException(status_code=403, detail="Verification token does not match customer phone number.")
+
+                # Lifecycle Checks
+                if otp_ver.verified_at is None:
+                    raise HTTPException(status_code=403, detail="Verification token has not been verified.")
+                if otp_ver.used_at is not None:
+                    raise HTTPException(status_code=403, detail="Verification token has already been used.")
+                if otp_ver.verification_expires_at < utcnow():
+                    raise HTTPException(status_code=403, detail="Verification token has expired.")
+
+                # Atomically consume the token inside the same transaction
+                updated_count = db.query(models.OtpVerification).filter(
+                    models.OtpVerification.id == otp_ver.id,
+                    models.OtpVerification.used_at.is_(None)
+                ).update({
+                    "used_at": utcnow(),
+                    "status": "CONSUMED"
+                }, synchronize_session=False)
+
+                if updated_count == 0:
+                    raise HTTPException(status_code=403, detail="Verification token has already been used.")
+                db.flush()
+
+            # Auto-generate order_number if not provided
+            if not payload.order_number:
+                today_str = datetime.now(timezone.utc).strftime("%Y%m%d")
+                prefix = f"ORD-{today_str}-"
+                count_today = db.query(models.Order).filter(models.Order.order_number.like(f"{prefix}%")).count()
+                suffix_int = count_today + 1 + attempt
+                while True:
+                    candidate = f"{prefix}{suffix_int:04d}"
+                    existing = db.query(models.Order).filter(models.Order.order_number == candidate).first()
+                    if not existing:
+                        order_number = candidate
+                        break
+                    suffix_int += 1
+            else:
+                order_number = payload.order_number
+                existing = db.query(models.Order).filter(models.Order.order_number == order_number).first()
+                if existing:
+                    raise HTTPException(status_code=400, detail="Order number already exists")
+
+            new_order = models.Order(
+                order_number=order_number,
+                customer_id=payload.customer_id,
+                channel_id=payload.channel_id,
+                status="DRAFT",
+                total_amount=final_total,
+                shipping_fee=payload.shipping_fee,
+                shipping_address=payload.shipping_address,
+                note=payload.note,
+                created_by=payload.created_by,
+            )
+            for item_data in order_items_data:
+                new_order.items.append(models.OrderItem(
+                    sku_code=item_data["sku_code"],
+                    product_name=item_data["product_name"],
+                    variant_name=item_data["variant_name"],
+                    quantity=item_data["quantity"],
+                    unit_price=item_data["unit_price"],
+                    subtotal=item_data["subtotal"],
+                    image_url=item_data["image_url"]
+                ))
+            db.add(new_order)
+
+            db.commit()
+            db.refresh(new_order)
+            return new_order
+        except HTTPException:
+            db.rollback()
+            raise
+        except IntegrityError:
+            db.rollback()
+            if payload.order_number:
+                raise HTTPException(status_code=400, detail="Order number already exists")
+            if attempt == MAX_RETRIES - 1:
+                raise HTTPException(status_code=500, detail="Could not generate unique order number after retries")
 
 
 @router.get("")
@@ -289,7 +313,7 @@ def delete_order(id: int, db: Session = Depends(get_db), current_user: dict = De
 
 @router.post("/{id}/confirm", response_model=schemas.OrderOut)
 def confirm_order(id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    order = db.query(models.Order).filter(models.Order.id == id).first()
+    order = db.query(models.Order).filter(models.Order.id == id).with_for_update().first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
         
@@ -297,14 +321,12 @@ def confirm_order(id: int, db: Session = Depends(get_db), current_user: dict = D
         raise HTTPException(status_code=400, detail="Only DRAFT orders can be confirmed")
         
     allocations = _allocate_order_items(order.items)
-    order.status = "CONFIRMED"
-    db.flush()
 
     wms_url = f"{WMS_API_URL}/fulfillment-orders"
     is_split = len(allocations) > 1
 
+    successful_fulfillments = []
     try:
-        successful_fulfillments = []
         for idx, allocation in enumerate(allocations, start=1):
             fulfillment_number = (
                 f"FM-{order.order_number}-{idx}"
@@ -332,6 +354,11 @@ def confirm_order(id: int, db: Session = Depends(get_db), current_user: dict = D
                     status=fo_status,
                 )
             )
+        
+        order.status = "PROCESSING"
+        db.commit()
+        db.refresh(order)
+        return order
     except HTTPException as e:
         db.rollback()
         # Rollback ghost reservations in WMS
@@ -341,11 +368,14 @@ def confirm_order(id: int, db: Session = Depends(get_db), current_user: dict = D
             except Exception as rollback_err:
                 logger.error(f"Failed to rollback WMS fulfillment {fn}: {rollback_err}")
         raise HTTPException(status_code=e.status_code, detail=f"WMS integration failed: {e.detail}")
-    
-    order.status = "PROCESSING"
-    db.commit()
-    db.refresh(order)
-    return order
+    except Exception as e:
+        db.rollback()
+        for fn in successful_fulfillments:
+            try:
+                _call_api(f"{WMS_API_URL}/fulfillment-orders/{fn}/cancel", "POST")
+            except Exception as rollback_err:
+                logger.error(f"Failed to rollback WMS fulfillment {fn}: {rollback_err}")
+        raise HTTPException(status_code=500, detail=f"WMS integration failed: {str(e)}")
 
 
 @router.get("/{id}/stock-check")
