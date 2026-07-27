@@ -394,3 +394,35 @@ def test_product_validation_vietnamese(client):
     dts_error = next(e for e in errors if "dts_days" in e["loc"])
     assert "Giá trị phải nhỏ hơn hoặc bằng" in dts_error["msg"]
     assert dts_error["type"] == "less_than_equal"
+
+
+def test_create_product_unauthenticated_fails(client_no_auth_override):
+    payload = {
+        "product_code": "NOAUTH-001",
+        "name": "Ao tap unauth",
+        "weight": 200,
+        "category_id": 1,
+        "family_id": 1,
+        "variants": [{"tier_1_option": None, "tier_2_option": None, "price": 100000}]
+    }
+    resp = client_no_auth_override.post("/products", json=payload)
+    assert resp.status_code == 401
+    assert "detail" in resp.json()
+
+
+def test_create_product_variant_tier_mismatch_fails(client):
+    category_id = _first_category_id(client)
+    family_id = _first_family_id(client)
+    attribute_id = _first_attribute_id(client)
+
+    payload = _product_payload(category_id, family_id, attribute_id, parent_code="MISMATCH-001")
+    # Tier variations specify "Do" and "Xanh", but variant has invalid "Vang"
+    payload["variants"] = [
+        {"tier_1_option": "Vang", "tier_2_option": None, "sku_code": "MISMATCH-VANG", "price": 100000}
+    ]
+
+    resp = client.post("/products", json=payload)
+    assert resp.status_code == 422
+    errors = resp.json()["detail"]
+    assert any("Tổ hợp phân loại không khớp" in e["msg"] for e in errors)
+
