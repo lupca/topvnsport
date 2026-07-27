@@ -1,0 +1,12 @@
+{
+  "name": "topvnsport-oms",
+  "version": "1.0.0",
+  "description": "TopVNSport Order Management System (OMS)",
+  "private": true,
+  "scripts": {
+    "docs:lint": "npm exec -- markdown-link-check README.md && npm exec -- markdown-link-check docs/API.md && npm exec -- markdown-link-check docs/DATABASE.md && npm exec -- markdown-link-check docs/ARCHITECTURE.md"
+  },
+  "devDependencies": {
+    "markdown-link-check": "^3.14.2"
+  }
+}
