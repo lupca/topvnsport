@@ -26,7 +26,7 @@ Tài liệu API chi tiết của hệ thống TopVNSport Order Management System
 
 ## Overview & Base URL
 
-- **Default Local Base URL**: `http://localhost:8000` (FastAPI backend)
+- **Default Local Base URL**: `http://localhost:8000` (Direct FastAPI backend) / `http://localhost:18101` (Docker proxy)
 - **Production Base URL**: `https://oms.topvnsport.com`
 - **Content-Type**: `application/json`
 
@@ -34,15 +34,27 @@ Tài liệu API chi tiết của hệ thống TopVNSport Order Management System
 
 ## Authentication & Security
 
-OMS Backend hỗ trợ xác thực JWT Bearer Token phát hành từ Identity Service:
+OMS Backend hỗ trợ 3 phương thức xác thực linh hoạt:
 
-```http
-Authorization: Bearer <your-jwt-token>
-```
+1. **Gateway-injected Headers (Primary)**:
+   ```http
+   X-User-Id: <user-id>
+   X-User-Username: <username>
+   X-User-Role: <role>
+   X-User-Permissions: <perm1,perm2>
+   ```
+2. **JWT Bearer Token Fallback (Direct API access)**:
+   ```http
+   Authorization: Bearer <your-jwt-token>
+   ```
+3. **Internal Service API Key Fallback (`X-API-Key`)**:
+   ```http
+   X-API-Key: oms_wms_internal_api_key_secret_2026
+   ```
 
-- **Protected Endpoints**: Yêu cầu Header `Authorization: Bearer <token>`.
-- **Admin-only Endpoints**: Yêu cầu token chứa claim `"role": "admin"`.
-- **Public/Optional Auth Endpoints**: Cho phép truy cập không cần token (ví dụ: Tạo đơn Storefront, gửi/xác minh OTP, Webhooks).
+- **Protected Endpoints**: Yêu cầu xác thực (thông qua Gateway headers, JWT Bearer Token, hoặc `X-API-Key`).
+- **Admin-only Endpoints**: Yêu cầu tài khoản có `role: "admin"` (ví dụ: `PUT /api/configs/sms`).
+- **Public / Optional Auth Endpoints**: Cho phép truy cập không cần xác thực hoặc có auth tùy chọn (ví dụ: `GET /`, `POST /orders` cho Storefront, `POST /customers`, `POST /api/sms/send-otp`, `POST /api/sms/verify-otp`, `POST /api/sms/zalo-webhook`, `GET /channels`).
 
 ---
 
@@ -52,16 +64,17 @@ Hệ thống sử dụng các mã HTTP Status tiêu chuẩn:
 
 | Status Code | Description | Reason / Trigger |
 | --- | --- | --- |
-| `200 OK` | Thành công | Request xử lý thành công |
+| `200 OK` | Thành công | Request xử lý thành công (ví dụ: khôi phục customer soft-deleted) |
 | `201 Created` | Tạo mới thành công | Tạo mới đơn hàng, khách hàng, kênh bán hàng |
-| `204 No Content` | Xóa thành công | Xóa đơn nháp, soft-delete khách hàng hoặc kênh |
-| `400 Bad Request` | Dữ liệu không hợp lệ | Đơn hàng sai trạng thái, trùng code/phone, OTP sai |
-| `401 Unauthorized` | Chưa xác thực | Thiếu JWT Token hoặc chữ ký Webhook không hợp lệ |
-| `403 Forbidden` | Không có quyền / Bị khóa | Số điện thoại bị khóa do rate limit, sai verification token, không phải Admin |
-| `404 Not Found` | Không tìm thấy | ID không tồn tại trong hệ thống |
-| `409 Conflict` | Xung đột nghiệp vụ | Không thể xóa Customer/Channel đang có đơn hàng active |
+| `204 No Content` | Xóa thành công | Xóa đơn nháp (`DRAFT`), soft-delete khách hàng hoặc kênh bán hàng |
+| `400 Bad Request` | Dữ liệu không hợp lệ | Đơn hàng sai trạng thái, trùng code/phone/order_number, OTP sai, tồn kho không đủ |
+| `401 Unauthorized` | Chưa xác thực | Thiếu Gateway Headers, JWT Token, hoặc `X-API-Key` trên các protected route |
+| `403 Forbidden` | Không có quyền / Bị khóa | Số điện thoại bị khóa do rate limit, sai/hết hạn verification token, không có role `admin` |
+| `404 Not Found` | Không tìm thấy | ID đơn hàng, khách hàng, kênh không tồn tại trong hệ thống |
+| `409 Conflict` | Xung đột nghiệp vụ | Không thể xóa Customer/Channel đang có đơn hàng active (chưa CANCELLED/COMPLETED) |
+| `422 Unprocessable Entity` | Lỗi Validation | Định dạng số điện thoại không hợp lệ (regex `^(0|\+84|84)[35789]\d{8}$`), thiếu trường bắt buộc |
 | `429 Too Many Requests` | Gửi request quá nhanh | Cooldown gửi OTP trong vòng 60 giây |
-| `500 Internal Server Error` | Lỗi hệ thống | Lỗi không xác định hoặc lỗi kết nối dịch vụ ngoài |
+| `500 Internal Server Error` | Lỗi hệ thống | Lỗi không xác định hoặc lỗi kết nối dịch vụ ngoài (WMS/PMI) |
 
 ---
 
@@ -88,7 +101,7 @@ Hệ thống sử dụng các mã HTTP Status tiêu chuẩn:
 - **Description**: Lấy mã OTP mới nhất của một số điện thoại (Chỉ hoạt động trong môi trường `development` khi `ALLOW_TEST_OTP_ENDPOINT=true`).
 - **Authentication**: Public
 - **Query Parameters**:
-  - `phone` (string, required): Số điện thoại nhận OTP.
+  - `phone` (string, required): Số điện thoại nhận OTP (được chuẩn hóa về dạng 84xxxxxxxxx).
 - **Response `200 OK`**:
   ```json
   {
@@ -97,7 +110,7 @@ Hệ thống sử dụng các mã HTTP Status tiêu chuẩn:
   ```
 
 #### `POST /api/sms/send-otp`
-- **Description**: Gửi mã OTP 6 chữ số đến số điện thoại qua Zalo ZBS. Áp dụng Cooldown 60s và Lockout 15 phút nếu gửi quá 5 lần.
+- **Description**: Gửi mã OTP 6 chữ số đến số điện thoại qua Zalo ZBS. Áp dụng Cooldown 60s và Lockout 15 phút nếu thử gửi quá 5 lần.
 - **Authentication**: Public
 - **Request Body** (`SendOtpRequest`):
   ```json
@@ -113,7 +126,7 @@ Hệ thống sử dụng các mã HTTP Status tiêu chuẩn:
   ```
 
 #### `POST /api/sms/verify-otp`
-- **Description**: Xác minh mã OTP 6 chữ số. Nếu thành công, trả về `verification_token` có hiệu lực trong 15 phút để sử dụng khi tạo đơn Storefront.
+- **Description**: Xác minh mã OTP 6 chữ số. Nếu thành công, trả về `verification_token` (UUIDv4) có hiệu lực trong 15 phút để sử dụng khi tạo đơn Storefront.
 - **Authentication**: Public
 - **Request Body** (`VerifyOtpRequest`):
   ```json
@@ -135,7 +148,7 @@ Hệ thống sử dụng các mã HTTP Status tiêu chuẩn:
 ### 3. Webhooks (`/api/sms`)
 
 #### `POST /api/sms/zalo-webhook`
-- **Description**: Endpoint nhận callback webhook từ Zalo ZBS khi tin nhắn OTP đã được chuyển tới thiết bị người dùng (`user_received_message`).
+- **Description**: Endpoint nhận callback webhook từ Zalo ZBS khi tin nhắn OTP thay đổi trạng thái (ví dụ: `user_received_message`).
 - **Authentication**: Webhook Signature Check (Header `X-Zalo-Signature` HMAC-SHA256 với `zalo_secret_key`).
 - **Response `200 OK`**:
   ```json
@@ -151,21 +164,21 @@ Hệ thống sử dụng các mã HTTP Status tiêu chuẩn:
 
 #### `GET /api/configs/sms`
 - **Description**: Lấy danh sách cấu hình Zalo ZBS đã được che mờ (masked) token.
-- **Authentication**: Required (Logged-in User)
+- **Authentication**: Protected (Logged-in user)
 - **Response `200 OK`**:
   ```json
   {
     "zalo_app_id": "zalo_*****",
-    "zalo_secret_key": "secret*****",
-    "zalo_access_token": "access*****",
+    "zalo_secret_key": "secre*****",
+    "zalo_access_token": "acces*****",
     "zalo_refresh_token": "refre*****",
-    "zalo_template_id": "templa*****"
+    "zalo_template_id": "templ*****"
   }
   ```
 
 #### `PUT /api/configs/sms`
-- **Description**: Cập nhật cấu hình Zalo ZBS (Các giá trị chứa ký tự `*` sẽ bị bỏ qua không ghi đè).
-- **Authentication**: Required (Admin role)
+- **Description**: Cập nhật cấu hình Zalo ZBS (Các giá trị chứa ký tự `*` sẽ được giữ nguyên, không bị ghi đè).
+- **Authentication**: Admin Only (`role: "admin"`)
 - **Request Body** (`ZaloConfigUpdate`):
   ```json
   {
@@ -183,7 +196,7 @@ Hệ thống sử dụng các mã HTTP Status tiêu chuẩn:
 ### 5. Orders Management (`/orders`)
 
 #### `POST /orders`
-- **Description**: Tạo đơn hàng mới ở trạng thái `DRAFT`. Đối với kênh `STOREFRONT`, yêu cầu truyền `verification_token` hợp lệ đã qua xác minh OTP.
+- **Description**: Tạo đơn hàng mới ở trạng thái `DRAFT`. Nếu là kênh `STOREFRONT` (`code="STOREFRONT"`), bắt buộc phải có `verification_token` hợp lệ và khớp với số điện thoại của khách hàng.
 - **Authentication**: Optional
 - **Request Body** (`OrderCreateInput`):
   ```json
@@ -194,6 +207,7 @@ Hệ thống sử dụng các mã HTTP Status tiêu chuẩn:
     "shipping_address": "123 Đường ABC, Quận 1, TP.HCM",
     "note": "Giao giờ hành chính",
     "created_by": "storefront",
+    "order_number": "ORD-20260728-0001",
     "verification_token": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
     "items": [
       {
@@ -214,23 +228,29 @@ Hệ thống sử dụng các mã HTTP Status tiêu chuẩn:
     "total_amount": 3530000.00,
     "shipping_fee": 30000.00,
     "shipping_address": "123 Đường ABC, Quận 1, TP.HCM",
+    "note": "Giao giờ hành chính",
+    "created_by": "storefront",
     "created_at": "2026-07-28T03:00:00Z",
+    "updated_at": "2026-07-28T03:00:00Z",
     "items": [
       {
         "id": 15,
         "sku_code": "YNX-AX99-RED",
         "product_name": "Vợt cầu lông Yonex Astrox 99",
+        "variant_name": "Đỏ / 4U",
         "quantity": 1,
         "unit_price": 3500000.00,
-        "subtotal": 3500000.00
+        "subtotal": 3500000.00,
+        "image_url": "http://pim-api:8000/images/ynx.jpg"
       }
-    ]
+    ],
+    "fulfillment_orders": []
   }
   ```
 
 #### `GET /orders`
 - **Description**: Lấy danh sách đơn hàng có phân trang và bộ lọc.
-- **Authentication**: Required
+- **Authentication**: Protected
 - **Query Parameters**:
   - `page` (int, default: 1)
   - `limit` (int, default: 100)
@@ -251,27 +271,43 @@ Hệ thống sử dụng các mã HTTP Status tiêu chuẩn:
 
 #### `GET /orders/{id}`
 - **Description**: Xem chi tiết đơn hàng theo ID.
-- **Authentication**: Required
+- **Authentication**: Protected
 - **Response `200 OK`**: Trả về chi tiết đối tượng `OrderOut`.
 
 #### `PUT /orders/{id}`
 - **Description**: Cập nhật thông tin đơn hàng (Chỉ cho phép khi đơn hàng đang ở trạng thái `DRAFT`).
-- **Authentication**: Required
+- **Authentication**: Protected
+- **Request Body** (`OrderUpdateInput`):
+  ```json
+  {
+    "customer_id": 1,
+    "channel_id": 2,
+    "shipping_fee": 35000.00,
+    "shipping_address": "456 Đường DEF, Quận 3, TP.HCM",
+    "note": "Gọi trước khi giao",
+    "items": [
+      {
+        "sku_code": "YNX-AX99-RED",
+        "quantity": 2
+      }
+    ]
+  }
+  ```
 - **Response `200 OK`**: Trả về thông tin `OrderOut` sau khi cập nhật.
 
 #### `DELETE /orders/{id}`
 - **Description**: Xóa đơn hàng (Chỉ cho phép khi đơn hàng ở trạng thái `DRAFT`).
-- **Authentication**: Required
+- **Authentication**: Protected
 - **Response `204 No Content`**
 
 #### `POST /orders/{id}/confirm`
-- **Description**: Xác nhận đơn hàng nháp, gọi WMS để giữ hàng (inventory allocation) và tự động tạo các lệnh xuất kho (`FulfillmentOrder`). Chuyển trạng thái đơn sang `PROCESSING`.
-- **Authentication**: Required
+- **Description**: Xác nhận đơn hàng nháp, gọi WMS để kiểm tra và giữ hàng (inventory allocation) và tự động tạo các lệnh xuất kho (`FulfillmentOrder`). Chuyển trạng thái đơn sang `PROCESSING`.
+- **Authentication**: Protected
 - **Response `200 OK`**: Trả về `OrderOut` với danh sách `fulfillment_orders` đã tạo.
 
 #### `GET /orders/{id}/stock-check`
 - **Description**: Kiểm tra tồn kho realtime từ WMS cho tất cả sản phẩm trong đơn hàng.
-- **Authentication**: Required
+- **Authentication**: Protected
 - **Response `200 OK`**:
   ```json
   {
@@ -288,41 +324,41 @@ Hệ thống sử dụng các mã HTTP Status tiêu chuẩn:
 
 #### `POST /orders/{id}/cancel`
 - **Description**: Hủy đơn hàng. Nếu đơn hàng đã phân bổ tồn kho sang WMS, gửi yêu cầu hủy các `FulfillmentOrder` tương ứng trên WMS.
-- **Authentication**: Required
-- **Response `200 OK`**: Trả về `OrderOut` với trạng thái `CANCELLED` (hoặc `CANCELLATION_PENDING` nếu WMS chưa hủy xong hoàn toàn).
+- **Authentication**: Protected
+- **Response `200 OK`**: Trả về `OrderOut` với trạng thái `CANCELLED` (hoặc `CANCELLATION_PENDING` nếu có lệnh xuất kho chưa hủy thành công bên WMS).
 
 #### `PATCH /orders/{id}/status`
-- **Description**: Cập nhật trạng thái đơn hàng theo luồng trạng thái cho phép (`ALLOWED_TRANSITIONS`).
-- **Authentication**: Required
+- **Description**: Cập nhật trạng thái đơn hàng theo luồng chuyển dịch cho phép (`ALLOWED_TRANSITIONS`).
+- **Authentication**: Protected
 - **Request Body** (`OrderStatusUpdate`):
   ```json
   {
     "status": "PROCESSING"
   }
   ```
-- **Response `200 OK`**: Trả về `OrderOut` cập nhật.
+- **Response `200 OK`**: Trả về `OrderOut` đã cập nhật.
 
 ---
 
 ### 6. Fulfillment Order Management (`/orders`)
 
 #### `PATCH /orders/{id}/fulfillments/{fulfillment_number}/status`
-- **Description**: Cập nhật trạng thái của từng lệnh xuất kho (thường được gọi bởi WMS callback). Tự động tính toán và điều chỉnh trạng thái của đơn hàng cha.
-- **Authentication**: Required
+- **Description**: Cập nhật trạng thái của từng lệnh xuất kho (thường do WMS callback). Tự động cập nhật trạng thái chung của đơn hàng.
+- **Authentication**: Protected
 - **Request Body** (`FulfillmentStatusUpdate`):
   ```json
   {
     "status": "SHIPPED"
   }
   ```
-- **Response `200 OK`**: Trả về `OrderOut` cập nhật.
+- **Response `200 OK`**: Trả về `OrderOut` đã cập nhật.
 
 ---
 
 ### 7. Customer Management (`/customers`)
 
 #### `POST /customers`
-- **Description**: Tạo mới khách hàng hoặc kích hoạt lại nếu số điện thoại đã tồn tại nhưng ở trạng thái bị xóa (`is_deleted=True`).
+- **Description**: Tạo mới khách hàng hoặc kích hoạt lại và cập nhật thông tin nếu số điện thoại đã tồn tại nhưng ở trạng thái bị xóa (`is_deleted=True`). Định dạng số điện thoại bắt buộc phải khớp với `^(0|\+84|84)[35789]\d{8}$`.
 - **Authentication**: Optional
 - **Request Body** (`CustomerCreate`):
   ```json
@@ -337,20 +373,33 @@ Hệ thống sử dụng các mã HTTP Status tiêu chuẩn:
 
 #### `GET /customers`
 - **Description**: Danh sách khách hàng chưa bị xóa (`is_deleted=False`) có phân trang và tìm kiếm.
-- **Authentication**: Required
-- **Query Parameters**: `page`, `limit`, `search`.
+- **Authentication**: Protected
+- **Query Parameters**:
+  - `page` (int, default: 1)
+  - `limit` (int, default: 20)
+  - `search` (string, optional): Tìm kiếm theo tên, số điện thoại, email
+- **Response `200 OK`**: Trả về đối tượng `PaginatedCustomers`:
+  ```json
+  {
+    "items": [...],
+    "total": 10,
+    "page": 1,
+    "pages": 1,
+    "limit": 20
+  }
+  ```
 
 #### `GET /customers/{customer_id}`
 - **Description**: Lấy chi tiết khách hàng theo ID.
-- **Authentication**: Required
+- **Authentication**: Protected
 
 #### `PUT /customers/{customer_id}`
 - **Description**: Cập nhật thông tin khách hàng.
-- **Authentication**: Required
+- **Authentication**: Protected
 
 #### `DELETE /customers/{customer_id}`
 - **Description**: Soft delete khách hàng (`is_deleted=True`, `deleted_at=utcnow()`). Bị từ chối với lỗi `409 Conflict` nếu khách hàng đang có đơn hàng active.
-- **Authentication**: Required
+- **Authentication**: Protected
 - **Response `204 No Content`**
 
 ---
@@ -358,24 +407,35 @@ Hệ thống sử dụng các mã HTTP Status tiêu chuẩn:
 ### 8. Channel Management (`/channels`)
 
 #### `POST /channels`
-- **Description**: Tạo mới kênh bán hàng (Shopee, Lazada, TikTok Shop, Storefront, Manual).
-- **Authentication**: Required
+- **Description**: Tạo mới kênh bán hàng (Shopee, Lazada, TikTok Shop, Storefront, Manual). Nếu mã kênh (`code`) đã từng tồn tại và bị soft-deleted, kênh sẽ được khôi phục.
+- **Authentication**: Protected
+- **Request Body** (`ChannelCreate`):
+  ```json
+  {
+    "code": "TIKTOK_SHOP",
+    "name": "TikTok Shop",
+    "is_active": true
+  }
+  ```
+- **Response `201 Created`** (hoặc `200 OK` nếu reactivated)
 
 #### `GET /channels`
-- **Description**: Danh sách kênh bán hàng có phân trang.
+- **Description**: Danh sách kênh bán hàng chưa bị xóa (`is_deleted=False`) có phân trang.
 - **Authentication**: Optional
+- **Query Parameters**: `page` (default: 1), `limit` (default: 20), `search` (optional).
+- **Response `200 OK`**: Trả về đối tượng `PaginatedChannels`.
 
 #### `GET /channels/{channel_id}`
 - **Description**: Lấy chi tiết kênh bán hàng.
-- **Authentication**: Required
+- **Authentication**: Protected
 
 #### `PUT /channels/{channel_id}`
-- **Description**: Cập nhật thông tin kênh bán hàng (tên, trạng thái `is_active`).
-- **Authentication**: Required
+- **Description**: Cập nhật thông tin kênh bán hàng (`name`, `is_active`).
+- **Authentication**: Protected
 
 #### `DELETE /channels/{channel_id}`
-- **Description**: Soft delete kênh bán hàng (`is_deleted=True`). Bị từ chối với lỗi `409 Conflict` nếu kênh đang có đơn hàng active.
-- **Authentication**: Required
+- **Description**: Soft delete kênh bán hàng (`is_deleted=True`, `deleted_at=utcnow()`). Bị từ chối với lỗi `409 Conflict` nếu kênh đang có đơn hàng active.
+- **Authentication**: Protected
 - **Response `204 No Content`**
 
 ---
@@ -384,7 +444,7 @@ Hệ thống sử dụng các mã HTTP Status tiêu chuẩn:
 
 #### `GET /dashboard/stats`
 - **Description**: Thống kê tổng quan KPI kinh doanh: tổng số đơn hàng, tổng doanh thu, số lượng khách hàng, số lượng đơn theo trạng thái, và thống kê đơn hàng 7 ngày gần nhất.
-- **Authentication**: Required
+- **Authentication**: Protected
 - **Response `200 OK`**:
   ```json
   {
@@ -414,7 +474,7 @@ Hệ thống sử dụng các mã HTTP Status tiêu chuẩn:
 
 #### `GET /products/search`
 - **Description**: Proxy truy vấn danh sách/tìm kiếm sản phẩm sang dịch vụ PMI (`PIM_API_URL`).
-- **Authentication**: Required
+- **Authentication**: Protected
 - **Query Parameters**: `search` hoặc `q`, `category_id`, `limit`, ...
 - **Response `200 OK`**: Trả về danh sách sản phẩm kết quả từ PMI.
 

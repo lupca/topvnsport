@@ -6,9 +6,14 @@ import time
 
 API_URL = "http://localhost:18101"
 
-def make_request(path, method="GET", data=None):
+def make_request(path, method="GET", data=None, extra_headers=None):
     url = f"{API_URL}{path}"
-    headers = {"Content-Type": "application/json"}
+    headers = {
+        "Content-Type": "application/json",
+        "X-API-Key": "oms_wms_internal_api_key_secret_2026"
+    }
+    if extra_headers:
+        headers.update(extra_headers)
     req_data = json.dumps(data).encode("utf-8") if data else None
     req = urllib.request.Request(url, data=req_data, headers=headers, method=method)
     try:
@@ -33,19 +38,20 @@ def test_api():
     # POST /customers
     cust_data = {
         "name": "John Doe",
-        "phone": "+447123456789",
+        "phone": "0912345678",
         "email": "john.doe@example.com",
         "address": "123 London St"
     }
     cust = make_request("/customers", method="POST", data=cust_data)
     print("Created Customer:", cust)
     assert cust["id"] is not None
-    assert cust["phone"] == "+447123456789"
+    assert cust["phone"] == "0912345678"
     cust_id = cust["id"]
     
     # GET /customers (list)
-    customers = make_request("/customers")
-    print(f"List Customers (found {len(customers)}):", customers)
+    customers_res = make_request("/customers")
+    print(f"List Customers (response):", customers_res)
+    customers = customers_res["items"] if isinstance(customers_res, dict) and "items" in customers_res else customers_res
     assert any(c["id"] == cust_id for c in customers)
     
     # GET /customers/{id}
@@ -87,8 +93,9 @@ def test_api():
     chan_id = chan["id"]
     
     # GET /channels (list)
-    channels = make_request("/channels")
-    print(f"List Channels (found {len(channels)}):", channels)
+    channels_res = make_request("/channels")
+    print(f"List Channels (response):", channels_res)
+    channels = channels_res["items"] if isinstance(channels_res, dict) and "items" in channels_res else channels_res
     assert any(c["id"] == chan_id for c in channels)
     
     # GET /channels/{id}

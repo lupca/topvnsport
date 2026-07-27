@@ -32,8 +32,8 @@ graph TD
     Client[Web Storefront / Admin User] -->|HTTP / REST| Gateway[API Gateway / Nginx]
     
     Gateway -->|/api/auth| Identity[Identity Service - JWT Auth]
-    Gateway -->|/orders, /customers, /api/sms| OMS_BE[OMS Backend - FastAPI]
-    Gateway -->|Static / SPA| OMS_FE[OMS Frontend - Next.js]
+    Gateway -->|/orders, /customers, /api/sms| OMS_BE[OMS Backend - FastAPI Port 8000 / 18101]
+    Gateway -->|Static / SPA| OMS_FE[OMS Frontend - Next.js Port 13101]
     
     OMS_BE -->|PostgreSQL / SQLite| OMS_DB[(OMS Database)]
     OMS_BE -->|Query SKU metadata| PMI[PMI Service - Product Info]
@@ -47,14 +47,15 @@ graph TD
 
 ## Core Service Responsibilities
 
-1. **OMS Backend (FastAPI)**:
+1. **OMS Backend (FastAPI - Port 8000 / 18101)**:
    - Quản lý vòng đời đơn hàng, khách hàng, kênh bán hàng và cấu hình hệ thống.
-   - Xử lý gửi/xác minh mã OTP qua Zalo ZBS API với Rate Limiting & Lockout.
-   - Mã hóa Fernet cho các token/cấu hình nhạy cảm.
+   - Xử lý xác thực người dùng qua Gateway Headers, JWT Bearer Token, hoặc `X-API-Key`.
+   - Xử lý gửi/xác minh mã OTP qua Zalo ZBS API với Rate Limiting (Cooldown 60s, Lockout 15m).
+   - Mã hóa Fernet (`EncryptedString`) cho các token/cấu hình nhạy cảm trong `system_configs`.
    - Giao tiếp với PMI để lấy giá và tên sản phẩm.
    - Giao tiếp với WMS để phân bổ hàng hóa theo kho và phát hành lệnh xuất kho (`FulfillmentOrder`).
 
-2. **OMS Frontend (Next.js 14)**:
+2. **OMS Frontend (Next.js - Port 13101)**:
    - Giao diện quản trị OMS cho bộ phận Vận hành, CSKH và Quản lý kho.
    - Dashboard thống kê KPI kinh doanh realtime, báo cáo doanh thu và sản lượng đơn hàng.
    - Quản lý đơn hàng, duyệt đơn nháp, phân kho và cập nhật trạng thái đơn hàng.
