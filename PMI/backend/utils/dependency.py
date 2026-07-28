@@ -57,7 +57,7 @@ async def get_current_identity(
             "actor_username": x_user_username,
             "actor_id": x_user_id,
             "role": x_user_role,
-            "permissions": x_user_permissions.split(",") if x_user_permissions else [],
+            "permissions": [p.strip() for p in x_user_permissions.split(",") if p.strip()] if x_user_permissions else [],
         }
 
     # 3. JWT Bearer fallback (direct API access without gateway)
@@ -97,3 +97,8 @@ async def get_current_identity(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Authentication credentials are required"
     )
+
+
+# Re-export RBAC helpers from utils.permissions
+from utils.permissions import has_permission, require_permission, require_role
+

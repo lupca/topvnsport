@@ -20,6 +20,7 @@ from utils.context import actor_username_var, actor_type_var, correlation_id_var
 from utils.audit import audit_action
 from services.product_service import _parse_attribute_storage_value, _upsert_product_attribute_values, _save_product_channel_listings, update_product_aggregate
 from services.audit_worker import process_outbox_batch
+from exceptions import DomainException, ChannelNotFoundException, VariantSkuNotFoundException
 
 def test_coerced_uuid_string_edges():
     """Verify conversion boundaries for CoercedUUIDString type decorator."""
@@ -133,7 +134,7 @@ def test_save_product_channel_listings_exceptions(db_session: Session):
     product_id = prod.id
 
     # 1. Non-existent channel code
-    with pytest.raises(HTTPException) as exc_info:
+    with pytest.raises(ChannelNotFoundException) as exc_info:
         _save_product_channel_listings(
             db=db_session,
             product_id=product_id,
@@ -152,7 +153,7 @@ def test_save_product_channel_listings_exceptions(db_session: Session):
             db_variants=[]
         )
     assert exc_info.value.status_code == 400
-    assert "not found" in exc_info.value.detail
+    assert "not found" in exc_info.value.message
 
     # 2. Variant override with non-existent SKU code
     channel = db_session.query(models.Channel).first()
@@ -161,7 +162,7 @@ def test_save_product_channel_listings_exceptions(db_session: Session):
         db_session.add(channel)
         db_session.commit()
 
-    with pytest.raises(HTTPException) as exc_info2:
+    with pytest.raises(VariantSkuNotFoundException) as exc_info2:
         _save_product_channel_listings(
             db=db_session,
             product_id=product_id,
@@ -186,7 +187,7 @@ def test_save_product_channel_listings_exceptions(db_session: Session):
             db_variants=[]
         )
     assert exc_info2.value.status_code == 400
-    assert "not found in variants list" in exc_info2.value.detail
+    assert "not found in variants list" in exc_info2.value.message
 
 
 def test_product_attributes_duplicate_integrity(client, db_session: Session):

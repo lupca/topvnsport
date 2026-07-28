@@ -7,7 +7,10 @@ from database import get_db
 import models
 import schemas
 from services.product_service import _upsert_product_attribute_values, _save_product_channel_listings, update_product_aggregate
+from exceptions import DomainException
 from utils.audit import audit_action
+from utils.dependency import require_permission
+from utils.permissions import Permission
 
 router = APIRouter(tags=['Products'])
 
@@ -34,7 +37,7 @@ class GenerateProductCodeResponse(PydanticBaseModel):
     product_code: str
 
 
-@router.post("/products/generate-code", response_model=GenerateProductCodeResponse)
+@router.post("/products/generate-code", response_model=GenerateProductCodeResponse, dependencies=[Depends(require_permission("product:create"))])
 def generate_product_code_endpoint(request: GenerateProductCodeRequest, db: Session = Depends(get_db)):
     """Generate a unique product code based on category and product name."""
     # Generate initial code
@@ -54,7 +57,7 @@ def generate_product_code_endpoint(request: GenerateProductCodeRequest, db: Sess
     return {"product_code": code}
 
 
-@router.post("/products", response_model=schemas.ProductResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/products", response_model=schemas.ProductResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_permission("product:create"))])
 @audit_action(module="Product", action_type="CREATE")
 def create_product(product_in: schemas.ProductCreate, db: Session = Depends(get_db)):
     try:
@@ -143,6 +146,9 @@ def create_product(product_in: schemas.ProductCreate, db: Session = Depends(get_
         db.refresh(db_product)
         return db_product
 
+    except (HTTPException, DomainException):
+        db.rollback()
+        raise
     except Exception as e:
         db.rollback()
         # Handle unique constraint violations gracefully
@@ -239,7 +245,7 @@ def get_product(product_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Product not found")
     return db_product
 
-@router.put("/products/{product_id}", response_model=schemas.ProductResponse)
+@router.put("/products/{product_id}", response_model=schemas.ProductResponse, dependencies=[Depends(require_permission("product:write"))])
 @audit_action(module="Product", action_type="UPDATE")
 def update_product(product_id: int, product_in: schemas.ProductUpdate, db: Session = Depends(get_db)):
     try:
@@ -247,7 +253,8 @@ def update_product(product_id: int, product_in: schemas.ProductUpdate, db: Sessi
         db.commit()
         db.refresh(db_product)
         return db_product
-    except HTTPException:
+    except (HTTPException, DomainException):
+        db.rollback()
         raise
     except Exception as e:
         db.rollback()
@@ -261,8 +268,8 @@ def update_product(product_id: int, product_in: schemas.ProductUpdate, db: Sessi
                 raise HTTPException(status_code=400, detail="Unique constraint violation: duplicate identifier detected.")
         raise HTTPException(status_code=500, detail=f"Database transaction failed: {error_msg}")
 
-@router.put("/api/products/{product_id}/variants/{variant_id}")
-@router.put("/products/{product_id}/variants/{variant_id}")
+@router.put("/api/products/{product_id}/variants/{variant_id}", dependencies=[Depends(require_permission(Permission.PRODUCT_UPDATE))])
+@router.put("/products/{product_id}/variants/{variant_id}", dependencies=[Depends(require_permission(Permission.PRODUCT_UPDATE))])
 def update_product_variant_endpoint(product_id: int, variant_id: int, payload: dict, db: Session = Depends(get_db)):
     variant = db.query(models.ProductVariant).filter(
         models.ProductVariant.id == variant_id,
@@ -292,7 +299,7 @@ def update_product_variant_endpoint(product_id: int, variant_id: int, payload: d
     }
 
 
-@router.delete("/products/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/products/{product_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(require_permission("product:delete"))])
 @audit_action(module="Product", action_type="DELETE")
 def delete_product(product_id: int, db: Session = Depends(get_db)):
     db_product = db.query(models.Product).filter(models.Product.id == product_id).first()
@@ -305,7 +312,7 @@ def delete_product(product_id: int, db: Session = Depends(get_db)):
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Database transaction failed: {str(e)}")
 
-@router.post("/products/batch-delete", status_code=status.HTTP_204_NO_CONTENT)
+@router.post("/products/batch-delete", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(require_permission("product:delete"))])
 @audit_action(module="Product", action_type="DELETE")
 def batch_delete_products(request: schemas.BatchDeleteRequest, db: Session = Depends(get_db)):
     try:
@@ -395,7 +402,7 @@ def get_product_by_sku(sku_code: str, db: Session = Depends(get_db)):
 
 
 
-@router.post("/products/import")
+@router.post("/products/import", dependencies=[Depends(require_permission("product:create"))])
 def import_products(file: UploadFile = File(...), db: Session = Depends(get_db)):
     import csv
     import io

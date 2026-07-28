@@ -8,6 +8,8 @@ from database import get_db
 import models
 import schemas
 from utils.audit import audit_action
+from utils.dependency import require_permission
+from utils.permissions import Permission
 
 router = APIRouter(
     prefix="/api",
@@ -19,7 +21,7 @@ router = APIRouter(
 def get_channels(db: Session = Depends(get_db)):
     return db.query(models.Channel).all()
 
-@router.post("/channels", response_model=schemas.ChannelResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/channels", response_model=schemas.ChannelResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_permission(Permission.CHANNEL_CREATE))])
 @audit_action(module="Channel", action_type="CREATE")
 def create_channel(channel: schemas.ChannelCreate, db: Session = Depends(get_db)):
     db_chan = db.query(models.Channel).filter(models.Channel.code == channel.code).first()
@@ -38,7 +40,7 @@ def get_channel(channel_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Channel not found")
     return chan
 
-@router.put("/channels/{channel_id}", response_model=schemas.ChannelResponse)
+@router.put("/channels/{channel_id}", response_model=schemas.ChannelResponse, dependencies=[Depends(require_permission(Permission.CHANNEL_UPDATE))])
 @audit_action(module="Channel", action_type="UPDATE")
 def update_channel(channel_id: int, channel_in: schemas.ChannelUpdate, db: Session = Depends(get_db)):
     chan = db.query(models.Channel).filter(models.Channel.id == channel_id).first()
@@ -53,7 +55,7 @@ def update_channel(channel_id: int, channel_in: schemas.ChannelUpdate, db: Sessi
     db.refresh(chan)
     return chan
 
-@router.delete("/channels/{channel_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/channels/{channel_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(require_permission(Permission.CHANNEL_DELETE))])
 @audit_action(module="Channel", action_type="DELETE")
 def delete_channel(channel_id: int, db: Session = Depends(get_db)):
     chan = db.query(models.Channel).filter(models.Channel.id == channel_id).first()
@@ -79,7 +81,7 @@ def get_channel_config(channel_id: int, db: Session = Depends(get_db)):
         db.refresh(conf)
     return conf
 
-@router.put("/channels/{channel_id}/config", response_model=schemas.ChannelConfigResponse)
+@router.put("/channels/{channel_id}/config", response_model=schemas.ChannelConfigResponse, dependencies=[Depends(require_permission(Permission.CHANNEL_UPDATE))])
 @audit_action(module="Channel", action_type="UPDATE_CONFIG")
 def update_channel_config(channel_id: int, config_in: schemas.ChannelConfigUpdate, db: Session = Depends(get_db)):
     chan = db.query(models.Channel).filter(models.Channel.id == channel_id).first()
@@ -103,7 +105,7 @@ def update_channel_config(channel_id: int, config_in: schemas.ChannelConfigUpdat
 def get_category_mappings(channel_id: int, db: Session = Depends(get_db)):
     return db.query(models.ChannelCategoryMapping).filter(models.ChannelCategoryMapping.channel_id == channel_id).all()
 
-@router.post("/channels/{channel_id}/category-mappings", response_model=List[schemas.ChannelCategoryMappingResponse])
+@router.post("/channels/{channel_id}/category-mappings", response_model=List[schemas.ChannelCategoryMappingResponse], dependencies=[Depends(require_permission(Permission.CHANNEL_UPDATE))])
 def bulk_save_category_mappings(channel_id: int, mappings: List[schemas.ChannelCategoryMappingCreate], db: Session = Depends(get_db)):
     seen = set()
     for m in mappings:
@@ -132,7 +134,7 @@ def bulk_save_category_mappings(channel_id: int, mappings: List[schemas.ChannelC
 def get_attribute_mappings(channel_id: int, db: Session = Depends(get_db)):
     return db.query(models.ChannelAttributeMapping).filter(models.ChannelAttributeMapping.channel_id == channel_id).all()
 
-@router.post("/channels/{channel_id}/attribute-mappings", response_model=List[schemas.ChannelAttributeMappingResponse])
+@router.post("/channels/{channel_id}/attribute-mappings", response_model=List[schemas.ChannelAttributeMappingResponse], dependencies=[Depends(require_permission(Permission.CHANNEL_UPDATE))])
 def bulk_save_attribute_mappings(channel_id: int, mappings: List[schemas.ChannelAttributeMappingCreate], db: Session = Depends(get_db)):
     seen = set()
     for m in mappings:

@@ -4,6 +4,8 @@ from typing import List
 from database import get_db
 import models
 import schemas
+from utils.dependency import require_permission
+from utils.permissions import Permission
 
 router = APIRouter(tags=['Attributes'])
 
@@ -18,7 +20,7 @@ def get_attribute(attribute_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Attribute not found")
     return attr
 
-@router.post("/attributes", response_model=schemas.AttributeResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/attributes", response_model=schemas.AttributeResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_permission(Permission.ATTRIBUTE_CREATE))])
 def create_attribute(attribute: schemas.AttributeCreate, db: Session = Depends(get_db)):
     db_attr = db.query(models.Attribute).filter(models.Attribute.code == attribute.code).first()
     if db_attr:
@@ -42,7 +44,7 @@ def create_attribute(attribute: schemas.AttributeCreate, db: Session = Depends(g
         raise HTTPException(status_code=500, detail=f"Database transaction failed: {str(e)}")
     return new_attr
 
-@router.put("/attributes/{attribute_id}", response_model=schemas.AttributeResponse)
+@router.put("/attributes/{attribute_id}", response_model=schemas.AttributeResponse, dependencies=[Depends(require_permission(Permission.ATTRIBUTE_UPDATE))])
 def update_attribute(attribute_id: int, attribute_in: schemas.AttributeUpdate, db: Session = Depends(get_db)):
     db_attr = db.query(models.Attribute).filter(models.Attribute.id == attribute_id).first()
     if not db_attr:
@@ -68,7 +70,7 @@ def update_attribute(attribute_id: int, attribute_in: schemas.AttributeUpdate, d
         raise HTTPException(status_code=500, detail=f"Database transaction failed: {str(e)}")
     return db_attr
 
-@router.delete("/attributes/{attribute_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/attributes/{attribute_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(require_permission(Permission.ATTRIBUTE_DELETE))])
 def delete_attribute(attribute_id: int, db: Session = Depends(get_db)):
     db_attr = db.query(models.Attribute).filter(models.Attribute.id == attribute_id).first()
     if not db_attr:
@@ -92,7 +94,7 @@ def get_attribute_group(group_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Attribute Group not found")
     return grp
 
-@router.post("/attribute-groups", response_model=schemas.AttributeGroupResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/attribute-groups", response_model=schemas.AttributeGroupResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_permission(Permission.ATTRIBUTE_CREATE))])
 def create_attribute_group(group: schemas.AttributeGroupCreate, db: Session = Depends(get_db)):
     db_grp = db.query(models.AttributeGroup).filter(models.AttributeGroup.code == group.code).first()
     if db_grp:
@@ -111,7 +113,7 @@ def create_attribute_group(group: schemas.AttributeGroupCreate, db: Session = De
         raise HTTPException(status_code=500, detail=f"Database transaction failed: {str(e)}")
     return new_grp
 
-@router.put("/attribute-groups/{group_id}", response_model=schemas.AttributeGroupResponse)
+@router.put("/attribute-groups/{group_id}", response_model=schemas.AttributeGroupResponse, dependencies=[Depends(require_permission(Permission.ATTRIBUTE_UPDATE))])
 def update_attribute_group(group_id: int, group_in: schemas.AttributeGroupUpdate, db: Session = Depends(get_db)):
     db_grp = db.query(models.AttributeGroup).filter(models.AttributeGroup.id == group_id).first()
     if not db_grp:
@@ -132,7 +134,7 @@ def update_attribute_group(group_id: int, group_in: schemas.AttributeGroupUpdate
         raise HTTPException(status_code=500, detail=f"Database transaction failed: {str(e)}")
     return db_grp
 
-@router.delete("/attribute-groups/{group_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/attribute-groups/{group_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(require_permission(Permission.ATTRIBUTE_DELETE))])
 def delete_attribute_group(group_id: int, db: Session = Depends(get_db)):
     db_grp = db.query(models.AttributeGroup).filter(models.AttributeGroup.id == group_id).first()
     if not db_grp:
@@ -144,7 +146,7 @@ def delete_attribute_group(group_id: int, db: Session = Depends(get_db)):
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Database transaction failed: {str(e)}")
 
-@router.put("/attribute-groups/{group_id}/attributes", response_model=List[schemas.AttributeResponse])
+@router.put("/attribute-groups/{group_id}/attributes", response_model=List[schemas.AttributeResponse], dependencies=[Depends(require_permission(Permission.ATTRIBUTE_UPDATE))])
 def sync_attributes_for_group(group_id: int, payload: schemas.AttributeSyncRequest, db: Session = Depends(get_db)):
     grp = db.query(models.AttributeGroup).filter(models.AttributeGroup.id == group_id).first()
     if not grp:

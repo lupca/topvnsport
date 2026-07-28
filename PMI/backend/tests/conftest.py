@@ -10,6 +10,9 @@ from sqlalchemy import event
 from testcontainers.postgres import PostgresContainer
 from tests.factories.product import ProductFactory
 
+os.environ.setdefault("JWT_SECRET_KEY", "secretkey123456789012345678901234567890")
+os.environ.setdefault("INTERNAL_SERVICE_TOKEN", "test_internal_service_token_12345")
+
 @pytest.fixture(autouse=True)
 def setup_factories(db_session):
     ProductFactory._meta.sqlalchemy_session = db_session

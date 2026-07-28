@@ -15,7 +15,7 @@ from pydantic import BaseModel
 logger = logging.getLogger(__name__)
 
 import os
-ALLOWED_SERVICE_KEYS = set(os.environ["ALLOWED_SERVICE_KEYS"].split(","))
+ALLOWED_SERVICE_KEYS = set(k.strip() for k in os.getenv("ALLOWED_SERVICE_KEYS", "").split(",") if k.strip())
 
 router = APIRouter(prefix="/api", tags=["Audit Logs"])
 

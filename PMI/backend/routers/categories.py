@@ -5,6 +5,8 @@ from database import get_db
 import models
 import schemas
 from utils.audit import audit_action
+from utils.dependency import require_permission
+from utils.permissions import Permission
 
 router = APIRouter(tags=['Categories'])
 
@@ -60,7 +62,7 @@ def get_category(category_id: int, db: Session = Depends(get_db)):
         display_name=display_name
     )
 
-@router.post("/categories", response_model=schemas.CategoryResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/categories", response_model=schemas.CategoryResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_permission("category:write"))])
 @audit_action(module="Category", action_type="CREATE")
 def create_category(category: schemas.CategoryCreate, db: Session = Depends(get_db)):
     db_cat = db.query(models.Category).filter(models.Category.code == category.code).first()
@@ -99,7 +101,7 @@ def create_category(category: schemas.CategoryCreate, db: Session = Depends(get_
         display_name=display_name
     )
 
-@router.put("/categories/{category_id}", response_model=schemas.CategoryResponse)
+@router.put("/categories/{category_id}", response_model=schemas.CategoryResponse, dependencies=[Depends(require_permission("category:write"))])
 @audit_action(module="Category", action_type="UPDATE")
 def update_category(category_id: int, category_in: schemas.CategoryUpdate, db: Session = Depends(get_db)):
     db_cat = db.query(models.Category).filter(models.Category.id == category_id).first()
@@ -142,7 +144,7 @@ def update_category(category_id: int, category_in: schemas.CategoryUpdate, db: S
         display_name=display_name
     )
 
-@router.delete("/categories/{category_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/categories/{category_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(require_permission("category:write"))])
 @audit_action(module="Category", action_type="DELETE")
 def delete_category(category_id: int, db: Session = Depends(get_db)):
     db_cat = db.query(models.Category).filter(models.Category.id == category_id).first()

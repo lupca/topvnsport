@@ -1,11 +1,13 @@
 import uuid
-from fastapi import APIRouter, HTTPException, File, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
 from utils import storage
 from utils.audit import audit_action
+from utils.dependency import require_permission
+from utils.permissions import Permission
 
 router = APIRouter(tags=['Upload'])
 
-@router.post("/upload")
+@router.post("/upload", dependencies=[Depends(require_permission("upload:write"))])
 @audit_action(module="Product", action_type="UPLOAD_IMAGE")
 async def upload_image(file: UploadFile = File(...)):
     try:

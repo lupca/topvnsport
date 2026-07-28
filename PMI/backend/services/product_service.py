@@ -1,6 +1,6 @@
 from typing import List, Optional
 from sqlalchemy.orm import Session
-from fastapi import HTTPException
+from exceptions import ProductNotFoundException, ChannelNotFoundException, VariantSkuNotFoundException
 import models
 import schemas
 
@@ -91,7 +91,7 @@ def _save_product_channel_listings(
     for cl in channel_listings:
         channel = db.query(models.Channel).filter(models.Channel.code == cl.channel_code).first()
         if not channel:
-            raise HTTPException(status_code=400, detail=f"Channel with code '{cl.channel_code}' not found")
+            raise ChannelNotFoundException(f"Channel with code '{cl.channel_code}' not found")
         
         if cl.channel_code in existing_map:
             db_cl = existing_map[cl.channel_code]
@@ -140,7 +140,7 @@ def _save_product_channel_listings(
             db_var = next((v for v in db_variants if v.sku_code == vo.sku_code), None)
             if not db_var:
                 available_skus = [v.sku_code for v in db_variants]
-                raise HTTPException(status_code=400, detail=f"Variant SKU '{vo.sku_code}' not found in variants list. Available: {available_skus}")
+                raise VariantSkuNotFoundException(f"Variant SKU '{vo.sku_code}' not found in variants list. Available: {available_skus}")
             
             chan_var_id = vo.channel_variant_id
             if not chan_var_id:
@@ -260,7 +260,7 @@ def update_product_aggregate(db: Session, product_id: int, product_in: schemas.P
     ).filter(models.Product.id == product_id).first()
     
     if not db_product:
-        raise HTTPException(status_code=404, detail="Product not found")
+        raise ProductNotFoundException("Product not found")
         
     # Snapshot/serialize old state
     old_state = serialize_product_aggregate(db_product)
