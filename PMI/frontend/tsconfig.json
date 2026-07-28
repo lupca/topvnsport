@@ -19,8 +19,8 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "@topvnsport/ui-kit": ["../../packages/ui-kit/src/index.ts"],
-      "@topvnsport/api-client": ["../../packages/api-client/src/index.ts"]
+      "@topvnsport/ui-kit": ["../../packages/ui-kit/dist/index.d.ts"],
+      "@topvnsport/api-client": ["../../packages/api-client/dist/index.d.ts"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
