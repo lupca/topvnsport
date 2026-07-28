@@ -3,12 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { MouseEvent, useEffect } from 'react';
+import { lazy, MouseEvent, Suspense, useEffect, useState } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { Route, Routes, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from './app/hooks';
 import BlogSection from './components/BlogSection';
-import CartModal from './components/CartModal';
 import Footer from './components/Footer';
 import Header from './components/Header';
 import QuickViewModal from './components/QuickViewModal';
@@ -28,8 +27,18 @@ import {
 } from './features/cart/cartSlice';
 import HomePage from './features/home/HomePage';
 import MobileBottomNav from './features/navigation/MobileBottomNav';
-import ProductDetailRoute from './features/product/ProductDetailRoute';
 import CheckoutCallbackPage from './features/checkout/CheckoutCallbackPage';
+
+const CartModal = lazy(() => import('./components/CartModal'));
+const ProductDetailRoute = lazy(() => import('./features/product/ProductDetailRoute'));
+
+function PageLoader() {
+  return (
+    <div className="min-h-[16rem] flex items-center justify-center" role="status" aria-label="Loading">
+      <RefreshCw className="w-8 h-8 text-brand-primary animate-spin" />
+    </div>
+  );
+}
 
 export default function App() {
   const navigate = useNavigate();
@@ -39,7 +48,12 @@ export default function App() {
 
   const { products, blogs, branches, categories, isLoading } = useAppSelector(state => state.appData);
   const { items: cartItems, isOpen: isCartOpen, quickViewProduct } = useAppSelector(state => state.cart);
+  const [hasOpenedCart, setHasOpenedCart] = useState(isCartOpen);
   const cartCount = cartItems.reduce((acc, i) => acc + i.quantity, 0);
+
+  useEffect(() => {
+    if (isCartOpen) setHasOpenedCart(true);
+  }, [isCartOpen]);
 
   useEffect(() => {
     dispatch(fetchAppData()).catch(error => {
@@ -92,27 +106,33 @@ export default function App() {
 
       <main className="flex-1">
         <ScrollToTop />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/catalog" element={<CatalogPage />} />
-          <Route path="/product/:slug" element={<ProductDetailRoute />} />
-          <Route path="/blog/*" element={<BlogSection blogs={blogs} />} />
-          <Route path="/stores" element={<StoreLocator branches={branches} products={products} />} />
-          <Route path="/checkout/success" element={<CheckoutCallbackPage status="success" />} />
-          <Route path="/checkout/error" element={<CheckoutCallbackPage status="error" />} />
-          <Route path="/checkout/cancel" element={<CheckoutCallbackPage status="cancel" />} />
-        </Routes>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/catalog" element={<CatalogPage />} />
+            <Route path="/product/:slug" element={<ProductDetailRoute />} />
+            <Route path="/blog/*" element={<BlogSection blogs={blogs} />} />
+            <Route path="/stores" element={<StoreLocator branches={branches} products={products} />} />
+            <Route path="/checkout/success" element={<CheckoutCallbackPage status="success" />} />
+            <Route path="/checkout/error" element={<CheckoutCallbackPage status="error" />} />
+            <Route path="/checkout/cancel" element={<CheckoutCallbackPage status="cancel" />} />
+          </Routes>
+        </Suspense>
       </main>
 
       <Footer categories={categories} />
 
-      <CartModal
-        isOpen={isCartOpen}
-        onClose={() => dispatch(closeCart())}
-        cartItems={cartItems}
-        onRemoveItem={id => dispatch(removeCartItem(id))}
-        onClearCart={() => dispatch(clearCart())}
-      />
+      {hasOpenedCart && (
+        <Suspense fallback={<PageLoader />}>
+          <CartModal
+            isOpen={isCartOpen}
+            onClose={() => dispatch(closeCart())}
+            cartItems={cartItems}
+            onRemoveItem={id => dispatch(removeCartItem(id))}
+            onClearCart={() => dispatch(clearCart())}
+          />
+        </Suspense>
+      )}
 
       <QuickViewModal
         product={quickViewProduct}

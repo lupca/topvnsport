@@ -9,11 +9,29 @@ const packagesRoot = isDocker ? '/workspace/packages' : path.resolve(__dirname, 
 export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss()],
+    build: {
+      chunkSizeWarningLimit: 500,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+            'redux-vendor': ['@reduxjs/toolkit', 'react-redux'],
+            'ui-vendor': ['lucide-react', 'motion'],
+          },
+        },
+      },
+    },
     resolve: {
+      dedupe: ['react', 'react-dom'],
       alias: {
         '@': path.resolve(__dirname, '.'),
         '@topvnsport/ui-kit': path.join(packagesRoot, 'ui-kit/dist/index.js'),
         '@topvnsport/api-client': path.join(packagesRoot, 'api-client/dist/index.js'),
+        'react/jsx-runtime': path.resolve(__dirname, 'node_modules/react/jsx-runtime.js'),
+        'react/jsx-dev-runtime': path.resolve(__dirname, 'node_modules/react/jsx-dev-runtime.js'),
+        'react': path.resolve(__dirname, 'node_modules/react'),
+        'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
+        'lucide-react': path.resolve(__dirname, 'node_modules/lucide-react'),
         'clsx': path.resolve(__dirname, 'node_modules/clsx'),
         'tailwind-merge': path.resolve(__dirname, 'node_modules/tailwind-merge'),
       },
