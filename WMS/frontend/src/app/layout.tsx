@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { SystemPopupProvider } from "@topvnsport/ui-kit";
 import AppShell from "@/components/AppShell";
+import { PageErrorBoundary } from "@/components/PageErrorBoundary";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -30,11 +31,13 @@ export default function RootLayout({
         `}} />
       </head>
       <body>
-        <SystemPopupProvider>
-          <AppShell>
-            {children}
-          </AppShell>
-        </SystemPopupProvider>
+        <PageErrorBoundary>
+          <SystemPopupProvider>
+            <AppShell>
+              {children}
+            </AppShell>
+          </SystemPopupProvider>
+        </PageErrorBoundary>
       </body>
     </html>
   );
