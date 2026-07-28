@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import List, Optional, Dict
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 # --- Public Stock Schemas ---
 class SKUStockItem(BaseModel):
@@ -121,12 +121,12 @@ class InboundShipmentBase(BaseModel):
     total_amount: Optional[float] = None
 
 class InboundShipmentCreate(InboundShipmentBase):
-    items: List[InboundItemCreate] = []
+    items: List[InboundItemCreate] = Field(default_factory=list)
 
 class InboundShipmentResponse(InboundShipmentBase):
     id: int
     created_at: datetime
-    items: List[InboundItemResponse] = []
+    items: List[InboundItemResponse] = Field(default_factory=list)
     model_config = ConfigDict(from_attributes=True)
 
 # --- PickListItem Schemas ---
@@ -176,13 +176,13 @@ class FulfillmentOrderWMSBase(BaseModel):
     total_amount: Optional[float] = None
 
 class FulfillmentOrderWMSCreate(FulfillmentOrderWMSBase):
-    pick_list_items: List[PickListItemCreate] = []
+    pick_list_items: List[PickListItemCreate] = Field(default_factory=list)
 
 class FulfillmentOrderWMSResponse(FulfillmentOrderWMSBase):
     id: int
     created_at: datetime
-    pick_list_items: List[PickListItemResponse] = []
-    packing_sessions: List[PackingSessionResponse] = []
+    pick_list_items: List[PickListItemResponse] = Field(default_factory=list)
+    packing_sessions: List[PackingSessionResponse] = Field(default_factory=list)
     model_config = ConfigDict(from_attributes=True)
 
 

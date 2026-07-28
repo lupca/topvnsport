@@ -177,6 +177,9 @@ def scan_pick_fulfillment_order(id: str, payload: FulfillmentScanPickInput, db: 
     if not item:
         raise HTTPException(status_code=400, detail=f"SKU {bm.sku_code} not in this fulfillment order's pick list")
         
+    if item.picked_qty + payload.quantity > item.quantity:
+        raise HTTPException(status_code=400, detail="Cannot pick more than requested quantity")
+
     item.picked_qty = models.PickListItem.picked_qty + payload.quantity
     db.flush()
     db.refresh(item)
@@ -210,7 +213,7 @@ def complete_pick_fulfillment_order(id: str, db: Session = Depends(get_db)):
         item.status = "picked"
         
     try:
-        notify_oms_status(fo.oms_order_id, fo.fulfillment_number, "PICKING")
+        notify_oms_status(fo.oms_order_id, fo.fulfillment_number, "PICKED")
         db.commit()
     except Exception as e:
         db.rollback()

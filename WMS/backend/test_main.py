@@ -1,50 +1,18 @@
 import os
-
-DB_FILE = "/tmp/test.db"
-os.environ.setdefault("DATABASE_URL", f"sqlite:///{DB_FILE}")
-
 import pytest
 from unittest.mock import patch
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 from database import Base, get_db
 from utils.auth import get_current_user
 from main import app
 import models
+from tests.conftest import engine, TestingSessionLocal, SQLALCHEMY_DATABASE_URL, DB_FILE, db_session as db
 
 @pytest.fixture(autouse=True)
 def mock_notify_oms():
     with patch('routers.fulfillment.notify_oms_status') as mock:
         yield mock
-
-
-# Use file-based SQLite for testing to maintain table persistence during tests
-DB_FILE = "/tmp/test.db"
-SQLALCHEMY_DATABASE_URL = f"sqlite:///{DB_FILE}"
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
-)
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-@pytest.fixture(scope="function")
-def db():
-    # Setup: Create tables
-    Base.metadata.create_all(bind=engine)
-    db_session = TestingSessionLocal()
-    try:
-        yield db_session
-    finally:
-        db_session.close()
-        # Teardown: Drop tables and remove file
-        Base.metadata.drop_all(bind=engine)
-        engine.dispose()
-        if os.path.exists(DB_FILE):
-            try:
-                os.remove(DB_FILE)
-            except OSError:
-                pass
 
 @pytest.fixture(scope="function")
 def client(db):

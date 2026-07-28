@@ -75,7 +75,7 @@ def receive_inbound_shipment(id: int, payload: InboundReceiveInput, db: Session 
         item = db.query(models.InboundItem).filter(
             models.InboundItem.inbound_shipment_id == id,
             models.InboundItem.sku_code == r_item.sku_code
-        ).first()
+        ).with_for_update().first()
         if item:
             item.received_qty += r_item.received_qty
             item.location_id = r_item.location_id
