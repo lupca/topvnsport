@@ -6,7 +6,7 @@ import { Plus, Search, Edit2, Trash2, X, AlertCircle, Globe, ChevronLeft, Chevro
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { popupService, showConfirm } from "@/components/ui/popupService";
+import { popupService, showConfirm } from "@topvnsport/ui-kit";
 
 const channelSchema = z.object({
   code: z.string().min(1, "Mã kênh là bắt buộc").transform(val => val.toUpperCase()),

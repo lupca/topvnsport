@@ -15,7 +15,7 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { popupService } from "@/components/ui/popupService";
+import { popupService } from "@topvnsport/ui-kit";
 
 const zaloConfigSchema = z.object({
   zalo_app_id: z.string().min(1, "Zalo App ID không được để trống"),

@@ -1,4 +1,7 @@
 import { APP_SETTINGS } from "@/config/settings";
+import { createApiClient, ApiError } from "@topvnsport/api-client";
+
+export { ApiError };
 
 const BASE_URL = APP_SETTINGS.api.baseUrl;
 
@@ -116,65 +119,40 @@ export interface ProductSearchResult {
   }>;
 }
 
-async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000);
-
-  try {
-    const headers: HeadersInit = {
-      "Content-Type": "application/json",
-      ...options?.headers,
-    };
-
-    // Attach JWT token
+export const apiClientInstance = createApiClient({
+  baseUrl: BASE_URL,
+  getToken: () => {
     if (typeof window !== "undefined") {
-      const { getAccessToken } = await import("@/utils/auth");
-      const token = getAccessToken();
-      if (token) {
-        (headers as Record<string, string>)["Authorization"] = `Bearer ${token}`;
-      }
+      const token = localStorage.getItem("access_token");
+      if (token) return token;
     }
-
-    const response = await fetch(`${BASE_URL}${endpoint}`, {
-      ...options,
-      headers,
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-
-    if (response.status === 401) {
-      if (typeof window !== "undefined") {
-        const { removeAccessToken, redirectToLogin } = await import("@/utils/auth");
-        removeAccessToken();
-        redirectToLogin();
-      }
-      throw new Error("Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.");
+    return null;
+  },
+  onUnauthorized: async () => {
+    if (typeof window !== "undefined") {
+      const { removeAccessToken, redirectToLogin } = await import("@/utils/auth");
+      removeAccessToken();
+      redirectToLogin();
     }
+  },
+});
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.detail || `API Request Failed with status ${response.status}`);
-    }
-
-    if (response.status === 204) {
-      return null as T;
-    }
-
-    return response.json();
-  } catch (error: any) {
-    clearTimeout(timeoutId);
-    if (error.name === 'AbortError') {
-      throw new Error('Request timed out after 15 seconds');
+async function wrapWith401Error<T>(promise: Promise<T>): Promise<T> {
+  try {
+    return await promise;
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) {
+      throw new ApiError("Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.", 401);
     }
     throw error;
   }
 }
 
 export const api = {
-  get: <T>(url: string) => request<T>(url, { method: "GET" }),
-  post: <T>(url: string, body: any) => request<T>(url, { method: "POST", body: JSON.stringify(body) }),
-  put: <T>(url: string, body: any) => request<T>(url, { method: "PUT", body: JSON.stringify(body) }),
-  patch: <T>(url: string, body: any) => request<T>(url, { method: "PATCH", body: JSON.stringify(body) }),
-  delete: <T>(url: string) => request<T>(url, { method: "DELETE" }),
+  get: <T>(url: string) => wrapWith401Error(apiClientInstance.get<T>(url)),
+  post: <T>(url: string, body: any) => wrapWith401Error(apiClientInstance.post<T>(url, body)),
+  put: <T>(url: string, body: any) => wrapWith401Error(apiClientInstance.put<T>(url, body)),
+  patch: <T>(url: string, body: any) => wrapWith401Error(apiClientInstance.patch<T>(url, body)),
+  delete: <T>(url: string) => wrapWith401Error(apiClientInstance.delete<T>(url)),
 };
+

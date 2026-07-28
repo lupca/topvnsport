@@ -57,8 +57,8 @@ services:
 
   oms_frontend:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile.dev
+      context: ..
+      dockerfile: OMS/frontend/Dockerfile.dev
     container_name: oms_frontend
     restart: always
     ports:

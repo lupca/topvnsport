@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { APP_SETTINGS } from "@/config/settings";
 import { api, Order } from "@/utils/api";
-import { popupService, showConfirm } from "@/components/ui/popupService";
+import { popupService, showConfirm } from "@topvnsport/ui-kit";
 import {
   ShoppingCart,
   Users as UsersIcon,

@@ -15,7 +15,7 @@ import {
   MessageSquare,
   CreditCard
 } from "lucide-react";
-import { popupService } from "@/components/ui/popupService";
+import { popupService } from "@topvnsport/ui-kit";
 
 export default function Sidebar() {
   const pathname = usePathname();

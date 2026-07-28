@@ -19,7 +19,9 @@
     "lucide-react": "^0.395.0",
     "clsx": "^2.1.1",
     "tailwind-merge": "^2.3.0",
-    "recharts": "^2.12.7"
+    "recharts": "^2.12.7",
+    "@topvnsport/ui-kit": "file:../../packages/ui-kit",
+    "@topvnsport/api-client": "file:../../packages/api-client"
   },
   "devDependencies": {
     "typescript": "^5.4.5",
