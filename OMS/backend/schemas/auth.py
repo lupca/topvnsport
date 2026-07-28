@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 
 # SystemConfig Schemas
@@ -18,6 +18,17 @@ class ZaloConfigOut(BaseModel):
     zalo_access_token: str
     zalo_refresh_token: str
     zalo_template_id: str
+
+    @field_validator("zalo_secret_key", "zalo_access_token", "zalo_refresh_token", mode="after")
+    @classmethod
+    def mask_sensitive_fields(cls, v: str) -> str:
+        if not v:
+            return ""
+        if v.endswith("***"):
+            return v
+        if len(v) <= 4:
+            return v[:4] + "***"
+        return f"{v[:4]}***"
 
 
 class SepayConfigUpdate(BaseModel):

@@ -70,8 +70,8 @@ class OrderOut(OrderBase):
     updated_at: datetime
     customer: Optional[CustomerOut] = None
     channel: Optional[ChannelOut] = None
-    items: List[OrderItemOut] = []
-    fulfillment_orders: List[FulfillmentOrderOut] = []
+    items: List[OrderItemOut] = Field(default_factory=list)
+    fulfillment_orders: List[FulfillmentOrderOut] = Field(default_factory=list)
 
     model_config = ConfigDict(from_attributes=True)
 
