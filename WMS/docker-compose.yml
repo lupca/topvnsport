@@ -47,8 +47,8 @@ services:
 
   wms_frontend:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile.dev
+      context: ..
+      dockerfile: WMS/frontend/Dockerfile.dev
     container_name: wms_frontend
     restart: always
     ports:

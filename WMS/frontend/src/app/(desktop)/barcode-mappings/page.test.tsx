@@ -19,13 +19,17 @@ vi.mock("@/components/MobileScanner", () => {
   };
 });
 
-// Mock popupService
-vi.mock("@/components/ui/popupService", () => ({
-  popupService: {
-    alert: vi.fn(),
-  },
-  showConfirm: vi.fn(() => Promise.resolve(true))
-}));
+// Mock ui-kit
+vi.mock("@topvnsport/ui-kit", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@topvnsport/ui-kit")>();
+  return {
+    ...actual,
+    popupService: {
+      alert: vi.fn(),
+    },
+    showConfirm: vi.fn(() => Promise.resolve(true))
+  };
+});
 
 describe("BarcodeMappingsPage", () => {
   beforeEach(() => {

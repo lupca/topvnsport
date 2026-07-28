@@ -10,7 +10,7 @@ import {
   RefreshCw,
   MapPin
 } from "lucide-react";
-import DataTable from "@/components/ui/DataTable";
+import { DataTable } from "@topvnsport/ui-kit";
 
 interface StockTransaction {
   id: number;

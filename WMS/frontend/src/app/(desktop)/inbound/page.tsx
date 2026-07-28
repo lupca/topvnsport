@@ -17,7 +17,7 @@ import {
   Calendar,
   Layers
 } from "lucide-react";
-import { popupService, showConfirm } from "@/components/ui/popupService";
+import { popupService, showConfirm } from "@topvnsport/ui-kit";
 import { convertNumberToVietnameseWords } from "@/utils/numberToWords";
 
 interface InboundItem {

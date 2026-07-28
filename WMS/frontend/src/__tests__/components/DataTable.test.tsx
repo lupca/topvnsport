@@ -2,7 +2,7 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, expect, test, vi } from "vitest";
 
-import DataTable from "@/components/ui/DataTable";
+import { DataTable } from "@topvnsport/ui-kit";
 
 describe("DataTable", () => {
   test("renders rows and handles search input", async () => {

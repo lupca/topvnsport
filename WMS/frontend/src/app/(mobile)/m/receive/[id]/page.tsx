@@ -7,7 +7,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { ArrowLeft, Loader2, CheckCircle, AlertCircle, MapPin, Tag } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
-import { popupService } from "@/components/ui/popupService";
+import { popupService } from "@topvnsport/ui-kit";
 
 const MobileScanner = dynamic(() => import("@/components/MobileScanner"), { ssr: false });
 

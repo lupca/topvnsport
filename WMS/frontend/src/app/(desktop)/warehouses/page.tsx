@@ -14,7 +14,7 @@ import {
   AlertCircle,
   X
 } from "lucide-react";
-import { popupService, showConfirm } from "@/components/ui/popupService";
+import { popupService, showConfirm } from "@topvnsport/ui-kit";
 
 interface Warehouse {
   id: number;

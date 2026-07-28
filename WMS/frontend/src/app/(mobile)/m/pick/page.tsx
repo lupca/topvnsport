@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { PackageOpen, ArrowRight, Loader2, Search } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
-import { popupService } from "@/components/ui/popupService";
+import { popupService } from "@topvnsport/ui-kit";
 
 interface PickListItem {
   id: number;
