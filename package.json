@@ -1,12 +1,18 @@
 {
-  "name": "topvnsport-oms",
+  "name": "topvnsport",
   "version": "1.0.0",
-  "description": "TopVNSport Order Management System (OMS)",
+  "description": "TopVNSport Monorepo Workspace",
   "private": true,
   "scripts": {
+    "build:packages": "pnpm --filter \"./packages/*\" build",
+    "dev:packages": "pnpm --filter \"./packages/*\" dev",
+    "test:packages": "pnpm --filter \"./packages/*\" test",
     "docs:lint": "npm exec -- markdown-link-check README.md && npm exec -- markdown-link-check docs/API.md && npm exec -- markdown-link-check docs/DATABASE.md && npm exec -- markdown-link-check docs/ARCHITECTURE.md"
   },
   "devDependencies": {
-    "markdown-link-check": "^3.14.2"
+    "markdown-link-check": "^3.14.2",
+    "typescript": "^5.3.0",
+    "tsup": "^8.0.0",
+    "vitest": "^1.2.0"
   }
 }
