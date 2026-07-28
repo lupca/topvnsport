@@ -34,6 +34,7 @@ jobs:
       wms: ${{ steps.filter.outputs.wms }}
       web: ${{ steps.filter.outputs.web }}
       shared: ${{ steps.filter.outputs.shared }}
+      packages: ${{ steps.filter.outputs.packages }}
     steps:
       - uses: actions/checkout@v4
       
@@ -54,6 +55,51 @@ jobs:
               - 'start_all.sh'
               - 'deploy_prod.sh'
               - 'e2e_tests/**'
+            packages:
+              - 'packages/**'
+
+  # ============================================
+  # STEP 1.5: Build Shared Packages
+  # ============================================
+  build-packages:
+    name: Build Shared Packages
+    needs: changes
+    if: >-
+      needs.changes.outputs.packages == 'true' ||
+      needs.changes.outputs.pmi == 'true' ||
+      needs.changes.outputs.oms == 'true' ||
+      needs.changes.outputs.wms == 'true' ||
+      needs.changes.outputs.web == 'true' ||
+      needs.changes.outputs.shared == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Build ui-kit
+        working-directory: packages/ui-kit
+        run: |
+          npm install
+          npm run build
+
+      - name: Build api-client
+        working-directory: packages/api-client
+        run: |
+          npm install
+          npm run build
+
+      - name: Upload packages artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: shared-packages
+          path: |
+            packages/ui-kit/dist
+            packages/api-client/dist
+          retention-days: 1
 
   # ============================================
   # STEP 2: PMI Tests (Backend + Frontend)
@@ -102,21 +148,27 @@ jobs:
 
   pmi-frontend:
     name: PMI Frontend Tests
-    needs: changes
+    needs: [changes, build-packages]
     if: needs.changes.outputs.pmi == 'true' || needs.changes.outputs.shared == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: PMI/frontend
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
+      - name: Download shared packages
+        uses: actions/download-artifact@v4
+        with:
+          name: shared-packages
+          path: packages
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      
+
       - name: Cache npm dependencies
         uses: actions/cache@v4
         with:
@@ -124,7 +176,7 @@ jobs:
           key: npm-pmi-${{ hashFiles('PMI/frontend/package-lock.json') }}
           restore-keys: |
             npm-pmi-
-      
+
       - name: Install dependencies
         run: npm ci
       
@@ -199,21 +251,27 @@ jobs:
 
   oms-frontend:
     name: OMS Frontend Tests
-    needs: changes
+    needs: [changes, build-packages]
     if: needs.changes.outputs.oms == 'true' || needs.changes.outputs.shared == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: OMS/frontend
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
+      - name: Download shared packages
+        uses: actions/download-artifact@v4
+        with:
+          name: shared-packages
+          path: packages
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      
+
       - name: Cache npm dependencies
         uses: actions/cache@v4
         with:
@@ -221,7 +279,7 @@ jobs:
           key: npm-oms-${{ hashFiles('OMS/frontend/package-lock.json') }}
           restore-keys: |
             npm-oms-
-      
+
       - name: Install dependencies
         run: npm ci
       
@@ -270,21 +328,27 @@ jobs:
 
   wms-frontend:
     name: WMS Frontend Tests
-    needs: changes
+    needs: [changes, build-packages]
     if: needs.changes.outputs.wms == 'true' || needs.changes.outputs.shared == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: WMS/frontend
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
+      - name: Download shared packages
+        uses: actions/download-artifact@v4
+        with:
+          name: shared-packages
+          path: packages
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      
+
       - name: Cache npm dependencies
         uses: actions/cache@v4
         with:
@@ -292,7 +356,7 @@ jobs:
           key: npm-wms-${{ hashFiles('WMS/frontend/package-lock.json') }}
           restore-keys: |
             npm-wms-
-      
+
       - name: Install dependencies
         run: npm ci
       
@@ -307,21 +371,27 @@ jobs:
   # ============================================
   web-build:
     name: Web Storefront Build
-    needs: changes
+    needs: [changes, build-packages]
     if: needs.changes.outputs.web == 'true' || needs.changes.outputs.shared == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: web
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
+      - name: Download shared packages
+        uses: actions/download-artifact@v4
+        with:
+          name: shared-packages
+          path: packages
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      
+
       - name: Cache npm dependencies
         uses: actions/cache@v4
         with:
@@ -329,7 +399,7 @@ jobs:
           key: npm-web-${{ hashFiles('web/package-lock.json') }}
           restore-keys: |
             npm-web-
-      
+
       - name: Prepare env file
         run: |
           if [ -f .env.example ]; then
@@ -337,7 +407,7 @@ jobs:
           else
             touch .env
           fi
-      
+
       - name: Install and build
         run: |
           npm ci
