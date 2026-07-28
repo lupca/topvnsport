@@ -1,12 +1,17 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session, joinedload, selectinload
 from typing import List, Optional
 import unicodedata
 import re
 from database import get_db
 import models
 import schemas
-from services.product_service import _upsert_product_attribute_values, _save_product_channel_listings, update_product_aggregate
+from services.product_service import (
+    _upsert_product_attribute_values,
+    _save_product_channel_listings,
+    product_load_options,
+    update_product_aggregate,
+)
 from exceptions import DomainException
 from utils.audit import audit_action
 from utils.dependency import require_permission
@@ -174,12 +179,7 @@ def list_products(
     limit: int = 10,
     db: Session = Depends(get_db)
 ):
-    query = db.query(models.Product).options(
-        selectinload(models.Product.family),
-        selectinload(models.Product.channel_listings).selectinload(models.ProductChannelListing.attribute_values),
-        selectinload(models.Product.channel_listings).selectinload(models.ProductChannelListing.variant_overrides),
-        selectinload(models.Product.channel_listings).selectinload(models.ProductChannelListing.channel)
-    )
+    query = db.query(models.Product).options(*product_load_options())
     
     if status:
         query = query.filter(models.Product.status == status)
@@ -236,10 +236,7 @@ def list_products(
 @router.get("/products/{product_id}", response_model=schemas.ProductResponse)
 def get_product(product_id: int, db: Session = Depends(get_db)):
     db_product = db.query(models.Product).options(
-        selectinload(models.Product.family),
-        selectinload(models.Product.channel_listings).selectinload(models.ProductChannelListing.attribute_values),
-        selectinload(models.Product.channel_listings).selectinload(models.ProductChannelListing.variant_overrides),
-        selectinload(models.Product.channel_listings).selectinload(models.ProductChannelListing.channel)
+        *product_load_options()
     ).filter(models.Product.id == product_id).first()
     if not db_product:
         raise HTTPException(status_code=404, detail="Product not found")
@@ -271,32 +268,39 @@ def update_product(product_id: int, product_in: schemas.ProductUpdate, db: Sessi
 @router.put("/api/products/{product_id}/variants/{variant_id}", dependencies=[Depends(require_permission(Permission.PRODUCT_UPDATE))])
 @router.put("/products/{product_id}/variants/{variant_id}", dependencies=[Depends(require_permission(Permission.PRODUCT_UPDATE))])
 def update_product_variant_endpoint(product_id: int, variant_id: int, payload: dict, db: Session = Depends(get_db)):
-    variant = db.query(models.ProductVariant).filter(
-        models.ProductVariant.id == variant_id,
-        models.ProductVariant.product_id == product_id
-    ).first()
-    if not variant:
-        raise HTTPException(status_code=404, detail="Product variant not found")
-    
-    if "price" in payload:
-        variant.price = payload["price"]
-    if "stock" in payload:
-        variant.stock = payload["stock"]
-    if "sku_code" in payload:
-        variant.sku_code = payload["sku_code"]
-    
-    from services.promotion_service import recompute_variant_prices
-    recompute_variant_prices(db, variant_ids=[str(variant.id)])
+    try:
+        variant = db.query(models.ProductVariant).filter(
+            models.ProductVariant.id == variant_id,
+            models.ProductVariant.product_id == product_id
+        ).first()
+        if not variant:
+            raise HTTPException(status_code=404, detail="Product variant not found")
 
-    db.commit()
-    db.refresh(variant)
+        if "price" in payload:
+            variant.price = payload["price"]
+        if "stock" in payload:
+            variant.stock = payload["stock"]
+        if "sku_code" in payload:
+            variant.sku_code = payload["sku_code"]
 
-    return {
-        "id": variant.id,
-        "product_id": variant.product_id,
-        "sku_code": variant.sku_code,
-        "price": float(variant.price),
-    }
+        from services.promotion_service import recompute_variant_prices
+        recompute_variant_prices(db, variant_ids=[str(variant.id)])
+
+        db.commit()
+        db.refresh(variant)
+
+        return {
+            "id": variant.id,
+            "product_id": variant.product_id,
+            "sku_code": variant.sku_code,
+            "price": float(variant.price),
+        }
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database transaction failed: {str(e)}")
 
 
 @router.delete("/products/{product_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(require_permission("product:delete"))])
@@ -317,42 +321,48 @@ def delete_product(product_id: int, db: Session = Depends(get_db)):
 def batch_delete_products(request: schemas.BatchDeleteRequest, db: Session = Depends(get_db)):
     try:
         products = db.query(models.Product).filter(models.Product.id.in_(request.product_ids)).all()
+        found_ids = {product.id for product in products}
+        missing_ids = sorted(set(request.product_ids) - found_ids)
+        if missing_ids:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Products not found: {missing_ids}"
+            )
+
         for product in products:
             db.delete(product)
         db.commit()
+    except HTTPException:
+        db.rollback()
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Database transaction failed: {str(e)}")
 
 @router.get("/api/products/by-sku/{sku_code}", response_model=schemas.ProductBySkuResponse)
 def get_product_by_sku(sku_code: str, db: Session = Depends(get_db)):
-    variant = db.query(models.ProductVariant).filter(models.ProductVariant.sku_code == sku_code).first()
+    product_load = joinedload(models.ProductVariant.product)
+    variant = db.query(models.ProductVariant).options(
+        product_load.options(
+            joinedload(models.Product.category),
+            selectinload(models.Product.tier_variations),
+            selectinload(models.Product.media),
+        )
+    ).filter(models.ProductVariant.sku_code == sku_code).first()
     if not variant:
         raise HTTPException(status_code=404, detail="Product variant not found")
     
     product = variant.product
-    
+
     # Construct variant_name from tier_1_option and tier_2_option
     parts = []
+    tier_names = {tier.tier_index: tier.name for tier in product.tier_variations}
     if variant.tier_1_option:
-        # Determine name of tier 1 if available
-        t1_name = ""
-        t1_var = db.query(models.TierVariation).filter(
-            models.TierVariation.product_id == product.id,
-            models.TierVariation.tier_index == 1
-        ).first()
-        if t1_var:
-            t1_name = f"{t1_var.name} "
+        t1_name = f"{tier_names[1]} " if 1 in tier_names else ""
         parts.append(f"{t1_name}{variant.tier_1_option}")
         
     if variant.tier_2_option:
-        t2_name = ""
-        t2_var = db.query(models.TierVariation).filter(
-            models.TierVariation.product_id == product.id,
-            models.TierVariation.tier_index == 2
-        ).first()
-        if t2_var:
-            t2_name = f"{t2_var.name} "
+        t2_name = f"{tier_names[2]} " if 2 in tier_names else ""
         parts.append(f"{t2_name}{variant.tier_2_option}")
         
     variant_name = " / ".join(parts) if parts else None
@@ -364,28 +374,24 @@ def get_product_by_sku(sku_code: str, db: Session = Depends(get_db)):
     image_url = None
     
     # Try cover image first
-    cover_media = db.query(models.ProductMedia).filter(
-        models.ProductMedia.product_id == product.id,
-        models.ProductMedia.is_cover == True
-    ).order_by(models.ProductMedia.display_order.asc()).first()
+    product_media = sorted(product.media, key=lambda media: media.display_order)
+    cover_media = next((media for media in product_media if media.is_cover), None)
     
     if cover_media:
         image_url = cover_media.image_url
     else:
         # Try variant media next
-        variant_media = db.query(models.ProductMedia).filter(
-            models.ProductMedia.variant_id == variant.id
-        ).order_by(models.ProductMedia.display_order.asc()).first()
+        variant_media = next(
+            (media for media in product_media if media.variant_id == variant.id),
+            None,
+        )
         
         if variant_media:
             image_url = variant_media.image_url
         else:
             # Try any media for this product
-            product_media = db.query(models.ProductMedia).filter(
-                models.ProductMedia.product_id == product.id
-            ).order_by(models.ProductMedia.display_order.asc()).first()
             if product_media:
-                image_url = product_media.image_url
+                image_url = product_media[0].image_url
 
     return schemas.ProductBySkuResponse(
         product_name=product.name,

@@ -1,8 +1,37 @@
 from typing import List, Optional
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload, selectinload
 from exceptions import ProductNotFoundException, ChannelNotFoundException, VariantSkuNotFoundException
 import models
 import schemas
+
+
+def product_load_options():
+    """Return the relationships needed to serialize a product response.
+
+    Product responses contain several collections. Loading them up front keeps
+    response serialization from issuing one lazy query per product.
+    """
+    return (
+        selectinload(models.Product.category),
+        selectinload(models.Product.family),
+        selectinload(models.Product.family)
+        .selectinload(models.AttributeFamily.family_attributes)
+        .joinedload(models.AttributeFamilyAttribute.attribute),
+        selectinload(models.Product.tier_variations),
+        selectinload(models.Product.variants),
+        selectinload(models.Product.media),
+        selectinload(models.Product.attribute_values)
+        .joinedload(models.ProductAttributeValue.attribute),
+        selectinload(models.Product.channel_listings).selectinload(
+            models.ProductChannelListing.attribute_values
+        ),
+        selectinload(models.Product.channel_listings).selectinload(
+            models.ProductChannelListing.variant_overrides
+        ),
+        selectinload(models.Product.channel_listings).selectinload(
+            models.ProductChannelListing.channel
+        ),
+    )
 
 def _parse_attribute_storage_value(raw_value: str, attr_type: str):
     text_value = (raw_value or "").strip()
@@ -53,45 +82,51 @@ def _save_product_channel_listings(
     db_variants: List[models.ProductVariant],
     existing_vo_map: Optional[dict] = None
 ):
-    # 1. Fetch existing listings and index by channel code
-    existing_listings = db.query(models.ProductChannelListing).filter(
+    # Fetch existing listings and their channels in one query.
+    existing_listings = db.query(models.ProductChannelListing).options(
+        joinedload(models.ProductChannelListing.channel)
+    ).filter(
         models.ProductChannelListing.product_id == product_id
     ).all()
-    channel_ids = [el.channel_id for el in existing_listings]
-    existing_channels = db.query(models.Channel).filter(models.Channel.id.in_(channel_ids)).all() if channel_ids else []
-    chan_id_to_code = {c.id: c.code for c in existing_channels}
-    
+
     existing_map = {}
     for el in existing_listings:
-        code = chan_id_to_code.get(el.channel_id)
+        code = el.channel.code if el.channel else None
         if code:
             existing_map[code] = el
 
     # Index existing variant overrides to preserve channel_variant_id
     if existing_vo_map is None:
         existing_vo_map = {}
-        existing_vos = db.query(models.VariantChannelListing).filter(
+        existing_vos = db.query(models.VariantChannelListing).options(
+            joinedload(models.VariantChannelListing.variant)
+        ).filter(
             models.VariantChannelListing.product_id == product_id
         ).all()
-        variant_ids = [vo.variant_id for vo in existing_vos]
-        existing_variants = db.query(models.ProductVariant).filter(models.ProductVariant.id.in_(variant_ids)).all() if variant_ids else []
-        var_id_to_sku = {v.id: v.sku_code for v in existing_variants}
         for vo in existing_vos:
-            sku = var_id_to_sku.get(vo.variant_id)
+            sku = vo.variant.sku_code if vo.variant else None
             if sku:
                 existing_vo_map[(vo.channel_id, sku)] = vo.channel_variant_id
 
-    # Delete listings that are not in the new payload (deactivated)
     incoming_codes = {cl.channel_code for cl in channel_listings}
+    channels = db.query(models.Channel).filter(
+        models.Channel.code.in_(incoming_codes)
+    ).all() if incoming_codes else []
+    channels_by_code = {channel.code: channel for channel in channels}
+    missing_channels = sorted(incoming_codes - channels_by_code.keys())
+    if missing_channels:
+        raise ChannelNotFoundException(
+            f"Channel with code '{missing_channels[0]}' not found"
+        )
+
+    # Delete listings that are not in the new payload (deactivated).
     for code, el in list(existing_map.items()):
         if code not in incoming_codes:
             db.delete(el)
             existing_map.pop(code)
 
     for cl in channel_listings:
-        channel = db.query(models.Channel).filter(models.Channel.code == cl.channel_code).first()
-        if not channel:
-            raise ChannelNotFoundException(f"Channel with code '{cl.channel_code}' not found")
+        channel = channels_by_code[cl.channel_code]
         
         if cl.channel_code in existing_map:
             db_cl = existing_map[cl.channel_code]
@@ -249,14 +284,7 @@ def update_product_aggregate(db: Session, product_id: int, product_in: schemas.P
     from utils.audit import record_audit_event
 
     db_product = db.query(models.Product).options(
-        selectinload(models.Product.family),
-        selectinload(models.Product.tier_variations),
-        selectinload(models.Product.variants),
-        selectinload(models.Product.media),
-        selectinload(models.Product.attribute_values).selectinload(models.ProductAttributeValue.attribute),
-        selectinload(models.Product.channel_listings).selectinload(models.ProductChannelListing.attribute_values),
-        selectinload(models.Product.channel_listings).selectinload(models.ProductChannelListing.variant_overrides),
-        selectinload(models.Product.channel_listings).selectinload(models.ProductChannelListing.channel)
+        *product_load_options()
     ).filter(models.Product.id == product_id).first()
     
     if not db_product:
@@ -494,4 +522,3 @@ def update_product_aggregate(db: Session, product_id: int, product_in: schemas.P
     recompute_variant_prices(db, variant_ids=[str(v.id) for v in db_product.variants if v.id])
 
     return db_product
-
