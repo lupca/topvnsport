@@ -3,35 +3,24 @@
 ## Mức độ: MEDIUM
 ## Estimated Effort: High (1-2 days)
 
-## Audit 2026-07-25
+## Audit 2026-07-28
 
-⚠️ **Partially resolved; still active.** PMI and WMS compose files have database/MinIO health checks, and the gateway/Identity services expose health checks. OMS production compose still lacks a database health check. No compose resource limits, Redis cache, database replication, or dedicated observability stack were found. The audit/outbox implementation is real (`PMI/backend/models.py`, `services/audit_worker.py`), so the old “audit system does not exist” framing should be narrowed to remaining duplication in `PMI/backend/utils/audit.py:129-334`.
+⚠️ **Partially resolved.** 
+- ✅ Database: Services now use RDS Aurora (DEVOPS-001), which handles replication and health checks at infrastructure level.
+- ✅ DB health checks in compose: N/A (no local DB containers).
+- ❌ Resource limits: Still missing in compose files.
+- ❌ Redis caching: Not implemented.
+- ⚠️ Audit code duplication: `PMI/backend/utils/audit.py:129-334` still has duplicate wrapper code.
 
 ---
 
 ## Mô Tả Các Vấn Đề
 
-### 1. Missing Health Checks
+### 1. ~~Missing Health Checks~~ ✅ N/A
 
-**OMS/docker-compose.prod.yml** thiếu database healthcheck (PMI và WMS có).
+Services now use RDS Aurora (DEVOPS-001). Database health checks are handled at infrastructure level.
 
-```yaml
-# OMS - MISSING healthcheck
-db:
-  image: postgres:15
-  # No healthcheck defined
-  
-# PMI - HAS healthcheck (reference)
-db:
-  image: postgres:15
-  healthcheck:
-    test: ["CMD-SHELL", "pg_isready -U pmi"]
-    interval: 5s
-    timeout: 5s
-    retries: 5
-```
-
-### 2. No Resource Limits
+### 2. No Resource Limits (Still Open)
 
 Không có memory/CPU limits trên bất kỳ container nào. Một service có thể consume hết resources.
 
@@ -43,9 +32,9 @@ services:
     # Missing: deploy.resources.limits
 ```
 
-### 3. Single Database Instances
+### 3. ~~Single Database Instances~~ ✅ Done
 
-Mỗi database là single non-replicated instance - single point of failure.
+RDS Aurora handles replication and failover at infrastructure level (DEVOPS-001).
 
 ### 4. No Redis Caching
 
