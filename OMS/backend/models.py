@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 import logging
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, Numeric
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, Numeric, JSON, UniqueConstraint
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -47,6 +47,9 @@ class Order(Base):
     shipping_fee = Column(Numeric(10, 2), nullable=False)
     shipping_address = Column(Text, nullable=False)
     note = Column(Text, nullable=True)
+    channel_code = Column(String(20), default="WEB", index=True)
+    channel_order_id = Column(String(100), nullable=True)
+    channel_metadata = Column(JSON, default=dict)
     payment_status = Column(String(20), default="PENDING", index=True)
     payment_method = Column(String(20), nullable=True)
     sepay_order_id = Column(String(100), nullable=True, index=True)
@@ -59,6 +62,9 @@ class Order(Base):
     channel = relationship("Channel", back_populates="orders")
     items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
     fulfillment_orders = relationship("FulfillmentOrder", back_populates="order", cascade="all, delete-orphan")
+    payments = relationship("Payment", back_populates="order", cascade="all, delete-orphan")
+    invoices = relationship("Invoice", back_populates="order", cascade="all, delete-orphan")
+    order_events = relationship("OrderEvent", back_populates="order", cascade="all, delete-orphan")
 
 
 class OrderItem(Base):
@@ -178,3 +184,68 @@ class SmsRateLimit(Base):
     attempt_count = Column(Integer, default=1)
     last_attempt_at = Column(DateTime, default=utcnow)
     lockout_until = Column(DateTime, nullable=True)
+
+
+class Payment(Base):
+    __tablename__ = "payments"
+    __table_args__ = (UniqueConstraint("provider", "provider_txn_id", name="uq_payments_provider_txn"),)
+
+    id = Column(Integer, primary_key=True, index=True)
+    order_id = Column(Integer, ForeignKey("orders.id"), nullable=False, index=True)
+    provider = Column(String(20), nullable=False, index=True)  # SEPAY, VNPAY, MOMO, COD
+    provider_txn_id = Column(String(100), nullable=True)
+    amount = Column(Numeric(15, 2), nullable=False)
+    status = Column(String(20), nullable=False, default="PENDING", index=True)
+    reconciled_at = Column(DateTime, nullable=True)
+    raw_data = Column(JSON, default=dict)
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
+
+    order = relationship("Order", back_populates="payments")
+    ledger_entries = relationship("PaymentLedger", back_populates="payment", cascade="all, delete-orphan")
+
+
+class PaymentLedger(Base):
+    __tablename__ = "payment_ledger"
+
+    id = Column(Integer, primary_key=True, index=True)
+    payment_id = Column(Integer, ForeignKey("payments.id"), nullable=False, index=True)
+    entry_type = Column(String(20), nullable=False)  # CREDIT, DEBIT, REFUND
+    amount = Column(Numeric(15, 2), nullable=False)
+    running_balance = Column(Numeric(15, 2), nullable=True)
+    metadata_json = Column(JSON, default=dict)
+    created_at = Column(DateTime, default=utcnow)
+
+    payment = relationship("Payment", back_populates="ledger_entries")
+
+
+class Invoice(Base):
+    __tablename__ = "invoices"
+    __table_args__ = (UniqueConstraint("provider", "invoice_number", name="uq_invoices_provider_num"),)
+
+    id = Column(Integer, primary_key=True, index=True)
+    order_id = Column(Integer, ForeignKey("orders.id"), nullable=False, index=True)
+    provider = Column(String(20), nullable=False, index=True)  # VNPT, VIETTEL, MEINVOICE
+    invoice_number = Column(String(50), nullable=True)
+    invoice_date = Column(DateTime, nullable=True)
+    status = Column(String(20), nullable=False, default="PENDING", index=True)
+    pdf_url = Column(String(500), nullable=True)
+    raw_response = Column(JSON, default=dict)
+    created_at = Column(DateTime, default=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
+
+    order = relationship("Order", back_populates="invoices")
+
+
+class OrderEvent(Base):
+    __tablename__ = "order_events"
+
+    id = Column(Integer, primary_key=True, index=True)
+    order_id = Column(Integer, ForeignKey("orders.id"), nullable=False, index=True)
+    event_type = Column(String(50), nullable=False, index=True)
+    payload = Column(JSON, nullable=False)
+    created_by = Column(String(100), nullable=True)
+    created_at = Column(DateTime, default=utcnow)
+
+    order = relationship("Order", back_populates="order_events")
+

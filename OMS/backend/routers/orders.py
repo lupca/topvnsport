@@ -185,6 +185,8 @@ def list_orders(
     limit: int = 100,
     status: Optional[str] = None,
     channel_id: Optional[int] = None,
+    channel_code: Optional[str] = None,
+    payment_status: Optional[str] = None,
     date: Optional[str] = None,
     search: Optional[str] = None,
     db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
@@ -193,6 +195,10 @@ def list_orders(
         query = query.filter(models.Order.status == status)
     if channel_id is not None:
         query = query.filter(models.Order.channel_id == channel_id)
+    if channel_code:
+        query = query.filter(models.Order.channel_code == channel_code)
+    if payment_status:
+        query = query.filter(models.Order.payment_status == payment_status)
     if date:
         try:
             target_date = datetime.strptime(date, "%Y-%m-%d").date()
@@ -459,3 +465,28 @@ def update_order_status(id: int, payload: schemas.OrderStatusUpdate, db: Session
     db.commit()
     db.refresh(order)
     return order
+
+
+@router.get("/{id}/events")
+def get_order_events(id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
+    order = db.query(models.Order).filter(models.Order.id == id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    events = (
+        db.query(models.OrderEvent)
+        .filter(models.OrderEvent.order_id == id)
+        .order_by(models.OrderEvent.created_at.asc())
+        .all()
+    )
+    return [
+        {
+            "id": e.id,
+            "order_id": e.order_id,
+            "event_type": e.event_type,
+            "payload": e.payload,
+            "created_by": e.created_by,
+            "created_at": e.created_at.isoformat() if e.created_at else None,
+        }
+        for e in events
+    ]
+

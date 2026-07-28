@@ -35,6 +35,7 @@ from routers import (
     webhooks,
     products,
     payments,
+    invoices,
 )
 
 # Setup logging
@@ -203,6 +204,8 @@ app.include_router(channels.router)
 app.include_router(dashboard.router)
 app.include_router(products.router)
 app.include_router(payments.router)
+app.include_router(payments.reconciliation_router)
+app.include_router(invoices.router)
 
 
 @app.get("/")

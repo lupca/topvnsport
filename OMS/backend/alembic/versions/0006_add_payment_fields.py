@@ -45,11 +45,11 @@ def upgrade() -> None:
     indexes = inspector.get_indexes("orders")
     index_names = {idx["name"] for idx in indexes}
 
-    if "idx_orders_payment_status" not in index_names and "ix_orders_payment_status" not in index_names:
-        op.create_index("idx_orders_payment_status", "orders", ["payment_status"], unique=False)
+    if "ix_orders_payment_status" not in index_names and "idx_orders_payment_status" not in index_names:
+        op.create_index("ix_orders_payment_status", "orders", ["payment_status"], unique=False)
 
-    if "idx_orders_sepay_order_id" not in index_names and "ix_orders_sepay_order_id" not in index_names:
-        op.create_index("idx_orders_sepay_order_id", "orders", ["sepay_order_id"], unique=False)
+    if "ix_orders_sepay_order_id" not in index_names and "idx_orders_sepay_order_id" not in index_names:
+        op.create_index("ix_orders_sepay_order_id", "orders", ["sepay_order_id"], unique=False)
 
 
 def downgrade() -> None:
@@ -58,9 +58,13 @@ def downgrade() -> None:
     indexes = inspector.get_indexes("orders")
     index_names = {idx["name"] for idx in indexes}
 
-    if "idx_orders_sepay_order_id" in index_names:
+    if "ix_orders_sepay_order_id" in index_names:
+        op.drop_index("ix_orders_sepay_order_id", table_name="orders")
+    elif "idx_orders_sepay_order_id" in index_names:
         op.drop_index("idx_orders_sepay_order_id", table_name="orders")
-    if "idx_orders_payment_status" in index_names:
+    if "ix_orders_payment_status" in index_names:
+        op.drop_index("ix_orders_payment_status", table_name="orders")
+    elif "idx_orders_payment_status" in index_names:
         op.drop_index("idx_orders_payment_status", table_name="orders")
 
     columns = {c["name"] for c in inspector.get_columns("orders")}

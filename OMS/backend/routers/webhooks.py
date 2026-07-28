@@ -11,11 +11,18 @@ from sqlalchemy.orm import Session
 
 import models
 from database import get_db
+from adapters.payments.sepay import SePayAdapter
+from adapters.payments.vnpay import VNPayAdapter
+from adapters.channels.shopee import ShopeeAdapter
+from adapters.channels.tiktok import TikTokAdapter
+from adapters.channels.lazada import LazadaAdapter
+from services.payment_service import PaymentService
+from services.order_service import OrderService
 
 logger = logging.getLogger("oms_backend")
 
 router = APIRouter(prefix="/api/sms", tags=["Webhooks"])
-sepay_router = APIRouter(prefix="/webhooks", tags=["SePay"])
+sepay_router = APIRouter(prefix="/webhooks", tags=["Webhooks"])
 
 
 def _extract_zalo_message_id(payload: dict) -> Optional[str]:
@@ -108,17 +115,7 @@ async def zalo_webhook(request: Request, db: Session = Depends(get_db)):
 
 @sepay_router.post("/sepay")
 async def sepay_webhook(request: Request, db: Session = Depends(get_db)):
-    """
-    Nhận IPN từ SePay Payment Gateway.
-    Docs: https://docs.sepay.vn/vi/sepay-payment-gateway
-
-    Payload format:
-    {
-        "notification_type": "PAYMENT_SUCCESS" | "ORDER_PAID",
-        "order": { "order_invoice_number": "...", "order_amount": ... },
-        "transaction": { "transaction_status": "APPROVED", ... }
-    }
-    """
+    """Nhận IPN từ SePay Payment Gateway / Bank transfer"""
     raw_body = await request.body()
 
     try:
@@ -126,58 +123,116 @@ async def sepay_webhook(request: Request, db: Session = Depends(get_db)):
     except (TypeError, ValueError):
         raise HTTPException(status_code=400, detail="Dữ liệu webhook SePay không hợp lệ.")
 
-    logger.info(f"SePay Payment Gateway IPN received: {payload}")
+    logger.info(f"SePay IPN received: {payload}")
 
     notification_type = payload.get("notification_type")
     order_data = payload.get("order", {})
     transaction_data = payload.get("transaction", {})
+    order_invoice_number = order_data.get("order_invoice_number") or payload.get("content")
 
-    # Chỉ xử lý khi thanh toán thành công
-    if notification_type not in ("PAYMENT_SUCCESS", "ORDER_PAID"):
+    if notification_type and notification_type not in ("PAYMENT_SUCCESS", "ORDER_PAID"):
         logger.info(f"Ignoring notification_type: {notification_type}")
         return {"success": True, "message": f"Ignored: {notification_type}"}
 
-    if transaction_data.get("transaction_status") != "APPROVED":
+    if transaction_data and transaction_data.get("transaction_status") not in (None, "APPROVED"):
         logger.info(f"Transaction not approved: {transaction_data.get('transaction_status')}")
         return {"success": True, "message": "Transaction not approved"}
 
-    order_invoice_number = order_data.get("order_invoice_number")
-    sepay_order_id = order_data.get("order_id") or order_data.get("id") or transaction_data.get("transaction_id")
-    order_amount = order_data.get("order_amount")
-    payment_method = transaction_data.get("payment_method") or "SEPAY_QR"
+    adapter = SePayAdapter()
+    txn = await adapter.handle_webhook(payload)
+    if not txn:
+        return {"success": True, "message": "Ignored or non-matching notification"}
 
-    logger.info(
-        f"Payment confirmed: invoice={order_invoice_number}, "
-        f"amount={order_amount}, sepay_order_id={sepay_order_id}, method={payment_method}"
-    )
+    matched_order = PaymentService.match_order_for_transaction(db, txn)
+    if matched_order and matched_order.payment_status == "PAID":
+        logger.info(f"Order {matched_order.order_number} is already marked as PAID")
+        return {"success": True, "message": "Already paid", "order_number": matched_order.order_number, "payment_status": "PAID"}
 
-    if not order_invoice_number:
-        logger.warning("Missing order_invoice_number in SePay IPN")
-        return {"success": True, "message": "Missing order_invoice_number"}
+    payment = await PaymentService.process_payment_transaction(db, txn, created_by="sepay_webhook")
+    if payment:
+        order = db.query(models.Order).filter(models.Order.id == payment.order_id).first()
+        order_num = order.order_number if order else order_invoice_number
+        return {"success": True, "order_number": order_num, "payment_id": payment.id, "payment_status": "PAID"}
 
-    order = db.query(models.Order).filter(
-        models.Order.order_number == order_invoice_number
-    ).first()
+    if order_invoice_number:
+        order = db.query(models.Order).filter(models.Order.order_number == order_invoice_number).first()
+        if order:
+            if order.payment_status == "PAID":
+                return {"success": True, "message": "Already paid", "order_number": order_invoice_number, "payment_status": "PAID"}
+            order.payment_status = "PAID"
+            order.paid_at = datetime.now(timezone.utc).replace(tzinfo=None)
+            db.commit()
+            return {"success": True, "order_number": order_invoice_number, "payment_status": "PAID"}
 
-    if not order:
-        logger.warning(f"Order not found for invoice number: {order_invoice_number}")
-        return {"success": True, "message": "Order not found"}
+    return {"success": True, "message": "Received"}
 
-    if order.payment_status == "PAID":
-        logger.info(f"Order {order_invoice_number} is already marked as PAID")
-        return {"success": True, "message": "Already paid"}
 
-    order.payment_status = "PAID"
-    order.payment_method = str(payment_method)
-    if sepay_order_id:
-        order.sepay_order_id = str(sepay_order_id)
-    order.paid_at = datetime.now(timezone.utc).replace(tzinfo=None)
+@sepay_router.post("/vnpay")
+async def vnpay_webhook(request: Request, db: Session = Depends(get_db)):
+    raw_body = await request.body()
+    try:
+        payload = json.loads(raw_body)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid VNPay payload")
 
-    db.commit()
-    logger.info(f"Order {order_invoice_number} payment status updated to PAID")
+    adapter = VNPayAdapter()
+    txn = await adapter.handle_webhook(payload)
+    if not txn:
+        return {"RspCode": "01", "Message": "Order Not Found or Failed"}
 
-    return {
-        "success": True,
-        "order_number": order_invoice_number,
-        "payment_status": "PAID"
-    }
+    payment = await PaymentService.process_payment_transaction(db, txn, created_by="vnpay_webhook")
+    if payment:
+        return {"RspCode": "00", "Message": "Confirm Success"}
+
+    return {"RspCode": "01", "Message": "Order Not Found"}
+
+
+@sepay_router.post("/shopee")
+async def shopee_webhook(request: Request, db: Session = Depends(get_db)):
+    raw_body = await request.body()
+    try:
+        payload = json.loads(raw_body)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid Shopee payload")
+
+    adapter = ShopeeAdapter()
+    normalized = await adapter.handle_webhook(payload)
+    if normalized:
+        order = await OrderService.create_or_ingest_order(db, normalized, created_by="shopee_webhook")
+        return {"success": True, "order_id": order.id, "order_number": order.order_number}
+
+    return {"success": True, "message": "Ignored"}
+
+
+@sepay_router.post("/tiktok")
+async def tiktok_webhook(request: Request, db: Session = Depends(get_db)):
+    raw_body = await request.body()
+    try:
+        payload = json.loads(raw_body)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid TikTok payload")
+
+    adapter = TikTokAdapter()
+    normalized = await adapter.handle_webhook(payload)
+    if normalized:
+        order = await OrderService.create_or_ingest_order(db, normalized, created_by="tiktok_webhook")
+        return {"success": True, "order_id": order.id, "order_number": order.order_number}
+
+    return {"success": True, "message": "Ignored"}
+
+
+@sepay_router.post("/lazada")
+async def lazada_webhook(request: Request, db: Session = Depends(get_db)):
+    raw_body = await request.body()
+    try:
+        payload = json.loads(raw_body)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid Lazada payload")
+
+    adapter = LazadaAdapter()
+    normalized = await adapter.handle_webhook(payload)
+    if normalized:
+        order = await OrderService.create_or_ingest_order(db, normalized, created_by="lazada_webhook")
+        return {"success": True, "order_id": order.id, "order_number": order.order_number}
+
+    return {"success": True, "message": "Ignored"}

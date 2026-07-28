@@ -5,6 +5,8 @@ import hmac
 import os
 from typing import Any, Dict, Optional
 
+from adapters.payments.sepay import SePayAdapter
+
 
 @dataclass
 class CheckoutData:
@@ -24,6 +26,7 @@ class SepayService:
             "SEPAY_CHECKOUT_URL",
             "https://pay.sepay.vn/v1/checkout/init",
         )
+        self.adapter = SePayAdapter(merchant_id=self.merchant_id, secret_key=self.secret_key)
 
     def generate_checkout_form(self, data: CheckoutData) -> Dict[str, Any]:
         """

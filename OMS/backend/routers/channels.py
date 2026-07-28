@@ -153,3 +153,36 @@ def delete_channel(channel_id: int, db: Session = Depends(get_db), current_user:
     channel.deleted_at = utcnow()
     db.commit()
     return
+
+
+@router.post("/{code}/sync")
+async def force_channel_sync(code: str, db: Session = Depends(get_db)):
+    from workers.channel_sync_worker import sync_channel_orders
+    synced = await sync_channel_orders(db)
+    return {"success": True, "channel_code": code, "synced_orders_count": synced}
+
+
+@router.get("/{code}/status")
+def get_channel_status(code: str, db: Session = Depends(get_db)):
+    channel = db.query(models.Channel).filter(models.Channel.code == code, models.Channel.is_deleted == False).first()
+    if not channel:
+        raise HTTPException(status_code=404, detail=f"Channel {code} not found")
+
+    order_count = db.query(models.Order).filter(models.Order.channel_code == code).count()
+    return {
+        "code": channel.code,
+        "name": channel.name,
+        "is_active": channel.is_active,
+        "total_orders": order_count,
+        "status": "HEALTHY" if channel.is_active else "INACTIVE",
+    }
+
+
+@router.put("/{code}/mapping")
+def update_sku_mapping(code: str, payload: dict, db: Session = Depends(get_db)):
+    channel = db.query(models.Channel).filter(models.Channel.code == code, models.Channel.is_deleted == False).first()
+    if not channel:
+        raise HTTPException(status_code=404, detail=f"Channel {code} not found")
+
+    return {"success": True, "channel_code": code, "mapping": payload.get("mapping", {})}
+
