@@ -42,3 +42,37 @@ def test_zalo_webhook_endpoint(client, db):
     )
     assert resp.status_code == 200
     assert resp.json() == {"success": True, "updated": True}
+
+
+def test_webhook_signature_verification_rejection(client, monkeypatch):
+    monkeypatch.setenv("SEPAY_SECRET_KEY", "sepay_secret")
+    monkeypatch.setenv("VNPAY_HASH_SECRET", "vnpay_secret")
+    monkeypatch.setenv("SHOPEE_PARTNER_KEY", "shopee_secret")
+    monkeypatch.setenv("TIKTOK_APP_SECRET", "tiktok_secret")
+    monkeypatch.setenv("LAZADA_APP_SECRET", "lazada_secret")
+
+    payload = json.dumps({"test": "data"}).encode("utf-8")
+
+    # Invalid signature should be rejected (401)
+    for endpoint, header in [
+        ("/webhooks/sepay", "X-Sepay-Signature"),
+        ("/webhooks/vnpay", "X-VNPay-Signature"),
+        ("/webhooks/shopee", "X-Shopee-Signature"),
+        ("/webhooks/tiktok", "X-TikTok-Signature"),
+        ("/webhooks/lazada", "X-Lazada-Signature"),
+    ]:
+        res = client.post(endpoint, content=payload, headers={header: "invalid_sig", "Content-Type": "application/json"})
+        assert res.status_code == 401
+
+    # Valid signature should pass verification
+    for endpoint, header, secret in [
+        ("/webhooks/sepay", "X-Sepay-Signature", "sepay_secret"),
+        ("/webhooks/vnpay", "X-VNPay-Signature", "vnpay_secret"),
+        ("/webhooks/shopee", "X-Shopee-Signature", "shopee_secret"),
+        ("/webhooks/tiktok", "X-TikTok-Signature", "tiktok_secret"),
+        ("/webhooks/lazada", "X-Lazada-Signature", "lazada_secret"),
+    ]:
+        sig = hmac.new(secret.encode("utf-8"), payload, hashlib.sha256).hexdigest()
+        res = client.post(endpoint, content=payload, headers={header: sig, "Content-Type": "application/json"})
+        assert res.status_code != 401
+

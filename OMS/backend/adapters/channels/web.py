@@ -15,6 +15,9 @@ class WebAdapter(ChannelAdapter):
     def channel_code(self) -> str:
         return "WEB"
 
+    async def verify_signature(self, payload: bytes, signature: str) -> bool:
+        return True
+
     async def fetch_orders(
         self,
         from_date: datetime,

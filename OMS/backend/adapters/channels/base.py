@@ -47,6 +47,15 @@ class ChannelAdapter(ABC):
         pass
 
     @abstractmethod
+    async def verify_signature(
+        self,
+        payload: bytes,
+        signature: str,
+    ) -> bool:
+        """Verify webhook signature"""
+        pass
+
+    @abstractmethod
     async def sync_order_status(
         self,
         channel_order_id: str,

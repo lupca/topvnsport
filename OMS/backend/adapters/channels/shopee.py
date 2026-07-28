@@ -1,3 +1,6 @@
+import os
+import hashlib
+import hmac
 from datetime import datetime
 from decimal import Decimal
 from typing import List, Optional, Dict, Any
@@ -12,12 +15,22 @@ class ShopeeAdapter(ChannelAdapter):
     """Adapter cho kênh bán Shopee"""
 
     def __init__(self, partner_id: Optional[str] = None, partner_key: Optional[str] = None):
-        self.partner_id = partner_id
-        self.partner_key = partner_key
+        self.partner_id = partner_id or os.getenv("SHOPEE_PARTNER_ID", "")
+        self.partner_key = partner_key or os.getenv("SHOPEE_PARTNER_KEY", "")
 
     @property
     def channel_code(self) -> str:
         return "SHOPEE"
+
+    async def verify_signature(self, payload: bytes, signature: str) -> bool:
+        if not self.partner_key:
+            return True
+        expected = hmac.new(
+            self.partner_key.encode("utf-8"),
+            payload,
+            hashlib.sha256,
+        ).hexdigest()
+        return hmac.compare_digest(expected, signature.lower())
 
     async def fetch_orders(
         self,

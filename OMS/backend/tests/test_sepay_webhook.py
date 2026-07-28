@@ -1,3 +1,7 @@
+import os
+import json
+import hmac
+import hashlib
 from unittest.mock import MagicMock
 from datetime import datetime, timezone
 import pytest
@@ -43,7 +47,14 @@ def test_sepay_webhook_success(client, db):
         }
     }
 
-    response = client.post("/webhooks/sepay", json=ipn_payload)
+    body = json.dumps(ipn_payload).encode("utf-8")
+    secret_key = os.getenv("SEPAY_SECRET_KEY", "")
+    headers = {"Content-Type": "application/json"}
+    if secret_key:
+        sig = hmac.new(secret_key.encode("utf-8"), body, hashlib.sha256).hexdigest()
+        headers["X-Sepay-Signature"] = sig
+
+    response = client.post("/webhooks/sepay", content=body, headers=headers)
     assert response.status_code == 200
     data = response.json()
     assert data["success"] is True
@@ -88,7 +99,14 @@ def test_sepay_webhook_idempotency(client, db):
         }
     }
 
-    response = client.post("/webhooks/sepay", json=ipn_payload)
+    body = json.dumps(ipn_payload).encode("utf-8")
+    secret_key = os.getenv("SEPAY_SECRET_KEY", "")
+    headers = {"Content-Type": "application/json"}
+    if secret_key:
+        sig = hmac.new(secret_key.encode("utf-8"), body, hashlib.sha256).hexdigest()
+        headers["X-Sepay-Signature"] = sig
+
+    response = client.post("/webhooks/sepay", content=body, headers=headers)
     assert response.status_code == 200
     data = response.json()
     assert data["success"] is True

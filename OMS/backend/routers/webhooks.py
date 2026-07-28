@@ -117,6 +117,20 @@ async def zalo_webhook(request: Request, db: Session = Depends(get_db)):
 async def sepay_webhook(request: Request, db: Session = Depends(get_db)):
     """Nhận IPN từ SePay Payment Gateway / Bank transfer"""
     raw_body = await request.body()
+    signature = (
+        request.headers.get("X-Sepay-Signature")
+        or request.headers.get("X-Signature")
+        or request.headers.get("Authorization")
+        or ""
+    )
+    if signature.lower().startswith("bearer "):
+        signature = signature[7:]
+    elif signature.lower().startswith("sha256="):
+        signature = signature[7:]
+
+    adapter = SePayAdapter()
+    if not await adapter.verify_signature(raw_body, signature):
+        raise HTTPException(status_code=401, detail="Chữ ký webhook SePay không hợp lệ.")
 
     try:
         payload = json.loads(raw_body)
@@ -138,7 +152,6 @@ async def sepay_webhook(request: Request, db: Session = Depends(get_db)):
         logger.info(f"Transaction not approved: {transaction_data.get('transaction_status')}")
         return {"success": True, "message": "Transaction not approved"}
 
-    adapter = SePayAdapter()
     txn = await adapter.handle_webhook(payload)
     if not txn:
         return {"success": True, "message": "Ignored or non-matching notification"}
@@ -170,12 +183,26 @@ async def sepay_webhook(request: Request, db: Session = Depends(get_db)):
 @sepay_router.post("/vnpay")
 async def vnpay_webhook(request: Request, db: Session = Depends(get_db)):
     raw_body = await request.body()
+    signature = (
+        request.headers.get("X-VNPay-Signature")
+        or request.headers.get("X-Signature")
+        or request.query_params.get("vnp_SecureHash")
+        or ""
+    )
+    if signature.lower().startswith("bearer "):
+        signature = signature[7:]
+    elif signature.lower().startswith("sha256="):
+        signature = signature[7:]
+
+    adapter = VNPayAdapter()
+    if not await adapter.verify_signature(raw_body, signature):
+        raise HTTPException(status_code=401, detail="Chữ ký webhook VNPay không hợp lệ.")
+
     try:
         payload = json.loads(raw_body)
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid VNPay payload")
 
-    adapter = VNPayAdapter()
     txn = await adapter.handle_webhook(payload)
     if not txn:
         return {"RspCode": "01", "Message": "Order Not Found or Failed"}
@@ -190,12 +217,26 @@ async def vnpay_webhook(request: Request, db: Session = Depends(get_db)):
 @sepay_router.post("/shopee")
 async def shopee_webhook(request: Request, db: Session = Depends(get_db)):
     raw_body = await request.body()
+    signature = (
+        request.headers.get("X-Shopee-Signature")
+        or request.headers.get("X-Signature")
+        or request.headers.get("Authorization")
+        or ""
+    )
+    if signature.lower().startswith("bearer "):
+        signature = signature[7:]
+    elif signature.lower().startswith("sha256="):
+        signature = signature[7:]
+
+    adapter = ShopeeAdapter()
+    if not await adapter.verify_signature(raw_body, signature):
+        raise HTTPException(status_code=401, detail="Chữ ký webhook Shopee không hợp lệ.")
+
     try:
         payload = json.loads(raw_body)
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid Shopee payload")
 
-    adapter = ShopeeAdapter()
     normalized = await adapter.handle_webhook(payload)
     if normalized:
         order = await OrderService.create_or_ingest_order(db, normalized, created_by="shopee_webhook")
@@ -207,12 +248,26 @@ async def shopee_webhook(request: Request, db: Session = Depends(get_db)):
 @sepay_router.post("/tiktok")
 async def tiktok_webhook(request: Request, db: Session = Depends(get_db)):
     raw_body = await request.body()
+    signature = (
+        request.headers.get("X-TikTok-Signature")
+        or request.headers.get("X-Signature")
+        or request.headers.get("Authorization")
+        or ""
+    )
+    if signature.lower().startswith("bearer "):
+        signature = signature[7:]
+    elif signature.lower().startswith("sha256="):
+        signature = signature[7:]
+
+    adapter = TikTokAdapter()
+    if not await adapter.verify_signature(raw_body, signature):
+        raise HTTPException(status_code=401, detail="Chữ ký webhook TikTok không hợp lệ.")
+
     try:
         payload = json.loads(raw_body)
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid TikTok payload")
 
-    adapter = TikTokAdapter()
     normalized = await adapter.handle_webhook(payload)
     if normalized:
         order = await OrderService.create_or_ingest_order(db, normalized, created_by="tiktok_webhook")
@@ -224,12 +279,26 @@ async def tiktok_webhook(request: Request, db: Session = Depends(get_db)):
 @sepay_router.post("/lazada")
 async def lazada_webhook(request: Request, db: Session = Depends(get_db)):
     raw_body = await request.body()
+    signature = (
+        request.headers.get("X-Lazada-Signature")
+        or request.headers.get("X-Signature")
+        or request.headers.get("Authorization")
+        or ""
+    )
+    if signature.lower().startswith("bearer "):
+        signature = signature[7:]
+    elif signature.lower().startswith("sha256="):
+        signature = signature[7:]
+
+    adapter = LazadaAdapter()
+    if not await adapter.verify_signature(raw_body, signature):
+        raise HTTPException(status_code=401, detail="Chữ ký webhook Lazada không hợp lệ.")
+
     try:
         payload = json.loads(raw_body)
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid Lazada payload")
 
-    adapter = LazadaAdapter()
     normalized = await adapter.handle_webhook(payload)
     if normalized:
         order = await OrderService.create_or_ingest_order(db, normalized, created_by="lazada_webhook")

@@ -1,3 +1,6 @@
+import os
+import hashlib
+import hmac
 from datetime import datetime
 from decimal import Decimal
 from typing import List, Optional, Dict, Any
@@ -12,12 +15,22 @@ class LazadaAdapter(ChannelAdapter):
     """Adapter cho kênh bán Lazada"""
 
     def __init__(self, app_key: Optional[str] = None, app_secret: Optional[str] = None):
-        self.app_key = app_key
-        self.app_secret = app_secret
+        self.app_key = app_key or os.getenv("LAZADA_APP_KEY", "")
+        self.app_secret = app_secret or os.getenv("LAZADA_APP_SECRET", "")
 
     @property
     def channel_code(self) -> str:
         return "LAZADA"
+
+    async def verify_signature(self, payload: bytes, signature: str) -> bool:
+        if not self.app_secret:
+            return True
+        expected = hmac.new(
+            self.app_secret.encode("utf-8"),
+            payload,
+            hashlib.sha256,
+        ).hexdigest()
+        return hmac.compare_digest(expected, signature.lower())
 
     async def fetch_orders(
         self,
