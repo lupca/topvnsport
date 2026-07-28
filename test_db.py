@@ -1,4 +1,4 @@
-import sys, os
+import sys
 sys.path.append('/app')
 from database import SessionLocal
 from models import SystemConfig

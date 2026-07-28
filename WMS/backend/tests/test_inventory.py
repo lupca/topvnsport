@@ -1,4 +1,3 @@
-import pytest
 import models
 
 def test_list_inventory(client, db_session):

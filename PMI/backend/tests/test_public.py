@@ -1,8 +1,6 @@
 import importlib
-import pytest
 import uuid
 import models
-from fastapi.testclient import TestClient
 from services.promotion_service import recompute_variant_prices
 
 def test_get_public_categories(client, db_session):

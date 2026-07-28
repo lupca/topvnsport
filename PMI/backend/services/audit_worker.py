@@ -1,11 +1,9 @@
 import datetime
-from datetime import timezone, timedelta
 import logging
 import threading
 from sqlalchemy import or_, and_
 from sqlalchemy.orm import Session
 from database import SessionLocal
-import models
 from models import AuditOutbox, AuditLog, OutboxStatus
 
 logger = logging.getLogger(__name__)
@@ -63,7 +61,6 @@ def process_outbox_batch(db_session: Session, batch_size=100, worker_id="worker-
         })
         
     # Mark as PROCESSING
-    record_id_map = {id(record): record.id for record in records}
     for record in records:
         record.status = OutboxStatus.PROCESSING
         record.locked_by = worker_id

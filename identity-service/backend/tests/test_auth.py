@@ -1,4 +1,3 @@
-import pytest
 from models import StaffSession
 from services.auth_service import hash_refresh_token
 
@@ -74,7 +73,6 @@ class TestVerify:
 class TestRefreshToken:
     def test_refresh_success(self, client, auth_tokens, mocker):
         """AUTH-005: Refresh token thành công"""
-        import utils.jwt
         import datetime
         mock_now = datetime.datetime.utcnow() + datetime.timedelta(seconds=2)
         mocker.patch("utils.jwt.datetime.datetime", mocker.Mock(utcnow=mocker.Mock(return_value=mock_now)))

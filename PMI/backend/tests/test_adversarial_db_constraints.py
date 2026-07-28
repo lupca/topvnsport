@@ -2,7 +2,7 @@ import pytest
 import uuid
 import datetime
 from sqlalchemy.exc import IntegrityError, DataError, StatementError
-from models import AuditOutbox, AuditLog, ActorType, OutboxStatus
+from models import AuditOutbox, ActorType
 
 def test_db_non_nullable_constraints(db_session):
     # 1. Null correlation_id

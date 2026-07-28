@@ -7,7 +7,6 @@ from adapters.channels.base import NormalizedOrder
 from adapters.payments.base import PaymentTransaction
 from services.order_service import OrderService
 from services.payment_service import PaymentService
-from services.invoice_service import InvoiceService
 from services.reconciliation_service import ReconciliationService
 from workers.invoice_batch_worker import process_invoice_queue
 

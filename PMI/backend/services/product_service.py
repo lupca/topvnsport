@@ -279,7 +279,6 @@ def update_product_aggregate(db: Session, product_id: int, product_in: schemas.P
     """
     Updates the product aggregate state, performs semantic diffing and logs to audit outbox.
     """
-    from sqlalchemy.orm import selectinload
     from utils.masking import mask_sensitive_data
     from utils.audit import record_audit_event
 

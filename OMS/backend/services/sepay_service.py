@@ -2,7 +2,6 @@ import base64
 from dataclasses import dataclass
 import hashlib
 import hmac
-import os
 from typing import Any, Dict, Optional
 from sqlalchemy.orm import Session
 from adapters.payments.sepay import SePayAdapter

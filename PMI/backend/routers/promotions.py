@@ -13,15 +13,12 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy import or_
 
 from database import get_db
-import models
 from models import Promotion, PromotionScope, PromotionComputedPrice, PromotionStatus, ScopeType
-import schemas
 from schemas.promotion import (
     PromotionCreate,
     PromotionPreviewRequest,
     PromotionUpdate,
     PromotionResponse,
-    PromotionScopeSchema,
     ComputedPriceResponse,
     ParseIntentRequest,
     ParseIntentResponse,

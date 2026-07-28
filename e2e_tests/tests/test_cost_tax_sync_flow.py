@@ -2,7 +2,7 @@ from uuid import uuid4
 import os
 import re
 from playwright.sync_api import expect
-from e2e_tests.utils.api_helpers import PMIApi, WMSApi, wait_until
+from e2e_tests.utils.api_helpers import PMIApi
 
 def test_cost_tax_sync_flow(api_clients, page):
     """
@@ -25,7 +25,7 @@ def test_cost_tax_sync_flow(api_clients, page):
     fam = pmi.create_attribute_family(name="Sync Fam E2E", code=f"FAM-SYNC-{run_id}")
     
     # 2. Tạo product với cost & tax bên PMI
-    product = pmi.create_product_with_variants(
+    pmi.create_product_with_variants(
         product_code=product_code,
         name=product_name,
         category_id=cat.id,

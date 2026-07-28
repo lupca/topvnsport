@@ -1,4 +1,3 @@
-import pytest
 import datetime
 from datetime import timedelta
 from fastapi import status

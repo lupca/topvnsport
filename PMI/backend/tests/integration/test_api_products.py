@@ -192,8 +192,7 @@ def test_upload_endpoint_uses_mocked_storage(client):
 def test_create_product_without_sku_code_auto_generates(client):
     category_id = _first_category_id(client)
     family_id = _first_family_id(client)
-    attribute_id = _first_attribute_id(client)
-    
+
     # Payload with sku_code set to None or missing
     payload = {
         "product_code": "AUTO-SKU-PARENT",
@@ -268,8 +267,6 @@ def test_create_product_without_sku_code_auto_generates(client):
 def test_create_product_no_variations_auto_generates_default_sku(client):
     category_id = _first_category_id(client)
     family_id = _first_family_id(client)
-    attribute_id = _first_attribute_id(client)
-    
     payload = {
         "product_code": "AUTO-SKU-NOVAR",
         "name": "Balo don gian",
@@ -425,4 +422,3 @@ def test_create_product_variant_tier_mismatch_fails(client):
     assert resp.status_code == 422
     errors = resp.json()["detail"]
     assert any("Tổ hợp phân loại không khớp" in e["msg"] for e in errors)
-

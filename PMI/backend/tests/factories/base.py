@@ -1,4 +1,3 @@
-import factory
 from factory.alchemy import SQLAlchemyModelFactory
 
 class BaseFactory(SQLAlchemyModelFactory):

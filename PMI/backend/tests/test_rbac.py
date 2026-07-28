@@ -2,9 +2,7 @@ import pytest
 from fastapi import status
 from utils.permissions import (
     Permission,
-    ROLE_PERMISSIONS,
     has_permission,
-    require_permission,
     require_role,
 )
 from utils.auth import INTERNAL_SERVICE_TOKEN

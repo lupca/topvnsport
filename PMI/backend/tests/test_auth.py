@@ -1,7 +1,4 @@
-import pytest
-from fastapi import status
 from utils.auth import create_access_token, decode_access_token, INTERNAL_SERVICE_TOKEN
-from jose import jwt
 
 def test_jwt_operations():
     payload = {"sub": "test_user", "role": "admin"}

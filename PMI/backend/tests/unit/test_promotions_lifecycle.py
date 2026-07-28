@@ -1,6 +1,5 @@
 import datetime
 import uuid
-import pytest
 from fastapi import status
 from models import Promotion, PromotionStatus, DiscountType
 

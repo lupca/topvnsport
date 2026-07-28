@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session, joinedload, selectinload
-from typing import List, Optional
+from typing import Optional
 import unicodedata
 import re
 from database import get_db
@@ -29,7 +29,7 @@ def slugify(text: str) -> str:
     text = re.sub(r'[^a-z0-9]+', '-', text)
     return text.strip('-')
 
-from utils.sku_helper import clean_option_for_sku, generate_sku_code, generate_product_code
+from utils.sku_helper import generate_sku_code, generate_product_code
 from pydantic import BaseModel as PydanticBaseModel
 
 

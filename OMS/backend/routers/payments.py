@@ -1,6 +1,6 @@
 from datetime import datetime, timezone, timedelta
 import os
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session

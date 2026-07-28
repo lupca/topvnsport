@@ -1,7 +1,6 @@
 import datetime
 import logging
 import threading
-import os
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import StaleDataError
 from database import SessionLocal

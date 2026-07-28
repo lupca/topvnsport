@@ -1,4 +1,3 @@
-import pytest
 from models import StaffAccount
 
 class TestStaffCRUD:

@@ -48,7 +48,7 @@ def test_scheduler_does_not_activate_future_scheduled(db_session):
     db_session.add(promo)
     db_session.flush()
 
-    result = process_promotion_schedule(db_session)
+    process_promotion_schedule(db_session)
 
     db_session.refresh(promo)
     assert promo.status == PromotionStatus.SCHEDULED

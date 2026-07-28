@@ -1,15 +1,13 @@
-import uuid
 import logging
-from typing import Optional, List, Dict, Any
-from fastapi import APIRouter, Depends, HTTPException, Header, Security, status
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from database import get_db
 import models
 from utils.dependency import get_current_identity
-from utils.auth import INTERNAL_SERVICE_TOKEN
 from utils.audit import record_audit_event
-from utils.context import actor_username_var, actor_type_var, correlation_id_var
+from utils.context import actor_username_var, actor_type_var
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)

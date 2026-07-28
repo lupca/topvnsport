@@ -1,4 +1,3 @@
-import pytest
 import time
 import threading
 import datetime
@@ -11,7 +10,7 @@ import uuid
 
 def test_f7_31_worker_processes_unprocessed_entries(db_session: Session):
     """Worker processes outbox entries where status = PENDING."""
-    from services.worker import process_outbox_batch
+    from services.audit_worker import process_outbox_batch
     from models import AuditOutbox, ActorType, OutboxStatus
 
     # Add a pending outbox entry
@@ -41,7 +40,7 @@ def test_f7_31_worker_processes_unprocessed_entries(db_session: Session):
 
 def test_f7_32_worker_copies_to_audit_logs(db_session: Session):
     """Worker copies entries from audit_outbox to audit_logs."""
-    from services.worker import process_outbox_batch
+    from services.audit_worker import process_outbox_batch
     from models import AuditOutbox, AuditLog, ActorType, OutboxStatus
 
     # Clear existing logs
@@ -76,7 +75,7 @@ def test_f7_32_worker_copies_to_audit_logs(db_session: Session):
 
 def test_f7_33_worker_updates_or_removes_outbox(db_session: Session):
     """Worker updates or removes processed outbox entries."""
-    from services.worker import process_outbox_batch
+    from services.audit_worker import process_outbox_batch
     from models import AuditOutbox, ActorType, OutboxStatus
 
     entry = AuditOutbox(
@@ -102,7 +101,7 @@ def test_f7_33_worker_updates_or_removes_outbox(db_session: Session):
 
 def test_f7_34_worker_runs_periodic_loop():
     """Worker runs continuously in a periodic loop."""
-    from services.worker import AuditWorker
+    from services.audit_worker import AuditWorker
 
     # Verify that worker can start in a background thread and shut down gracefully
     worker = AuditWorker(interval=0.01)
@@ -117,7 +116,7 @@ def test_f7_34_worker_runs_periodic_loop():
 
 def test_f7_35_concurrent_workers_skip_locked(db_session: Session):
     """Multiple concurrent workers do not double-process entries (SKIP LOCKED)."""
-    from services.worker import process_outbox_batch
+    from services.audit_worker import process_outbox_batch
     from models import AuditOutbox, ActorType, OutboxStatus
     from database import SessionLocal
 
@@ -178,7 +177,7 @@ def test_f7_35_concurrent_workers_skip_locked(db_session: Session):
 
 def test_f7_71_worker_retry_on_log_failure(db_session: Session):
     """Worker retries outbox entry if DB insert to audit_logs fails."""
-    from services.worker import process_outbox_batch
+    from services.audit_worker import process_outbox_batch
     from models import AuditOutbox, AuditLog, ActorType, OutboxStatus
 
     # Add a pending outbox entry
@@ -219,7 +218,7 @@ def test_f7_71_worker_retry_on_log_failure(db_session: Session):
 
 def test_f7_72_worker_updates_retry_and_backoff(db_session: Session):
     """Worker updates retry count and backoff timestamp."""
-    from services.worker import process_outbox_batch
+    from services.audit_worker import process_outbox_batch
     from models import AuditOutbox, AuditLog, ActorType, OutboxStatus
 
     # Add a pending outbox entry
@@ -269,7 +268,7 @@ def test_f7_72_worker_updates_retry_and_backoff(db_session: Session):
 
 def test_f7_73_worker_moves_to_dead_letter(db_session: Session):
     """Worker moves entry to dead-letter/failed after max attempts."""
-    from services.worker import process_outbox_batch
+    from services.audit_worker import process_outbox_batch
     from models import AuditOutbox, AuditLog, ActorType, OutboxStatus
 
     # Add an outbox entry already at 4 attempts, status = FAILED, and next_retry_at in past
@@ -309,7 +308,7 @@ def test_f7_73_worker_moves_to_dead_letter(db_session: Session):
 
 def test_f7_74_worker_db_disconnect_reconnect(db_session: Session):
     """Worker handles DB disconnect and reconnects gracefully."""
-    from services.worker import AuditWorker
+    from services.audit_worker import AuditWorker
     from sqlalchemy.exc import OperationalError
     import services.audit_worker
     
@@ -355,7 +354,7 @@ def test_f7_74_worker_db_disconnect_reconnect(db_session: Session):
 
 def test_f7_75_worker_large_batches(db_session: Session):
     """Large batches (1000+) processed correctly within limits."""
-    from services.worker import process_outbox_batch
+    from services.audit_worker import process_outbox_batch
     from models import AuditOutbox, AuditLog, ActorType, OutboxStatus
 
     # Clear existing logs and outbox
@@ -402,7 +401,7 @@ def test_f7_75_worker_large_batches(db_session: Session):
 def test_f3_85_lock_contention_deadlock_prevention(db_session: Session):
     """Lock Contention: Multiple workers and clients simultaneously write and process without deadlock."""
     import random
-    from services.worker import process_outbox_batch
+    from services.audit_worker import process_outbox_batch
     from models import AuditOutbox, ActorType, OutboxStatus
     from database import SessionLocal
 
@@ -485,7 +484,7 @@ def test_f3_85_lock_contention_deadlock_prevention(db_session: Session):
 
 def test_f4_93_disaster_recovery_worker(db_session: Session):
     """Disaster Recovery Worker Recovery: Stop worker, accumulate outbox entries, simulate DB lock, restart worker, verify eventual consistency."""
-    from services.worker import process_outbox_batch
+    from services.audit_worker import process_outbox_batch
     from models import AuditOutbox, AuditLog, ActorType, OutboxStatus
     from database import SessionLocal
 
@@ -513,7 +512,7 @@ def test_f4_93_disaster_recovery_worker(db_session: Session):
 
     # 2. Simulate DB lock on these records in a separate session/transaction
     lock_sess = SessionLocal()
-    locked_records = lock_sess.query(AuditOutbox).filter(
+    lock_sess.query(AuditOutbox).filter(
         AuditOutbox.entity_id.in_(["dr-0", "dr-1", "dr-2"])
     ).with_for_update().all()
 
@@ -556,7 +555,7 @@ def test_f4_93_disaster_recovery_worker(db_session: Session):
 
 def test_f7_76_worker_reclaims_stuck_processing(db_session: Session):
     """Worker reclaims outbox entries stuck in PROCESSING state for >5 minutes."""
-    from services.worker import process_outbox_batch
+    from services.audit_worker import process_outbox_batch
     from models import AuditOutbox, AuditLog, ActorType, OutboxStatus
     import datetime
 
@@ -627,7 +626,7 @@ def test_f7_76_worker_reclaims_stuck_processing(db_session: Session):
 
 def test_audit_worker_unique_default_id():
     """Verify unique worker ID is generated when initialized with 'worker-default'."""
-    from services.worker import AuditWorker
+    from services.audit_worker import AuditWorker
     import socket
     import os
 
@@ -642,7 +641,7 @@ def test_audit_worker_unique_default_id():
 
 def test_lock_holding_validation_in_exception_handler(db_session: Session):
     """Verify failed status updates only affect records still locked by the worker."""
-    from services.worker import process_outbox_batch
+    from services.audit_worker import process_outbox_batch
     from models import AuditOutbox, ActorType, OutboxStatus, AuditLog
     import uuid
 
@@ -715,7 +714,7 @@ def test_lock_holding_validation_in_exception_handler(db_session: Session):
 
 def test_worker_stable_sorting(db_session: Session):
     """Verify that outbox entries are processed in a stable, deterministic sort order (created_at ASC, id ASC)."""
-    from services.worker import process_outbox_batch
+    from services.audit_worker import process_outbox_batch
     from models import AuditOutbox, ActorType, OutboxStatus, AuditLog
     import uuid
 

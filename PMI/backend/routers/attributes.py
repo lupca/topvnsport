@@ -155,7 +155,6 @@ def sync_attributes_for_group(group_id: int, payload: schemas.AttributeSyncReque
     # Clear existing links
     db.query(models.AttributeGroupAttribute).filter(models.AttributeGroupAttribute.group_id == group_id).delete()
     
-    new_attrs = []
     if payload.attribute_ids:
         # Get valid attributes
         valid_attrs = db.query(models.Attribute).filter(models.Attribute.id.in_(payload.attribute_ids)).all()

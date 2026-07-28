@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from uuid import uuid4
 import httpx
-import pytest
 
 from e2e_tests.conftest import ApiClients
 from e2e_tests.utils.api_helpers import PMIApi, WMSApi

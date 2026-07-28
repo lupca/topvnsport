@@ -3,10 +3,7 @@ import asyncio
 import httpx
 import importlib
 from datetime import timedelta
-from sqlalchemy.orm import Session
-import models
-from utils.auth import create_access_token, INTERNAL_SERVICE_TOKEN
-from utils.context import actor_username_var, actor_type_var
+from utils.auth import create_access_token
 
 @pytest.mark.asyncio
 async def test_concurrency_contextvars_safety(app_module, db_session):

@@ -1,7 +1,5 @@
 import datetime
 import uuid
-import pytest
-from fastapi import status
 from models import Promotion, PromotionScope, PromotionStatus, DiscountType, ScopeType, ProductVariant, Product, Category
 from services.promotion_service import calculate_discount, recompute_variant_prices, get_variant_computed_price
 

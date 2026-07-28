@@ -1,13 +1,11 @@
 from datetime import datetime, timezone
-from decimal import Decimal
-from typing import Optional, Dict, Any
+from typing import Optional
 import logging
 import re
 from sqlalchemy.orm import Session
 
 import models
-from adapters.payments.base import PaymentTransaction, PaymentProvider
-from adapters.payments.sepay import SePayAdapter
+from adapters.payments.base import PaymentTransaction
 from events.dispatcher import EventDispatcher, OrderEvent
 
 logger = logging.getLogger("oms_backend")

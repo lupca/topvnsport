@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-import os
 import time
 from datetime import datetime, timedelta, timezone
 from uuid import uuid4
-from typing import Any, Iterator
+from typing import Any
 
-import httpx
 import pytest
 from playwright.sync_api import expect
 
@@ -250,7 +248,7 @@ def test_tier1_f2_05_scope_category_with_variant_exclusion(api_clients, pmi_api,
     cat, fam, prod, var1 = create_test_product_and_variant(pmi_api, price=100000.0)
 
     # Create a second variant in same product
-    v2_resp = api_clients.pmi.post(f"/api/products/{prod.id}/variants", json={
+    api_clients.pmi.post(f"/api/products/{prod.id}/variants", json={
         "sku_code": f"SKU-VAR2-{uuid4().hex[:6]}",
         "price": 100000.0,
         "stock": 50,

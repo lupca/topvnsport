@@ -14,7 +14,6 @@ from database import Base, get_db
 from models import Role, StaffAccount, StaffSession
 from main import app
 from utils.password import hash_password
-from utils.jwt import create_access_token
 from services.auth_service import hash_refresh_token
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"

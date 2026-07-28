@@ -1,4 +1,3 @@
-import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 import models
@@ -231,9 +230,7 @@ def test_detailed_export_with_filtering_and_logistics(client: TestClient, db_ses
     families_resp = client.get("/attribute-families")
     family_id = families_resp.json()[0]["id"]
     
-    shopee_chan = db_session.query(models.Channel).filter(models.Channel.code == "shopee_vn").first()
-    tiktok_chan = db_session.query(models.Channel).filter(models.Channel.code == "tiktok_shop").first()
-    
+
     # 2. Create products with different shipping configs and barcodes
     product1_payload = {
         "product_code": "PROD-EXP-01",
@@ -321,8 +318,7 @@ def test_detailed_export_with_filtering_and_logistics(client: TestClient, db_ses
     
     r2 = client.post("/products", json=product2_payload)
     assert r2.status_code == 201
-    p2 = r2.json()
-    
+
     # 3. Test Shopee export ALL (omit status parameter)
     response = client.get("/api/export/shopee")
     assert response.status_code == 200
@@ -545,5 +541,4 @@ def test_export_fallback_empty_category(client: TestClient, db_session: Session)
     assert response.status_code == 200
     csv_text = response.text
     assert "Giày Không Map Danh Mục" in csv_text
-
 

@@ -1,6 +1,4 @@
-import pytest
 from unittest.mock import patch
-from fastapi.testclient import TestClient
 import models
 
 def test_over_picking_returns_400(client, db_session):

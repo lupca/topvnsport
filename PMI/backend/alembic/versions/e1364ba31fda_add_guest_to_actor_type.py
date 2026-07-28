@@ -6,7 +6,6 @@ Create Date: 2026-07-12 17:52:20.863823
 """
 
 from alembic import op
-import sqlalchemy as sa
 
 
 

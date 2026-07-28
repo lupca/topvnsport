@@ -1,4 +1,3 @@
-import pytest
 import uuid
 import datetime
 from sqlalchemy import text
@@ -208,8 +207,7 @@ def test_product_update_records_audit_outbox(client, db_session):
     
     cat = db_session.query(models.Category).first()
     fam = db_session.query(models.AttributeFamily).first()
-    attr = db_session.query(models.Attribute).first()
-    
+
     payload = {
         "product_code": "PROD-AUDIT-TEST",
         "name": "Audit Test Product",
@@ -540,7 +538,6 @@ def test_audit_logs_jwt_only_non_admin(client_no_auth_override, db_session):
         action_type="SECURITY"
     ).first()
     assert intrusion_log is not None
-
 
 
 

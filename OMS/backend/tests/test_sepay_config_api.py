@@ -1,6 +1,4 @@
 import models
-from main import app
-from utils.auth import get_current_user
 
 
 def test_get_sepay_config_masks_secret(client, db):

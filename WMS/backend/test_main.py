@@ -1,13 +1,12 @@
-import os
 import pytest
 from unittest.mock import patch
 from fastapi.testclient import TestClient
 
-from database import Base, get_db
+from database import get_db
 from utils.auth import get_current_user
 from main import app
 import models
-from tests.conftest import engine, TestingSessionLocal, SQLALCHEMY_DATABASE_URL, DB_FILE, db_session as db
+from tests.conftest import engine, TestingSessionLocal, SQLALCHEMY_DATABASE_URL, DB_FILE, db_session as db  # noqa: F401
 
 @pytest.fixture(autouse=True)
 def mock_notify_oms():
@@ -651,7 +650,6 @@ def test_public_stock_post_endpoint(client, db):
     assert data["stock"]["SKU-POST-A"] == 40
     assert data["stock"]["SKU-POST-MISSING"] == 0
     assert len(data["items"]) == 2
-
 
 
 

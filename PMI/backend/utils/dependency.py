@@ -4,7 +4,6 @@ from fastapi import Depends, HTTPException, status, Security, Request
 from fastapi.security import APIKeyHeader, HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from database import get_db
-import models
 from utils.auth import decode_access_token, verify_service_token
 from utils.context import actor_username_var, actor_type_var, actor_id_var
 
@@ -100,5 +99,4 @@ async def get_current_identity(
 
 
 # Re-export RBAC helpers from utils.permissions
-from utils.permissions import has_permission, require_permission, require_role
-
+from utils.permissions import has_permission, require_permission, require_role  # noqa: F401

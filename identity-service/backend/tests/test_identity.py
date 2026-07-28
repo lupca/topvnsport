@@ -1,24 +1,19 @@
 import pytest
 from pydantic import ValidationError
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 import sys
 import os
 
 # Adjust path to import from backend/
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from database import Base
 from models import Role, StaffAccount, StaffSession
 from schemas.auth import LoginRequest, LoginResponse, RefreshTokenRequest, VerifyResponse, ChangePasswordRequest
-from schemas.role import RoleBase, RoleUpdate, RoleOut
+from schemas.role import RoleBase, RoleUpdate
 from schemas.staff import StaffBase, StaffCreate, StaffUpdate, StaffOut
 from services.auth_service import change_staff_password
 from services.staff_service import reset_staff_password
 from utils.password import hash_password
 from utils.jwt import create_access_token
-from fastapi.testclient import TestClient
-from main import app
 import datetime
 
 

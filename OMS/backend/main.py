@@ -14,16 +14,10 @@ import models
 import services.zalo_service
 from database import SessionLocal
 from utils.api_utils import (
-    PIM_API_URL,
-    WMS_API_URL,
-    DEFAULT_FULFILLMENT_WAREHOUSE_CODE,
-    PIM_API_KEY,
-    utcnow,
-    call_api,
     validation_exception_handler,
 )
-from services.inventory_service import allocate_order_items, _fetch_inventory_snapshot
-from routers.otp import LAST_OTPS
+from utils.api_utils import call_api  # noqa: F401  # used by routers.orders and tests
+from services.inventory_service import allocate_order_items, _fetch_inventory_snapshot  # noqa: F401  # used by routers.orders
 from routers import (
     otp,
     orders,

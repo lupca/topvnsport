@@ -5,7 +5,7 @@ TODO: Implement real VNPT e-Invoice API integration
 """
 from datetime import datetime, timezone
 import logging
-from typing import List, Optional
+from typing import List
 import uuid
 
 from adapters.invoices.base import InvoiceProvider, InvoiceRequest, InvoiceResult

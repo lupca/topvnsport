@@ -1,4 +1,3 @@
-import pytest
 from fastapi.testclient import TestClient
 from integration.test_api_products import _first_category_id, _first_family_id, _first_attribute_id
 

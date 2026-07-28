@@ -1,6 +1,5 @@
 import os
 import re
-import json
 import base64
 import httpx
 import time
@@ -96,7 +95,7 @@ def wait_for_services():
         url = f"http://localhost:{port}/"
         while True:
             try:
-                resp = httpx.get(url, timeout=2)
+                httpx.get(url, timeout=2)
                 print(f"{name} is up!")
                 break
             except Exception:

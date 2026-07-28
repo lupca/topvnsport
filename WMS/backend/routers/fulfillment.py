@@ -125,7 +125,7 @@ def cancel_fulfillment_order(id: str, db: Session = Depends(get_db)):
     try:
         notify_oms_status(fo.oms_order_id, fo.fulfillment_number, "CANCELLED")
         db.commit()
-    except Exception as e:
+    except Exception:
         db.rollback()
         raise HTTPException(status_code=500, detail="Lỗi đồng bộ với OMS, thao tác bị hủy.")
     return {"status": "success", "fulfillment_number": fo.fulfillment_number}
@@ -152,7 +152,7 @@ def start_pick_fulfillment_order(id: str, db: Session = Depends(get_db)):
     try:
         notify_oms_status(fo.oms_order_id, fo.fulfillment_number, "PICKING")
         db.commit()
-    except Exception as e:
+    except Exception:
         db.rollback()
         raise HTTPException(status_code=500, detail="Lỗi đồng bộ với OMS, thao tác bị hủy.")
     return {"status": "success", "fulfillment_number": fo.fulfillment_number, "status_code": fo.status}
@@ -215,7 +215,7 @@ def complete_pick_fulfillment_order(id: str, db: Session = Depends(get_db)):
     try:
         notify_oms_status(fo.oms_order_id, fo.fulfillment_number, "PICKED")
         db.commit()
-    except Exception as e:
+    except Exception:
         db.rollback()
         raise HTTPException(status_code=500, detail="Lỗi đồng bộ với OMS, thao tác bị hủy.")
     return {"status": "success", "fulfillment_number": fo.fulfillment_number, "status_code": fo.status}
@@ -234,7 +234,7 @@ def pick_fulfillment_order(id: str, db: Session = Depends(get_db)):
     try:
         notify_oms_status(fo.oms_order_id, fo.fulfillment_number, "PICKING")
         db.commit()
-    except Exception as e:
+    except Exception:
         db.rollback()
         raise HTTPException(status_code=500, detail="Lỗi đồng bộ với OMS, thao tác bị hủy.")
     return {"status": "success", "fulfillment_number": fo.fulfillment_number}
@@ -290,7 +290,7 @@ def complete_pack_fulfillment_order(id: str, db: Session = Depends(get_db)):
     try:
         notify_oms_status(fo.oms_order_id, fo.fulfillment_number, "PACKED")
         db.commit()
-    except Exception as e:
+    except Exception:
         db.rollback()
         raise HTTPException(status_code=500, detail="Lỗi đồng bộ với OMS, thao tác bị hủy.")
     return {"status": "success", "fulfillment_number": fo.fulfillment_number, "status_code": fo.status}
@@ -314,7 +314,7 @@ def pack_fulfillment_order(id: str, tracking_number: str = "TRK123", db: Session
     try:
         notify_oms_status(fo.oms_order_id, fo.fulfillment_number, "PACKED")
         db.commit()
-    except Exception as e:
+    except Exception:
         db.rollback()
         raise HTTPException(status_code=500, detail="Lỗi đồng bộ với OMS, thao tác bị hủy.")
     return {"status": "success", "fulfillment_number": fo.fulfillment_number}
@@ -351,7 +351,7 @@ def ship_fulfillment_order(id: str, db: Session = Depends(get_db)):
     try:
         notify_oms_status(fo.oms_order_id, fo.fulfillment_number, "SHIPPED")
         db.commit()
-    except Exception as e:
+    except Exception:
         db.rollback()
         raise HTTPException(status_code=500, detail="Lỗi đồng bộ với OMS, thao tác bị hủy.")
     return {"status": "success", "fulfillment_number": fo.fulfillment_number}

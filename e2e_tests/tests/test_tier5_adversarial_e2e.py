@@ -7,7 +7,6 @@ from uuid import uuid4
 from typing import Any
 import concurrent.futures
 
-import httpx
 import pytest
 
 from e2e_tests.utils.api_helpers import PMIApi, wait_until

@@ -1,8 +1,7 @@
-import pytest
 from datetime import datetime
 from decimal import Decimal
 from schemas.auth import ZaloConfigOut
-from schemas.order import OrderOut, OrderItemOut, FulfillmentOrderOut
+from schemas.order import OrderOut
 
 def test_zalo_config_out_masks_secrets():
     config = ZaloConfigOut(

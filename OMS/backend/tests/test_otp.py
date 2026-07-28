@@ -1,4 +1,3 @@
-import pytest
 from routers.otp import generate_otp, hash_otp, mask_token
 
 

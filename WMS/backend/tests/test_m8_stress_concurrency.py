@@ -1,4 +1,3 @@
-import asyncio
 from concurrent.futures import ThreadPoolExecutor
 import pytest
 from fastapi.testclient import TestClient
@@ -332,15 +331,9 @@ def test_scan_pick_boundary_negative_or_zero_quantity(setup_db):
     client = TestClient(app)
 
     # Test negative quantity scan
-    resp = client.post(f"/fulfillment-orders/{fo.fulfillment_number}/scan-pick", json={"barcode": "BAR-BOUND-PICK-1", "quantity": -1})
-    status_neg = resp.status_code
-    body_neg = resp.json()
-
+    client.post(f"/fulfillment-orders/{fo.fulfillment_number}/scan-pick", json={"barcode": "BAR-BOUND-PICK-1", "quantity": -1})
     # Test zero quantity scan
-    resp_zero = client.post(f"/fulfillment-orders/{fo.fulfillment_number}/scan-pick", json={"barcode": "BAR-BOUND-PICK-1", "quantity": 0})
-    status_zero = resp_zero.status_code
-    body_zero = resp_zero.json()
-
+    client.post(f"/fulfillment-orders/{fo.fulfillment_number}/scan-pick", json={"barcode": "BAR-BOUND-PICK-1", "quantity": 0})
     db_session.expire_all()
     updated = db_session.query(models.PickListItem).filter(models.PickListItem.id == pick_item.id).first()
 

@@ -10,7 +10,6 @@ from typing import Optional, List
 from database import get_db
 import models
 from pydantic import BaseModel, ConfigDict
-from datetime import datetime
 from services import promotion_service
 
 router = APIRouter(prefix="/public", tags=["Public API"])
@@ -252,9 +251,6 @@ def get_public_products(
     products = query.offset(offset).limit(limit).all()
     pages = math.ceil(total / limit) if total > 0 else 1
     
-    # Load all categories once for fast path calculations
-    all_categories = db.query(models.Category).all()
-    cat_dict = {c.id: c for c in all_categories}
     computed_prices = get_public_variant_prices(db, products)
     
     # Convert to response format and attach pre-calculated properties

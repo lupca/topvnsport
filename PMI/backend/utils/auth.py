@@ -2,7 +2,7 @@ import os
 import secrets
 import datetime
 from datetime import timedelta
-from typing import Optional, Any
+from typing import Optional
 from jose import JWTError, jwt
 # Configuration constants loaded from environment
 JWT_SECRET_KEY = os.environ["JWT_SECRET_KEY"]

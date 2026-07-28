@@ -1,8 +1,7 @@
 import pytest
 import uuid
-import datetime
-from collections.abc import Mapping, Sequence
-from models import AuditOutbox, AuditLog, ActorType, OutboxStatus
+from collections.abc import Mapping
+from models import AuditOutbox, AuditLog, ActorType
 from utils.masking import mask_sensitive_data
 from sqlalchemy import text
 

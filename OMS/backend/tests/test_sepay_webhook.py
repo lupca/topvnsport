@@ -2,14 +2,8 @@ import os
 import json
 import hmac
 import hashlib
-from unittest.mock import MagicMock
-from datetime import datetime, timezone
-import pytest
-from fastapi.testclient import TestClient
 
-from main import app
 import models
-from database import get_db
 
 
 def test_sepay_webhook_success(client, db):

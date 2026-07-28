@@ -1,6 +1,5 @@
 import uuid
-import pytest
-from models import Promotion, PromotionScope, PromotionStatus, DiscountType, ScopeType, ProductVariant, Product, Category
+from models import Promotion, PromotionScope, DiscountType, ScopeType, ProductVariant, Product, Category
 from services.promotion_service import eval_variant_promotion_match, build_category_ancestor_map
 
 

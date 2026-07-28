@@ -31,7 +31,7 @@ def test_full_flow(api_clients, page, web_base_url):
     # Arrange: create fresh PMI + WMS master data.
     category = pmi.create_category(name="Vợt Test E2E", code=category_code)
     family = pmi.create_attribute_family(name="Family Test E2E", code=family_code)
-    product = pmi.create_product_with_variants(
+    pmi.create_product_with_variants(
         product_code=product_code,
         name=product_name,
         category_id=category.id,

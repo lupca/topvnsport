@@ -1,13 +1,10 @@
 import sys
 import os
 import pytest
-import datetime
-from datetime import timedelta
 import uuid
 import math
-from fastapi import status, HTTPException
+from fastapi import status
 from fastapi.testclient import TestClient
-from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 # Adjust path to import backend modules
@@ -15,12 +12,11 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import models
 import schemas
-from utils.auth import JWT_SECRET_KEY, JWT_ALGORITHM, create_access_token, INTERNAL_SERVICE_TOKEN
-from utils.context import actor_username_var, actor_type_var, correlation_id_var
+from utils.auth import create_access_token, INTERNAL_SERVICE_TOKEN
 from utils.audit import audit_action
-from services.product_service import _parse_attribute_storage_value, _upsert_product_attribute_values, _save_product_channel_listings, update_product_aggregate
+from services.product_service import _parse_attribute_storage_value, _save_product_channel_listings
 from services.audit_worker import process_outbox_batch
-from exceptions import DomainException, ChannelNotFoundException, VariantSkuNotFoundException
+from exceptions import ChannelNotFoundException, VariantSkuNotFoundException
 
 def test_coerced_uuid_string_edges():
     """Verify conversion boundaries for CoercedUUIDString type decorator."""

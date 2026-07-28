@@ -5,7 +5,6 @@ from typing import List
 from database import get_db
 from models import StaffAccount
 from schemas.role import RoleCreate, RoleUpdate, RoleOut
-from routers.auth import get_current_active_staff
 from routers.staff import require_admin_privileges
 import services.staff_service as staff_service
 

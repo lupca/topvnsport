@@ -1,8 +1,6 @@
 from __future__ import annotations
 import re
-import time
 from playwright.sync_api import expect
-import pytest
 
 def test_pmi_auth_flow(page):
     page.on("console", lambda msg: print(f"PMI CONSOLE [{msg.type}]: {msg.text}"))

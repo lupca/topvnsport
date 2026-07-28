@@ -1,14 +1,10 @@
 import datetime
 import math
 import uuid
-import pytest
-from decimal import Decimal
 
 from sqlalchemy.orm import Session
 
-import models
 from models import Promotion, PromotionScope, PromotionComputedPrice, ProductVariant, Product, Category, DiscountType, PromotionStatus, ScopeType
-from schemas.promotion import PromotionCreate, PromotionUpdate, PromotionScopeSchema, ParseIntentRequest, PromotionPreviewRequest
 from services.promotion_service import (
     calculate_discount,
     matches_single_scope,
@@ -16,8 +12,6 @@ from services.promotion_service import (
     get_promo_specificity,
     recompute_variant_prices,
     get_variant_computed_price,
-    get_bulk_computed_prices,
-    evaluate_promotion_preview,
     parse_promotion_intent,
     build_category_ancestor_map,
 )

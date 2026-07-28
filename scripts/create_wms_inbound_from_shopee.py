@@ -1,6 +1,5 @@
 import os
 import re
-import sys
 import time
 from datetime import datetime, timezone
 from sqlalchemy import create_engine, text, Column, Integer, String, Boolean, DateTime, ForeignKey, Numeric

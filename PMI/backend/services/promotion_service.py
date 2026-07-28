@@ -10,7 +10,6 @@ from decimal import Decimal
 from sqlalchemy import or_, text
 from sqlalchemy.orm import Session, joinedload
 
-import models
 from models import Promotion, PromotionScope, PromotionComputedPrice, ProductVariant, Product, Category, DiscountType, PromotionStatus, ScopeType
 from schemas.promotion import PromotionCreate, PromotionScopeSchema, ParseIntentResponse, ComputedPriceResponse
 
@@ -510,13 +509,6 @@ def evaluate_promotion_preview(db: Session, promo_create: PromotionCreate) -> di
     """
     Evaluates a proposed promotion dry-run impact without persisting to DB.
     """
-    active_promos = (
-        db.query(Promotion)
-        .options(joinedload(Promotion.scopes))
-        .filter(Promotion.status == PromotionStatus.ACTIVE)
-        .all()
-    )
-
     category_ancestor_map = build_category_ancestor_map(db)
     variants = db.query(ProductVariant).options(joinedload(ProductVariant.product)).all()
 

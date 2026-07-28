@@ -1,8 +1,6 @@
-import pytest
 from datetime import datetime
 from schemas import (
     InboundShipmentCreate,
-    InboundShipmentResponse,
     FulfillmentOrderWMSCreate,
     FulfillmentOrderWMSResponse
 )

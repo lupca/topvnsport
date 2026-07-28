@@ -1,6 +1,6 @@
 from sqlalchemy import text
 from sqlalchemy.orm import Session
-from database import engine, Base, get_db
+from database import engine, get_db
 import models
 from utils import storage
 

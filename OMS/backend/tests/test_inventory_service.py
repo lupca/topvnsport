@@ -1,5 +1,3 @@
-import pytest
-from unittest.mock import MagicMock
 from services.inventory_service import allocate_order_items
 import models
 

@@ -1,6 +1,5 @@
 import concurrent.futures
 from datetime import datetime, timedelta, timezone
-import pytest
 from database import get_db
 from main import app
 import models

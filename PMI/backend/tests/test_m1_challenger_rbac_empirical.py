@@ -1,15 +1,13 @@
-import pytest
 import os
 import sys
 from fastapi import status
-from fastapi.testclient import TestClient
 
 # Ensure PMI/backend is in sys.path
 backend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if backend_dir not in sys.path:
     sys.path.insert(0, backend_dir)
 
-from utils.permissions import Permission, ROLE_PERMISSIONS, has_permission, require_permission, require_role
+from utils.permissions import Permission, has_permission
 from utils.auth import INTERNAL_SERVICE_TOKEN
 
 

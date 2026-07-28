@@ -6,7 +6,6 @@ import models
 import schemas
 from utils.audit import audit_action
 from utils.dependency import require_permission
-from utils.permissions import Permission
 
 router = APIRouter(tags=['Categories'])
 

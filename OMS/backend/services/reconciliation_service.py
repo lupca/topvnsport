@@ -1,11 +1,11 @@
-from datetime import datetime, date, timedelta, timezone
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import List, Dict, Any, Optional
 import logging
 from sqlalchemy.orm import Session
 
 import models
-from adapters.payments.base import PaymentTransaction, PaymentProvider
+from adapters.payments.base import PaymentProvider
 from adapters.payments.sepay import SePayAdapter
 from adapters.payments.vnpay import VNPayAdapter
 from adapters.payments.momo import MoMoAdapter
@@ -40,8 +40,6 @@ class ReconciliationService:
             )
             .all()
         )
-        db_txn_ids = {p.provider_txn_id for p in db_payments if p.provider_txn_id}
-
         matched_count = 0
         discrepancies = []
         total_matched_amount = Decimal("0")
