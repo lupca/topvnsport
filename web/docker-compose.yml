@@ -1,8 +1,8 @@
 services:
   web_frontend:
     build:
-      context: .
-      dockerfile: Dockerfile.dev
+      context: ..
+      dockerfile: web/Dockerfile.dev
     container_name: web_frontend
     restart: always
     ports:
@@ -13,7 +13,7 @@ services:
       watch:
         - action: sync
           path: .
-          target: /app
+          target: /workspace/web
           ignore:
             - node_modules/
             - dist/

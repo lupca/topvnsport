@@ -8,8 +8,29 @@ interface CartState {
   quickViewProduct: Product | null;
 }
 
+const CART_STORAGE_KEY = 'cart_items';
+
+export function loadCartItemsFromStorage(): CartItem[] {
+  try {
+    const data = localStorage.getItem(CART_STORAGE_KEY);
+    if (!data) return [];
+    const parsed = JSON.parse(data);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+export function saveCartItemsToStorage(items: CartItem[]): void {
+  try {
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+  } catch (e) {
+    // Ignore errors in storage restricted environments
+  }
+}
+
 const initialState: CartState = {
-  items: [],
+  items: loadCartItemsFromStorage(),
   isOpen: false,
   quickViewProduct: null
 };
@@ -19,13 +40,33 @@ const cartSlice = createSlice({
   initialState,
   reducers: {
     addCartItem: (state, action: PayloadAction<CartItem>) => {
-      state.items.push(action.payload);
+      const existingIndex = state.items.findIndex(item => item.id === action.payload.id);
+      if (existingIndex > -1) {
+        state.items[existingIndex].quantity += action.payload.quantity || 1;
+      } else {
+        state.items.push(action.payload);
+      }
+      saveCartItemsToStorage(state.items);
     },
     removeCartItem: (state, action: PayloadAction<string>) => {
       state.items = state.items.filter(item => item.id !== action.payload);
+      saveCartItemsToStorage(state.items);
+    },
+    updateCartItemQuantity: (state, action: PayloadAction<{ id: string; quantity: number }>) => {
+      const { id, quantity } = action.payload;
+      if (quantity <= 0) {
+        state.items = state.items.filter(item => item.id !== id);
+      } else {
+        const item = state.items.find(i => i.id === id);
+        if (item) {
+          item.quantity = quantity;
+        }
+      }
+      saveCartItemsToStorage(state.items);
     },
     clearCart: state => {
       state.items = [];
+      saveCartItemsToStorage(state.items);
     },
     openCart: state => {
       state.isOpen = true;
@@ -42,6 +83,7 @@ const cartSlice = createSlice({
 export const {
   addCartItem,
   removeCartItem,
+  updateCartItemQuantity,
   clearCart,
   openCart,
   closeCart,
@@ -63,7 +105,7 @@ export function buildDefaultCartItem(product: Product): CartItem {
   const selectedWeight = product.category === 'Vợt' ? '4U/G5' : 'Tiêu chuẩn';
 
   return {
-    id: `${product.id}-${Date.now()}`,
+    id: `${product.id}-${selectedWeight}-${selectedColor}`,
     productId: product.id,
     skuCode: resolveSkuCode(product, selectedColor, selectedWeight),
     name: product.name,
@@ -86,7 +128,7 @@ export function buildConfiguredCartItem(
   tension: number
 ): CartItem {
   return {
-    id: `${product.id}-${weight}-${color}-${stringChoice?.id || 'none'}-${Date.now()}`,
+    id: `${product.id}-${weight}-${color}-${stringChoice?.id || 'none'}-${tension}`,
     productId: product.id,
     skuCode: resolveSkuCode(product, color, weight),
     name: product.name,

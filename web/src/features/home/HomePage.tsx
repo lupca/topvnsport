@@ -14,9 +14,9 @@ import { categoryTileThemes, getCategoryMonogram, getCategorySubtitle } from './
 export default function HomePage() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const products = useAppSelector(state => state.appData.products);
-  const blogs = useAppSelector(state => state.appData.blogs);
-  const categories = useAppSelector(state => state.appData.categories);
+  const products = useAppSelector(state => state.appData.products ?? []);
+  const blogs = useAppSelector(state => state.appData.blogs ?? []);
+  const categories = useAppSelector(state => state.appData.categories ?? []);
 
   const topLevelCategories = getTopLevelProductCategories(categories);
   const categoryCounts = getProductCategoryCounts(products);

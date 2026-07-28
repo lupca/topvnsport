@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MapPin, Phone, Clock, Calendar, ShieldCheck, CheckCircle2, User, ChevronRight, MessageSquare } from 'lucide-react';
 import { Branch, Product } from '../types';
-import { popupService } from './ui/popupService';
+import { popupService } from '@topvnsport/ui-kit';
 
 interface StoreLocatorProps {
   branches: Branch[];

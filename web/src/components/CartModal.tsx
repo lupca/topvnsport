@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X, Trash2, ShoppingBag, ShieldCheck, CheckCircle2, Phone, MapPin, Truck, QrCode, CreditCard } from 'lucide-react';
 import { StringOption } from '../types';
 import { sportApi } from '../services/sportApi';
-import { popupService } from './ui/popupService';
+import { popupService } from '@topvnsport/ui-kit';
 import OtpModal from './OtpModal';
 
 

@@ -9,27 +9,95 @@ interface OtpModalProps {
   onSuccess: (verificationToken: string) => void;
 }
 
+const getExpiryKey = (phone: string) => `otp_cooldown_expiry_${phone}`;
+const getCodeKey = (phone: string) => `otp_code_${phone}`;
+
+export function getStoredCooldown(phone: string): number {
+  if (!phone) return 0;
+  try {
+    const expiryStr = sessionStorage.getItem(getExpiryKey(phone));
+    if (!expiryStr) return 0;
+    const expiry = parseInt(expiryStr, 10);
+    if (isNaN(expiry)) return 0;
+    return Math.max(0, Math.ceil((expiry - Date.now()) / 1000));
+  } catch (e) {
+    return 0;
+  }
+}
+
+export function setStoredCooldownExpiry(phone: string, durationSeconds: number): void {
+  if (!phone) return;
+  try {
+    if (durationSeconds <= 0) {
+      sessionStorage.removeItem(getExpiryKey(phone));
+    } else {
+      const expiry = Date.now() + durationSeconds * 1000;
+      sessionStorage.setItem(getExpiryKey(phone), expiry.toString());
+    }
+  } catch (e) {}
+}
+
+export function getStoredOtpCode(phone: string): string {
+  if (!phone) return '';
+  try {
+    return sessionStorage.getItem(getCodeKey(phone)) || '';
+  } catch (e) {
+    return '';
+  }
+}
+
+export function setStoredOtpCode(phone: string, code: string): void {
+  if (!phone) return;
+  try {
+    if (!code) {
+      sessionStorage.removeItem(getCodeKey(phone));
+    } else {
+      sessionStorage.setItem(getCodeKey(phone), code);
+    }
+  } catch (e) {}
+}
+
 export default function OtpModal({ isOpen, phoneNumber, onClose, onSuccess }: OtpModalProps) {
-  const [cooldown, setCooldown] = useState(60);
-  const [otpCode, setOtpCode] = useState('');
+  const [cooldown, setCooldown] = useState(() => getStoredCooldown(phoneNumber));
+  const [otpCode, setOtpCode] = useState(() => getStoredOtpCode(phoneNumber));
   const [errorMessage, setErrorMessage] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !phoneNumber) return;
 
-    setOtpCode('');
-    setCooldown(60);
-  }, [isOpen]);
+    const storedCode = getStoredOtpCode(phoneNumber);
+    setOtpCode(storedCode);
+
+    const remaining = getStoredCooldown(phoneNumber);
+    if (remaining > 0) {
+      setCooldown(remaining);
+    } else {
+      const expiryStr = sessionStorage.getItem(getExpiryKey(phoneNumber));
+      if (!expiryStr) {
+        setCooldown(60);
+        setStoredCooldownExpiry(phoneNumber, 60);
+      } else {
+        setCooldown(0);
+      }
+    }
+  }, [isOpen, phoneNumber]);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !phoneNumber) return;
     const timer = setInterval(() => {
-      setCooldown((prev) => Math.max(prev - 1, 0));
+      const remaining = getStoredCooldown(phoneNumber);
+      setCooldown(remaining);
     }, 1000);
     return () => clearInterval(timer);
-  }, [isOpen]);
+  }, [isOpen, phoneNumber]);
+
+  const handleOtpCodeChange = (val: string) => {
+    const cleanCode = val.replace(/\D/g, '');
+    setOtpCode(cleanCode);
+    setStoredOtpCode(phoneNumber, cleanCode);
+  };
 
   const triggerSendOtp = async () => {
     setIsSending(true);
@@ -37,6 +105,7 @@ export default function OtpModal({ isOpen, phoneNumber, onClose, onSuccess }: Ot
     try {
       await sportApi.sendOtp(phoneNumber);
       setCooldown(60);
+      setStoredCooldownExpiry(phoneNumber, 60);
     } catch (err: any) {
       setErrorMessage(mapApiError(err.status, err.message));
     } finally {
@@ -115,7 +184,7 @@ export default function OtpModal({ isOpen, phoneNumber, onClose, onSuccess }: Ot
               required
               placeholder="Nhập 6 số OTP"
               value={otpCode}
-              onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+              onChange={(e) => handleOtpCodeChange(e.target.value)}
               className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-center text-lg font-mono font-bold tracking-widest text-gray-800 focus:outline-hidden focus:border-brand-primary focus:bg-white transition"
             />
 
