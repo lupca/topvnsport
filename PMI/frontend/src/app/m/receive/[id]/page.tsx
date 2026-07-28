@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import ScannerComponent from "@/components/ScannerComponent";
 import { wmsFetch, WMS_API_URL } from "@/config/wmsApi";
 import { Download, CheckCircle, ArrowLeft, AlertCircle, MapPin, Layers } from "lucide-react";
-import { popupService } from "@/components/ui/popupService";
+import { popupService } from "@topvnsport/ui-kit";
 
 interface InboundItem {
   id: number;

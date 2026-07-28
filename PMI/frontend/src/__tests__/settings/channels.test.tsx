@@ -28,7 +28,7 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
-vi.mock("@/components/ui/popupService", () => ({
+vi.mock("@topvnsport/ui-kit", () => ({
   popupService: {
     alert: vi.fn(),
   },

@@ -1,98 +1,43 @@
 import { APP_SETTINGS } from "@/config/settings";
+import { createApiClient, ApiError, fetchWithAuth as baseFetchWithAuth } from "@topvnsport/api-client";
 
-export class ApiError extends Error {
-  status: number;
-  info?: any;
+export { ApiError };
 
-  constructor(message: string, status: number, info?: any) {
-    super(message);
-    this.name = "ApiError";
-    this.status = status;
-    this.info = info;
-  }
-}
-
-export async function fetchWithAuth(path: string, options: RequestInit = {}): Promise<any> {
-  const baseUrl = APP_SETTINGS.api.baseUrl;
-  const url = path.startsWith("http") ? path : `${baseUrl}${path}`;
-
-  const headers = new Headers(options.headers || {});
-  
-  if (typeof window !== "undefined") {
-    const token = localStorage.getItem("access_token");
-    if (token) {
-      headers.set("Authorization", `Bearer ${token}`);
-    }
-  }
-
-  // Set default content type if body is present, is not FormData, and header is not already set
-  if (options.body && !(options.body instanceof FormData) && !headers.has("Content-Type")) {
-    headers.set("Content-Type", "application/json");
-  }
-
-  const response = await fetch(url, {
-    ...options,
-    headers,
-  });
-
-  if (response.status === 401) {
+const pmiApiClient = createApiClient({
+  baseUrl: APP_SETTINGS.api.baseUrl,
+  getToken: () => (typeof window !== "undefined" ? localStorage.getItem("access_token") : null),
+  onUnauthorized: async () => {
     if (typeof window !== "undefined") {
       const { removeAccessToken, redirectToLogin } = await import("@/utils/auth");
       removeAccessToken();
       redirectToLogin();
     }
+  },
+});
+
+export async function fetchWithAuth(path: string, options: RequestInit = {}): Promise<any> {
+  const response = await baseFetchWithAuth(path, options, {
+    baseUrl: APP_SETTINGS.api.baseUrl,
+    getToken: () => (typeof window !== "undefined" ? localStorage.getItem("access_token") : null),
+    onUnauthorized: async () => {
+      if (typeof window !== "undefined") {
+        const { removeAccessToken, redirectToLogin } = await import("@/utils/auth");
+        removeAccessToken();
+        redirectToLogin();
+      }
+    },
+  });
+
+  if (response.status === 401) {
     throw new ApiError("Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.", 401);
   }
 
-  if (!response.ok) {
-    let errorInfo: any = null;
-    try {
-      errorInfo = await response.clone().json();
-    } catch (e) {
-      try {
-        errorInfo = { detail: await response.clone().text() };
-      } catch (err) {
-        errorInfo = { detail: "Unknown error" };
-      }
-    }
-    let message = "API Error";
-    if (typeof errorInfo?.detail === "string") {
-      message = errorInfo.detail;
-    } else if (Array.isArray(errorInfo?.detail)) {
-      message = errorInfo.detail.map((err: any) => `${err.loc?.join(".") || ""}: ${err.msg}`).join(", ");
-    } else if (errorInfo?.detail) {
-      message = JSON.stringify(errorInfo.detail);
-    } else {
-      message = `API error: ${response.status} ${response.statusText}`;
-    }
-    throw new ApiError(message, response.status, errorInfo);
-  }
-
-  if (response.status === 204) {
-    return response;
-  }
-
-  const contentType = response.headers?.get?.("content-type") || "";
-  if (contentType.includes("application/json")) {
-    return response.json();
-  }
-  
-  return response;
+  return pmiApiClient.handleResponse(response);
 }
 
 export const apiClient = {
-  get: (path: string, options?: Omit<RequestInit, "method">) => fetchWithAuth(path, { ...options, method: "GET" }),
-  post: (path: string, body?: any, options?: Omit<RequestInit, "method" | "body">) => 
-    fetchWithAuth(path, { 
-      ...options, 
-      method: "POST", 
-      body: body instanceof FormData ? body : JSON.stringify(body) 
-    }),
-  put: (path: string, body?: any, options?: Omit<RequestInit, "method" | "body">) => 
-    fetchWithAuth(path, { 
-      ...options, 
-      method: "PUT", 
-      body: body instanceof FormData ? body : JSON.stringify(body) 
-    }),
-  delete: (path: string, options?: Omit<RequestInit, "method">) => fetchWithAuth(path, { ...options, method: "DELETE" }),
+  get: (path: string, options?: Omit<RequestInit, "method">) => pmiApiClient.get(path, options),
+  post: (path: string, body?: any, options?: Omit<RequestInit, "method" | "body">) => pmiApiClient.post(path, body, options),
+  put: (path: string, body?: any, options?: Omit<RequestInit, "method" | "body">) => pmiApiClient.put(path, body, options),
+  delete: (path: string, options?: Omit<RequestInit, "method">) => pmiApiClient.delete(path, options),
 };

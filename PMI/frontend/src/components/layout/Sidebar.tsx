@@ -21,7 +21,7 @@ import {
   History,
   Tag
 } from "lucide-react";
-import { popupService } from "@/components/ui/popupService";
+import { popupService } from "@topvnsport/ui-kit";
 
 export interface SidebarProps {
   userRole?: string;

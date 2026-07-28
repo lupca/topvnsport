@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import DataTable from "@/components/ui/DataTable";
+import { DataTable } from "@topvnsport/ui-kit";
 import { Sliders, X, Check, AlertCircle } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
-import { popupService, showConfirm } from "@/components/ui/popupService";
+import { popupService, showConfirm } from "@topvnsport/ui-kit";
 import { fetchWithAuth, apiClient } from "@/utils/apiClient";
 
 interface Attribute {

@@ -31,7 +31,7 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
-vi.mock("@/components/ui/popupService", () => ({
+vi.mock("@topvnsport/ui-kit", () => ({
   popupService: {
     alert: vi.fn(),
     toast: vi.fn(),

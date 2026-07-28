@@ -75,13 +75,14 @@ services:
 
   frontend:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: PMI/frontend/Dockerfile
     container_name: pim-frontend
     ports:
       - "13100:3000"
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:18100
+      - DOCKER_ENV=true
     depends_on:
       - api
     develop:

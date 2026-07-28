@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Plus, Globe, Settings, AlertCircle, ShoppingBag, ShieldCheck, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { APP_SETTINGS } from "@/config/settings";
-import { popupService, showConfirm } from "@/components/ui/popupService";
+import { popupService, showConfirm } from "@topvnsport/ui-kit";
 import { fetchWithAuth, apiClient } from "@/utils/apiClient";
 
 const API_BASE_URL = APP_SETTINGS.api.baseUrl;

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { APP_SETTINGS } from "@/config/settings";
 import AppShell from "@/components/AppShell";
-import SystemPopupProvider from "@/components/ui/SystemPopupProvider";
+import { SystemPopupProvider } from "@topvnsport/ui-kit";
 
 export const metadata: Metadata = {
   title: `${APP_SETTINGS.appName} - Product Management`,

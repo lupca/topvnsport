@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Search, SlidersHorizontal, ChevronLeft, ChevronRight, Edit2, Trash2, UserPlus } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
-import { popupService, showConfirm } from "@/components/ui/popupService";
+import { popupService, showConfirm } from "@topvnsport/ui-kit";
 
 interface User {
   id: number;

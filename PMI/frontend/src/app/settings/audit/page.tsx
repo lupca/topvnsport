@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { APP_SETTINGS } from "@/config/settings";
-import { popupService } from "@/components/ui/popupService";
+import { popupService } from "@topvnsport/ui-kit";
 import { History, Search, RefreshCw, X, ShieldAlert, Eye } from "lucide-react";
 import { fetchWithAuth, apiClient } from "@/utils/apiClient";
 

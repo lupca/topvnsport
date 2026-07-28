@@ -296,7 +296,7 @@ describe("apiClient", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     const result = await apiClient.delete("/products/1");
-    expect(result).toBe(mockResponse);
+    expect(result).toBeNull();
   });
 
   test("fetchWithAuth returns response directly when content-type is non-JSON", async () => {

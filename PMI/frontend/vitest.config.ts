@@ -4,6 +4,14 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
 	plugins: [react()],
+	server: {
+		fs: {
+			allow: ["../..", "/home/lupca/projects/topvnsport", "/workspace"],
+		},
+		deps: {
+			inline: [/@topvnsport/],
+		},
+	},
 	test: {
 		environment: "jsdom",
 		globals: true,
@@ -12,19 +20,22 @@ export default defineConfig({
 		testTimeout: 10000,
 		hookTimeout: 10000,
 		fileParallelism: false,
-		coverage: {
-			provider: "v8",
-			reporter: ["text", "json", "html"],
-			exclude: [
-				"node_modules/",
-				"src/setupTests.ts",
-				"**/*.d.ts",
-			],
+		server: {
+			deps: {
+				inline: [/@topvnsport/],
+			},
 		},
 	},
 	resolve: {
 		alias: {
 			"@": path.resolve(__dirname, "./src"),
+			"@topvnsport/ui-kit": path.resolve(__dirname, "../../packages/ui-kit/dist/index.js"),
+			"@topvnsport/api-client": path.resolve(__dirname, "../../packages/api-client/dist/index.js"),
+			"react": path.resolve(__dirname, "./node_modules/react"),
+			"react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
+			"lucide-react": path.resolve(__dirname, "./node_modules/lucide-react"),
+			"clsx": path.resolve(__dirname, "./node_modules/clsx"),
+			"tailwind-merge": path.resolve(__dirname, "./node_modules/tailwind-merge"),
 		},
 	},
 });

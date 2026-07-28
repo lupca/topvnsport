@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { apiClient } from "@/utils/apiClient";
 import { normalizeImageUrl } from "@/utils/imageUrl";
-import { popupService } from "@/components/ui/popupService";
+import { popupService } from "@topvnsport/ui-kit";
 
 interface UseMediaUploadReturn {
   // Cover image
