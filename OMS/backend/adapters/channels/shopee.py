@@ -1,3 +1,9 @@
+"""
+TODO: Implement real Shopee Open Platform API integration
+- Docs: https://open.shopee.com
+- Cần: App ID, App Secret, Shop ID
+- OAuth flow để lấy access token
+"""
 import os
 import hashlib
 import hmac

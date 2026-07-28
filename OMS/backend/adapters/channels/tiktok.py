@@ -1,3 +1,9 @@
+"""
+TODO: Implement real TikTok Shop API integration
+- Docs: https://partner.tiktokshop.com
+- Cần: App Key, App Secret, Shop ID
+- OAuth flow để lấy access token
+"""
 import os
 import hashlib
 import hmac

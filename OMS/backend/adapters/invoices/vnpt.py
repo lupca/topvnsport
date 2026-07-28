@@ -1,3 +1,8 @@
+"""
+TODO: Implement real VNPT e-Invoice API integration
+- Cần: Tài khoản VNPT e-Invoice, API credentials
+- Docs: Liên hệ VNPT để lấy tài liệu API
+"""
 from datetime import datetime, timezone
 import logging
 from typing import List, Optional

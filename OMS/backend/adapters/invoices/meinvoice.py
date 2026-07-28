@@ -1,3 +1,8 @@
+"""
+TODO: Implement real MISA meInvoice API integration
+- Cần: Tài khoản MISA meInvoice, API credentials
+- Docs: https://www.meinvoice.vn
+"""
 from datetime import datetime, timezone
 import logging
 from typing import List

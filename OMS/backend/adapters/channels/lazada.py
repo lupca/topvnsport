@@ -1,3 +1,9 @@
+"""
+TODO: Implement real Lazada Open Platform API integration
+- Docs: https://open.lazada.com
+- Cần: App Key, App Secret, Seller ID
+- OAuth flow để lấy access token
+"""
 import os
 import hashlib
 import hmac

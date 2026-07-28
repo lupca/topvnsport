@@ -1,3 +1,8 @@
+"""
+TODO: Implement real Viettel S-Invoice API integration
+- Cần: Tài khoản Viettel S-Invoice, API credentials
+- Docs: https://sinvoice.viettel.vn
+"""
 from datetime import datetime, timezone
 import logging
 from typing import List
