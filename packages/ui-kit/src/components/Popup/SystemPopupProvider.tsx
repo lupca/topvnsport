@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { popupService, PopupRequest } from "./popupService.js";
+import { popupService, PopupRequest } from "./popupService";
 
 export interface SystemPopupProviderProps {
   children: React.ReactNode;

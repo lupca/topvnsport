@@ -1,2 +1,2 @@
-export { default } from "./DataTable.js";
-export type { Column, PaginationProps, DataTableProps } from "./DataTable.js";
+export { default } from "./DataTable";
+export type { Column, PaginationProps, DataTableProps } from "./DataTable";

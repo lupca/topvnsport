@@ -1,4 +1,4 @@
-export { popupService, showConfirm } from "./popupService.js";
-export type { PopupKind, PopupRequest } from "./popupService.js";
-export { default as SystemPopupProvider } from "./SystemPopupProvider.js";
-export type { SystemPopupProviderProps } from "./SystemPopupProvider.js";
+export { popupService, showConfirm } from "./popupService";
+export type { PopupKind, PopupRequest } from "./popupService";
+export { default as SystemPopupProvider } from "./SystemPopupProvider";
+export type { SystemPopupProviderProps } from "./SystemPopupProvider";
