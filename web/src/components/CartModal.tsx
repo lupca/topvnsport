@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Trash2, ShoppingBag, ShieldCheck, CheckCircle2, Phone, MapPin, Truck } from 'lucide-react';
+import { X, Trash2, ShoppingBag, ShieldCheck, CheckCircle2, Phone, MapPin, Truck, QrCode, CreditCard } from 'lucide-react';
 import { StringOption } from '../types';
 import { sportApi } from '../services/sportApi';
 import { popupService } from './ui/popupService';
@@ -38,6 +38,7 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [shippingMethod, setShippingMethod] = useState<'standard' | 'fast'>('standard');
+  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'sepay'>('sepay');
   const [city, setCity] = useState('Hà Nội');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
@@ -109,11 +110,29 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
         items,
         shipping_fee: shippingCost,
         shipping_address: shippingAddress,
-        note: shippingMethod === 'fast' ? 'Đơn web - Giao hỏa tốc' : 'Đơn web - Giao tiêu chuẩn',
+        note: `${shippingMethod === 'fast' ? 'Đơn web - Giao hỏa tốc' : 'Đơn web - Giao tiêu chuẩn'} | ${paymentMethod === 'sepay' ? 'SePay QR Code' : 'COD'}`,
         verification_token: activeToken,
       });
 
       setCreatedOrderNumber(order?.order_number || '');
+
+      if (paymentMethod === 'sepay') {
+        const checkoutForm = await sportApi.createSepayCheckout(order.id, order.order_number);
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = checkoutForm.action;
+        for (const [key, value] of Object.entries(checkoutForm.fields)) {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = key;
+          input.value = value as string;
+          form.appendChild(input);
+        }
+        document.body.appendChild(form);
+        onClearCart();
+        form.submit();
+        return;
+      }
 
       setStep(3);
     } catch (err: any) {
@@ -287,7 +306,7 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
                   >
                     <Truck className="w-4 h-4 text-brand-primary" />
                     <div>
-                      <p className="font-bold text-[11px] text-gray-900">Giao hàng chuẩn (COD)</p>
+                      <p className="font-bold text-[11px] text-gray-900">Giao hàng chuẩn</p>
                       <p className="text-[10px] text-gray-400">3 - 5 ngày • 30.000đ</p>
                     </div>
                   </div>
@@ -300,6 +319,34 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
                     <div>
                       <p className="font-bold text-[11px] text-gray-900">Giao hỏa tốc</p>
                       <p className="text-[10px] text-gray-400">1 - 2 ngày • 50.000đ</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment Method */}
+              <div className="space-y-2 pt-3 border-t border-gray-100">
+                <h3 className="font-bold text-gray-900 text-xs uppercase text-brand-primary">Phương thức thanh toán</h3>
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div
+                    onClick={() => setPaymentMethod('sepay')}
+                    className={`p-3 rounded-lg border cursor-pointer transition flex items-center gap-2 ${paymentMethod === 'sepay' ? 'bg-brand-light border-brand-primary' : 'bg-white border-gray-150 hover:border-gray-200'}`}
+                  >
+                    <QrCode className="w-4 h-4 text-brand-primary shrink-0" />
+                    <div>
+                      <p className="font-bold text-[11px] text-gray-900">SePay QR Code</p>
+                      <p className="text-[10px] text-emerald-600 font-semibold">Chuyển khoản QR</p>
+                    </div>
+                  </div>
+
+                  <div
+                    onClick={() => setPaymentMethod('cod')}
+                    className={`p-3 rounded-lg border cursor-pointer transition flex items-center gap-2 ${paymentMethod === 'cod' ? 'bg-brand-light border-brand-primary' : 'bg-white border-gray-150 hover:border-gray-200'}`}
+                  >
+                    <CreditCard className="w-4 h-4 text-brand-primary shrink-0" />
+                    <div>
+                      <p className="font-bold text-[11px] text-gray-900">Thanh toán COD</p>
+                      <p className="text-[10px] text-gray-400">Trả khi nhận hàng</p>
                     </div>
                   </div>
                 </div>
@@ -376,7 +423,7 @@ export default function CartModal({ isOpen, onClose, cartItems, onRemoveItem, on
                   disabled={isSubmitting}
                   className={`flex-1 text-white font-bold text-xs uppercase tracking-wider py-3 rounded-sm flex items-center justify-center gap-1.5 ${isSubmitting ? 'bg-brand-primary/50 cursor-not-allowed' : 'btn-primary'}`}
                 >
-                  {isSubmitting ? 'Đang xử lý...' : 'Xác nhận đặt hàng ✓'}
+                  {isSubmitting ? 'Đang xử lý...' : paymentMethod === 'sepay' ? 'Thanh toán SePay QR →' : 'Xác nhận đặt hàng ✓'}
                 </button>
               </div>
             )}

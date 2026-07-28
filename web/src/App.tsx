@@ -29,6 +29,7 @@ import {
 import HomePage from './features/home/HomePage';
 import MobileBottomNav from './features/navigation/MobileBottomNav';
 import ProductDetailRoute from './features/product/ProductDetailRoute';
+import CheckoutCallbackPage from './features/checkout/CheckoutCallbackPage';
 
 export default function App() {
   const navigate = useNavigate();
@@ -97,6 +98,9 @@ export default function App() {
           <Route path="/product/:slug" element={<ProductDetailRoute />} />
           <Route path="/blog/*" element={<BlogSection blogs={blogs} />} />
           <Route path="/stores" element={<StoreLocator branches={branches} products={products} />} />
+          <Route path="/checkout/success" element={<CheckoutCallbackPage status="success" />} />
+          <Route path="/checkout/error" element={<CheckoutCallbackPage status="error" />} />
+          <Route path="/checkout/cancel" element={<CheckoutCallbackPage status="cancel" />} />
         </Routes>
       </main>
 

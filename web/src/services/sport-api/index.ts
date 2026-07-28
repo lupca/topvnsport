@@ -236,6 +236,24 @@ async function createOrder(orderData: CreateOrderPayload) {
   return response.json();
 }
 
+async function createSepayCheckout(orderId: number | string, orderNumber?: string) {
+  const payload = typeof orderId === 'number' ? { order_id: orderId } : { order_number: orderId || orderNumber };
+  const response = await fetch(`${OMS_API_URL}/api/payments/checkout`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    const error = new Error(`Failed to create SePay checkout form: ${errorText}`) as any;
+    error.status = response.status;
+    throw error;
+  }
+
+  return response.json() as Promise<{ action: string; fields: Record<string, string> }>;
+}
+
 async function sendOtp(phoneNumber: string): Promise<SendOtpResponse> {
   const response = await fetch(`${OMS_API_URL}/api/sms/send-otp`, {
     method: 'POST',
@@ -375,6 +393,7 @@ export const sportApi = {
   getStringOptions,
   getConstants,
   createOrder,
+  createSepayCheckout,
   sendOtp,
   verifyOtp,
   findOrCreateCustomer,

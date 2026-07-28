@@ -55,6 +55,10 @@ class OrderBase(BaseModel):
     shipping_fee: Decimal = Field(..., ge=0)
     shipping_address: str
     note: Optional[str] = None
+    payment_status: Optional[str] = "PENDING"
+    payment_method: Optional[str] = None
+    sepay_order_id: Optional[str] = None
+    paid_at: Optional[datetime] = None
     created_by: Optional[str] = None
 
 class OrderCreate(OrderBase):

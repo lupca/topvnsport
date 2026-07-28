@@ -32,6 +32,10 @@ services:
       # Development-only key; never reuse this value in production.
       - FERNET_KEY=2Jf7oG7N4zFv2j3GmY5V0rLq9xW8pC1aB6dE3hK7nQw=
       - JWT_SECRET_KEY=${JWT_SECRET_KEY:-identity_jwt_secret_key_2026_change_me_in_prod}
+      - SEPAY_MERCHANT_ID=${SEPAY_MERCHANT_ID:-}
+      - SEPAY_SECRET_KEY=${SEPAY_SECRET_KEY:-}
+      - SEPAY_CHECKOUT_URL=${SEPAY_CHECKOUT_URL:-https://pay.sepay.vn/v1/checkout/init}
+      - WEB_BASE_URL=${WEB_BASE_URL:-https://topvnsport.vn}
     depends_on:
       oms_db:
         condition: service_healthy

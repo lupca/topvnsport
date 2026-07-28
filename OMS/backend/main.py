@@ -34,6 +34,7 @@ from routers import (
     config,
     webhooks,
     products,
+    payments,
 )
 
 # Setup logging
@@ -176,7 +177,7 @@ cors_origins = [
     origin.strip()
     for origin in os.getenv(
         "CORS_ALLOWED_ORIGINS",
-        "https://oms.topvnsport.com,http://localhost:13101,http://localhost:3000,http://127.0.0.1:13101",
+        "https://oms.topvnsport.com,http://localhost:13101,http://localhost:13103,http://localhost:3000,http://127.0.0.1:13101",
     ).split(",")
     if origin.strip()
 ]
@@ -193,6 +194,7 @@ app.add_exception_handler(RequestValidationError, validation_exception_handler)
 # Include Routers
 app.include_router(otp.router)
 app.include_router(webhooks.router)
+app.include_router(webhooks.sepay_router)
 app.include_router(config.router)
 app.include_router(orders.router)
 app.include_router(fulfillment.router)
@@ -200,6 +202,7 @@ app.include_router(customers.router)
 app.include_router(channels.router)
 app.include_router(dashboard.router)
 app.include_router(products.router)
+app.include_router(payments.router)
 
 
 @app.get("/")
