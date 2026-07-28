@@ -127,7 +127,7 @@ jobs:
             npm-pmi-
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
       
       - name: Run Vitest
         run: npm run test
@@ -224,7 +224,7 @@ jobs:
             npm-oms-
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
       
       - name: Run Vitest
         run: npm run test
@@ -295,7 +295,7 @@ jobs:
             npm-wms-
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
       
       - name: Run Vitest
         run: npm run test
@@ -341,7 +341,7 @@ jobs:
 
       - name: Install and build
         run: |
-          npm ci
+          npm install
           npm run build
 
   # ============================================
