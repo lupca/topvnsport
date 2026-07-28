@@ -20,7 +20,7 @@ Audit ngày **2026-07-28** đã cập nhật sau khi hoàn thành:
 
 ## Tổng quan vấn đề còn hiệu lực
 
-**Tổng: 12 hồ sơ — CRITICAL: 1 · HIGH: 7 · MEDIUM: 3 · LOW: 1**
+**Tổng: 9 hồ sơ — CRITICAL: 1 · HIGH: 7 · MEDIUM: 1 · LOW: 0**
 
 ### 🔴 CRITICAL (1)
 
@@ -40,21 +40,13 @@ Audit ngày **2026-07-28** đã cập nhật sau khi hoàn thành:
 | 7 | Web cart/state/checkout reliability | ❌ Open | `web/01_security_and_state.md` |
 | 8 | WMS race conditions và data integrity | ⚠️ Partial/open | `wms/01_race_conditions.md` |
 
-### 🟡 MEDIUM (3)
+### 🟡 MEDIUM (1)
 
 | # | Vấn đề | Trạng thái | File |
 |---|--------|-----------|------|
-| 9 | PMI N+1 queries và transaction boundaries | ⚠️ Partial/open | `pmi/08_performance_n1_queries.md` |
-| 10 | React error boundaries | ❌ Open | `pmi/09_error_boundaries.md` |
-| 11 | Web performance: splitting, debounce, bundle | ❌ Open | `web/02_performance.md` |
+| 9 | Infrastructure (resource limits, Redis caching) | ⚠️ Partial/open | `pmi/10_infrastructure_improvements.md` |
 
-### 🟢 LOW (1)
-
-| # | Vấn đề | Trạng thái | File |
-|---|--------|-----------|------|
-| 12 | Dead code, backup files và unused dependencies | ❌ Open | `cleanup/01_dead_code_removal.md` |
-
-## ✅ Đã hoàn thành (2026-07-28)
+## ✅ Đã hoàn thành (2026-07-29)
 
 | Item | Kết quả | Task/Commit |
 |------|---------|-------------|
@@ -64,6 +56,10 @@ Audit ngày **2026-07-28** đã cập nhật sau khi hoàn thành:
 | RDS migration (DB tách riêng) | ✅ Done | DEVOPS-001/002/003 |
 | Identity Service baseline | ✅ Done | `0d22c38`, `b279b90` |
 | Database ports exposure | ✅ N/A | Services dùng RDS, không còn local DB |
+| PMI N+1 queries + transaction boundaries | ✅ Done | PMI-019, `897602eb` |
+| React error boundaries | ✅ Done | PMI-020, `88ba0221` |
+| Dead code removal | ✅ Done | PMI-022, `e0ed0a4c` |
+| Web performance (lazy loading, bundle splitting) | ✅ Done | WEB-010, `c7664ad8` |
 
 ## Đề xuất kiến trúc
 
@@ -80,7 +76,7 @@ Audit ngày **2026-07-28** đã cập nhật sau khi hoàn thành:
 2. HTTPS/TLS cho gateway (PMI-014)
 3. Hoàn thiện authorization theo permission ở PMI (PMI-015)
 4. Khóa các race condition WMS (WMS-005)
-5. Chuẩn hóa web cart, validation, error boundaries (WEB-008/009/010)
+5. ~~Chuẩn hóa web cart, validation, error boundaries (WEB-008/009/010)~~ ✅ Error boundaries done (PMI-020), web performance done (WEB-010)
 6. Shared packages, event bus, observability theo nhu cầu
 
 ## Cách đóng góp
@@ -94,4 +90,4 @@ Audit ngày **2026-07-28** đã cập nhật sau khi hoàn thành:
 ## Liên hệ
 
 - **Owner:** dangthanhtung.open@gmail.com
-- **Last Updated:** 2026-07-28
+- **Last Updated:** 2026-07-29
