@@ -52,17 +52,18 @@ def create_checkout(
     if order.payment_status == "PAID":
         raise HTTPException(status_code=400, detail="Đơn hàng đã được thanh toán.")
 
-    base_url = os.getenv("WEB_BASE_URL")
-    if not base_url:
+    sepay = SepayService(db)
+
+    base_url = os.getenv("WEB_BASE_URL") or sepay.web_base_url
+    if not base_url or base_url == "https://topvnsport.vn":
         origin = request.headers.get("origin") or request.headers.get("referer")
         if origin:
             base_url = origin.rstrip("/")
         else:
-            base_url = "https://topvnsport.vn"
+            base_url = sepay.web_base_url or "https://topvnsport.vn"
 
     total_amount = int(float(order.total_amount) + float(order.shipping_fee))
 
-    sepay = SepayService()
     checkout_data = CheckoutData(
         order_number=order.order_number,
         amount=total_amount,

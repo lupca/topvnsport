@@ -4,8 +4,9 @@ import hashlib
 import hmac
 import os
 from typing import Any, Dict, Optional
-
+from sqlalchemy.orm import Session
 from adapters.payments.sepay import SePayAdapter
+from services.config_service import get_sepay_config
 
 
 @dataclass
@@ -19,14 +20,17 @@ class CheckoutData:
 
 
 class SepayService:
-    def __init__(self):
-        self.merchant_id = os.getenv("SEPAY_MERCHANT_ID", "")
-        self.secret_key = os.getenv("SEPAY_SECRET_KEY", "")
-        self.checkout_url = os.getenv(
-            "SEPAY_CHECKOUT_URL",
-            "https://pay.sepay.vn/v1/checkout/init",
+    def __init__(self, db: Optional[Session] = None):
+        config = get_sepay_config(db)
+        self.merchant_id = config["merchant_id"]
+        self.secret_key = config["secret_key"]
+        self.checkout_url = config["checkout_url"]
+        self.web_base_url = config["web_base_url"]
+        self.adapter = SePayAdapter(
+            merchant_id=self.merchant_id,
+            secret_key=self.secret_key,
+            db=db,
         )
-        self.adapter = SePayAdapter(merchant_id=self.merchant_id, secret_key=self.secret_key)
 
     def generate_checkout_form(self, data: CheckoutData) -> Dict[str, Any]:
         """

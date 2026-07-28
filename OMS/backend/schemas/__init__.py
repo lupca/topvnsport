@@ -13,6 +13,9 @@ from .common import (
 from .auth import (
     ZaloConfigUpdate,
     ZaloConfigOut,
+    SepayConfigUpdate,
+    SepayConfigOut,
+    SepayTestResponse,
     SendOtpRequest,
     VerifyOtpRequest,
     VerifyOtpResponse,
@@ -46,9 +49,12 @@ __all__ = [
     "ChannelOut",
     "PaginatedCustomers",
     "PaginatedChannels",
-    # Zalo / OTP
+    # Zalo / SePay / OTP
     "ZaloConfigUpdate",
     "ZaloConfigOut",
+    "SepayConfigUpdate",
+    "SepayConfigOut",
+    "SepayTestResponse",
     "SendOtpRequest",
     "VerifyOtpRequest",
     "VerifyOtpResponse",

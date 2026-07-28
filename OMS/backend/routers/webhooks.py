@@ -128,7 +128,7 @@ async def sepay_webhook(request: Request, db: Session = Depends(get_db)):
     elif signature.lower().startswith("sha256="):
         signature = signature[7:]
 
-    adapter = SePayAdapter()
+    adapter = SePayAdapter(db=db)
     if not await adapter.verify_signature(raw_body, signature):
         raise HTTPException(status_code=401, detail="Chữ ký webhook SePay không hợp lệ.")
 

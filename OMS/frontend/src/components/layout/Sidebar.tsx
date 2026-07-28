@@ -12,7 +12,8 @@ import {
   Globe,
   Truck,
   Shield,
-  MessageSquare
+  MessageSquare,
+  CreditCard
 } from "lucide-react";
 import { popupService } from "@/components/ui/popupService";
 
@@ -21,7 +22,7 @@ export default function Sidebar() {
 
   const menuItems = [
     {
-      title: "Chính",
+      title: "Tổng quan",
       items: [
         { name: "Dashboard", href: "/", icon: LayoutDashboard },
         { name: "Đơn hàng (Orders)", href: "/orders", icon: ShoppingCart },
@@ -39,6 +40,7 @@ export default function Sidebar() {
       items: [
         { name: "Kênh bán hàng (Channels)", href: "/channels", icon: Globe },
         { name: "Cấu hình SMS", href: "/settings/sms", icon: MessageSquare },
+        { name: "Cấu hình SePay", href: "/settings/payment", icon: CreditCard },
         { name: "Phương thức vận chuyển (Shipping)", href: "#shipping-methods", icon: Truck },
         { name: "Người dùng (Users)", href: "#users", icon: Users },
         { name: "Vai trò (Roles)", href: "#roles", icon: Shield },

@@ -13,12 +13,26 @@ from adapters.payments.base import PaymentProvider, PaymentTransaction
 logger = logging.getLogger("oms_backend")
 
 
+from sqlalchemy.orm import Session
+
+
 class SePayAdapter(PaymentProvider):
     """Adapter cho cổng thanh toán / ngân hàng SePay"""
 
-    def __init__(self, merchant_id: Optional[str] = None, secret_key: Optional[str] = None):
-        self.merchant_id = merchant_id or os.getenv("SEPAY_MERCHANT_ID", "")
-        self.secret_key = secret_key or os.getenv("SEPAY_SECRET_KEY", "")
+    def __init__(
+        self,
+        merchant_id: Optional[str] = None,
+        secret_key: Optional[str] = None,
+        db: Optional[Session] = None,
+    ):
+        if db:
+            from services.config_service import get_sepay_config
+            config = get_sepay_config(db)
+            self.merchant_id = merchant_id or config["merchant_id"]
+            self.secret_key = secret_key or config["secret_key"]
+        else:
+            self.merchant_id = merchant_id or os.getenv("SEPAY_MERCHANT_ID", "")
+            self.secret_key = secret_key or os.getenv("SEPAY_SECRET_KEY", "")
 
     @property
     def provider_code(self) -> str:
