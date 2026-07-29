@@ -43,7 +43,7 @@ vi.mock("@/services/promotionApi", () => ({
   deletePromotion: mockDeletePromotion,
 }));
 
-vi.mock("@topvnsport/ui-kit", () => ({
+vi.mock("@voma/ui-kit", () => ({
   popupService: {
     alert: mockAlert,
     confirm: mockConfirm,

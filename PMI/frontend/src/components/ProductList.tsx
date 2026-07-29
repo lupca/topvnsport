@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Plus, HelpCircle, List, Grid, Download, ChevronDown, Trash2 } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
 import { fetchWithAuth, apiClient } from "@/utils/apiClient";
-import { popupService } from "@topvnsport/ui-kit";
+import { popupService } from "@voma/ui-kit";
 
 import ProductFilterBar, { Category } from "./products/ProductFilterBar";
 import ProductListTable from "./products/ProductListTable";

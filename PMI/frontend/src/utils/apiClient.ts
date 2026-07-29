@@ -1,5 +1,5 @@
 import { APP_SETTINGS } from "@/config/settings";
-import { createApiClient, ApiError, fetchWithAuth as baseFetchWithAuth } from "@topvnsport/api-client";
+import { createApiClient, ApiError, fetchWithAuth as baseFetchWithAuth } from "@voma/api-client";
 
 export { ApiError };
 

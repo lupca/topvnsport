@@ -14,7 +14,7 @@ Monorepo chứa 5 hệ thống độc lập với centralized authentication:
 
 - **Backend**: FastAPI + SQLAlchemy + PostgreSQL 15
 - **Frontend**: Next.js 14 + React 18 + Tailwind CSS
-- **Shared packages**: `@topvnsport/ui-kit`, `@topvnsport/api-client` (GitHub repos)
+- **Shared packages**: `@voma/ui-kit`, `@voma/api-client` (GitHub repos)
 - **Storage**: MinIO (PMI media files)
 - **Auth**: JWT tokens via Identity Service
 

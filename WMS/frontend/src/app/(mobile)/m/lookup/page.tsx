@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { Search, Loader2, CheckCircle, AlertCircle, MapPin, Tag, Box, Archive, X } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
-import { popupService } from "@topvnsport/ui-kit";
+import { popupService } from "@voma/ui-kit";
 
 const MobileScanner = dynamic(() => import("@/components/MobileScanner"), { ssr: false });
 

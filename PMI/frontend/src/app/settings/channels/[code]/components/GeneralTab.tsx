@@ -4,7 +4,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, ShieldCheck, CheckCircle } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
-import { popupService } from "@topvnsport/ui-kit";
+import { popupService } from "@voma/ui-kit";
 import { fetchWithAuth, apiClient } from "@/utils/apiClient";
 
 const API_BASE_URL = APP_SETTINGS.api.baseUrl;

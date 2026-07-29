@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { popupService } from "@topvnsport/ui-kit";
+import { popupService } from "@voma/ui-kit";
 
 describe("popupService", () => {
   test("resolves confirm with selected value", async () => {

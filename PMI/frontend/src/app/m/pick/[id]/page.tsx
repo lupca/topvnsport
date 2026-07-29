@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import ScannerComponent from "@/components/ScannerComponent";
 import { wmsFetch, WMS_API_URL } from "@/config/wmsApi";
 import { CheckSquare, CheckCircle, ArrowLeft, AlertCircle, MapPin } from "lucide-react";
-import { popupService } from "@topvnsport/ui-kit";
+import { popupService } from "@voma/ui-kit";
 
 interface PickListItem {
   id: number;

@@ -13,7 +13,7 @@ import {
   ProductSearchResult,
   OrderItemInput
 } from "@/utils/api";
-import { popupService, showConfirm } from "@topvnsport/ui-kit";
+import { popupService, showConfirm } from "@voma/ui-kit";
 
 const orderSchema = z.object({
   customer_id: z.number().min(1, "Vui lòng chọn khách hàng"),

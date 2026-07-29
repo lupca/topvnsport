@@ -131,7 +131,7 @@ export default function StaffForm({
           id="email"
           type="email"
           label="Địa chỉ Email"
-          placeholder="Ví dụ: user@topvnsport.vn"
+          placeholder="Ví dụ: user@voma.vn"
           required
           error={errors.email?.message as string}
           {...register("email")}

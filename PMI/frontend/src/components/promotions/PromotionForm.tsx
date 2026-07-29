@@ -32,7 +32,7 @@ import {
   previewPromotion,
 } from "@/services/promotionApi";
 import PromotionPreviewModal from "./PromotionPreviewModal";
-import { popupService } from "@topvnsport/ui-kit";
+import { popupService } from "@voma/ui-kit";
 
 interface PromotionFormProps {
   initialData?: Promotion;

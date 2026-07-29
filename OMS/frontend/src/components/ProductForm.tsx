@@ -9,7 +9,7 @@ import {
   HelpCircle, AlertCircle, Image as ImageIcon, ChevronRight 
 } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
-import { popupService } from "@topvnsport/ui-kit";
+import { popupService } from "@voma/ui-kit";
 
 const API_BASE_URL = APP_SETTINGS.api.baseUrl;
 

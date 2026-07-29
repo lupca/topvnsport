@@ -12,8 +12,8 @@ import {
   RefreshCw,
   X
 } from "lucide-react";
-import { DataTable } from "@topvnsport/ui-kit";
-import { popupService } from "@topvnsport/ui-kit";
+import { DataTable } from "@voma/ui-kit";
+import { popupService } from "@voma/ui-kit";
 
 interface InventoryItem {
   id: number;

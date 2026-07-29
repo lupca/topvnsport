@@ -20,8 +20,8 @@ vi.mock("@/components/MobileScanner", () => {
 });
 
 // Mock ui-kit
-vi.mock("@topvnsport/ui-kit", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@topvnsport/ui-kit")>();
+vi.mock("@voma/ui-kit", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@voma/ui-kit")>();
   return {
     ...actual,
     popupService: {

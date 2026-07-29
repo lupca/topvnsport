@@ -29,7 +29,7 @@ import {
   resumePromotion,
   endPromotion,
 } from "@/services/promotionApi";
-import { popupService } from "@topvnsport/ui-kit";
+import { popupService } from "@voma/ui-kit";
 
 export default function PromotionList() {
   const router = useRouter();

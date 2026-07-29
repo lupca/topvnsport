@@ -4,14 +4,14 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, test, vi, beforeEach } from "vitest";
 
 import Sidebar from "@/components/layout/Sidebar";
-import { popupService } from "@topvnsport/ui-kit";
+import { popupService } from "@voma/ui-kit";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
   usePathname: () => "/catalog",
 }));
 
-vi.mock("@topvnsport/ui-kit", () => ({
+vi.mock("@voma/ui-kit", () => ({
   popupService: {
     alert: vi.fn(),
   },

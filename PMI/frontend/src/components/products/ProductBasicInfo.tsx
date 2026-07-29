@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useFormContext } from "react-hook-form";
 import { Image as ImageIcon, Loader2, Plus } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
-import { popupService } from "@topvnsport/ui-kit";
+import { popupService } from "@voma/ui-kit";
 import { normalizeImageUrl } from "@/utils/imageUrl";
 import { fetchWithAuth, apiClient } from "@/utils/apiClient";
 import { cn } from "@/utils/cn";

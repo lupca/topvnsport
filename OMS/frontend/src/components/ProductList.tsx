@@ -8,7 +8,7 @@ import {
   Eye, Copy, Trash2, X, ExternalLink
 } from "lucide-react";
 import { APP_SETTINGS } from "@/config/settings";
-import { popupService, showConfirm } from "@topvnsport/ui-kit";
+import { popupService, showConfirm } from "@voma/ui-kit";
 
 const API_BASE_URL = APP_SETTINGS.api.baseUrl;
 

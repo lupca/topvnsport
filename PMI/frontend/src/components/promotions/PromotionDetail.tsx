@@ -30,7 +30,7 @@ import {
   deletePromotion,
   previewPromotion,
 } from "@/services/promotionApi";
-import { popupService } from "@topvnsport/ui-kit";
+import { popupService } from "@voma/ui-kit";
 
 interface PromotionDetailProps {
   id: string;

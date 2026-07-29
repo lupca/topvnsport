@@ -11,8 +11,8 @@ import {
   Scan,
   RefreshCw
 } from "lucide-react";
-import { DataTable } from "@topvnsport/ui-kit";
-import { popupService, showConfirm } from "@topvnsport/ui-kit";
+import { DataTable } from "@voma/ui-kit";
+import { popupService, showConfirm } from "@voma/ui-kit";
 
 const MobileScanner = dynamic(() => import("@/components/MobileScanner"), { ssr: false });
 
