@@ -1,20 +1,45 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# Web Storefront
 
-# Run and deploy your AI Studio app
+Customer-facing e-commerce storefront built with Vite + React + Redux Toolkit.
 
-This contains everything you need to run your app locally.
+## Tech Stack
 
-View your app in AI Studio: https://ai.studio/apps/6b691a8e-d16f-4360-b833-307d4b919d18
+- Vite 5
+- React 18
+- Redux Toolkit
+- TailwindCSS
+- TypeScript
 
-## Run Locally
+## Development
 
-**Prerequisites:**  Node.js
+```bash
+npm install
+npm run dev     # http://localhost:3000
+```
 
+## Build
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+```bash
+npm run build   # Output: dist/
+```
+
+## Docker
+
+```bash
+docker compose up                          # Dev
+docker compose -f docker-compose.prod.yml up  # Prod (nginx serving static)
+```
+
+## Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `VITE_PMI_API_URL` | PMI API base URL |
+| `VITE_OMS_API_URL` | OMS API base URL |
+| `VITE_WMS_API_URL` | WMS API for stock check |
+
+## API Integration
+
+- Fetches product catalog from PMI
+- Creates orders via OMS (with OTP verification)
+- Checks real-time stock via WMS `/public/stock`
