@@ -90,9 +90,6 @@ docker compose -f OMS/docker-compose.yml up "${UP_ARGS[@]}"
 echo -e "${BLUE}Starting WMS (Development mode)...${NC}"
 docker compose -f WMS/docker-compose.yml up "${UP_ARGS[@]}"
 
-echo -e "${BLUE}Starting WEB (Development mode)...${NC}"
-docker compose -f web/docker-compose.yml up "${UP_ARGS[@]}"
-
 echo -e "${BLUE}Starting Gateway + Identity Service (Development mode)...${NC}"
 docker compose -f gateway/docker-compose.yml up "${UP_ARGS[@]}"
 
@@ -170,9 +167,6 @@ else
         WATCH_PIDS+=("$!")
 
         docker compose -f WMS/docker-compose.yml watch --no-up wms-api wms_frontend &
-        WATCH_PIDS+=("$!")
-
-        docker compose -f web/docker-compose.yml watch --no-up web_frontend &
         WATCH_PIDS+=("$!")
 
         docker compose -f gateway/docker-compose.yml watch --no-up identity-api identity-frontend &

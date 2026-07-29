@@ -307,13 +307,6 @@ echo "[3/5] Build and start production stacks"
 ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "
   set -euo pipefail
   cd $DEPLOY_PATH
-  if [[ ! -f web/.env ]]; then
-    if [[ -f web/.env.example ]]; then
-      cp web/.env.example web/.env
-    else
-      touch web/.env
-    fi
-  fi
   sudo docker network create pmi_default >/dev/null 2>&1 || true
   sudo docker network create oms_default >/dev/null 2>&1 || true
   sudo docker network create wms_default >/dev/null 2>&1 || true
@@ -324,8 +317,7 @@ ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "
   sudo -E docker compose --env-file '$DEPLOY_PATH/OMS/.env' -f OMS/docker-compose.prod.yml up -d --build
   sudo -E docker compose --env-file '$DEPLOY_PATH/WMS/.env' -f WMS/docker-compose.prod.yml up -d --build
   sudo -E docker compose --env-file '$DEPLOY_PATH/identity-service/.env' -f identity-service/docker-compose.prod.yml up -d --build
-  sudo -E docker compose -f web/docker-compose.prod.yml up -d --build
-  
+
   # Stop legacy reverse-proxy container to release port 80/443
   sudo docker stop reverse-proxy >/dev/null 2>&1 || true
   sudo docker rm reverse-proxy >/dev/null 2>&1 || true
@@ -372,8 +364,7 @@ ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "
     https://pim.$DOMAIN_NAME/health \
     https://oms.$DOMAIN_NAME/health \
     https://wms.$DOMAIN_NAME/health \
-    https://identity.$DOMAIN_NAME/health \
-    https://$DOMAIN_NAME/health; do
+    https://identity.$DOMAIN_NAME/health; do
     code=\$(curl -s -o /dev/null -w '%{http_code}' \"\$u\")
     echo \"\$code \$u\"
     [[ \"\$code\" == \"200\" ]] || exit 1
@@ -389,9 +380,6 @@ if [[ "$DEPLOY_PATH" == ~/* ]]; then
 fi
 
 cd "$DEPLOY_PATH"
-
-# Ensure storefront bundle does not carry localhost API URLs.
-sudo docker exec web_frontend sh -lc "if grep -R -E 'localhost:18100|localhost:18101' -n /usr/share/nginx/html >/tmp/web_localhost_hits 2>/dev/null; then if [ -s /tmp/web_localhost_hits ]; then cat /tmp/web_localhost_hits; exit 1; fi; fi"
 
 # Verify WMS can resolve and call PMI over Docker network.
 sudo docker exec -i wms-api python - <<'PY'

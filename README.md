@@ -8,7 +8,6 @@ Monorepo chứa 5 hệ thống độc lập với centralized authentication:
 | **PMI** | Product Information Management | 18100 / 13100 |
 | **OMS** | Order Management System | 18101 / 13101 |
 | **WMS** | Warehouse Management System | 18102 / 13102 |
-| **Web** | Customer Storefront (Vite+React) | — / 3000 |
 | **Gateway** | Nginx reverse proxy + auth | 8080 |
 
 ## Tech Stack
@@ -29,7 +28,6 @@ Monorepo chứa 5 hệ thống độc lập với centralized authentication:
 Single subsystem:
 ```bash
 cd PMI && docker compose up
-cd web && npm run dev
 ```
 
 ## Default Credentials
@@ -46,7 +44,6 @@ cd web && npm run dev
 │   └── frontend/     # Next.js
 ├── OMS/              # Order management
 ├── WMS/              # Warehouse management
-├── web/              # Customer storefront (Vite)
 ├── docs/             # Architecture & API docs
 ├── e2e_tests/        # Cross-system E2E tests
 └── CLAUDE.md         # AI agent instructions
