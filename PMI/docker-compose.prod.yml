@@ -14,8 +14,8 @@ services:
 
   frontend:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile.prod
+      context: ..
+      dockerfile: PMI/frontend/Dockerfile.prod
       args:
         - NEXT_PUBLIC_API_URL=http://api-pmi.topvnsport.com
         - NEXT_PUBLIC_IDENTITY_URL=http://identity.topvnsport.com

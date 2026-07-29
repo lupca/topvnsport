@@ -1,14 +1,24 @@
-FROM node:18-alpine
+FROM node:20-alpine
 
-WORKDIR /app
+WORKDIR /workspace
 
-COPY package.json ./
+# Copy packages
+COPY packages ./packages
+
+# Setup frontend
+WORKDIR /workspace/WMS/frontend
+COPY WMS/frontend/package.json ./
+
+# Adjust paths for Docker
+RUN sed -i 's|"file:../../packages|"file:/workspace/packages|g' package.json
 
 RUN npm install
 
-COPY . .
+COPY WMS/frontend .
 
-# Build-time environment variables for Next.js
+ENV DOCKER_ENV=true
+
+# Build-time environment variables
 ARG NEXT_PUBLIC_API_URL=http://localhost:18102
 ARG NEXT_PUBLIC_WMS_API_URL=http://localhost:18102
 ARG NEXT_PUBLIC_PMI_API_URL=http://localhost:18100
