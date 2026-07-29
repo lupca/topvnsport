@@ -2,8 +2,12 @@ FROM node:20-alpine
 
 WORKDIR /workspace
 
-# Copy packages
+# Copy packages and install their deps
 COPY packages ./packages
+WORKDIR /workspace/packages/ui-kit
+RUN npm install --omit=dev
+WORKDIR /workspace/packages/api-client
+RUN npm install --omit=dev
 
 # Setup frontend
 WORKDIR /workspace/OMS/frontend
