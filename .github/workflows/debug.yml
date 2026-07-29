@@ -19,16 +19,19 @@ jobs:
       - name: Check nginx and restart
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "
-            echo '=== Nginx logs ==='
-            docker logs gateway-nginx --tail 50 2>&1 || true
+            echo '=== Check SSL certificates ==='
+            ls -la /etc/letsencrypt/live/topvnsport.com/ 2>&1 || echo 'SSL certs not found'
             echo ''
-            echo '=== Restart gateway ==='
-            cd ~/topvnsport/gateway && docker compose down && docker compose up -d
+            echo '=== Nginx logs ==='
+            sudo docker logs gateway-nginx --tail 50 2>&1 || true
+            echo ''
+            echo '=== Restart gateway with PROD config ==='
+            cd ~/topvnsport/gateway && sudo docker compose -f docker-compose.prod.yml down && sudo docker compose -f docker-compose.prod.yml up -d
             echo ''
             sleep 10
             echo '=== Container status ==='
-            docker ps -a | grep -E 'gateway|nginx'
+            sudo docker ps -a | grep -E 'gateway|nginx'
             echo ''
             echo '=== Health check ==='
-            curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/health || echo 'failed'
+            curl -s -o /dev/null -w '%{http_code}' http://localhost/health || echo 'failed'
           "
