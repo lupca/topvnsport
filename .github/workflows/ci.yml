@@ -54,7 +54,6 @@ jobs:
               - 'start_all.sh'
               - 'deploy_prod.sh'
               - 'e2e_tests/**'
-              - 'packages/**'
 
   # ============================================
   # STEP 2: PMI Tests (Backend + Frontend)
@@ -118,13 +117,8 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Install shared packages dependencies
-        run: |
-          cd ../../packages/ui-kit && npm install
-          cd ../api-client && npm install
-
       - name: Install dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
       
       - name: Run Vitest
         run: npm run test
@@ -212,13 +206,8 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Install shared packages dependencies
-        run: |
-          cd ../../packages/ui-kit && npm install
-          cd ../api-client && npm install
-
       - name: Install dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
       
       - name: Run Vitest
         run: npm run test
@@ -280,13 +269,8 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Install shared packages dependencies
-        run: |
-          cd ../../packages/ui-kit && npm install
-          cd ../api-client && npm install
-
       - name: Install dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
       
       - name: Run Vitest
         run: npm run test
@@ -332,7 +316,7 @@ jobs:
 
       - name: Install and build
         run: |
-          npm install
+          npm install --legacy-peer-deps
           npm run build
 
   # ============================================
