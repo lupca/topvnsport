@@ -32,8 +32,8 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			"@": path.resolve(__dirname, "./src"),
-			"@topvnsport/ui-kit": path.resolve(__dirname, "../../packages/ui-kit/dist/index.js"),
-			"@topvnsport/api-client": path.resolve(__dirname, "../../packages/api-client/dist/index.js"),
+			"@topvnsport/ui-kit": path.resolve(__dirname, "./node_modules/@topvnsport/ui-kit/src/index.ts"),
+			"@topvnsport/api-client": path.resolve(__dirname, "./node_modules/@topvnsport/api-client/src/index.ts"),
 			"react": path.resolve(__dirname, "./node_modules/react"),
 			"react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
 			"lucide-react": path.resolve(__dirname, "./node_modules/lucide-react"),
