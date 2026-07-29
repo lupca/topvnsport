@@ -223,7 +223,9 @@ ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "
   sudo docker stop reverse-proxy >/dev/null 2>&1 || true
   sudo docker rm reverse-proxy >/dev/null 2>&1 || true
 
-  sudo -E docker compose -f gateway/docker-compose.prod.yml up -d --build --force-recreate
+  # Use HTTP-only config until Let's Encrypt SSL certificates are installed
+  # Switch to docker-compose.prod.yml after running: sudo certbot certonly --webroot -w /var/www/certbot -d topvnsport.com -d *.topvnsport.com
+  sudo -E docker compose -f gateway/docker-compose.http-prod.yml up -d --build --force-recreate
   echo "Waiting for Gateway to be healthy..."
   timeout 60 bash -c 'until curl -sf http://localhost/health > /dev/null 2>&1; do sleep 2; done' || true
 
