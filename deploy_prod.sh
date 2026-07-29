@@ -254,16 +254,17 @@ ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "
 echo "[4/5] Health checks"
 ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "
   set -euo pipefail
+  # Check /health endpoints (no auth required)
   for u in \
-    http://api-pmi.$DOMAIN_NAME/docs \
-    http://api-oms.$DOMAIN_NAME/docs \
-    http://api-wms.$DOMAIN_NAME/docs \
+    http://api-pmi.$DOMAIN_NAME/health \
+    http://api-oms.$DOMAIN_NAME/health \
+    http://api-wms.$DOMAIN_NAME/health \
     http://api-identity.$DOMAIN_NAME/health \
-    http://pmi.$DOMAIN_NAME \
-    http://oms.$DOMAIN_NAME \
-    http://wms.$DOMAIN_NAME \
-    http://identity.$DOMAIN_NAME \
-    http://$DOMAIN_NAME; do
+    http://pmi.$DOMAIN_NAME/health \
+    http://oms.$DOMAIN_NAME/health \
+    http://wms.$DOMAIN_NAME/health \
+    http://identity.$DOMAIN_NAME/health \
+    http://$DOMAIN_NAME/health; do
     code=\$(curl -s -o /dev/null -w '%{http_code}' \"\$u\")
     echo \"\$code \$u\"
     [[ \"\$code\" == \"200\" ]] || exit 1
