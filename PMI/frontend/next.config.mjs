@@ -4,7 +4,7 @@ const wmsApiProxyTarget = process.env.WMS_API_PROXY_TARGET || 'http://wms-api:80
 
 const nextConfig = {
   reactStrictMode: true,
-  transpilePackages: ['@topvnsport/ui-kit', '@topvnsport/api-client'],
+  transpilePackages: ['@voma/ui-kit', '@voma/api-client'],
   async rewrites() {
     return [
       {
