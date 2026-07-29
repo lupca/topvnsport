@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  transpilePackages: ['@topvnsport/ui-kit', '@topvnsport/api-client'],
   async rewrites() {
     return [
       {
