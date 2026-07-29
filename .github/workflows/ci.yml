@@ -32,7 +32,6 @@ jobs:
       pmi: ${{ steps.filter.outputs.pmi }}
       oms: ${{ steps.filter.outputs.oms }}
       wms: ${{ steps.filter.outputs.wms }}
-      web: ${{ steps.filter.outputs.web }}
       shared: ${{ steps.filter.outputs.shared }}
     steps:
       - uses: actions/checkout@v4
@@ -47,8 +46,6 @@ jobs:
               - 'OMS/**'
             wms:
               - 'WMS/**'
-            web:
-              - 'web/**'
             shared:
               - '.github/workflows/**'
               - 'start_all.sh'
@@ -279,48 +276,7 @@ jobs:
         run: npm run build
 
   # ============================================
-  # STEP 5: Web Storefront
-  # ============================================
-  web-build:
-    name: Web Storefront Build
-    needs: changes
-    if: needs.changes.outputs.web == 'true' || needs.changes.outputs.shared == 'true'
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: web
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Cache npm dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: npm-web-${{ hashFiles('web/package-lock.json') }}
-          restore-keys: |
-            npm-web-
-
-      - name: Prepare env file
-        run: |
-          if [ -f .env.example ]; then
-            cp .env.example .env
-          else
-            touch .env
-          fi
-
-      - name: Install and build
-        run: |
-          npm install --legacy-peer-deps
-          npm run build
-
-  # ============================================
-  # STEP 6: Validate Docker Compose (always)
+  # STEP 5: Validate Docker Compose (always)
   # ============================================
   validate-compose:
     name: Validate Compose Files
@@ -368,11 +324,10 @@ jobs:
           docker compose -f PMI/docker-compose.prod.yml config > /dev/null
           docker compose -f OMS/docker-compose.prod.yml config > /dev/null
           docker compose -f WMS/docker-compose.prod.yml config > /dev/null
-          docker compose -f web/docker-compose.prod.yml config > /dev/null
           echo "All compose files valid"
 
   # ============================================
-  # STEP 7: Summary (for branch protection)
+  # STEP 6: Summary (for branch protection)
   # ============================================
   ci-success:
     name: CI Success
@@ -383,7 +338,6 @@ jobs:
       - oms-frontend
       - wms-backend
       - wms-frontend
-      - web-build
       - validate-compose
     if: always()
     runs-on: ubuntu-latest
@@ -396,7 +350,6 @@ jobs:
           echo "OMS Frontend: ${{ needs.oms-frontend.result }}"
           echo "WMS Backend: ${{ needs.wms-backend.result }}"
           echo "WMS Frontend: ${{ needs.wms-frontend.result }}"
-          echo "Web Build: ${{ needs.web-build.result }}"
           echo "Compose Validation: ${{ needs.validate-compose.result }}"
           
           # Fail if any required job failed (skipped is OK due to path filtering)
@@ -406,8 +359,7 @@ jobs:
           
           for result in "${{ needs.pmi-backend.result }}" "${{ needs.pmi-frontend.result }}" \
                         "${{ needs.oms-backend.result }}" "${{ needs.oms-frontend.result }}" \
-                        "${{ needs.wms-backend.result }}" "${{ needs.wms-frontend.result }}" \
-                        "${{ needs.web-build.result }}"; do
+                        "${{ needs.wms-backend.result }}" "${{ needs.wms-frontend.result }}"; do
             if [[ "$result" == "failure" ]]; then
               echo "One or more jobs failed"
               exit 1
