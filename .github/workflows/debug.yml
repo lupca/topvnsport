@@ -20,7 +20,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "
             echo '=== Check SSL certificates ==='
-            ls -la /etc/letsencrypt/live/topvnsport.com/ 2>&1 || echo 'SSL certs not found'
+            ls -la /etc/letsencrypt/live/voma.vn/ 2>&1 || echo 'SSL certs not found'
             echo ''
             echo '=== Nginx logs ==='
             sudo docker logs gateway-nginx --tail 50 2>&1 || true

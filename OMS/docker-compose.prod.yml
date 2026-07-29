@@ -11,8 +11,9 @@ services:
       - ENV=production
       - DATABASE_URL=postgresql://${RDS_USER:?RDS_USER is required}:${RDS_PASSWORD:?RDS_PASSWORD is required}@${RDS_HOST:?RDS_HOST is required}:5432/oms?sslmode=${RDS_SSLMODE:?RDS_SSLMODE is required}
       - FERNET_KEY=${FERNET_KEY:?FERNET_KEY is required}
-      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://topvnsport.com,http://www.topvnsport.com,https://oms.topvnsport.com}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:?CORS_ALLOWED_ORIGINS is required}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY:?JWT_SECRET_KEY is required}
+      - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN:?INTERNAL_SERVICE_TOKEN is required}
     networks:
       - default
       - pmi_default
@@ -23,10 +24,10 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - NEXT_PUBLIC_API_URL=http://api-oms.topvnsport.com
-        - NEXT_PUBLIC_OMS_API_URL=http://api-oms.topvnsport.com
-        - NEXT_PUBLIC_WMS_API_URL=http://api-wms.topvnsport.com
-        - NEXT_PUBLIC_IDENTITY_URL=http://identity.topvnsport.com
+        - NEXT_PUBLIC_API_URL=${OMS_API_URL:?OMS_API_URL is required}
+        - NEXT_PUBLIC_OMS_API_URL=${OMS_API_URL:?OMS_API_URL is required}
+        - NEXT_PUBLIC_WMS_API_URL=${WMS_API_URL:?WMS_API_URL is required}
+        - NEXT_PUBLIC_IDENTITY_URL=${IDENTITY_URL:?IDENTITY_URL is required}
     container_name: oms_frontend
     restart: always
     depends_on:

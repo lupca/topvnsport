@@ -24,7 +24,7 @@ allowed_origins = [
     origin.strip()
     for origin in os.getenv(
         "CORS_ALLOWED_ORIGINS",
-        "http://localhost:13100,http://localhost:13101,http://localhost:13102,http://localhost:13103"
+        "https://voma.vn,https://www.voma.vn,https://pim.voma.vn,https://oms.voma.vn,https://wms.voma.vn,https://identity.voma.vn,http://localhost:13100,http://localhost:13101,http://localhost:13102,http://localhost:13103"
     ).split(",")
     if origin.strip()
 ]

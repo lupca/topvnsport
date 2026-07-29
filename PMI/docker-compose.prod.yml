@@ -9,16 +9,17 @@ services:
     restart: always
     environment:
       - JWT_SECRET_KEY=${JWT_SECRET_KEY:?JWT_SECRET_KEY is required}
-      - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN:-oms_wms_internal_api_key_secret_2026}
-      - ALLOWED_SERVICE_KEYS=prod-service-api-key-must-change
+      - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN:?INTERNAL_SERVICE_TOKEN is required}
+      - ALLOWED_SERVICE_KEYS=${ALLOWED_SERVICE_KEYS:?ALLOWED_SERVICE_KEYS is required}
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile.prod
       args:
-        - NEXT_PUBLIC_API_URL=http://api-pmi.topvnsport.com
-        - NEXT_PUBLIC_IDENTITY_URL=http://identity.topvnsport.com
+        - NEXT_PUBLIC_API_URL=${PIM_API_URL:?PIM_API_URL is required}
+        - NEXT_PUBLIC_WMS_API_URL=${WMS_API_URL:?WMS_API_URL is required}
+        - NEXT_PUBLIC_IDENTITY_URL=${IDENTITY_URL:?IDENTITY_URL is required}
     container_name: pim-frontend
     restart: always
     depends_on:

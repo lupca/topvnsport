@@ -5,8 +5,20 @@ ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 DEPLOY_REVISION="$(git -C "$ROOT_DIR" rev-parse --short=12 HEAD 2>/dev/null || echo unknown)"
 
 : "${EC2_HOST:?EC2_HOST is required (example: ec2-xx-xx-xx-xx.compute-1.amazonaws.com)}"
+: "${DOMAIN_NAME:?DOMAIN_NAME is required}"
+: "${PIM_API_URL:?PIM_API_URL is required}"
+: "${OMS_API_URL:?OMS_API_URL is required}"
+: "${WMS_API_URL:?WMS_API_URL is required}"
+: "${IDENTITY_API_URL:?IDENTITY_API_URL is required}"
+: "${PIM_URL:?PIM_URL is required}"
+: "${OMS_URL:?OMS_URL is required}"
+: "${WMS_URL:?WMS_URL is required}"
+: "${IDENTITY_URL:?IDENTITY_URL is required}"
+: "${CORS_ALLOWED_ORIGINS:?CORS_ALLOWED_ORIGINS is required}"
 : "${FERNET_KEY:?FERNET_KEY is required}"
 : "${JWT_SECRET_KEY:?JWT_SECRET_KEY is required}"
+: "${INTERNAL_SERVICE_TOKEN:?INTERNAL_SERVICE_TOKEN is required}"
+: "${ALLOWED_SERVICE_KEYS:?ALLOWED_SERVICE_KEYS is required}"
 : "${RDS_HOST:?RDS_HOST is required}"
 : "${RDS_USER:?RDS_USER is required}"
 : "${RDS_PASSWORD:?RDS_PASSWORD is required}"
@@ -16,6 +28,39 @@ if [[ "$RDS_SSLMODE" != "require" ]]; then
   echo "RDS_SSLMODE must be require"
   exit 1
 fi
+
+if [[ "$DOMAIN_NAME" != "voma.vn" ]]; then
+  echo "DOMAIN_NAME must be voma.vn"
+  exit 1
+fi
+
+require_voma_https_url() {
+  local name="$1" value="${!1}"
+  if [[ ! "$value" =~ ^https://([a-z0-9-]+\.)*voma\.vn(/[^[:space:]]*)?$ ]]; then
+    echo "$name must be an HTTPS voma.vn URL"
+    exit 1
+  fi
+}
+
+for https_url_name in \
+  PIM_API_URL \
+  OMS_API_URL \
+  WMS_API_URL \
+  IDENTITY_API_URL \
+  PIM_URL \
+  OMS_URL \
+  WMS_URL \
+  IDENTITY_URL; do
+  require_voma_https_url "$https_url_name"
+done
+
+IFS=',' read -r -a cors_origins <<< "$CORS_ALLOWED_ORIGINS"
+for cors_origin in "${cors_origins[@]}"; do
+  if [[ ! "$cors_origin" =~ ^https://([a-z0-9-]+\.)*voma\.vn$ ]]; then
+    echo "CORS_ALLOWED_ORIGINS must contain HTTPS voma.vn origins only"
+    exit 1
+  fi
+done
 
 if [[ ! "$FERNET_KEY" =~ ^[A-Za-z0-9_-]{43}=$ ]]; then
   echo "FERNET_KEY must be a valid 32-byte urlsafe-base64 Fernet key"
@@ -61,9 +106,7 @@ upsert_env_var() {
 EC2_USER="${EC2_USER:-ec2-user}"
 DEPLOY_PATH="${DEPLOY_PATH:-~/topvnsport}"
 PUBLIC_HOST="${PUBLIC_HOST:-$EC2_HOST}"
-DOMAIN_NAME="${DOMAIN_NAME:-topvnsport.com}"
 : "${PUBLIC_HOST:?PUBLIC_HOST is required}"
-: "${DOMAIN_NAME:?DOMAIN_NAME is required}"
 SSH_KEY_PATH="${SSH_KEY_PATH:-$HOME/.ssh/id_ed25519}"
 SSH_KEY_PATH="${SSH_KEY_PATH/#\~/$HOME}"
 SSH_KEY_PATH="${SSH_KEY_PATH//\$HOME/$HOME}"
@@ -85,6 +128,7 @@ echo "[1/5] Sync source to $EC2_USER@$EC2_HOST:$DEPLOY_PATH"
 rsync -az --delete \
   --exclude '.git' \
   --exclude '.env' \
+  --exclude '.env.*' \
   --exclude '*.env' \
   --exclude 'node_modules' \
   --exclude '.next' \
@@ -140,6 +184,21 @@ FERNET_VALUE
 write_secret "\$DEPLOY_PATH/OMS/.env" JWT_SECRET_KEY <<'JWT_VALUE'
 ${JWT_SECRET_KEY}
 JWT_VALUE
+write_secret "\$DEPLOY_PATH/OMS/.env" INTERNAL_SERVICE_TOKEN <<'INTERNAL_SERVICE_TOKEN_VALUE'
+${INTERNAL_SERVICE_TOKEN}
+INTERNAL_SERVICE_TOKEN_VALUE
+write_secret "\$DEPLOY_PATH/OMS/.env" CORS_ALLOWED_ORIGINS <<'CORS_ALLOWED_ORIGINS_VALUE'
+${CORS_ALLOWED_ORIGINS}
+CORS_ALLOWED_ORIGINS_VALUE
+write_secret "\$DEPLOY_PATH/OMS/.env" OMS_API_URL <<'OMS_API_URL_VALUE'
+${OMS_API_URL}
+OMS_API_URL_VALUE
+write_secret "\$DEPLOY_PATH/OMS/.env" WMS_API_URL <<'WMS_API_URL_VALUE'
+${WMS_API_URL}
+WMS_API_URL_VALUE
+write_secret "\$DEPLOY_PATH/OMS/.env" IDENTITY_URL <<'IDENTITY_URL_VALUE'
+${IDENTITY_URL}
+IDENTITY_URL_VALUE
 write_secret "\$DEPLOY_PATH/OMS/.env" RDS_HOST <<'RDS_HOST_VALUE'
 ${RDS_HOST}
 RDS_HOST_VALUE
@@ -155,9 +214,39 @@ RDS_SSLMODE_VALUE
 write_secret "\$DEPLOY_PATH/PMI/.env" JWT_SECRET_KEY <<'JWT_VALUE'
 ${JWT_SECRET_KEY}
 JWT_VALUE
+write_secret "\$DEPLOY_PATH/PMI/.env" INTERNAL_SERVICE_TOKEN <<'INTERNAL_SERVICE_TOKEN_VALUE'
+${INTERNAL_SERVICE_TOKEN}
+INTERNAL_SERVICE_TOKEN_VALUE
+write_secret "\$DEPLOY_PATH/PMI/.env" ALLOWED_SERVICE_KEYS <<'ALLOWED_SERVICE_KEYS_VALUE'
+${ALLOWED_SERVICE_KEYS}
+ALLOWED_SERVICE_KEYS_VALUE
+write_secret "\$DEPLOY_PATH/PMI/.env" PIM_API_URL <<'PIM_API_URL_VALUE'
+${PIM_API_URL}
+PIM_API_URL_VALUE
+write_secret "\$DEPLOY_PATH/PMI/.env" WMS_API_URL <<'WMS_API_URL_VALUE'
+${WMS_API_URL}
+WMS_API_URL_VALUE
+write_secret "\$DEPLOY_PATH/PMI/.env" IDENTITY_URL <<'IDENTITY_URL_VALUE'
+${IDENTITY_URL}
+IDENTITY_URL_VALUE
 write_secret "\$DEPLOY_PATH/WMS/.env" JWT_SECRET_KEY <<'JWT_VALUE'
 ${JWT_SECRET_KEY}
 JWT_VALUE
+write_secret "\$DEPLOY_PATH/WMS/.env" INTERNAL_SERVICE_TOKEN <<'INTERNAL_SERVICE_TOKEN_VALUE'
+${INTERNAL_SERVICE_TOKEN}
+INTERNAL_SERVICE_TOKEN_VALUE
+write_secret "\$DEPLOY_PATH/WMS/.env" CORS_ALLOWED_ORIGINS <<'CORS_ALLOWED_ORIGINS_VALUE'
+${CORS_ALLOWED_ORIGINS}
+CORS_ALLOWED_ORIGINS_VALUE
+write_secret "\$DEPLOY_PATH/WMS/.env" WMS_API_URL <<'WMS_API_URL_VALUE'
+${WMS_API_URL}
+WMS_API_URL_VALUE
+write_secret "\$DEPLOY_PATH/WMS/.env" PIM_API_URL <<'PIM_API_URL_VALUE'
+${PIM_API_URL}
+PIM_API_URL_VALUE
+write_secret "\$DEPLOY_PATH/WMS/.env" IDENTITY_URL <<'IDENTITY_URL_VALUE'
+${IDENTITY_URL}
+IDENTITY_URL_VALUE
 write_secret "\$DEPLOY_PATH/WMS/.env" RDS_HOST <<'RDS_HOST_VALUE'
 ${RDS_HOST}
 RDS_HOST_VALUE
@@ -173,9 +262,27 @@ RDS_SSLMODE_VALUE
 write_secret "\$DEPLOY_PATH/identity-service/.env" JWT_SECRET_KEY <<'JWT_VALUE'
 ${JWT_SECRET_KEY}
 JWT_VALUE
+write_secret "\$DEPLOY_PATH/identity-service/.env" IDENTITY_API_URL <<'IDENTITY_API_URL_VALUE'
+${IDENTITY_API_URL}
+IDENTITY_API_URL_VALUE
+write_secret "\$DEPLOY_PATH/identity-service/.env" PIM_URL <<'PIM_URL_VALUE'
+${PIM_URL}
+PIM_URL_VALUE
+write_secret "\$DEPLOY_PATH/identity-service/.env" OMS_URL <<'OMS_URL_VALUE'
+${OMS_URL}
+OMS_URL_VALUE
+write_secret "\$DEPLOY_PATH/identity-service/.env" WMS_URL <<'WMS_URL_VALUE'
+${WMS_URL}
+WMS_URL_VALUE
 write_secret "\$DEPLOY_PATH/PMI/backend/.env.prod" DATABASE_URL <<'PMI_DATABASE_URL_VALUE'
 postgresql://${RDS_USER}:${RDS_PASSWORD}@${RDS_HOST}:5432/pmi?sslmode=${RDS_SSLMODE}
 PMI_DATABASE_URL_VALUE
+write_secret "\$DEPLOY_PATH/PMI/backend/.env.prod" ENV <<'PMI_ENV_VALUE'
+production
+PMI_ENV_VALUE
+write_secret "\$DEPLOY_PATH/PMI/backend/.env.prod" CORS_ALLOWED_ORIGINS <<'CORS_ALLOWED_ORIGINS_VALUE'
+${CORS_ALLOWED_ORIGINS}
+CORS_ALLOWED_ORIGINS_VALUE
 write_secret "\$DEPLOY_PATH/PMI/backend/.env.prod" AWS_DEFAULT_REGION <<'PMI_AWS_DEFAULT_REGION_VALUE'
 us-east-1
 PMI_AWS_DEFAULT_REGION_VALUE
@@ -223,9 +330,11 @@ ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "
   sudo docker stop reverse-proxy >/dev/null 2>&1 || true
   sudo docker rm reverse-proxy >/dev/null 2>&1 || true
 
-  # Use HTTP-only config until Let's Encrypt SSL certificates are installed
-  # Switch to docker-compose.prod.yml after running: sudo certbot certonly --webroot -w /var/www/certbot -d topvnsport.com -d *.topvnsport.com
-  sudo -E docker compose -f gateway/docker-compose.http-prod.yml up -d --build --force-recreate
+  # HTTPS is mandatory for production. Certificate issuance/renewal is managed
+  # outside this script and must cover voma.vn plus its service subdomains.
+  sudo test -s '/etc/letsencrypt/live/voma.vn/fullchain.pem'
+  sudo test -s '/etc/letsencrypt/live/voma.vn/privkey.pem'
+  sudo -E docker compose -f gateway/docker-compose.prod.yml up -d --build --force-recreate
   echo "Waiting for Gateway to be healthy..."
   timeout 60 bash -c 'until curl -sf http://localhost/health > /dev/null 2>&1; do sleep 2; done' || true
 
@@ -256,15 +365,15 @@ ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "
   set -euo pipefail
   # Check /health endpoints (no auth required)
   for u in \
-    http://api-pmi.$DOMAIN_NAME/health \
-    http://api-oms.$DOMAIN_NAME/health \
-    http://api-wms.$DOMAIN_NAME/health \
-    http://api-identity.$DOMAIN_NAME/health \
-    http://pmi.$DOMAIN_NAME/health \
-    http://oms.$DOMAIN_NAME/health \
-    http://wms.$DOMAIN_NAME/health \
-    http://identity.$DOMAIN_NAME/health \
-    http://$DOMAIN_NAME/health; do
+    https://api-pim.$DOMAIN_NAME/health \
+    https://api-oms.$DOMAIN_NAME/health \
+    https://api-wms.$DOMAIN_NAME/health \
+    https://api-identity.$DOMAIN_NAME/health \
+    https://pim.$DOMAIN_NAME/health \
+    https://oms.$DOMAIN_NAME/health \
+    https://wms.$DOMAIN_NAME/health \
+    https://identity.$DOMAIN_NAME/health \
+    https://$DOMAIN_NAME/health; do
     code=\$(curl -s -o /dev/null -w '%{http_code}' \"\$u\")
     echo \"\$code \$u\"
     [[ \"\$code\" == \"200\" ]] || exit 1
@@ -344,7 +453,7 @@ finally:
     db.close()
 PY
 )"
-smoke_status="$(curl -sS -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $smoke_token" "http://api-oms.$DOMAIN_NAME/api/configs/sms")"
+smoke_status="$(curl -sS -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $smoke_token" "https://api-oms.$DOMAIN_NAME/api/configs/sms")"
 unset smoke_token
 echo "Identity->OMS JWT smoke check: $smoke_status"
 [[ "$smoke_status" == "200" ]] || exit 1

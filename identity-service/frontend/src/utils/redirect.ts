@@ -147,8 +147,7 @@ export const getSafeRedirectUrl = (urlStr: string): string => {
       // Production hosts as fallback
       const trustedHosts = [
         pmiHost, omsHost, wmsHost,
-        "pmi.topvnsport.com", "oms.topvnsport.com", "wms.topvnsport.com",
-        "localhost:13100", "localhost:13101", "localhost:13102"
+        "pim.voma.vn", "oms.voma.vn", "wms.voma.vn"
       ].filter(Boolean);
 
       const targetHost = parsed.host;
@@ -162,4 +161,3 @@ export const getSafeRedirectUrl = (urlStr: string): string => {
 
   return "/dashboard";
 };
-

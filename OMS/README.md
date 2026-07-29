@@ -41,7 +41,7 @@ OMS production requires these environment variables:
 - `JWT_SECRET_KEY`: the shared JWT signing/verification secret used by
   identity-service, PMI, OMS, and WMS.
 - `INTERNAL_SERVICE_TOKEN`: shared secret key (`X-API-Key`) for inter-service authentication (default: `oms_wms_internal_api_key_secret_2026`).
-- `CORS_ALLOWED_ORIGINS`: the comma-separated browser origins allowed by OMS (e.g. `https://oms.topvnsport.com,http://localhost:13101,http://localhost:3000,http://127.0.0.1:13101`).
+- `CORS_ALLOWED_ORIGINS`: the comma-separated browser origins allowed by OMS (e.g. `https://voma.vn,https://oms.voma.vn`; add localhost origins only for development).
 - `PIM_API_URL`: URL for PIM/PMI service integration (default: `http://pim-api:8000`).
 - `WMS_API_URL`: URL for WMS service integration (default: `http://wms-api:8002`).
 
@@ -100,4 +100,3 @@ not sign identity tokens.
 - [API Reference Documentation](../docs/API.md)
 - [Database Schema Documentation](../docs/DATABASE.md)
 - [System Architecture Documentation](../docs/ARCHITECTURE.md)
-

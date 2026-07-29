@@ -50,9 +50,18 @@ app = FastAPI(title="PIM API Microservice", lifespan=lifespan)
 
 app.add_middleware(RequestContextMiddleware)
 
+cors_origins = [
+    origin.strip()
+    for origin in os.getenv(
+        "CORS_ALLOWED_ORIGINS",
+        "https://voma.vn,https://www.voma.vn,https://pim.voma.vn,https://oms.voma.vn,https://wms.voma.vn,https://identity.voma.vn",
+    ).split(",")
+    if origin.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -123,4 +132,3 @@ import os
 if os.getenv("ENV") == "test" or os.getenv("TESTING") == "true":
     from routers.test import router as test_router
     app.include_router(test_router)
-

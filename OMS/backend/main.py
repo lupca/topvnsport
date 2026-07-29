@@ -172,7 +172,7 @@ cors_origins = [
     origin.strip()
     for origin in os.getenv(
         "CORS_ALLOWED_ORIGINS",
-        "https://oms.topvnsport.com,http://localhost:13101,http://localhost:13103,http://localhost:3000,http://127.0.0.1:13101",
+        "https://voma.vn,https://www.voma.vn,https://pim.voma.vn,https://oms.voma.vn,https://wms.voma.vn,https://identity.voma.vn,http://localhost:13101,http://localhost:13103,http://localhost:3000,http://127.0.0.1:13101",
     ).split(",")
     if origin.strip()
 ]

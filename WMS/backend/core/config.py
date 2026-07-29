@@ -6,7 +6,7 @@ if not DATABASE_URL:
 ENV: str = os.getenv("ENV", "development")
 CORS_ALLOWED_ORIGINS: str = os.getenv(
     "CORS_ALLOWED_ORIGINS",
-    "http://topvnsport.com,http://www.topvnsport.com,http://pmi.topvnsport.com,http://oms.topvnsport.com,http://wms.topvnsport.com"
+    "https://voma.vn,https://www.voma.vn,https://pim.voma.vn,https://oms.voma.vn,https://wms.voma.vn,https://identity.voma.vn"
 )
 JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY")
 if not JWT_SECRET_KEY:

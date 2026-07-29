@@ -33,8 +33,20 @@ jobs:
           EC2_USER: ${{ secrets.EC2_USER }}
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
           PUBLIC_HOST: ${{ secrets.PUBLIC_HOST }}
+          DOMAIN_NAME: ${{ secrets.DOMAIN_NAME }}
+          PIM_API_URL: ${{ secrets.PIM_API_URL }}
+          OMS_API_URL: ${{ secrets.OMS_API_URL }}
+          WMS_API_URL: ${{ secrets.WMS_API_URL }}
+          IDENTITY_API_URL: ${{ secrets.IDENTITY_API_URL }}
+          PIM_URL: ${{ secrets.PIM_URL }}
+          OMS_URL: ${{ secrets.OMS_URL }}
+          WMS_URL: ${{ secrets.WMS_URL }}
+          IDENTITY_URL: ${{ secrets.IDENTITY_URL }}
+          CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
           FERNET_KEY: ${{ secrets.FERNET_KEY }}
           JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          INTERNAL_SERVICE_TOKEN: ${{ secrets.INTERNAL_SERVICE_TOKEN }}
+          ALLOWED_SERVICE_KEYS: ${{ secrets.ALLOWED_SERVICE_KEYS }}
           RDS_HOST: ${{ secrets.RDS_HOST }}
           RDS_USER: ${{ secrets.RDS_USER }}
           RDS_PASSWORD: ${{ secrets.RDS_PASSWORD }}

@@ -45,20 +45,20 @@ describe("getSafeRedirectUrl stress tests", () => {
     });
 
     it("should respect NEXT_PUBLIC environment variables", () => {
-      process.env.NEXT_PUBLIC_PMI_URL = "https://pmi.topvnsport.com";
-      process.env.NEXT_PUBLIC_OMS_URL = "https://oms.topvnsport.com";
-      process.env.NEXT_PUBLIC_WMS_URL = "https://wms.topvnsport.com";
+      process.env.NEXT_PUBLIC_PMI_URL = "https://pim.voma.vn";
+      process.env.NEXT_PUBLIC_OMS_URL = "https://oms.voma.vn";
+      process.env.NEXT_PUBLIC_WMS_URL = "https://wms.voma.vn";
 
-      expect(getSafeRedirectUrl("https://pmi.topvnsport.com/dashboard")).toBe("https://pmi.topvnsport.com/dashboard");
-      expect(getSafeRedirectUrl("https://oms.topvnsport.com/orders")).toBe("https://oms.topvnsport.com/orders");
-      expect(getSafeRedirectUrl("https://wms.topvnsport.com/inventory")).toBe("https://wms.topvnsport.com/inventory");
+      expect(getSafeRedirectUrl("https://pim.voma.vn/dashboard")).toBe("https://pim.voma.vn/dashboard");
+      expect(getSafeRedirectUrl("https://oms.voma.vn/orders")).toBe("https://oms.voma.vn/orders");
+      expect(getSafeRedirectUrl("https://wms.voma.vn/inventory")).toBe("https://wms.voma.vn/inventory");
 
       // Old defaults should no longer be allowed if Env Url is parsed successfully, but wait, the implementation of getTrustedHost does fallback to defaultVal if URL parsing of envUrl fails.
       // Let's verify if the code falls back to localhost defaults if env is set correctly.
       // In redirect.ts, getTrustedHost(envUrl, defaultVal) returns envUrl's host if it parses, otherwise defaultVal's host.
       // So if envUrl is a valid URL, it should return its host, NOT default.
       // Let's see if localhost:13100 is still allowed when NEXT_PUBLIC_PMI_URL is set:
-      // if targetHost matches pmiHost (which is pmi.topvnsport.com), it returns it. If it is localhost:13100, targetHost !== pmiHost, so it should fallback to dashboard.
+      // if targetHost matches pmiHost (which is pim.voma.vn), it returns it. If it is localhost:13100, targetHost !== pmiHost, so it should fallback to dashboard.
       expect(getSafeRedirectUrl("http://localhost:13100")).toBe("/dashboard");
     });
 
@@ -266,7 +266,7 @@ describe("getSafeRedirectUrl stress tests", () => {
       // Credentials pointing to trusted, host is evil
       expect(getSafeRedirectUrl("http://localhost:13100@evil.com")).toBe("/dashboard");
       expect(getSafeRedirectUrl("http://localhost:13100:password@evil.com")).toBe("/dashboard");
-      expect(getSafeRedirectUrl("https://pmi.topvnsport.com@evil.com")).toBe("/dashboard");
+      expect(getSafeRedirectUrl("https://pim.voma.vn@evil.com")).toBe("/dashboard");
       
       // Host is trusted, but has credential prefix (this is technically allowed since destination is trusted, but checking behavior)
       expect(getSafeRedirectUrl("http://evil.com@localhost:13100")).toBe("http://evil.com@localhost:13100");
@@ -319,6 +319,5 @@ describe("getSafeRedirectUrl stress tests", () => {
     });
   });
 });
-
 
 

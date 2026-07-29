@@ -19,6 +19,7 @@ services:
       # SSL certificate mounts (local certs and certbot/letsencrypt)
       - ./certs:/etc/nginx/certs:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot:ro
     networks:
       - pmi_default
       - oms_default
