@@ -25,8 +25,8 @@ export default defineConfig(() => {
       dedupe: ['react', 'react-dom'],
       alias: {
         '@': path.resolve(__dirname, '.'),
-        '@topvnsport/ui-kit': path.join(packagesRoot, 'ui-kit/dist/index.js'),
-        '@topvnsport/api-client': path.join(packagesRoot, 'api-client/dist/index.js'),
+        '@topvnsport/ui-kit': path.join(packagesRoot, 'ui-kit/src/index.ts'),
+        '@topvnsport/api-client': path.join(packagesRoot, 'api-client/src/index.ts'),
         'react/jsx-runtime': path.resolve(__dirname, 'node_modules/react/jsx-runtime.js'),
         'react/jsx-dev-runtime': path.resolve(__dirname, 'node_modules/react/jsx-dev-runtime.js'),
         'react': path.resolve(__dirname, 'node_modules/react'),
