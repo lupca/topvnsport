@@ -21,8 +21,8 @@
     "tailwind-merge": "^2.3.0",
     "recharts": "^2.12.7",
     "html5-qrcode": "^2.3.8",
-    "@topvnsport/ui-kit": "file:../../packages/ui-kit",
-    "@topvnsport/api-client": "file:../../packages/api-client"
+    "@topvnsport/ui-kit": "github:lupca/voma-ui-kit",
+    "@topvnsport/api-client": "github:lupca/voma-api-client"
   },
   "devDependencies": {
     "typescript": "^5.4.5",

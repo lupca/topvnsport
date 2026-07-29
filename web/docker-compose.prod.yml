@@ -1,8 +1,8 @@
 services:
   web_frontend:
     build:
-      context: ..
-      dockerfile: web/Dockerfile
+      context: .
+      dockerfile: Dockerfile
       args:
         VITE_PMI_API_URL: http://api-pmi.topvnsport.com
         VITE_OMS_API_URL: http://api-oms.topvnsport.com

@@ -1,20 +1,8 @@
 FROM node:20-alpine AS build
 
-WORKDIR /workspace
+WORKDIR /app
 
-# Copy packages and install their deps
-COPY packages ./packages
-WORKDIR /workspace/packages/ui-kit
-RUN npm install
-WORKDIR /workspace/packages/api-client
-RUN npm install
-
-# Setup web
-WORKDIR /workspace/web
-COPY web/package.json ./
-
-# Adjust paths for Docker
-RUN sed -i 's|"file:../packages|"file:/workspace/packages|g' package.json
+COPY package.json package-lock.json* ./
 
 ARG VITE_PMI_API_URL=http://localhost:18100
 ARG VITE_OMS_API_URL=http://localhost:18101
@@ -26,13 +14,13 @@ ENV DOCKER_ENV=true
 
 RUN npm install
 
-COPY web .
+COPY . .
 RUN npm run build
 
 FROM nginx:1.27-alpine
 
-COPY web/nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /workspace/web/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist /usr/share/nginx/html
 
 EXPOSE 80
 

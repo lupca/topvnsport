@@ -1,28 +1,14 @@
 FROM node:20-alpine
 
-WORKDIR /workspace
+WORKDIR /app
 
-# Copy packages and install their deps
-COPY packages ./packages
-WORKDIR /workspace/packages/ui-kit
-RUN npm install
-WORKDIR /workspace/packages/api-client
+COPY package.json package-lock.json* ./
 RUN npm install
 
-# Setup frontend
-WORKDIR /workspace/PMI/frontend
-COPY PMI/frontend/package.json ./
-
-# Adjust paths for Docker
-RUN sed -i 's|"file:../../packages|"file:/workspace/packages|g' package.json
-
-RUN npm install
-
-COPY PMI/frontend .
+COPY . .
 
 ENV DOCKER_ENV=true
 
-# Build-time environment variables
 ARG NEXT_PUBLIC_API_URL=http://localhost:18100
 ARG NEXT_PUBLIC_IDENTITY_URL=http://localhost:13110
 

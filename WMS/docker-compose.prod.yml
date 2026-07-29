@@ -17,8 +17,8 @@ services:
 
   wms_frontend:
     build:
-      context: ..
-      dockerfile: WMS/frontend/Dockerfile
+      context: ./frontend
+      dockerfile: Dockerfile
       args:
         - NEXT_PUBLIC_API_URL=http://api-wms.topvnsport.com
         - NEXT_PUBLIC_WMS_API_URL=http://api-wms.topvnsport.com

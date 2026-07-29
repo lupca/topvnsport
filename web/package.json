@@ -24,8 +24,8 @@
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.1.5",
     "vite": "^6.2.3",
-    "@topvnsport/ui-kit": "file:../packages/ui-kit",
-    "@topvnsport/api-client": "file:../packages/api-client"
+    "@topvnsport/ui-kit": "github:lupca/voma-ui-kit",
+    "@topvnsport/api-client": "github:lupca/voma-api-client"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.3",
