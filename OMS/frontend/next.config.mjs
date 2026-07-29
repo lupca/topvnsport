@@ -12,6 +12,7 @@ const nextConfig = {
       ...config.resolve.alias,
       'clsx': path.resolve(__dirname, 'node_modules/clsx'),
       'tailwind-merge': path.resolve(__dirname, 'node_modules/tailwind-merge'),
+      'lucide-react': path.resolve(__dirname, 'node_modules/lucide-react'),
     };
     return config;
   },
