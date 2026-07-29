@@ -1,0 +1,36 @@
+name: Server Cleanup
+
+on:
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    name: Cleanup Server
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
+
+      - name: Check disk and cleanup
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "
+            echo '=== Disk Usage ==='
+            df -h
+            echo ''
+            echo '=== Docker Disk Usage ==='
+            docker system df
+            echo ''
+            echo '=== Cleaning up unused Docker resources ==='
+            docker system prune -af --volumes
+            echo ''
+            echo '=== Disk After Cleanup ==='
+            df -h
+            echo ''
+            echo '=== Container Status ==='
+            docker ps -a
+          "
