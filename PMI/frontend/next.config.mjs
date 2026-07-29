@@ -13,6 +13,8 @@ const nextConfig = {
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
+      'react': path.resolve(__dirname, 'node_modules/react'),
+      'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
       'clsx': path.resolve(__dirname, 'node_modules/clsx'),
       'tailwind-merge': path.resolve(__dirname, 'node_modules/tailwind-merge'),
       'lucide-react': path.resolve(__dirname, 'node_modules/lucide-react'),
