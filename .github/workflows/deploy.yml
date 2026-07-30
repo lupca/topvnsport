@@ -53,6 +53,8 @@ jobs:
           RDS_SSLMODE: ${{ secrets.RDS_SSLMODE }}
           S3_PUBLIC_BASE_URL: ${{ secrets.S3_PUBLIC_BASE_URL }}
           DEFAULT_SELLER_TAX_CODE: ${{ secrets.DEFAULT_SELLER_TAX_CODE }}
+          PUBLIC_TENANT_ID: ${{ secrets.PUBLIC_TENANT_ID }}
+          PUBLIC_SELLER_ID: ${{ secrets.PUBLIC_SELLER_ID }}
         run: |
           chmod +x deploy_prod.sh
           ./deploy_prod.sh
