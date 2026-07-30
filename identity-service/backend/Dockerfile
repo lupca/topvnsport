@@ -14,5 +14,5 @@ COPY . .
 
 EXPOSE 8000
 
-# Runs migration script prior to starting Uvicorn server
-CMD ["sh", "-c", "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 8000"]
+# Migrations handled by deploy_prod.sh after container starts
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
