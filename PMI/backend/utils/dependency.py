@@ -127,11 +127,13 @@ def _establish_tenant_context(tenant_value: Optional[str], seller_value: Optiona
 
 
 async def require_public_seller_context():
-    """Resolve public/storefront reads to one explicitly configured seller."""
-    context = _establish_tenant_context(
-        os.getenv("PUBLIC_TENANT_ID"),
-        os.getenv("PUBLIC_SELLER_ID"),
-    )
+    """Resolve public/storefront reads to one explicitly configured seller.
+
+    Skips membership validation since these are trusted env vars set by admin.
+    """
+    tenant_id = _parse_uuid(os.getenv("PUBLIC_TENANT_ID"), "PUBLIC_TENANT_ID", status.HTTP_503_SERVICE_UNAVAILABLE)
+    seller_id = _parse_uuid(os.getenv("PUBLIC_SELLER_ID"), "PUBLIC_SELLER_ID", status.HTTP_503_SERVICE_UNAVAILABLE)
+    context = set_tenant_context(tenant_id, seller_id)
     return {"tenant_id": str(context.tenant_id), "seller_id": str(context.seller_id)}
 
 
