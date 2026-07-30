@@ -11,6 +11,7 @@ class StaffBase(BaseModel):
     tenant_id: Optional[UUID] = None
 
 class StaffCreate(StaffBase):
+    tenant_id: UUID
     password: str = Field(..., min_length=8, max_length=128)
 
 class StaffUpdate(BaseModel):

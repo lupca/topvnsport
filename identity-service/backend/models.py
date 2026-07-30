@@ -75,12 +75,11 @@ class StaffAccount(Base):
     full_name = Column(String(255), nullable=True)
     
     role_id = Column(Integer, ForeignKey("roles.id", ondelete="RESTRICT"), nullable=False)
-    # Nullable only for the expand-migration compatibility window. PMI-030 will
-    # backfill existing rows and make this column non-nullable.
+    # Contracted by PMI-030 after the nullable expand/backfill window.
     tenant_id = Column(
         Uuid(as_uuid=True),
         ForeignKey("tenants.id", ondelete="RESTRICT"),
-        nullable=True,
+        nullable=False,
         index=True,
     )
     is_active = Column(Boolean, default=True, nullable=False)

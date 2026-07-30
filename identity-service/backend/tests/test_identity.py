@@ -19,13 +19,14 @@ import datetime
 
 def test_role_staff_relationship_and_cascade(db_session):
     # 1. Create a Role
+    tenant = Tenant(code="relationship-test", name="Relationship Test")
     role = Role(
         code="test_role",
         name="Test Role",
         description="A role for testing",
         permissions=["test:read"]
     )
-    db_session.add(role)
+    db_session.add_all([tenant, role])
     db_session.commit()
     db_session.refresh(role)
 
@@ -36,6 +37,7 @@ def test_role_staff_relationship_and_cascade(db_session):
         hashed_password="hashed_password_string",
         full_name="Test User",
         role_id=role.id,
+        tenant_id=tenant.id,
         is_active=True
     )
     db_session.add(staff)
@@ -203,8 +205,9 @@ def test_staff_base_username_validation():
 
 
 def test_change_staff_password_revokes_sessions(db_session):
+    tenant = Tenant(code="password-change-test", name="Password Change Test")
     role = Role(code="test_role", name="Test Role", permissions=["test:read"])
-    db_session.add(role)
+    db_session.add_all([tenant, role])
     db_session.commit()
     db_session.refresh(role)
 
@@ -214,6 +217,7 @@ def test_change_staff_password_revokes_sessions(db_session):
         email="test_pwd@topvnsport.com",
         hashed_password=hashed,
         role_id=role.id,
+        tenant_id=tenant.id,
         is_active=True
     )
     db_session.add(staff)
@@ -254,8 +258,9 @@ def test_change_staff_password_revokes_sessions(db_session):
 
 
 def test_reset_staff_password_revokes_sessions(db_session):
+    tenant = Tenant(code="password-reset-test", name="Password Reset Test")
     role = Role(code="test_role", name="Test Role", permissions=["test:read"])
-    db_session.add(role)
+    db_session.add_all([tenant, role])
     db_session.commit()
     db_session.refresh(role)
 
@@ -265,6 +270,7 @@ def test_reset_staff_password_revokes_sessions(db_session):
         email="test_reset@topvnsport.com",
         hashed_password=hashed,
         role_id=role.id,
+        tenant_id=tenant.id,
         is_active=True
     )
     db_session.add(staff)

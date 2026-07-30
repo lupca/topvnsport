@@ -3,7 +3,7 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
-from models import StaffAccount, Role, StaffSession
+from models import StaffAccount, Role, StaffSession, Tenant
 from schemas.staff import StaffCreate, StaffUpdate
 from schemas.role import RoleCreate, RoleUpdate
 from utils.password import hash_password
@@ -35,6 +35,12 @@ def create_staff_account(db: Session, staff_in: StaffCreate) -> StaffAccount:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Nhóm quyền không tồn tại"
+        )
+    tenant = db.query(Tenant).filter(Tenant.id == staff_in.tenant_id).first()
+    if not tenant:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Tenant không tồn tại",
         )
         
     db_staff = StaffAccount(
@@ -85,6 +91,12 @@ def update_staff_account(db: Session, staff_id: int, staff_in: StaffUpdate) -> S
         db_staff.role_id = staff_in.role_id
 
     if staff_in.tenant_id is not None:
+        tenant = db.query(Tenant).filter(Tenant.id == staff_in.tenant_id).first()
+        if not tenant:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Tenant không tồn tại",
+            )
         db_staff.tenant_id = staff_in.tenant_id
         
     if staff_in.is_active is not None:

@@ -32,11 +32,11 @@ class TenantSellerOwned:
 
     @declared_attr
     def tenant_id(cls):
-        return Column(Uuid(as_uuid=True), nullable=True, index=True)
+        return Column(Uuid(as_uuid=True), nullable=False, index=True)
 
     @declared_attr
     def seller_id(cls):
-        return Column(Uuid(as_uuid=True), nullable=True, index=True)
+        return Column(Uuid(as_uuid=True), nullable=False, index=True)
 
 
 class Category(TenantSellerOwned, Base):

@@ -7,14 +7,14 @@ from database import Base
 class TenantOwned:
     """Ownership columns shared by every independently queried WMS record."""
 
-    tenant_id = Column(Uuid(as_uuid=True), nullable=True, index=True)
-    seller_id = Column(Uuid(as_uuid=True), nullable=True, index=True)
+    tenant_id = Column(Uuid(as_uuid=True), nullable=False, index=True)
+    seller_id = Column(Uuid(as_uuid=True), nullable=False, index=True)
 
 
 class Warehouse(TenantOwned, Base):
     __tablename__ = "warehouses"
     __table_args__ = (
-        UniqueConstraint("tenant_id", "seller_id", "code", name="uq_warehouse_owner_code"),
+        UniqueConstraint("seller_id", "code", name="uq_warehouse_seller_code"),
     )
 
     id = Column(Integer, primary_key=True, index=True)
@@ -31,7 +31,7 @@ class Warehouse(TenantOwned, Base):
 class Location(TenantOwned, Base):
     __tablename__ = "locations"
     __table_args__ = (
-        UniqueConstraint("tenant_id", "seller_id", "location_code", name="uq_location_owner_code"),
+        UniqueConstraint("seller_id", "location_code", name="uq_location_seller_code"),
     )
 
     id = Column(Integer, primary_key=True, index=True)
@@ -54,8 +54,8 @@ class Inventory(TenantOwned, Base):
     __tablename__ = "inventories"
     __table_args__ = (
         UniqueConstraint(
-            "tenant_id", "seller_id", "sku_code", "location_id",
-            name="uq_inventory_owner_sku_location",
+            "seller_id", "sku_code", "location_id",
+            name="uq_inventory_seller_sku_location",
         ),
     )
 
@@ -77,8 +77,8 @@ class Inventory(TenantOwned, Base):
 class BarcodeMapping(TenantOwned, Base):
     __tablename__ = "barcode_mappings"
     __table_args__ = (
-        UniqueConstraint("tenant_id", "seller_id", "barcode", name="uq_barcode_owner_barcode"),
-        UniqueConstraint("tenant_id", "seller_id", "sku_code", name="uq_barcode_owner_sku"),
+        UniqueConstraint("seller_id", "barcode", name="uq_barcode_seller_barcode"),
+        UniqueConstraint("seller_id", "sku_code", name="uq_barcode_seller_sku"),
     )
 
     id = Column(Integer, primary_key=True, index=True)
@@ -100,8 +100,8 @@ class InboundShipment(TenantOwned, Base):
     __tablename__ = "inbound_shipments"
     __table_args__ = (
         UniqueConstraint(
-            "tenant_id", "seller_id", "inbound_number",
-            name="uq_inbound_owner_number",
+            "seller_id", "inbound_number",
+            name="uq_inbound_seller_number",
         ),
     )
 
@@ -144,8 +144,8 @@ class FulfillmentOrder_WMS(TenantOwned, Base):
     __tablename__ = "fulfillment_orders_wms"
     __table_args__ = (
         UniqueConstraint(
-            "tenant_id", "seller_id", "fulfillment_number",
-            name="uq_fulfillment_owner_number",
+            "seller_id", "fulfillment_number",
+            name="uq_fulfillment_wms_seller_number",
         ),
     )
 

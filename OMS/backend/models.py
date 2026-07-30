@@ -11,19 +11,20 @@ def utcnow():
 class TenantSellerOwned:
     """Marker mixin used by the scoped SQLAlchemy session."""
 
-    tenant_id = Column(Uuid(as_uuid=True), nullable=True, index=True)
-    seller_id = Column(Uuid(as_uuid=True), nullable=True, index=True)
+    tenant_id = Column(Uuid(as_uuid=True), nullable=False, index=True)
+    seller_id = Column(Uuid(as_uuid=True), nullable=False, index=True)
 
 
 class Customer(TenantSellerOwned, Base):
     __tablename__ = "customers"
     __table_args__ = (
+        UniqueConstraint("seller_id", "phone", name="uq_customers_seller_phone"),
         Index("ix_customers_tenant_seller", "tenant_id", "seller_id"),
     )
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
-    phone = Column(String, unique=True, index=True, nullable=False)
+    phone = Column(String, index=True, nullable=False)
     email = Column(String, nullable=True)
     address = Column(Text, nullable=True)
     created_at = Column(DateTime, default=utcnow)
@@ -36,11 +37,12 @@ class Customer(TenantSellerOwned, Base):
 class Channel(TenantSellerOwned, Base):
     __tablename__ = "channels"
     __table_args__ = (
+        UniqueConstraint("seller_id", "code", name="uq_channels_seller_code"),
         Index("ix_channels_tenant_seller", "tenant_id", "seller_id"),
     )
 
     id = Column(Integer, primary_key=True, index=True)
-    code = Column(String, unique=True, index=True, nullable=False)
+    code = Column(String, index=True, nullable=False)
     name = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
     is_deleted = Column(Boolean, default=False, nullable=False)
@@ -52,11 +54,14 @@ class Channel(TenantSellerOwned, Base):
 class Order(TenantSellerOwned, Base):
     __tablename__ = "orders"
     __table_args__ = (
+        UniqueConstraint(
+            "seller_id", "order_number", name="uq_orders_seller_order_number"
+        ),
         Index("ix_orders_tenant_seller", "tenant_id", "seller_id"),
     )
 
     id = Column(Integer, primary_key=True, index=True)
-    order_number = Column(String, unique=True, index=True, nullable=False)
+    order_number = Column(String, index=True, nullable=False)
     customer_id = Column(Integer, ForeignKey("customers.id"), nullable=False)
     channel_id = Column(Integer, ForeignKey("channels.id"), nullable=False)
     status = Column(String, nullable=False)
@@ -103,12 +108,17 @@ class OrderItem(Base):
 class FulfillmentOrder(TenantSellerOwned, Base):
     __tablename__ = "fulfillment_orders"
     __table_args__ = (
+        UniqueConstraint(
+            "seller_id",
+            "fulfillment_number",
+            name="uq_fulfillment_orders_seller_number",
+        ),
         Index("ix_fulfillment_orders_tenant_seller", "tenant_id", "seller_id"),
     )
 
     id = Column(Integer, primary_key=True, index=True)
     order_id = Column(Integer, ForeignKey("orders.id"), nullable=False)
-    fulfillment_number = Column(String, unique=True, index=True, nullable=False)
+    fulfillment_number = Column(String, index=True, nullable=False)
     warehouse_code = Column(String, nullable=False)
     status = Column(String, nullable=False)
     tracking_number = Column(String, nullable=True)

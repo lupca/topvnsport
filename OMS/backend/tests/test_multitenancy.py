@@ -197,14 +197,17 @@ def test_request_context_fails_closed_and_direct_jwt_uses_token_tenant(client):
         assert conflict.status_code == 403
 
 
-def test_expand_phase_keeps_legacy_global_natural_key_contract(db):
+def test_contract_scopes_customer_natural_key_to_seller(db):
     _seed_seller(db, TENANT_A, SELLER_A, "UNIQUE")
     with tenant_context(TENANT_A, SELLER_B):
         db.add(models.Customer(name="Other seller", phone="09000000UNIQUE"))
+        db.commit()
+
+    with tenant_context(TENANT_A, SELLER_A):
+        db.add(models.Customer(name="Duplicate", phone="09000000UNIQUE"))
         with pytest.raises(IntegrityError):
             db.commit()
         db.rollback()
 
-    # PMI-030 replaces this legacy global constraint only after backfill.
-    assert models.Customer.__table__.c.tenant_id.nullable is True
-    assert models.Customer.__table__.c.seller_id.nullable is True
+    assert models.Customer.__table__.c.tenant_id.nullable is False
+    assert models.Customer.__table__.c.seller_id.nullable is False
