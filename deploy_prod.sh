@@ -343,7 +343,7 @@ ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "
   # migration from running at all.
   echo \"Running database migrations...\"
   migration_failures=''
-  for migration_target in pim-api wms-api oms_backend; do
+  for migration_target in identity-api pim-api wms-api oms_backend; do
     if sudo docker exec \"\$migration_target\" alembic upgrade head; then
       echo \"  migration ok: \$migration_target\"
     else
