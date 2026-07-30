@@ -51,6 +51,7 @@ jobs:
           RDS_USER: ${{ secrets.RDS_USER }}
           RDS_PASSWORD: ${{ secrets.RDS_PASSWORD }}
           RDS_SSLMODE: ${{ secrets.RDS_SSLMODE }}
+          S3_PUBLIC_BASE_URL: ${{ secrets.S3_PUBLIC_BASE_URL }}
         run: |
           chmod +x deploy_prod.sh
           ./deploy_prod.sh

@@ -23,6 +23,7 @@ DEPLOY_REVISION="$(git -C "$ROOT_DIR" rev-parse --short=12 HEAD 2>/dev/null || e
 : "${RDS_USER:?RDS_USER is required}"
 : "${RDS_PASSWORD:?RDS_PASSWORD is required}"
 : "${RDS_SSLMODE:?RDS_SSLMODE is required}"
+: "${S3_PUBLIC_BASE_URL:?S3_PUBLIC_BASE_URL is required}"
 
 if [[ "$RDS_SSLMODE" != "require" ]]; then
   echo "RDS_SSLMODE must be require"
@@ -50,7 +51,8 @@ for https_url_name in \
   PIM_URL \
   OMS_URL \
   WMS_URL \
-  IDENTITY_URL; do
+  IDENTITY_URL \
+  S3_PUBLIC_BASE_URL; do
   require_voma_https_url "$https_url_name"
 done
 
@@ -298,6 +300,9 @@ PMI_AWS_S3_BUCKET_VALUE
 write_secret "\$DEPLOY_PATH/PMI/backend/.env.prod" S3_PRESIGNED_URL_EXPIRY <<'PMI_S3_PRESIGNED_URL_EXPIRY_VALUE'
 3600
 PMI_S3_PRESIGNED_URL_EXPIRY_VALUE
+write_secret "\$DEPLOY_PATH/PMI/backend/.env.prod" S3_PUBLIC_BASE_URL <<'PMI_S3_PUBLIC_BASE_URL_VALUE'
+${S3_PUBLIC_BASE_URL}
+PMI_S3_PUBLIC_BASE_URL_VALUE
 write_secret "\$DEPLOY_PATH/identity-service/.env.prod" DATABASE_URL <<'IDENTITY_DATABASE_URL_VALUE'
 postgresql://${RDS_USER}:${RDS_PASSWORD}@${RDS_HOST}:5432/identity?sslmode=${RDS_SSLMODE}
 IDENTITY_DATABASE_URL_VALUE
