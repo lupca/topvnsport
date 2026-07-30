@@ -7,7 +7,7 @@ import threading
 from typing import List, Optional, Tuple, Dict, Set, Union, Any
 from decimal import Decimal
 
-from sqlalchemy import or_, text
+from sqlalchemy import or_
 from sqlalchemy.orm import Session, joinedload
 
 from models import Promotion, PromotionScope, PromotionComputedPrice, ProductVariant, Product, Category, DiscountType, PromotionStatus, ScopeType
@@ -245,8 +245,10 @@ def recompute_variant_prices(db: Session, variant_ids: Optional[List[str]] = Non
         try:
             db.flush()
 
-            persisted_all_result = db.execute(text("SELECT id FROM promotions")).all()
-            all_persisted_promo_ids = set(str(r[0]) for r in persisted_all_result if r[0] is not None)
+            persisted_all_result = db.query(Promotion.id).all()
+            all_persisted_promo_ids = {
+                str(row.id) for row in persisted_all_result if row.id is not None
+            }
 
             now = datetime.datetime.now(datetime.timezone.utc)
             all_promos = (

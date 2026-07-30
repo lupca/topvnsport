@@ -80,7 +80,25 @@ class PromotionScheduler:
         with _recompute_lock:
             db = self.db_factory()
             try:
-                return process_promotion_schedule(db)
+                from utils.context import tenant_context
+
+                ownership_pairs = (
+                    db.query(Promotion.tenant_id, Promotion.seller_id)
+                    .filter(
+                        Promotion.tenant_id.isnot(None),
+                        Promotion.seller_id.isnot(None),
+                    )
+                    .distinct()
+                    .execution_options(tenant_scope_bypass=True)
+                    .all()
+                )
+                summary = {"activated": 0, "ended": 0}
+                for tenant_id, seller_id in ownership_pairs:
+                    with tenant_context(tenant_id, seller_id):
+                        seller_summary = process_promotion_schedule(db)
+                    summary["activated"] += seller_summary["activated"]
+                    summary["ended"] += seller_summary["ended"]
+                return summary
             except StaleDataError as e:
                 db.rollback()
                 logger.warning(f"[PromotionScheduler] StaleDataError in run_once: {e}")

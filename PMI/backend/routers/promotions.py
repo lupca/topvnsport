@@ -32,7 +32,7 @@ from services.promotion_service import (
     parse_promotion_intent,
 )
 from utils.audit import audit_action
-from utils.dependency import get_current_identity
+from utils.dependency import get_current_identity, require_public_seller_context
 
 router = APIRouter(tags=["Promotions"])
 
@@ -243,6 +243,7 @@ def parse_intent(
 def get_bulk_prices(
     payload: Optional[Dict[str, Any]] = Body(None),
     variant_ids: Optional[List[str]] = Query(None),
+    _seller_context: dict = Depends(require_public_seller_context),
     db: Session = Depends(get_db)
 ):
     """
@@ -710,6 +711,7 @@ def end_promotion(
 )
 def get_variant_price(
     id: str,
+    _seller_context: dict = Depends(require_public_seller_context),
     db: Session = Depends(get_db)
 ):
     """
@@ -722,4 +724,3 @@ def get_variant_price(
             detail="Variant not found"
         )
     return res
-

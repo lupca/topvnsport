@@ -1,9 +1,12 @@
 import importlib
+import json
 import os
 import sys
 from typing import Generator
+import uuid
 
 import pytest
+from fastapi import Request
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import event
@@ -13,9 +16,25 @@ from tests.factories.product import ProductFactory
 os.environ.setdefault("JWT_SECRET_KEY", "secretkey123456789012345678901234567890")
 os.environ.setdefault("INTERNAL_SERVICE_TOKEN", "test_internal_service_token_12345")
 
+TEST_TENANT_ID = uuid.UUID("11111111-1111-4111-8111-111111111111")
+TEST_SELLER_ID = uuid.UUID("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa")
+os.environ.setdefault("PUBLIC_TENANT_ID", str(TEST_TENANT_ID))
+os.environ.setdefault("PUBLIC_SELLER_ID", str(TEST_SELLER_ID))
+os.environ.setdefault(
+    "PMI_SELLER_TENANT_MAP",
+    json.dumps({str(TEST_SELLER_ID): str(TEST_TENANT_ID)}),
+)
+
 @pytest.fixture(autouse=True)
 def setup_factories(db_session):
     ProductFactory._meta.sqlalchemy_session = db_session
+
+
+@pytest.fixture(autouse=True)
+def default_tenant_context(app_module):
+    context_module = importlib.import_module("utils.context")
+    with context_module.tenant_context(TEST_TENANT_ID, TEST_SELLER_ID):
+        yield
 
 
 @pytest.fixture(scope="session")
@@ -139,12 +158,22 @@ def client(app_module, mock_storage, db_session) -> Generator[TestClient, None, 
     def override_get_db():
         yield db_session
         
-    def override_get_identity():
+    async def override_get_identity(request: Request):
         from utils.context import actor_username_var, actor_type_var
+        tenant_id = request.headers.get("X-Tenant-Id", str(TEST_TENANT_ID))
+        seller_id = request.headers.get("X-Seller-Id", str(TEST_SELLER_ID))
+        from utils.context import set_tenant_context
+        set_tenant_context(tenant_id, seller_id)
         actor_username_var.set("test_admin")
         actor_type_var.set("USER")
         # Return a dummy identity dictionary
-        return {"actor_type": "USER", "actor_username": "test_admin", "user": type("MockUser", (), {"role": "admin", "username": "test_admin"})()}
+        return {
+            "actor_type": "USER",
+            "actor_username": "test_admin",
+            "tenant_id": tenant_id,
+            "seller_id": seller_id,
+            "user": type("MockUser", (), {"role": "admin", "username": "test_admin"})(),
+        }
 
     database_module = importlib.import_module("database")
     dependency_module = importlib.import_module("utils.dependency")

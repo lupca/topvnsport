@@ -27,7 +27,14 @@ import os
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     run_migrations()
-    startup_populate()
+    public_tenant_id = os.getenv("PUBLIC_TENANT_ID")
+    public_seller_id = os.getenv("PUBLIC_SELLER_ID")
+    if public_tenant_id and public_seller_id:
+        from utils.context import tenant_context
+        with tenant_context(public_tenant_id, public_seller_id):
+            startup_populate()
+    else:
+        startup_populate()
     worker = AuditWorker(interval=0.5)
     worker_thread = threading.Thread(target=worker.start_loop, daemon=True)
     worker_thread.start()
@@ -115,7 +122,7 @@ async def validation_exception_handler(request, exc: RequestValidationError):
 
 
 from fastapi import Depends
-from utils.dependency import get_current_identity
+from utils.dependency import get_current_identity, require_public_seller_context
 
 app.include_router(auth_router)
 app.include_router(channels_router, dependencies=[Depends(get_current_identity)])
@@ -125,7 +132,7 @@ app.include_router(products_router, dependencies=[Depends(get_current_identity)]
 app.include_router(upload_router, dependencies=[Depends(get_current_identity)])
 app.include_router(attributes_router, dependencies=[Depends(get_current_identity)])
 app.include_router(audit_router)
-app.include_router(public_router)
+app.include_router(public_router, dependencies=[Depends(require_public_seller_context)])
 app.include_router(promotions_router)
 
 import os

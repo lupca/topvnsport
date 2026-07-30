@@ -2,7 +2,16 @@ import uuid
 import ipaddress
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
-from utils.context import correlation_id_var, ip_address_var, actor_username_var, actor_type_var, actor_id_var
+from utils.context import (
+    actor_id_var,
+    actor_type_var,
+    actor_username_var,
+    correlation_id_var,
+    ip_address_var,
+    seller_id_var,
+    tenant_context_active_var,
+    tenant_id_var,
+)
 
 def get_client_ip(request: Request) -> str:
     # Get direct connection client host
@@ -52,6 +61,9 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
         token_actor = actor_username_var.set(actor_name)
         token_type = actor_type_var.set(actor_type)
         token_actor_id = actor_id_var.set(actor_id)
+        token_tenant_id = tenant_id_var.set(None)
+        token_seller_id = seller_id_var.set(None)
+        token_tenant_active = tenant_context_active_var.set(False)
 
         try:
             response = await call_next(request)
@@ -65,3 +77,6 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
             actor_username_var.reset(token_actor)
             actor_type_var.reset(token_type)
             actor_id_var.reset(token_actor_id)
+            tenant_context_active_var.reset(token_tenant_active)
+            seller_id_var.reset(token_seller_id)
+            tenant_id_var.reset(token_tenant_id)

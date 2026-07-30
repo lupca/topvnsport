@@ -1,5 +1,5 @@
-from sqlalchemy import Column, Integer, String, Boolean, Float, ForeignKey, JSON, Text, DateTime, UniqueConstraint, Numeric, Enum, func, Index
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy import Column, Integer, String, Boolean, Float, ForeignKey, JSON, Text, DateTime, UniqueConstraint, Numeric, Enum, func, Index, Uuid
+from sqlalchemy.orm import relationship, backref, declared_attr
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from database import Base
@@ -27,25 +27,46 @@ class CoercedUUIDString(TypeDecorator):
         except (ValueError, AttributeError, TypeError):
             return value
 
-class Category(Base):
+class TenantSellerOwned:
+    """Marker mixin for rows isolated by the authenticated tenant/seller pair."""
+
+    @declared_attr
+    def tenant_id(cls):
+        return Column(Uuid(as_uuid=True), nullable=True, index=True)
+
+    @declared_attr
+    def seller_id(cls):
+        return Column(Uuid(as_uuid=True), nullable=True, index=True)
+
+
+class Category(TenantSellerOwned, Base):
     __tablename__ = "categories"
+    __table_args__ = (
+        UniqueConstraint("seller_id", "code", name="uq_categories_seller_code"),
+        Index("ix_categories_tenant_seller", "tenant_id", "seller_id"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     parent_id = Column(Integer, ForeignKey("categories.id", ondelete="CASCADE"), nullable=True)
     name = Column(String(255), nullable=False)
-    code = Column(String(100), unique=True, nullable=False)
+    code = Column(String(100), nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
 
     # Self-referencing relationship for category tree hierarchy
     children = relationship("Category", backref=backref("parent", remote_side=[id]))
     products = relationship("Product", back_populates="category")
 
-class Product(Base):
+class Product(TenantSellerOwned, Base):
     __tablename__ = "products"
+    __table_args__ = (
+        UniqueConstraint("seller_id", "product_code", name="uq_products_seller_product_code"),
+        UniqueConstraint("seller_id", "slug", name="uq_products_seller_slug"),
+        Index("ix_products_tenant_seller", "tenant_id", "seller_id"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
-    product_code = Column(String(100), unique=True, nullable=False, index=True) # ps_sku_parent_short
-    slug = Column(String(255), unique=True, nullable=True, index=True)
+    product_code = Column(String(100), nullable=False, index=True) # ps_sku_parent_short
+    slug = Column(String(255), nullable=True, index=True)
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     category_id = Column(Integer, ForeignKey("categories.id", ondelete="SET NULL"), nullable=True, index=True)
@@ -88,14 +109,18 @@ class TierVariation(Base):
 
     product = relationship("Product", back_populates="tier_variations")
 
-class ProductVariant(Base):
+class ProductVariant(TenantSellerOwned, Base):
     __tablename__ = "product_variants"
+    __table_args__ = (
+        UniqueConstraint("seller_id", "sku_code", name="uq_product_variants_seller_sku_code"),
+        Index("ix_product_variants_tenant_seller", "tenant_id", "seller_id"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     product_id = Column(Integer, ForeignKey("products.id", ondelete="CASCADE"), nullable=False)
     tier_1_option = Column(String(100), nullable=True) # e.g. "Đỏ"
     tier_2_option = Column(String(100), nullable=True) # e.g. "Size M"
-    sku_code = Column(String(100), unique=True, nullable=False, index=True) # ps_sku_short
+    sku_code = Column(String(100), nullable=False, index=True) # ps_sku_short
     price = Column(Numeric(12, 2), nullable=False)
     barcode = Column(String(255), nullable=True)
     default_cost_price = Column(Numeric(12, 2), nullable=True)  # Giá vốn tham chiếu (VND)
@@ -203,11 +228,15 @@ class ProductAttributeValue(Base):
     product = relationship("Product", back_populates="attribute_values")
     attribute = relationship("Attribute", back_populates="product_values")
 
-class Channel(Base):
+class Channel(TenantSellerOwned, Base):
     __tablename__ = "channels"
+    __table_args__ = (
+        UniqueConstraint("seller_id", "code", name="uq_channels_seller_code"),
+        Index("ix_channels_tenant_seller", "tenant_id", "seller_id"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
-    code = Column(String(100), unique=True, nullable=False, index=True)
+    code = Column(String(100), nullable=False, index=True)
     name = Column(String(255), nullable=False)
 
 class Locale(Base):
@@ -479,11 +508,15 @@ class ScopeType(str, enum.Enum):
     VARIANT = "VARIANT"
 
 
-class Promotion(Base):
+class Promotion(TenantSellerOwned, Base):
     __tablename__ = "promotions"
+    __table_args__ = (
+        UniqueConstraint("seller_id", "code", name="uq_promotions_seller_code"),
+        Index("ix_promotions_tenant_seller", "tenant_id", "seller_id"),
+    )
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    code = Column(String(100), unique=True, nullable=False, index=True)
+    code = Column(String(100), nullable=False, index=True)
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     discount_type = Column(Enum(DiscountType, name="discount_type_enum"), nullable=False)
@@ -505,8 +538,11 @@ class Promotion(Base):
     usage_logs = relationship("PromotionUsageLog", back_populates="promotion", cascade="all, delete-orphan")
 
 
-class PromotionScope(Base):
+class PromotionScope(TenantSellerOwned, Base):
     __tablename__ = "promotion_scope"
+    __table_args__ = (
+        Index("ix_promotion_scope_tenant_seller", "tenant_id", "seller_id"),
+    )
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     promotion_id = Column(String(36), ForeignKey("promotions.id", ondelete="CASCADE"), nullable=False, index=True)
@@ -518,8 +554,12 @@ class PromotionScope(Base):
     promotion = relationship("Promotion", back_populates="scopes")
 
 
-class PromotionComputedPrice(Base):
+class PromotionComputedPrice(TenantSellerOwned, Base):
     __tablename__ = "promotion_computed_prices"
+    __table_args__ = (
+        UniqueConstraint("seller_id", "variant_id", name="uq_promotion_computed_prices_seller_variant"),
+        Index("ix_promotion_computed_prices_tenant_seller", "tenant_id", "seller_id"),
+    )
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     variant_id = Column(String(100), nullable=False, index=True)
@@ -534,8 +574,11 @@ class PromotionComputedPrice(Base):
     promotion = relationship("Promotion", back_populates="computed_prices")
 
 
-class PromotionUsageLog(Base):
+class PromotionUsageLog(TenantSellerOwned, Base):
     __tablename__ = "promotion_usage_log"
+    __table_args__ = (
+        Index("ix_promotion_usage_log_tenant_seller", "tenant_id", "seller_id"),
+    )
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     promotion_id = Column(String(36), ForeignKey("promotions.id", ondelete="CASCADE"), nullable=False, index=True)
@@ -544,4 +587,3 @@ class PromotionUsageLog(Base):
 
     # Relationships
     promotion = relationship("Promotion", back_populates="usage_logs")
-
