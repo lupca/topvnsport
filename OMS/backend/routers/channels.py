@@ -9,6 +9,7 @@ import schemas
 from database import get_db
 from utils.api_utils import utcnow
 from utils.auth import get_current_user, get_optional_user
+from utils.tenant_context import require_tenant_context
 
 router = APIRouter(prefix="/channels", tags=["Channels"])
 
@@ -20,6 +21,7 @@ def create_channel(
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
+    context = require_tenant_context()
     existing = db.query(models.Channel).filter(models.Channel.code == channel.code).first()
     if existing:
         if existing.is_deleted:
@@ -37,6 +39,8 @@ def create_channel(
         )
 
     db_channel = models.Channel(
+        tenant_id=context.tenant_id,
+        seller_id=context.seller_id,
         code=channel.code,
         name=channel.name,
         is_active=channel.is_active
@@ -185,4 +189,3 @@ def update_sku_mapping(code: str, payload: dict, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail=f"Channel {code} not found")
 
     return {"success": True, "channel_code": code, "mapping": payload.get("mapping", {})}
-

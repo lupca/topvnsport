@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 import models
 from adapters.channels.base import NormalizedOrder
 from events.dispatcher import EventDispatcher, OrderEvent
+from utils.tenant_context import require_tenant_context
 
 logger = logging.getLogger("oms_backend")
 
@@ -18,6 +19,7 @@ class OrderService:
         created_by: str = "channel_sync",
     ) -> models.Order:
         """Tạo hoặc cập nhật đơn hàng được chuẩn hóa từ mọi kênh"""
+        context = require_tenant_context()
         # Search existing order by channel_code + channel_order_id
         existing_order = (
             db.query(models.Order)
@@ -41,6 +43,8 @@ class OrderService:
         )
         if not customer:
             customer = models.Customer(
+                tenant_id=context.tenant_id,
+                seller_id=context.seller_id,
                 name=normalized_order.customer_name,
                 phone=normalized_order.customer_phone,
                 email=normalized_order.customer_email,
@@ -55,11 +59,18 @@ class OrderService:
             .filter(models.Channel.code == normalized_order.channel_code)
             .first()
         )
-        channel_id = channel.id if channel else 1
+        if channel is None:
+            raise ValueError(
+                f"Channel {normalized_order.channel_code} is not configured "
+                "for the current seller"
+            )
+        channel_id = channel.id
 
         order_number = f"ORD-{normalized_order.channel_code}-{normalized_order.channel_order_id}"
 
         order = models.Order(
+            tenant_id=context.tenant_id,
+            seller_id=context.seller_id,
             order_number=order_number,
             customer_id=customer.id,
             channel_id=channel_id,
@@ -99,6 +110,8 @@ class OrderService:
             OrderEvent.CREATED,
             {
                 "order_id": order.id,
+                "tenant_id": str(order.tenant_id),
+                "seller_id": str(order.seller_id),
                 "order_number": order.order_number,
                 "channel_code": order.channel_code,
                 "total_amount": float(order.total_amount),
@@ -137,6 +150,8 @@ class OrderService:
                 event_mapping[new_status],
                 {
                     "order_id": order.id,
+                    "tenant_id": str(order.tenant_id),
+                    "seller_id": str(order.seller_id),
                     "order_number": order.order_number,
                     "old_status": old_status,
                     "new_status": new_status,

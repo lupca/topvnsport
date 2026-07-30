@@ -9,6 +9,7 @@ import schemas
 from database import get_db
 from utils.api_utils import utcnow
 from utils.auth import get_current_user, get_optional_user
+from utils.tenant_context import require_tenant_context
 
 router = APIRouter(prefix="/customers", tags=["Customers"])
 
@@ -20,6 +21,7 @@ def create_customer(
     db: Session = Depends(get_db),
     current_user: Optional[dict] = Depends(get_optional_user)
 ):
+    context = require_tenant_context()
     existing = db.query(models.Customer).filter(models.Customer.phone == customer.phone).first()
     if existing:
         if existing.is_deleted:
@@ -34,6 +36,8 @@ def create_customer(
         return existing
 
     db_customer = models.Customer(
+        tenant_id=context.tenant_id,
+        seller_id=context.seller_id,
         name=customer.name,
         phone=customer.phone,
         email=customer.email,
@@ -154,4 +158,3 @@ def delete_customer(customer_id: int, db: Session = Depends(get_db), current_use
     customer.deleted_at = utcnow()
     db.commit()
     return
-

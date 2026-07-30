@@ -13,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import models
 import services.zalo_service
 from database import SessionLocal
+from utils.tenant_context import TenantContextMiddleware, maintenance_bypass
 from utils.api_utils import (
     validation_exception_handler,
 )
@@ -50,15 +51,18 @@ def seed_initial_channels() -> None:
             ("TIKTOK_SHOP", "TikTok Shop"),
             ("LAZADA", "Lazada"),
         ]
-        for code, name in channels_to_seed:
-            existing_channel = (
-                db_seed.query(models.Channel)
-                .filter(models.Channel.code == code)
-                .first()
-            )
-            if not existing_channel:
-                db_seed.add(models.Channel(code=code, name=name, is_active=True))
-        db_seed.commit()
+        # Legacy seeding runs before the ownership backfill and is deliberately
+        # isolated from HTTP request sessions.
+        with maintenance_bypass():
+            for code, name in channels_to_seed:
+                existing_channel = (
+                    db_seed.query(models.Channel)
+                    .filter(models.Channel.code == code)
+                    .first()
+                )
+                if not existing_channel:
+                    db_seed.add(models.Channel(code=code, name=name, is_active=True))
+            db_seed.commit()
         logger.info("Successfully seeded initial channels data.")
     except Exception:
         db_seed.rollback()
@@ -183,6 +187,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(TenantContextMiddleware)
 
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 

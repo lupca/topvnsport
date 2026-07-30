@@ -1,14 +1,25 @@
 from datetime import datetime, timezone
 import logging
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, Numeric, JSON, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, Numeric, JSON, Index, UniqueConstraint, Uuid
 from sqlalchemy.orm import relationship
 from database import Base
 
 def utcnow():
     return datetime.now(timezone.utc).replace(tzinfo=None)
 
-class Customer(Base):
+
+class TenantSellerOwned:
+    """Marker mixin used by the scoped SQLAlchemy session."""
+
+    tenant_id = Column(Uuid(as_uuid=True), nullable=True, index=True)
+    seller_id = Column(Uuid(as_uuid=True), nullable=True, index=True)
+
+
+class Customer(TenantSellerOwned, Base):
     __tablename__ = "customers"
+    __table_args__ = (
+        Index("ix_customers_tenant_seller", "tenant_id", "seller_id"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
@@ -22,8 +33,11 @@ class Customer(Base):
     orders = relationship("Order", back_populates="customer")
 
 
-class Channel(Base):
+class Channel(TenantSellerOwned, Base):
     __tablename__ = "channels"
+    __table_args__ = (
+        Index("ix_channels_tenant_seller", "tenant_id", "seller_id"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     code = Column(String, unique=True, index=True, nullable=False)
@@ -35,8 +49,11 @@ class Channel(Base):
     orders = relationship("Order", back_populates="channel")
 
 
-class Order(Base):
+class Order(TenantSellerOwned, Base):
     __tablename__ = "orders"
+    __table_args__ = (
+        Index("ix_orders_tenant_seller", "tenant_id", "seller_id"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     order_number = Column(String, unique=True, index=True, nullable=False)
@@ -83,8 +100,11 @@ class OrderItem(Base):
     order = relationship("Order", back_populates="items")
 
 
-class FulfillmentOrder(Base):
+class FulfillmentOrder(TenantSellerOwned, Base):
     __tablename__ = "fulfillment_orders"
+    __table_args__ = (
+        Index("ix_fulfillment_orders_tenant_seller", "tenant_id", "seller_id"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     order_id = Column(Integer, ForeignKey("orders.id"), nullable=False)
@@ -186,9 +206,12 @@ class SmsRateLimit(Base):
     lockout_until = Column(DateTime, nullable=True)
 
 
-class Payment(Base):
+class Payment(TenantSellerOwned, Base):
     __tablename__ = "payments"
-    __table_args__ = (UniqueConstraint("provider", "provider_txn_id", name="uq_payments_provider_txn"),)
+    __table_args__ = (
+        UniqueConstraint("provider", "provider_txn_id", name="uq_payments_provider_txn"),
+        Index("ix_payments_tenant_seller", "tenant_id", "seller_id"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     order_id = Column(Integer, ForeignKey("orders.id"), nullable=False, index=True)
@@ -237,8 +260,11 @@ class Invoice(Base):
     order = relationship("Order", back_populates="invoices")
 
 
-class OrderEvent(Base):
+class OrderEvent(TenantSellerOwned, Base):
     __tablename__ = "order_events"
+    __table_args__ = (
+        Index("ix_order_events_tenant_seller", "tenant_id", "seller_id"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     order_id = Column(Integer, ForeignKey("orders.id"), nullable=False, index=True)
@@ -248,4 +274,3 @@ class OrderEvent(Base):
     created_at = Column(DateTime, default=utcnow)
 
     order = relationship("Order", back_populates="order_events")
-

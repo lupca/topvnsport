@@ -19,9 +19,14 @@ def utcnow():
 
 
 def call_api(url: str, method: str = "GET", data: dict = None):
+    from utils.tenant_context import require_tenant_context
+
+    context = require_tenant_context()
     headers = {
         "Content-Type": "application/json",
-        "X-API-Key": PIM_API_KEY
+        "X-API-Key": PIM_API_KEY,
+        "X-Tenant-Id": str(context.tenant_id),
+        "X-Seller-Id": str(context.seller_id),
     }
     logger.info(f"Initiating inter-service API call: {method} {url}")
     try:

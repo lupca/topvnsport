@@ -15,6 +15,7 @@ import utils.phone_helper
 from database import get_db
 from utils.api_utils import PIM_API_URL, WMS_API_URL, utcnow
 from utils.auth import get_current_user, get_optional_user
+from utils.tenant_context import require_tenant_context
 
 logger = logging.getLogger("oms_backend")
 
@@ -45,6 +46,7 @@ def _allocate_order_items(*args, **kwargs):
 
 @router.post("", response_model=schemas.OrderOut, status_code=status.HTTP_201_CREATED)
 def create_order(payload: schemas.OrderCreateInput, db: Session = Depends(get_db), current_user: Optional[dict] = Depends(get_optional_user)):
+    context = require_tenant_context()
     # 1. Validate customer
     customer = db.query(models.Customer).filter(models.Customer.id == payload.customer_id, models.Customer.is_deleted == False).first()
     if not customer:
@@ -143,6 +145,8 @@ def create_order(payload: schemas.OrderCreateInput, db: Session = Depends(get_db
                     raise HTTPException(status_code=400, detail="Order number already exists")
 
             new_order = models.Order(
+                tenant_id=context.tenant_id,
+                seller_id=context.seller_id,
                 order_number=order_number,
                 customer_id=payload.customer_id,
                 channel_id=payload.channel_id,
@@ -320,6 +324,7 @@ def delete_order(id: int, db: Session = Depends(get_db), current_user: dict = De
 
 @router.post("/{id}/confirm", response_model=schemas.OrderOut)
 def confirm_order(id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
+    context = require_tenant_context()
     order = db.query(models.Order).filter(models.Order.id == id).with_for_update().first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
@@ -341,6 +346,8 @@ def confirm_order(id: int, db: Session = Depends(get_db), current_user: dict = D
                 else f"FM-{order.order_number}"
             )
             wms_payload = {
+                "tenant_id": str(context.tenant_id),
+                "seller_id": str(context.seller_id),
                 "fulfillment_number": fulfillment_number,
                 "oms_order_id": order.id,
                 "oms_order_number": order.order_number,
@@ -355,6 +362,8 @@ def confirm_order(id: int, db: Session = Depends(get_db), current_user: dict = D
 
             db.add(
                 models.FulfillmentOrder(
+                    tenant_id=context.tenant_id,
+                    seller_id=context.seller_id,
                     order_id=order.id,
                     fulfillment_number=fulfillment_number,
                     warehouse_code=allocation["warehouse_code"],
@@ -489,4 +498,3 @@ def get_order_events(id: int, db: Session = Depends(get_db), current_user: dict 
         }
         for e in events
     ]
-

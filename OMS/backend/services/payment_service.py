@@ -5,6 +5,7 @@ import re
 from sqlalchemy.orm import Session
 
 import models
+from utils.tenant_context import require_tenant_context
 from adapters.payments.base import PaymentTransaction
 from events.dispatcher import EventDispatcher, OrderEvent
 
@@ -62,6 +63,7 @@ class PaymentService:
             logger.info(f"Payment already processed for {txn.provider} {txn.provider_txn_id}")
             return existing_payment
 
+        context = require_tenant_context()
         order = PaymentService.match_order_for_transaction(db, txn)
         if not order:
             logger.warning(f"Could not match order for transaction {txn.provider_txn_id} content: {txn.content}")
@@ -69,6 +71,8 @@ class PaymentService:
 
         # Create Payment record
         payment = models.Payment(
+            tenant_id=context.tenant_id,
+            seller_id=context.seller_id,
             order_id=order.id,
             provider=txn.provider,
             provider_txn_id=txn.provider_txn_id,
