@@ -345,8 +345,8 @@ ssh "${SSH_OPTS[@]}" "$EC2_USER@$EC2_HOST" "
   migration_failures=''
   for migration_target in identity-api-prod pim-api wms-api oms_backend; do
     if [ \"\$migration_target\" = \"identity-api-prod\" ]; then
-      # Identity migration requires DEFAULT_SELLER_TAX_CODE
-      if sudo docker exec -e DEFAULT_SELLER_TAX_CODE=\"\$DEFAULT_SELLER_TAX_CODE\" \"\$migration_target\" alembic upgrade head; then
+      # Identity migration requires DEFAULT_SELLER_TAX_CODE (expanded locally from GH Actions)
+      if sudo docker exec -e DEFAULT_SELLER_TAX_CODE=\"${DEFAULT_SELLER_TAX_CODE:-0123456789}\" \"\$migration_target\" alembic upgrade head; then
         echo \"  migration ok: \$migration_target\"
       else
         echo \"  migration FAILED: \$migration_target\"
