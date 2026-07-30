@@ -6,7 +6,16 @@ from database import get_db
 from utils.auth import get_current_user
 from main import app
 import models
-from tests.conftest import engine, TestingSessionLocal, SQLALCHEMY_DATABASE_URL, DB_FILE, db_session as db  # noqa: F401
+from tests.conftest import (
+    engine,
+    TestingSessionLocal,
+    SQLALCHEMY_DATABASE_URL,
+    DB_FILE,
+    TEST_HEADERS,
+    TEST_SELLER_ID,
+    TEST_TENANT_ID,
+    db_session as db,
+)  # noqa: F401
 
 @pytest.fixture(autouse=True)
 def mock_notify_oms():
@@ -21,8 +30,13 @@ def client(db):
         finally:
             pass
     app.dependency_overrides[get_db] = override_get_db
-    app.dependency_overrides[get_current_user] = lambda: {"user_id": "1", "username": "admin"}
-    with TestClient(app) as c:
+    app.dependency_overrides[get_current_user] = lambda: {
+        "user_id": "1",
+        "username": "admin",
+        "tenant_id": TEST_TENANT_ID,
+        "seller_id": TEST_SELLER_ID,
+    }
+    with TestClient(app, headers=TEST_HEADERS) as c:
         yield c
     app.dependency_overrides.clear()
 
@@ -650,7 +664,6 @@ def test_public_stock_post_endpoint(client, db):
     assert data["stock"]["SKU-POST-A"] == 40
     assert data["stock"]["SKU-POST-MISSING"] == 0
     assert len(data["items"]) == 2
-
 
 
 

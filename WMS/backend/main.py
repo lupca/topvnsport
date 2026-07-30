@@ -7,6 +7,7 @@ from sqlalchemy import text, func
 from database import engine, Base, get_db
 import models
 from utils.auth import get_current_user
+from utils.tenant_context import require_public_tenant_context, require_tenant_context
 
 import logging
 
@@ -45,7 +46,11 @@ def health_check():
     return {"status": "ok", "service": "wms-backend"}
 
 @app.get("/status")
-def get_status(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
+def get_status(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+    _tenant=Depends(require_tenant_context),
+):
     try:
         # Check database connection
         db.execute(text("SELECT 1"))
@@ -54,7 +59,11 @@ def get_status(db: Session = Depends(get_db), current_user: dict = Depends(get_c
         return {"status": "error", "database": "disconnected", "detail": str(e)}
 
 @app.get("/dashboard/stats")
-def get_dashboard_stats(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
+def get_dashboard_stats(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+    _tenant=Depends(require_tenant_context),
+):
     warehouse_count = db.query(models.Warehouse).count()
     location_count = db.query(models.Location).count()
     qty_on_hand = db.query(func.sum(models.Inventory.qty_on_hand)).scalar() or 0
@@ -79,10 +88,14 @@ from routers.fulfillment import router as fulfillment_router
 from routers.transactions import router as transactions_router
 
 # Include Routers
-app.include_router(public_inventory_router)
-app.include_router(warehouses_router, dependencies=[Depends(get_current_user)])
-app.include_router(barcode_mappings_router, dependencies=[Depends(get_current_user)])
-app.include_router(inventory_router, dependencies=[Depends(get_current_user)])
-app.include_router(inbound_router, dependencies=[Depends(get_current_user)])
-app.include_router(fulfillment_router, dependencies=[Depends(get_current_user)])
-app.include_router(transactions_router, dependencies=[Depends(get_current_user)])
+tenant_dependencies = [Depends(get_current_user), Depends(require_tenant_context)]
+app.include_router(
+    public_inventory_router,
+    dependencies=[Depends(require_public_tenant_context)],
+)
+app.include_router(warehouses_router, dependencies=tenant_dependencies)
+app.include_router(barcode_mappings_router, dependencies=tenant_dependencies)
+app.include_router(inventory_router, dependencies=tenant_dependencies)
+app.include_router(inbound_router, dependencies=tenant_dependencies)
+app.include_router(fulfillment_router, dependencies=tenant_dependencies)
+app.include_router(transactions_router, dependencies=tenant_dependencies)

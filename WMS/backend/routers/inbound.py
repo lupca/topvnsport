@@ -23,6 +23,20 @@ def get_inbound_shipment(id: int, db: Session = Depends(get_db)):
 
 @router.post("/inbound-shipments", response_model=schemas.InboundShipmentResponse, status_code=201)
 def create_inbound_shipment(payload: schemas.InboundShipmentCreate, db: Session = Depends(get_db)):
+    warehouse = db.query(models.Warehouse).filter(
+        models.Warehouse.id == payload.warehouse_id
+    ).first()
+    if not warehouse:
+        raise HTTPException(status_code=400, detail="Warehouse is outside seller context")
+    location_ids = {item.location_id for item in payload.items if item.location_id is not None}
+    if location_ids:
+        owned_ids = {
+            row.id for row in db.query(models.Location).filter(
+                models.Location.id.in_(location_ids)
+            ).all()
+        }
+        if owned_ids != location_ids:
+            raise HTTPException(status_code=400, detail="Inbound location is outside seller context")
     # Check duplicate inbound number
     dup = db.query(models.InboundShipment).filter(models.InboundShipment.inbound_number == payload.inbound_number).first()
     if dup:
@@ -72,6 +86,11 @@ def receive_inbound_shipment(id: int, payload: InboundReceiveInput, db: Session 
     if not shipment:
         raise HTTPException(status_code=404, detail="Inbound shipment not found")
     for r_item in payload.items:
+        location = db.query(models.Location).filter(
+            models.Location.id == r_item.location_id
+        ).first()
+        if not location:
+            raise HTTPException(status_code=400, detail="Inbound location is outside seller context")
         item = db.query(models.InboundItem).filter(
             models.InboundItem.inbound_shipment_id == id,
             models.InboundItem.sku_code == r_item.sku_code
@@ -162,6 +181,12 @@ def complete_inbound_shipment(id: int, db: Session = Depends(get_db)):
     for item in shipment.items:
         if not item.location_id:
             raise HTTPException(status_code=400, detail=f"Location not assigned for SKU {item.sku_code}")
+        location = db.query(models.Location).filter(
+            models.Location.id == item.location_id
+        ).first()
+        if not location:
+            db.rollback()
+            raise HTTPException(status_code=400, detail="Inbound location is outside seller context")
         inv = db.query(models.Inventory).filter(
             models.Inventory.sku_code == item.sku_code,
             models.Inventory.location_id == item.location_id

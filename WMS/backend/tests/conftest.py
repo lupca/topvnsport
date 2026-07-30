@@ -59,11 +59,24 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from uuid import UUID
 
 from database import Base, get_db
 from utils.auth import get_current_user
+from utils.tenant_context import TenantContext
 from main import app
 import models
+
+TEST_TENANT_ID = "00000000-0000-0000-0000-000000000001"
+TEST_SELLER_ID = "00000000-0000-0000-0000-000000000101"
+TEST_TENANT_CONTEXT = TenantContext(
+    tenant_id=UUID(TEST_TENANT_ID),
+    seller_id=UUID(TEST_SELLER_ID),
+)
+TEST_HEADERS = {
+    "X-Tenant-Id": TEST_TENANT_ID,
+    "X-Seller-Id": TEST_SELLER_ID,
+}
 
 if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
     engine = create_engine(
@@ -72,7 +85,12 @@ if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
 else:
     engine = create_engine(SQLALCHEMY_DATABASE_URL, pool_pre_ping=True)
 
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+TestingSessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine,
+    info={"tenant_context": TEST_TENANT_CONTEXT},
+)
 
 @pytest.fixture(scope="function")
 def db_session():
@@ -80,6 +98,7 @@ def db_session():
         raise RuntimeError("Refusing to run tests or drop tables on live database!")
     Base.metadata.create_all(bind=engine)
     db_session = TestingSessionLocal()
+    db_session.info["tenant_context"] = TEST_TENANT_CONTEXT
     try:
         yield db_session
     finally:
@@ -100,8 +119,13 @@ def client(db_session):
         finally:
             pass
     app.dependency_overrides[get_db] = override_get_db
-    app.dependency_overrides[get_current_user] = lambda: {"user_id": "1", "username": "admin"}
-    with TestClient(app) as c:
+    app.dependency_overrides[get_current_user] = lambda: {
+        "user_id": "1",
+        "username": "admin",
+        "tenant_id": TEST_TENANT_ID,
+        "seller_id": TEST_SELLER_ID,
+    }
+    with TestClient(app, headers=TEST_HEADERS) as c:
         yield c
     app.dependency_overrides.clear()
 

@@ -60,7 +60,13 @@ def test_complete_pick_sends_picked_to_oms(client, db_session):
         resp = client.post(f"/fulfillment-orders/{fo.id}/complete-pick")
         assert resp.status_code == 200
         assert resp.json()["status_code"] == "PICKED"
-        mock_notify.assert_called_once_with(505, "FO-M8-OMS-01", "PICKED")
+        mock_notify.assert_called_once_with(
+            505,
+            "FO-M8-OMS-01",
+            "PICKED",
+            fo.tenant_id,
+            fo.seller_id,
+        )
 
 def test_inbound_shipment_receive_locking(client, db_session):
     wh = models.Warehouse(code="WH-M8-3", name="M8 WH 3")

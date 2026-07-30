@@ -122,6 +122,11 @@ def get_location(id_or_code: str, db: Session = Depends(get_db)):
 
 @router.post("/locations", response_model=schemas.LocationResponse, status_code=201)
 def create_location(payload: schemas.LocationCreate, db: Session = Depends(get_db)):
+    warehouse = db.query(models.Warehouse).filter(
+        models.Warehouse.id == payload.warehouse_id
+    ).first()
+    if not warehouse:
+        raise HTTPException(status_code=400, detail="Warehouse is outside seller context")
     # Check duplicate code within same warehouse
     dup = db.query(models.Location).filter(
         models.Location.warehouse_id == payload.warehouse_id,
@@ -149,6 +154,12 @@ def update_location(id: int, payload: schemas.LocationCreate, db: Session = Depe
     loc = db.query(models.Location).filter(models.Location.id == id).first()
     if not loc:
         raise HTTPException(status_code=404, detail="Location not found")
+    warehouse = db.query(models.Warehouse).filter(
+        models.Warehouse.id == payload.warehouse_id
+    ).first()
+    if not warehouse:
+        raise HTTPException(status_code=400, detail="Warehouse is outside seller context")
+    loc.warehouse_id = payload.warehouse_id
     loc.location_code = payload.location_code
     loc.zone = payload.zone
     loc.aisle = payload.aisle

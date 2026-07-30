@@ -1,13 +1,24 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, UniqueConstraint, Numeric
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, UniqueConstraint, Numeric, Uuid
 from sqlalchemy.orm import relationship
 from database import Base
 
-class Warehouse(Base):
+
+class TenantOwned:
+    """Ownership columns shared by every independently queried WMS record."""
+
+    tenant_id = Column(Uuid(as_uuid=True), nullable=True, index=True)
+    seller_id = Column(Uuid(as_uuid=True), nullable=True, index=True)
+
+
+class Warehouse(TenantOwned, Base):
     __tablename__ = "warehouses"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "seller_id", "code", name="uq_warehouse_owner_code"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
-    code = Column(String, unique=True, nullable=False, index=True)
+    code = Column(String, nullable=False, index=True)
     name = Column(String, nullable=False)
     address = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
@@ -17,12 +28,15 @@ class Warehouse(Base):
     inbound_shipments = relationship("InboundShipment", back_populates="warehouse")
 
 
-class Location(Base):
+class Location(TenantOwned, Base):
     __tablename__ = "locations"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "seller_id", "location_code", name="uq_location_owner_code"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     warehouse_id = Column(Integer, ForeignKey("warehouses.id"), nullable=False)
-    location_code = Column(String, unique=True, nullable=False, index=True)
+    location_code = Column(String, nullable=False, index=True)
     zone = Column(String, nullable=True)
     aisle = Column(String, nullable=True)
     rack = Column(String, nullable=True)
@@ -36,10 +50,13 @@ class Location(Base):
     pick_list_items = relationship("PickListItem", back_populates="location")
 
 
-class Inventory(Base):
+class Inventory(TenantOwned, Base):
     __tablename__ = "inventories"
     __table_args__ = (
-        UniqueConstraint("sku_code", "location_id", name="uq_inventory_sku_location"),
+        UniqueConstraint(
+            "tenant_id", "seller_id", "sku_code", "location_id",
+            name="uq_inventory_owner_sku_location",
+        ),
     )
 
     id = Column(Integer, primary_key=True, index=True)
@@ -57,13 +74,17 @@ class Inventory(Base):
         return self.qty_on_hand - self.qty_reserved
 
 
-class BarcodeMapping(Base):
+class BarcodeMapping(TenantOwned, Base):
     __tablename__ = "barcode_mappings"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "seller_id", "barcode", name="uq_barcode_owner_barcode"),
+        UniqueConstraint("tenant_id", "seller_id", "sku_code", name="uq_barcode_owner_sku"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
-    barcode = Column(String, unique=True, nullable=False, index=True)
+    barcode = Column(String, nullable=False, index=True)
     barcode_type = Column(String, nullable=True)  # e.g., EAN-13, UPC
-    sku_code = Column(String, unique=True, nullable=False, index=True)
+    sku_code = Column(String, nullable=False, index=True)
     product_name = Column(String, nullable=False)
     variant_name = Column(String, nullable=True)
     image_url = Column(String, nullable=True)
@@ -75,11 +96,17 @@ class BarcodeMapping(Base):
     selling_price = Column(Numeric(12, 2), nullable=True)   # Cache giá bán lẻ từ PMI
 
 
-class InboundShipment(Base):
+class InboundShipment(TenantOwned, Base):
     __tablename__ = "inbound_shipments"
+    __table_args__ = (
+        UniqueConstraint(
+            "tenant_id", "seller_id", "inbound_number",
+            name="uq_inbound_owner_number",
+        ),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
-    inbound_number = Column(String, unique=True, nullable=False, index=True)
+    inbound_number = Column(String, nullable=False, index=True)
     warehouse_id = Column(Integer, ForeignKey("warehouses.id"), nullable=False)
     supplier_name = Column(String, nullable=True)
     status = Column(String, default="pending", nullable=False)
@@ -96,7 +123,7 @@ class InboundShipment(Base):
     items = relationship("InboundItem", back_populates="inbound_shipment", cascade="all, delete-orphan")
 
 
-class InboundItem(Base):
+class InboundItem(TenantOwned, Base):
     __tablename__ = "inbound_items"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -113,11 +140,17 @@ class InboundItem(Base):
     location = relationship("Location", back_populates="inbound_items")
 
 
-class FulfillmentOrder_WMS(Base):
+class FulfillmentOrder_WMS(TenantOwned, Base):
     __tablename__ = "fulfillment_orders_wms"
+    __table_args__ = (
+        UniqueConstraint(
+            "tenant_id", "seller_id", "fulfillment_number",
+            name="uq_fulfillment_owner_number",
+        ),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
-    fulfillment_number = Column(String, unique=True, nullable=False, index=True)
+    fulfillment_number = Column(String, nullable=False, index=True)
     oms_order_id = Column(Integer, nullable=True)
     oms_order_number = Column(String, nullable=True)
     status = Column(String, default="pending", nullable=False)
@@ -131,7 +164,7 @@ class FulfillmentOrder_WMS(Base):
     packing_sessions = relationship("PackingSession", back_populates="fulfillment_order", cascade="all, delete-orphan")
 
 
-class PickListItem(Base):
+class PickListItem(TenantOwned, Base):
     __tablename__ = "pick_list_items"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -148,7 +181,7 @@ class PickListItem(Base):
     location = relationship("Location", back_populates="pick_list_items")
 
 
-class PackingSession(Base):
+class PackingSession(TenantOwned, Base):
     __tablename__ = "packing_sessions"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -163,7 +196,7 @@ class PackingSession(Base):
     fulfillment_order = relationship("FulfillmentOrder_WMS", back_populates="packing_sessions")
 
 
-class StockTransaction(Base):
+class StockTransaction(TenantOwned, Base):
     __tablename__ = "stock_transactions"
 
     id = Column(Integer, primary_key=True, index=True)

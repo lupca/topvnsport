@@ -14,4 +14,5 @@ def get_db():
     try:
         yield db
     finally:
+        db.info.pop("tenant_context", None)
         db.close()

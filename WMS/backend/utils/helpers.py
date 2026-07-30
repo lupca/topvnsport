@@ -18,7 +18,13 @@ def log_stock_transaction(db: Session, sku_code: str, location_id: int, transact
     db.add(tx)
     db.flush()
 
-def notify_oms_status(oms_order_id: int, fulfillment_number: str, new_status: str):
+def notify_oms_status(
+    oms_order_id: int,
+    fulfillment_number: str,
+    new_status: str,
+    tenant_id=None,
+    seller_id=None,
+):
     if not oms_order_id or not fulfillment_number:
         logger.info("notify_oms_status skipped: oms_order_id or fulfillment_number is null")
         return
@@ -29,10 +35,16 @@ def notify_oms_status(oms_order_id: int, fulfillment_number: str, new_status: st
         internal_token = os.getenv("INTERNAL_SERVICE_TOKEN", "oms_wms_internal_api_key_secret_2026")
         req = urllib.request.Request(
             target_url,
-            data=json.dumps({"status": new_status}).encode("utf-8"),
+            data=json.dumps({
+                "status": new_status,
+                "tenant_id": str(tenant_id or ""),
+                "seller_id": str(seller_id or ""),
+            }).encode("utf-8"),
             headers={
                 "Content-Type": "application/json",
-                "X-API-Key": internal_token
+                "X-API-Key": internal_token,
+                "X-Tenant-Id": str(tenant_id or ""),
+                "X-Seller-Id": str(seller_id or ""),
             },
             method="PATCH"
         )

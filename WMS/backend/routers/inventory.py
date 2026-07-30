@@ -102,6 +102,9 @@ class InventoryAdjustInput(schemas.BaseModel):
 
 @router.post("/inventory/adjust", response_model=schemas.InventoryResponse)
 def adjust_inventory(payload: InventoryAdjustInput, db: Session = Depends(get_db)):
+    location = db.query(models.Location).filter(models.Location.id == payload.location_id).first()
+    if not location:
+        raise HTTPException(status_code=400, detail="Location is outside seller context")
     inv = db.query(models.Inventory).filter(
         models.Inventory.sku_code == payload.sku_code,
         models.Inventory.location_id == payload.location_id
@@ -142,7 +145,15 @@ class InventoryTransferInput(schemas.BaseModel):
 def transfer_inventory(payload: InventoryTransferInput, db: Session = Depends(get_db)):
     if payload.quantity <= 0:
         raise HTTPException(status_code=400, detail="Quantity must be positive")
-    
+
+    locations = db.query(models.Location).filter(
+        models.Location.id.in_([payload.from_location_id, payload.to_location_id])
+    ).with_for_update().all()
+    if {location.id for location in locations} != {
+        payload.from_location_id, payload.to_location_id
+    }:
+        raise HTTPException(status_code=400, detail="Transfer locations must belong to the same seller")
+
     src = db.query(models.Inventory).filter(
         models.Inventory.sku_code == payload.sku_code,
         models.Inventory.location_id == payload.from_location_id

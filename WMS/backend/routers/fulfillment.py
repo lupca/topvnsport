@@ -19,6 +19,11 @@ def _get_fulfillment_order(db: Session, id_or_number: str) -> models.Fulfillment
 
 @router.post("/fulfillment-orders", response_model=schemas.FulfillmentOrderWMSResponse, status_code=status.HTTP_201_CREATED)
 def create_fulfillment_order(payload: schemas.FulfillmentOrderCreateInput, db: Session = Depends(get_db)):
+    warehouse = db.query(models.Warehouse).filter(
+        models.Warehouse.code == payload.warehouse_code
+    ).first()
+    if not warehouse:
+        raise HTTPException(status_code=400, detail="Warehouse is outside seller context")
     # Check if fulfillment_number already exists
     db_fo = db.query(models.FulfillmentOrder_WMS).filter(models.FulfillmentOrder_WMS.fulfillment_number == payload.fulfillment_number).first()
     if db_fo:
@@ -123,7 +128,10 @@ def cancel_fulfillment_order(id: str, db: Session = Depends(get_db)):
             
     fo.status = "CANCELLED"
     try:
-        notify_oms_status(fo.oms_order_id, fo.fulfillment_number, "CANCELLED")
+        notify_oms_status(
+            fo.oms_order_id, fo.fulfillment_number, "CANCELLED",
+            fo.tenant_id, fo.seller_id,
+        )
         db.commit()
     except Exception:
         db.rollback()
@@ -150,7 +158,10 @@ def start_pick_fulfillment_order(id: str, db: Session = Depends(get_db)):
         if item.status == "pending":
             item.status = "picking"
     try:
-        notify_oms_status(fo.oms_order_id, fo.fulfillment_number, "PICKING")
+        notify_oms_status(
+            fo.oms_order_id, fo.fulfillment_number, "PICKING",
+            fo.tenant_id, fo.seller_id,
+        )
         db.commit()
     except Exception:
         db.rollback()
@@ -213,7 +224,10 @@ def complete_pick_fulfillment_order(id: str, db: Session = Depends(get_db)):
         item.status = "picked"
         
     try:
-        notify_oms_status(fo.oms_order_id, fo.fulfillment_number, "PICKED")
+        notify_oms_status(
+            fo.oms_order_id, fo.fulfillment_number, "PICKED",
+            fo.tenant_id, fo.seller_id,
+        )
         db.commit()
     except Exception:
         db.rollback()
@@ -232,7 +246,10 @@ def pick_fulfillment_order(id: str, db: Session = Depends(get_db)):
         item.picked_qty = item.quantity
         item.status = "picked"
     try:
-        notify_oms_status(fo.oms_order_id, fo.fulfillment_number, "PICKING")
+        notify_oms_status(
+            fo.oms_order_id, fo.fulfillment_number, "PICKING",
+            fo.tenant_id, fo.seller_id,
+        )
         db.commit()
     except Exception:
         db.rollback()
@@ -288,7 +305,10 @@ def complete_pack_fulfillment_order(id: str, db: Session = Depends(get_db)):
         session.completed_at = datetime.utcnow()
         
     try:
-        notify_oms_status(fo.oms_order_id, fo.fulfillment_number, "PACKED")
+        notify_oms_status(
+            fo.oms_order_id, fo.fulfillment_number, "PACKED",
+            fo.tenant_id, fo.seller_id,
+        )
         db.commit()
     except Exception:
         db.rollback()
@@ -312,7 +332,10 @@ def pack_fulfillment_order(id: str, tracking_number: str = "TRK123", db: Session
     )
     db.add(session)
     try:
-        notify_oms_status(fo.oms_order_id, fo.fulfillment_number, "PACKED")
+        notify_oms_status(
+            fo.oms_order_id, fo.fulfillment_number, "PACKED",
+            fo.tenant_id, fo.seller_id,
+        )
         db.commit()
     except Exception:
         db.rollback()
@@ -349,7 +372,10 @@ def ship_fulfillment_order(id: str, db: Session = Depends(get_db)):
     fo.status = "SHIPPED"
     fo.completed_at = datetime.utcnow()
     try:
-        notify_oms_status(fo.oms_order_id, fo.fulfillment_number, "SHIPPED")
+        notify_oms_status(
+            fo.oms_order_id, fo.fulfillment_number, "SHIPPED",
+            fo.tenant_id, fo.seller_id,
+        )
         db.commit()
     except Exception:
         db.rollback()

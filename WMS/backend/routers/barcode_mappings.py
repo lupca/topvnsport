@@ -80,6 +80,15 @@ def sync_products_from_pmi(db: Session = Depends(get_db)):
     """
     Đồng bộ tất cả sản phẩm từ PMI sang WMS BarcodeMapping.
     """
+    context = db.info["tenant_context"]
+    tenant_headers = {
+        "X-Tenant-Id": str(context.tenant_id),
+        "X-Seller-Id": str(context.seller_id),
+        "X-API-Key": os.getenv(
+            "INTERNAL_SERVICE_TOKEN", "oms_wms_internal_api_key_secret_2026"
+        ),
+    }
+
     # Resolve working PMI base URL (checking env vars first, falling back to local defaults)
     candidate_urls = []
     for env_var in ["PMI_API_URL", "PIM_API_URL", "PMI_URL", "E2E_PMI_API_URL"]:
@@ -93,7 +102,11 @@ def sync_products_from_pmi(db: Session = Depends(get_db)):
     working_base_url = None
     for url in candidate_urls:
         try:
-            test_req = urllib.request.Request(f"{url}/public/products?page=1&limit=1", method="GET")
+            test_req = urllib.request.Request(
+                f"{url}/public/products?page=1&limit=1",
+                headers=tenant_headers,
+                method="GET",
+            )
             with urllib.request.urlopen(test_req, timeout=2) as resp:
                 if resp.status in (200, 201):
                     working_base_url = url
@@ -120,7 +133,9 @@ def sync_products_from_pmi(db: Session = Depends(get_db)):
     while True:
         pmi_url = f"{pmi_base_url}/public/products?page={page}&limit={limit}"
         try:
-            req = urllib.request.Request(pmi_url, method="GET")
+            req = urllib.request.Request(
+                pmi_url, headers=tenant_headers, method="GET"
+            )
             with urllib.request.urlopen(req, timeout=30) as response:
                 data = json.loads(response.read().decode("utf-8"))
                 products = data.get("items", [])

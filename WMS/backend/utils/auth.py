@@ -28,6 +28,8 @@ def get_current_user(request: Request) -> dict:
             "role": request.headers.get("X-User-Role", ""),
             "permissions": request.headers.get("X-User-Permissions", "").split(",") 
                           if request.headers.get("X-User-Permissions") else [],
+            "tenant_id": request.headers.get("X-Tenant-Id"),
+            "seller_id": request.headers.get("X-Seller-Id"),
         }
 
     # Method 2: JWT Bearer fallback
@@ -43,6 +45,8 @@ def get_current_user(request: Request) -> dict:
                     "username": username,
                     "role": payload.get("role", ""),
                     "permissions": [],
+                    "tenant_id": payload.get("tenant_id"),
+                    "seller_id": payload.get("seller_id"),
                 }
         except JWTError:
             pass
@@ -56,6 +60,8 @@ def get_current_user(request: Request) -> dict:
             "username": "internal_service",
             "role": "service",
             "permissions": [],
+            "tenant_id": request.headers.get("X-Tenant-Id"),
+            "seller_id": request.headers.get("X-Seller-Id"),
         }
 
     raise HTTPException(
