@@ -1,0 +1,90 @@
+name: Migrate Media URLs
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run - only count affected rows'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+jobs:
+  migrate:
+    name: Migrate media.topvnsport.com to media.voma.vn
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
+
+      - name: Run migration
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes "$EC2_USER@$EC2_HOST" "
+            set -euo pipefail
+
+            if [ '$DRY_RUN' = 'true' ]; then
+              echo '=== DRY RUN: Counting affected rows ==='
+              sudo docker exec pim-api python - <<'PY'
+import os
+from database import SessionLocal
+from models import Product, ProductVariant
+
+db = SessionLocal()
+try:
+    products = db.query(Product).filter(Product.image_url.like('%media.topvnsport.com%')).count()
+    variants = db.query(ProductVariant).filter(ProductVariant.image_url.like('%media.topvnsport.com%')).count()
+    print(f'Products with old URL: {products}')
+    print(f'Variants with old URL: {variants}')
+    print(f'Total rows to update: {products + variants}')
+finally:
+    db.close()
+PY
+            else
+              echo '=== LIVE RUN: Updating URLs ==='
+              sudo docker exec pim-api python - <<'PY'
+from database import SessionLocal
+from models import Product, ProductVariant
+from sqlalchemy import func
+
+db = SessionLocal()
+try:
+    # Update products
+    products_updated = db.query(Product).filter(
+        Product.image_url.like('%media.topvnsport.com%')
+    ).update(
+        {Product.image_url: func.replace(Product.image_url, 'media.topvnsport.com', 'media.voma.vn')},
+        synchronize_session=False
+    )
+
+    # Update variants
+    variants_updated = db.query(ProductVariant).filter(
+        ProductVariant.image_url.like('%media.topvnsport.com%')
+    ).update(
+        {ProductVariant.image_url: func.replace(ProductVariant.image_url, 'media.topvnsport.com', 'media.voma.vn')},
+        synchronize_session=False
+    )
+
+    db.commit()
+    print(f'Products updated: {products_updated}')
+    print(f'Variants updated: {variants_updated}')
+    print('Migration completed successfully!')
+finally:
+    db.close()
+PY
+            fi
+          "
