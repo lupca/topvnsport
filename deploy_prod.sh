@@ -438,7 +438,7 @@ PY
 # Generate a token with identity-service and verify OMS accepts the shared key.
 smoke_token="$(sudo docker exec -i identity-api-prod python - <<'PY'
 from database import SessionLocal
-from models import StaffAccount
+from models import StaffAccount, Tenant
 from utils.jwt import create_access_token
 
 db = SessionLocal()
@@ -451,7 +451,13 @@ try:
     )
     if staff is None:
         raise SystemExit("Identity JWT smoke check found no active staff account")
-    print(create_access_token(staff.id, staff.username, staff.role_code or ""))
+    # Include tenant context in JWT (required after multi-tenant migration)
+    tenant_id = str(staff.tenant_id) if staff.tenant_id else None
+    tenant_code = None
+    if staff.tenant_id:
+        tenant = db.query(Tenant).filter(Tenant.id == staff.tenant_id).first()
+        tenant_code = tenant.code if tenant else None
+    print(create_access_token(staff.id, staff.username, staff.role_code or "", tenant_id, tenant_code))
 finally:
     db.close()
 PY
