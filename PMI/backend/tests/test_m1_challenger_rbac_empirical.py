@@ -15,9 +15,9 @@ from utils.auth import INTERNAL_SERVICE_TOKEN
 # 1. SERVICE KEY AUTHENTICATION & INVALID KEY REJECTION (401)
 # ============================================================================
 
-def test_valid_service_key_grants_access(client_no_auth_override):
+def test_valid_service_key_grants_access(client_no_auth_override, tenant_headers):
     """Valid X-API-Key grants SERVICE actor access."""
-    headers = {"X-API-Key": INTERNAL_SERVICE_TOKEN}
+    headers = {**tenant_headers, "X-API-Key": INTERNAL_SERVICE_TOKEN}
     response = client_no_auth_override.get("/api/auth/me", headers=headers)
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
@@ -144,13 +144,16 @@ def test_pmi_prefixed_exact_permission():
 # 4. MUTATION ENDPOINT PERMISSION REJECTION STRESS TESTS (403 FORBIDDEN)
 # ============================================================================
 
-def test_mutation_endpoints_reject_unauthorized_requests(client_no_auth_override):
+def test_mutation_endpoints_reject_unauthorized_requests(
+    client_no_auth_override, tenant_headers
+):
     """
     Stress test all mutation endpoints in products, categories, channels, attributes, and upload
     with an authenticated viewer role (who has read permissions but NO mutation permissions).
     Every mutation endpoint MUST strictly return 403 Forbidden.
     """
     headers_viewer = {
+        **tenant_headers,
         "X-User-Id": "100",
         "X-User-Username": "viewer_user",
         "X-User-Role": "viewer",

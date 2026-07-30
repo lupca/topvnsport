@@ -6,7 +6,9 @@ from datetime import timedelta
 from utils.auth import create_access_token
 
 @pytest.mark.asyncio
-async def test_concurrency_contextvars_safety(app_module, db_session):
+async def test_concurrency_contextvars_safety(
+    app_module, db_session, tenant_headers, tenant_identity_claims
+):
     """
     1. Write a verification script or execute parallel tests simulating concurrent requests
     to GET /api/auth/context or GET /api/auth/me with different JWT headers to check
@@ -17,7 +19,9 @@ async def test_concurrency_contextvars_safety(app_module, db_session):
     tokens = []
     for i in range(num_users):
         username = f"concurrent_user_{i}"
-        token = create_access_token({"sub": username, "role": "USER"})
+        token = create_access_token(
+            {**tenant_identity_claims, "sub": username, "role": "USER"}
+        )
         tokens.append((username, token))
 
     # Override database dependency to yield our db_session
@@ -32,6 +36,7 @@ async def test_concurrency_contextvars_safety(app_module, db_session):
         
         async def make_request(username, token, index):
             headers = {
+                **tenant_headers,
                 "Authorization": f"Bearer {token}",
                 "X-Correlation-ID": f"corr-id-{username}",
                 "X-Forwarded-For": f"1.2.3.{index}"
@@ -62,14 +67,19 @@ async def test_concurrency_contextvars_safety(app_module, db_session):
 
 
 @pytest.mark.asyncio
-async def test_token_expiration(app_module, db_session):
+async def test_token_expiration(
+    app_module, db_session, tenant_headers, tenant_identity_claims
+):
     """
     2. Verify token expiration: check if a token with short expiry (e.g. 1 second)
     expires and correctly rejects requests after 1 second.
     """
     username = "expiring_user"
     # Generate token with 1 second expiry
-    token = create_access_token({"sub": username, "role": "USER"}, expires_delta=timedelta(seconds=1))
+    token = create_access_token(
+        {**tenant_identity_claims, "sub": username, "role": "USER"},
+        expires_delta=timedelta(seconds=1),
+    )
 
     def override_get_db():
         yield db_session
@@ -79,7 +89,7 @@ async def test_token_expiration(app_module, db_session):
 
     transport = httpx.ASGITransport(app=app_module.app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as ac:
-        headers = {"Authorization": f"Bearer {token}"}
+        headers = {**tenant_headers, "Authorization": f"Bearer {token}"}
         
         # Immediate request should succeed
         resp = await ac.get("/api/auth/me", headers=headers)
@@ -98,14 +108,18 @@ async def test_token_expiration(app_module, db_session):
 
 
 @pytest.mark.asyncio
-async def test_exceptions_and_validations_do_not_leak_contextvars(app_module, db_session):
+async def test_exceptions_and_validations_do_not_leak_contextvars(
+    app_module, db_session, tenant_headers, tenant_identity_claims
+):
     """
     3. Validate that standard HTTP exceptions and 422 validations do not leak contextvars.
     We verify this by making requests that trigger different errors, and checking if
     subsequent requests are clean and contextvars do not crossover or remain polluted.
     """
     username = "clean_user"
-    token = create_access_token({"sub": username, "role": "USER"})
+    token = create_access_token(
+        {**tenant_identity_claims, "sub": username, "role": "USER"}
+    )
 
     def override_get_db():
         yield db_session
@@ -114,7 +128,11 @@ async def test_exceptions_and_validations_do_not_leak_contextvars(app_module, db
     app_module.app.dependency_overrides[database_module.get_db] = override_get_db
 
     transport = httpx.ASGITransport(app=app_module.app)
-    async with httpx.AsyncClient(transport=transport, base_url="http://test") as ac:
+    async with httpx.AsyncClient(
+        transport=transport,
+        base_url="http://test",
+        headers=tenant_headers,
+    ) as ac:
         # Step A: Perform a normal authenticated request to verify it sets context
         resp = await ac.get("/api/auth/me_context", headers={"Authorization": f"Bearer {token}"})
         assert resp.status_code == 200

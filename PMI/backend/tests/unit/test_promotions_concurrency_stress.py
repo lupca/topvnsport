@@ -10,7 +10,9 @@ from utils.context import actor_username_var, actor_type_var
 
 
 @pytest.fixture
-def multi_session_client(app_module):
+def multi_session_client(
+    app_module, tenant_headers, tenant_identity_claims
+):
     """
     Client fixture that uses real independent SessionLocal() instances for each request,
     enabling multi-threaded concurrency testing against Postgres without shared session conflicts.
@@ -24,12 +26,17 @@ def multi_session_client(app_module):
         finally:
             db.close()
 
-    def override_get_identity():
+    async def override_get_identity():
+        importlib.import_module("utils.context").set_tenant_context(
+            tenant_identity_claims["tenant_id"],
+            tenant_identity_claims["seller_id"],
+        )
         actor_username_var.set("stress_test_admin")
         actor_type_var.set("USER")
         return {
             "actor_type": "USER",
             "actor_username": "stress_test_admin",
+            **tenant_identity_claims,
             "user": type("MockUser", (), {"role": "admin", "username": "stress_test_admin"})()
         }
 
@@ -37,7 +44,7 @@ def multi_session_client(app_module):
     app_module.app.dependency_overrides[db_module.get_db] = override_get_db
     app_module.app.dependency_overrides[dep_module.get_current_identity] = override_get_identity
 
-    client = TestClient(app_module.app)
+    client = TestClient(app_module.app, headers=tenant_headers)
     yield client
 
     app_module.app.dependency_overrides.clear()

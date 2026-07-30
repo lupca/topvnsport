@@ -2,6 +2,8 @@ import datetime
 import math
 import uuid
 
+import pytest
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from models import Promotion, PromotionScope, PromotionComputedPrice, ProductVariant, Product, Category, DiscountType, PromotionStatus, ScopeType
@@ -302,10 +304,11 @@ def test_specificity_scoring_hierarchy():
 # SECTION 4: DATABASE SCHEMA & CONCURRENCY WEAKNESSES
 # ==============================================================================
 
-def test_db_schema_lack_of_unique_constraint_on_computed_prices(db_session: Session):
+def test_db_schema_enforces_seller_variant_unique_computed_prices(
+    db_session: Session,
+):
     """
-    Adversarial test: PromotionComputedPrice table lacks UniqueConstraint("variant_id").
-    Demonstrates that multiple records can be inserted for the exact same variant_id.
+    A seller can have only one computed price record for a given variant.
     """
     vid = "999"
     cp1 = PromotionComputedPrice(
@@ -325,11 +328,13 @@ def test_db_schema_lack_of_unique_constraint_on_computed_prices(db_session: Sess
         percentage_discount=20.0
     )
 
-    db_session.add_all([cp1, cp2])
-    db_session.commit()
-
-    dups = db_session.query(PromotionComputedPrice).filter(PromotionComputedPrice.variant_id == vid).all()
-    assert len(dups) == 2, "DB allowed duplicate PromotionComputedPrice rows for same variant_id"
+    nested = db_session.begin_nested()
+    try:
+        db_session.add_all([cp1, cp2])
+        with pytest.raises(IntegrityError):
+            db_session.flush()
+    finally:
+        nested.rollback()
 
 
 # ==============================================================================

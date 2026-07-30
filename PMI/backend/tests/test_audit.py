@@ -340,7 +340,9 @@ def test_production_session_lifecycle(client, db_session):
         fresh_session.close()
 
 
-def test_get_audit_logs_endpoints(client_no_auth_override, db_session):
+def test_get_audit_logs_endpoints(
+    client_no_auth_override, db_session, tenant_headers, tenant_identity_claims
+):
     import models
     from utils.auth import create_access_token
     from models import AuditLog, ActorType
@@ -350,11 +352,15 @@ def test_get_audit_logs_endpoints(client_no_auth_override, db_session):
     db_session.query(AuditLog).delete()
     db_session.commit()
 
-    admin_token = create_access_token({"sub": "admin_user_test", "role": "admin"})
-    staff_token = create_access_token({"sub": "staff_user_test", "role": "staff"})
+    admin_token = create_access_token(
+        {**tenant_identity_claims, "sub": "admin_user_test", "role": "admin"}
+    )
+    staff_token = create_access_token(
+        {**tenant_identity_claims, "sub": "staff_user_test", "role": "staff"}
+    )
 
     # 1. Non-admin access should be forbidden and log security intrusion
-    headers_staff = {"Authorization": f"Bearer {staff_token}"}
+    headers_staff = {**tenant_headers, "Authorization": f"Bearer {staff_token}"}
     resp = client_no_auth_override.get("/api/audit-logs", headers=headers_staff)
     assert resp.status_code == 403
 
@@ -369,7 +375,7 @@ def test_get_audit_logs_endpoints(client_no_auth_override, db_session):
     assert intrusion_log.entity_id == "/settings/audit"
 
     # 2. Admin access should succeed
-    headers_admin = {"Authorization": f"Bearer {admin_token}"}
+    headers_admin = {**tenant_headers, "Authorization": f"Bearer {admin_token}"}
     resp = client_no_auth_override.get("/api/audit-logs", headers=headers_admin)
     assert resp.status_code == 200
     data = resp.json()
@@ -443,13 +449,22 @@ def test_sync_stock_endpoint_deprecated(client, db_session):
     assert resp.json()["detail"] == "Endpoint deprecated"
 
 
-def test_log_security_intrusion_endpoint(client_no_auth_override, db_session):
+def test_log_security_intrusion_endpoint(
+    client_no_auth_override, db_session, tenant_headers, tenant_identity_claims
+):
     from models import AuditOutbox
     from utils.auth import create_access_token
 
     # 1. Staff gets 403 and intrusion is NOT logged
-    token = create_access_token({"sub": "hacker123", "role": "staff", "staff_id": "456"})
-    headers = {"Authorization": f"Bearer {token}"}
+    token = create_access_token(
+        {
+            **tenant_identity_claims,
+            "sub": "hacker123",
+            "role": "staff",
+            "staff_id": "456",
+        }
+    )
+    headers = {**tenant_headers, "Authorization": f"Bearer {token}"}
 
     resp = client_no_auth_override.post(
         "/api/audit-logs/security",
@@ -466,8 +481,15 @@ def test_log_security_intrusion_endpoint(client_no_auth_override, db_session):
     assert intrusion_log is None
 
     # 2. Admin gets 200 and intrusion IS logged
-    admin_token = create_access_token({"sub": "admin123", "role": "admin", "staff_id": "123"})
-    admin_headers = {"Authorization": f"Bearer {admin_token}"}
+    admin_token = create_access_token(
+        {
+            **tenant_identity_claims,
+            "sub": "admin123",
+            "role": "admin",
+            "staff_id": "123",
+        }
+    )
+    admin_headers = {**tenant_headers, "Authorization": f"Bearer {admin_token}"}
     resp_admin = client_no_auth_override.post(
         "/api/audit-logs/security",
         headers=admin_headers,
@@ -495,7 +517,9 @@ def test_mask_deque():
     assert res["data"][0]["password"] == "***MASKED***"
     assert isinstance(res["data"], collections.deque)
 
-def test_audit_logs_jwt_only_admin(client_no_auth_override, db_session):
+def test_audit_logs_jwt_only_admin(
+    client_no_auth_override, db_session, tenant_headers, tenant_identity_claims
+):
     import models
     from utils.auth import create_access_token
     
@@ -504,8 +528,10 @@ def test_audit_logs_jwt_only_admin(client_no_auth_override, db_session):
     db_session.commit()
     
     # Admin user not present in DB, authenticated purely via JWT payload role="admin"
-    token = create_access_token({"sub": "jwt_only_admin", "role": "admin"})
-    headers = {"Authorization": f"Bearer {token}"}
+    token = create_access_token(
+        {**tenant_identity_claims, "sub": "jwt_only_admin", "role": "admin"}
+    )
+    headers = {**tenant_headers, "Authorization": f"Bearer {token}"}
     
     resp = client_no_auth_override.get("/api/audit-logs", headers=headers)
     assert resp.status_code == 200
@@ -513,7 +539,9 @@ def test_audit_logs_jwt_only_admin(client_no_auth_override, db_session):
     assert "data" in data
     assert data["total"] == 0
 
-def test_audit_logs_jwt_only_non_admin(client_no_auth_override, db_session):
+def test_audit_logs_jwt_only_non_admin(
+    client_no_auth_override, db_session, tenant_headers, tenant_identity_claims
+):
     import models
     from utils.auth import create_access_token
     
@@ -525,8 +553,10 @@ def test_audit_logs_jwt_only_non_admin(client_no_auth_override, db_session):
     db_session.commit()
     
     # Non-admin user not present in DB, authenticated purely via JWT payload role="staff"
-    token = create_access_token({"sub": "jwt_only_staff", "role": "staff"})
-    headers = {"Authorization": f"Bearer {token}"}
+    token = create_access_token(
+        {**tenant_identity_claims, "sub": "jwt_only_staff", "role": "staff"}
+    )
+    headers = {**tenant_headers, "Authorization": f"Bearer {token}"}
     
     resp = client_no_auth_override.get("/api/audit-logs", headers=headers)
     assert resp.status_code == 403
@@ -538,7 +568,5 @@ def test_audit_logs_jwt_only_non_admin(client_no_auth_override, db_session):
         action_type="SECURITY"
     ).first()
     assert intrusion_log is not None
-
-
 
 

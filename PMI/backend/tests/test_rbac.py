@@ -108,9 +108,12 @@ def test_rbac_unauthenticated_requests_return_401(client_no_auth_override):
         assert response.json()["detail"] == "Authentication credentials are required"
 
 
-def test_rbac_insufficient_permissions_returns_403(client_no_auth_override):
+def test_rbac_insufficient_permissions_returns_403(
+    client_no_auth_override, tenant_headers
+):
     """Rule 4: Authenticated user with insufficient permissions returns 403 Forbidden."""
     headers_viewer = {
+        **tenant_headers,
         "X-User-Id": "100",
         "X-User-Username": "viewer_user",
         "X-User-Role": "viewer",
@@ -151,9 +154,11 @@ def test_rbac_insufficient_permissions_returns_403(client_no_auth_override):
     assert r4.json()["detail"] == "Forbidden: Insufficient permissions"
 
 
-def test_rbac_authorized_service_actor_succeeds(client_no_auth_override):
+def test_rbac_authorized_service_actor_succeeds(
+    client_no_auth_override, tenant_headers
+):
     """Rule 2: Service actor with API key bypasses permission check."""
-    headers_service = {"X-API-Key": INTERNAL_SERVICE_TOKEN}
+    headers_service = {**tenant_headers, "X-API-Key": INTERNAL_SERVICE_TOKEN}
 
     response = client_no_auth_override.post(
         "/products/generate-code",
@@ -164,9 +169,12 @@ def test_rbac_authorized_service_actor_succeeds(client_no_auth_override):
     assert "product_code" in response.json()
 
 
-def test_rbac_authorized_admin_user_succeeds(client_no_auth_override):
+def test_rbac_authorized_admin_user_succeeds(
+    client_no_auth_override, tenant_headers
+):
     """Rule 2: Admin user with role 'admin' bypasses permission check."""
     headers_admin = {
+        **tenant_headers,
         "X-User-Id": "1",
         "X-User-Username": "admin_user",
         "X-User-Role": "admin",
@@ -181,9 +189,12 @@ def test_rbac_authorized_admin_user_succeeds(client_no_auth_override):
     assert "product_code" in response.json()
 
 
-def test_rbac_authorized_permitted_user_succeeds(client_no_auth_override):
+def test_rbac_authorized_permitted_user_succeeds(
+    client_no_auth_override, tenant_headers
+):
     """Rule 3: User with explicit required permission succeeds."""
     headers_staff = {
+        **tenant_headers,
         "X-User-Id": "200",
         "X-User-Username": "staff_user",
         "X-User-Role": "custom",

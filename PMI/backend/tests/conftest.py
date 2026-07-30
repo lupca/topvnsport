@@ -25,6 +25,23 @@ os.environ.setdefault(
     json.dumps({str(TEST_SELLER_ID): str(TEST_TENANT_ID)}),
 )
 
+
+@pytest.fixture()
+def tenant_headers():
+    return {
+        "X-Tenant-Id": str(TEST_TENANT_ID),
+        "X-Seller-Id": str(TEST_SELLER_ID),
+    }
+
+
+@pytest.fixture()
+def tenant_identity_claims():
+    return {
+        "tenant_id": str(TEST_TENANT_ID),
+        "seller_id": str(TEST_SELLER_ID),
+    }
+
+
 @pytest.fixture(autouse=True)
 def setup_factories(db_session):
     ProductFactory._meta.sqlalchemy_session = db_session
