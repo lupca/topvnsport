@@ -163,11 +163,12 @@ def _drop_unique(bind, table, name):
     inspector = sa.inspect(bind)
     indexes = {i["name"]: i for i in inspector.get_indexes(table)}
     constraints = {u["name"]: u for u in inspector.get_unique_constraints(table)}
-    if name in indexes and indexes[name].get("unique"):
-        op.drop_index(name, table_name=table)
-    elif name in constraints:
+    # Try constraint first (PostgreSQL unique constraints have backing indexes)
+    if name in constraints:
         with op.batch_alter_table(table) as batch:
             batch.drop_constraint(name, type_="unique")
+    elif name in indexes and indexes[name].get("unique"):
+        op.drop_index(name, table_name=table)
 
 
 def _contract(bind):
