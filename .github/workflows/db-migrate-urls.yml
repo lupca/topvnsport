@@ -37,26 +37,21 @@ jobs:
           if [ "$DRY_RUN" = 'true' ]; then
             ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes "$EC2_USER@$EC2_HOST" 'sudo docker exec pim-api python -c "
           from database import SessionLocal
-          from models import Product, ProductVariant
+          from models import ProductMedia
           db = SessionLocal()
-          products = db.query(Product).filter(Product.image_url.like(\"%media.topvnsport.com%\")).count()
-          variants = db.query(ProductVariant).filter(ProductVariant.image_url.like(\"%media.topvnsport.com%\")).count()
-          print(f\"Products with old URL: {products}\")
-          print(f\"Variants with old URL: {variants}\")
-          print(f\"Total rows to update: {products + variants}\")
+          count = db.query(ProductMedia).filter(ProductMedia.image_url.like(\"%media.topvnsport.com%\")).count()
+          print(f\"ProductMedia with old URL: {count}\")
           db.close()
           "'
           else
             ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes "$EC2_USER@$EC2_HOST" 'sudo docker exec pim-api python -c "
           from database import SessionLocal
-          from models import Product, ProductVariant
+          from models import ProductMedia
           from sqlalchemy import func
           db = SessionLocal()
-          products_updated = db.query(Product).filter(Product.image_url.like(\"%media.topvnsport.com%\")).update({Product.image_url: func.replace(Product.image_url, \"media.topvnsport.com\", \"media.voma.vn\")}, synchronize_session=False)
-          variants_updated = db.query(ProductVariant).filter(ProductVariant.image_url.like(\"%media.topvnsport.com%\")).update({ProductVariant.image_url: func.replace(ProductVariant.image_url, \"media.topvnsport.com\", \"media.voma.vn\")}, synchronize_session=False)
+          updated = db.query(ProductMedia).filter(ProductMedia.image_url.like(\"%media.topvnsport.com%\")).update({ProductMedia.image_url: func.replace(ProductMedia.image_url, \"media.topvnsport.com\", \"media.voma.vn\")}, synchronize_session=False)
           db.commit()
-          print(f\"Products updated: {products_updated}\")
-          print(f\"Variants updated: {variants_updated}\")
+          print(f\"ProductMedia updated: {updated}\")
           print(\"Migration completed successfully!\")
           db.close()
           "'
