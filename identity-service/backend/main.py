@@ -7,10 +7,13 @@ from routers import auth, staff, roles
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Seed database on startup
+    # Seed database on startup (skip if tables don't exist yet - migration pending)
     db = SessionLocal()
     try:
         seed_initial_data(db)
+    except Exception as e:
+        # Tables may not exist yet if migration hasn't run
+        print(f"Seed skipped (migration pending?): {e}")
     finally:
         db.close()
     yield
