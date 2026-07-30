@@ -4,7 +4,7 @@ from typing import Optional
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
-from models import StaffAccount, StaffSession
+from models import StaffAccount, StaffSession, Tenant
 from utils.password import verify_password, hash_password
 from utils.jwt import create_access_token, create_refresh_token, ACCESS_TOKEN_EXPIRE_MINUTES
 
@@ -13,6 +13,19 @@ def hash_refresh_token(token: str) -> str:
     Hash a refresh token using SHA-256.
     """
     return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
+def _require_active_tenant(db: Session, account: StaffAccount) -> Tenant:
+    tenant = db.query(Tenant).filter(
+        Tenant.id == account.tenant_id,
+        Tenant.is_active.is_(True),
+    ).first()
+    if tenant is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Tài khoản chưa được gán tenant đang hoạt động",
+        )
+    return tenant
 
 def authenticate_staff(
     db: Session, 
@@ -40,12 +53,15 @@ def authenticate_staff(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Tài khoản đã bị khóa"
         )
-        
+
+    tenant = _require_active_tenant(db, account)
     role_code = account.role_code or ""
     access_token = create_access_token(
         staff_id=account.id,
         username=account.username,
-        role=role_code
+        role=role_code,
+        tenant_id=tenant.id,
+        tenant_code=tenant.code,
     )
     
     refresh_token, expires_at = create_refresh_token(account.id)
@@ -99,7 +115,8 @@ def refresh_tokens(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Tài khoản không tồn tại hoặc đã bị khóa"
         )
-        
+
+    tenant = _require_active_tenant(db, account)
     # Revoke old session
     session.revoked_at = datetime.datetime.utcnow()
     
@@ -107,7 +124,9 @@ def refresh_tokens(
     new_access_token = create_access_token(
         staff_id=account.id,
         username=account.username,
-        role=role_code
+        role=role_code,
+        tenant_id=tenant.id,
+        tenant_code=tenant.code,
     )
     
     new_refresh_token, new_expires_at = create_refresh_token(account.id)

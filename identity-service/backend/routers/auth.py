@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy.orm import Session
 
 from database import get_db
-from models import StaffAccount
+from models import StaffAccount, Tenant
 from schemas.auth import LoginRequest, LoginResponse, RefreshTokenRequest, VerifyResponse, ChangePasswordRequest
 from schemas.staff import StaffOut
 from services.auth_service import authenticate_staff, refresh_tokens, revoke_session, change_staff_password
@@ -44,8 +44,12 @@ def get_current_active_staff(
             detail="Token payload is missing subject claim"
         )
         
-    staff = db.query(StaffAccount).filter(StaffAccount.id == staff_id).first()
-    if not staff or not staff.is_active:
+    staff = db.query(StaffAccount).join(Tenant).filter(
+        StaffAccount.id == staff_id,
+        StaffAccount.is_active.is_(True),
+        Tenant.is_active.is_(True),
+    ).first()
+    if not staff:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Tài khoản không tồn tại hoặc đã bị khóa"
@@ -107,16 +111,18 @@ def verify(request: Request, response: Response, db: Session = Depends(get_db)):
         )
         
     staff_id = payload.get("staff_id")
-    username = payload.get("username")
-    
-    if not staff_id or not username:
+    if not staff_id:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired JWT token"
         )
         
-    staff = db.query(StaffAccount).filter(StaffAccount.id == staff_id).first()
-    if not staff or not staff.is_active:
+    staff = db.query(StaffAccount).join(Tenant).filter(
+        StaffAccount.id == staff_id,
+        StaffAccount.is_active.is_(True),
+        Tenant.is_active.is_(True),
+    ).first()
+    if not staff:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired JWT token"
@@ -128,16 +134,20 @@ def verify(request: Request, response: Response, db: Session = Depends(get_db)):
     
     # Set headers Nginx will capture/forward
     response.headers["X-User-Id"] = str(staff_id)
-    response.headers["X-User-Username"] = username
+    response.headers["X-User-Username"] = staff.username
     response.headers["X-User-Role"] = role_code or ""
     response.headers["X-User-Permissions"] = ",".join(permissions)
+    response.headers["X-Tenant-Id"] = str(staff.tenant.id)
+    response.headers["X-Tenant-Code"] = staff.tenant.code
     
     return VerifyResponse(
         valid=True,
         user_id=staff_id,
-        username=username,
+        username=staff.username,
         role=role_code,
-        permissions=permissions
+        permissions=permissions,
+        tenant_id=staff.tenant.id,
+        tenant_code=staff.tenant.code,
     )
 
 @router.post("/logout")

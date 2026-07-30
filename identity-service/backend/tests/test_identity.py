@@ -6,7 +6,7 @@ import os
 # Adjust path to import from backend/
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from models import Role, StaffAccount, StaffSession
+from models import Role, StaffAccount, StaffSession, Tenant
 from schemas.auth import LoginRequest, LoginResponse, RefreshTokenRequest, VerifyResponse, ChangePasswordRequest
 from schemas.role import RoleBase, RoleUpdate
 from schemas.staff import StaffBase, StaffCreate, StaffUpdate, StaffOut
@@ -301,8 +301,9 @@ def test_verify_endpoint_token_missing_message(client):
 
 
 def test_verify_endpoint_database_role(client, db_session):
+    tenant = Tenant(code="verify-role", name="Verify Role Tenant", is_active=True)
     role_admin = Role(code="admin", name="Administrator", permissions=["*"])
-    db_session.add(role_admin)
+    db_session.add_all([tenant, role_admin])
     db_session.commit()
     db_session.refresh(role_admin)
 
@@ -311,6 +312,7 @@ def test_verify_endpoint_database_role(client, db_session):
         email="admin@topvnsport.com",
         hashed_password=hash_password("admin_password"),
         role_id=role_admin.id,
+        tenant_id=tenant.id,
         is_active=True
     )
     db_session.add(staff)
@@ -334,4 +336,3 @@ def test_verify_endpoint_database_role(client, db_session):
     assert body["role"] == "admin"
     assert body["user_id"] == staff.id
     assert body["username"] == "admin_user"
-

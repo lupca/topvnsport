@@ -11,7 +11,7 @@ from fastapi.testclient import TestClient
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from database import Base, get_db
-from models import Role, StaffAccount, StaffSession
+from models import Role, StaffAccount, StaffSession, Tenant
 from main import app
 from utils.password import hash_password
 from services.auth_service import hash_refresh_token
@@ -48,8 +48,9 @@ def fixture_client(db_session):
 
 @pytest.fixture
 def seed_admin_user(db_session):
+    tenant = Tenant(code="topvn", name="TopVN Sport", is_active=True)
     role = Role(code="admin", name="Admin", permissions=["*"])
-    db_session.add(role)
+    db_session.add_all([tenant, role])
     db_session.commit()
     db_session.refresh(role)
     
@@ -58,6 +59,7 @@ def seed_admin_user(db_session):
         email="admin@test.com",
         hashed_password=hash_password("Admin@123"),
         role_id=role.id,
+        tenant_id=tenant.id,
         is_active=True
     )
     db_session.add(user)
@@ -67,8 +69,9 @@ def seed_admin_user(db_session):
 
 @pytest.fixture
 def seed_inactive_user(db_session):
+    tenant = Tenant(code="inactive-user-tenant", name="Inactive User Tenant", is_active=True)
     role = Role(code="viewer", name="Viewer", permissions=["pmi:read"])
-    db_session.add(role)
+    db_session.add_all([tenant, role])
     db_session.commit()
     db_session.refresh(role)
     
@@ -77,6 +80,7 @@ def seed_inactive_user(db_session):
         email="inactive@test.com",
         hashed_password=hash_password("password"),
         role_id=role.id,
+        tenant_id=tenant.id,
         is_active=False
     )
     db_session.add(user)
@@ -111,11 +115,15 @@ def test_role(db_session):
 
 @pytest.fixture
 def existing_staff(db_session, test_role):
+    tenant = Tenant(code="existing-staff", name="Existing Staff Tenant", is_active=True)
+    db_session.add(tenant)
+    db_session.flush()
     staff = StaffAccount(
         username="existing_staff",
         email="existing@example.com",
         hashed_password=hash_password("Password@123"),
         role_id=test_role.id,
+        tenant_id=tenant.id,
         is_active=True
     )
     db_session.add(staff)

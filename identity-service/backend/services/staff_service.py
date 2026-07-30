@@ -43,6 +43,7 @@ def create_staff_account(db: Session, staff_in: StaffCreate) -> StaffAccount:
         hashed_password=hash_password(staff_in.password),
         full_name=staff_in.full_name,
         role_id=staff_in.role_id,
+        tenant_id=staff_in.tenant_id,
         is_active=True
     )
     db.add(db_staff)
@@ -82,6 +83,9 @@ def update_staff_account(db: Session, staff_id: int, staff_in: StaffUpdate) -> S
                 detail="Nhóm quyền không tồn tại"
             )
         db_staff.role_id = staff_in.role_id
+
+    if staff_in.tenant_id is not None:
+        db_staff.tenant_id = staff_in.tenant_id
         
     if staff_in.is_active is not None:
         db_staff.is_active = staff_in.is_active

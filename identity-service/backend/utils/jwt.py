@@ -15,9 +15,15 @@ JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "15"))
 REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7"))
 
-def create_access_token(staff_id: int, username: str, role: str) -> str:
+def create_access_token(
+    staff_id: int,
+    username: str,
+    role: str,
+    tenant_id: Optional[str] = None,
+    tenant_code: Optional[str] = None,
+) -> str:
     """
-    Create a JWT access token containing staff_id, username, and role.
+    Create a JWT access token containing staff and tenant identity.
     """
     expire = datetime.datetime.utcnow() + datetime.timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode = {
@@ -27,6 +33,10 @@ def create_access_token(staff_id: int, username: str, role: str) -> str:
         "role": role,
         "exp": expire
     }
+    if tenant_id is not None:
+        to_encode["tenant_id"] = str(tenant_id)
+    if tenant_code is not None:
+        to_encode["tenant_code"] = tenant_code
     encoded_jwt = jwt.encode(to_encode, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
     return encoded_jwt
 
