@@ -80,6 +80,9 @@ class OrderService:
             status="DRAFT",
             total_amount=normalized_order.total_amount,
             shipping_fee=normalized_order.shipping_fee,
+            discount_amount=normalized_order.discount_amount or Decimal("0"),
+            seller_shipping_cost=normalized_order.seller_shipping_cost or Decimal("0"),
+            platform_fee=normalized_order.platform_fee,
             shipping_address=normalized_order.shipping_address,
             payment_status="PENDING",
             created_by=created_by,
@@ -135,6 +138,8 @@ class OrderService:
 
         old_status = order.status
         order.status = new_status
+        if new_status == "RETURNED" and order.returned_at is None:
+            order.returned_at = models.utcnow()
         db.commit()
         db.refresh(order)
 
@@ -144,6 +149,7 @@ class OrderService:
             "SHIPPED": OrderEvent.SHIPPED,
             "COMPLETED": OrderEvent.COMPLETED,
             "CANCELLED": OrderEvent.CANCELLED,
+            "RETURNED": OrderEvent.RETURNED,
         }
         if new_status in event_mapping:
             await EventDispatcher.dispatch(

@@ -18,6 +18,32 @@ class NormalizedOrder:
     shipping_fee: Decimal = Decimal("0")
     customer_email: Optional[str] = None
     channel_metadata: Dict[str, Any] = field(default_factory=dict)
+    # Finance fields (profit/loss). Adapters fill them only from data the
+    # marketplace actually sent; otherwise they stay at the neutral default.
+    discount_amount: Decimal = Decimal("0")        # seller-funded voucher/discount
+    seller_shipping_cost: Decimal = Decimal("0")   # shipping paid by the shop (incl. return)
+    platform_fee: Optional[Decimal] = None         # actual marketplace fees; None = unknown
+
+
+def sum_present_amounts(source: Optional[Dict[str, Any]], keys: List[str]) -> Optional[Decimal]:
+    """Sum the numeric values of ``keys`` present in ``source``.
+
+    Returns ``None`` when none of the keys is present so callers can tell
+    "marketplace did not send it" apart from "zero".
+    """
+    if not isinstance(source, dict):
+        return None
+    total = None
+    for key in keys:
+        value = source.get(key)
+        if value is None or value == "":
+            continue
+        try:
+            amount = abs(Decimal(str(value)))
+        except (ArithmeticError, ValueError):
+            continue
+        total = (total or Decimal("0")) + amount
+    return total
 
 
 class ChannelAdapter(ABC):

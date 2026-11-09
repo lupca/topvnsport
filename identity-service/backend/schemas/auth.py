@@ -23,6 +23,10 @@ class VerifyResponse(BaseModel):
     permissions: Optional[List[str]] = None
     tenant_id: Optional[UUID] = None
     tenant_code: Optional[str] = None
+    seller_id: Optional[str] = None
+    auth_type: str = "jwt"
+    api_key_id: Optional[UUID] = None
+    scopes: Optional[List[str]] = None
 
 class ChangePasswordRequest(BaseModel):
     current_password: str

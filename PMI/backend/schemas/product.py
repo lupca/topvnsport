@@ -152,9 +152,18 @@ class ProductCreate(ProductBase):
 
         return v
 
+class ProductCategoryRef(BaseModel):
+    id: int
+    name: str
+    code: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class ProductResponse(ProductBase):
     id: int
     slug: Optional[str] = None
+    category: Optional[ProductCategoryRef] = None
     family: Optional['AttributeFamilyResponse'] = None
     tier_variations: List[TierVariationResponse] = []
     variants: List[ProductVariantResponse] = []

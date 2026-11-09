@@ -11,7 +11,12 @@ from fastapi import Depends, HTTPException, status, Security, Request
 from fastapi.security import APIKeyHeader, HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from database import get_db
-from utils.auth import decode_access_token, verify_service_token
+from utils.auth import (
+    EXTERNAL_API_KEY_PREFIX,
+    INTERNAL_SERVICE_TOKEN,
+    decode_access_token,
+    verify_service_token,
+)
 from utils.context import actor_username_var, actor_type_var, actor_id_var, set_tenant_context
 
 logger = logging.getLogger(__name__)
@@ -76,10 +81,7 @@ def validate_seller_membership(tenant_id: uuid.UUID, seller_id: uuid.UUID) -> No
     url = validation_url.format(seller_id=str(seller_id))
     separator = "&" if "?" in url else "?"
     url = f"{url}{separator}{urllib.parse.urlencode({'tenant_id': str(tenant_id)})}"
-    headers = {}
-    service_token = os.getenv("INTERNAL_SERVICE_TOKEN")
-    if service_token:
-        headers["X-API-Key"] = service_token
+    headers = {"X-API-Key": INTERNAL_SERVICE_TOKEN}
 
     try:
         with urllib.request.urlopen(
@@ -151,6 +153,11 @@ async def get_current_identity(
     """
     # 1. API Key Auth (Services - OMS/WMS)
     if api_key:
+        if api_key.startswith(EXTERNAL_API_KEY_PREFIX):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="External API keys are only accepted through the gateway",
+            )
         if verify_service_token(api_key):
             context = _establish_tenant_context(
                 request.headers.get("X-Tenant-Id"),

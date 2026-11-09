@@ -8,6 +8,7 @@ import logging
 from datetime import datetime
 
 from database import get_db
+from utils.auth import INTERNAL_SERVICE_TOKEN
 import models
 import schemas
 
@@ -84,9 +85,7 @@ def sync_products_from_pmi(db: Session = Depends(get_db)):
     tenant_headers = {
         "X-Tenant-Id": str(context.tenant_id),
         "X-Seller-Id": str(context.seller_id),
-        "X-API-Key": os.getenv(
-            "INTERNAL_SERVICE_TOKEN", "oms_wms_internal_api_key_secret_2026"
-        ),
+        "X-API-Key": INTERNAL_SERVICE_TOKEN,
     }
 
     # Resolve working PMI base URL (checking env vars first, falling back to local defaults)

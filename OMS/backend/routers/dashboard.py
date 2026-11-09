@@ -16,7 +16,7 @@ def get_dashboard_stats(db: Session = Depends(get_db), current_user: dict = Depe
     order_count = db.query(models.Order).count()
     customer_count = db.query(models.Customer).filter(models.Customer.is_deleted == False).count()
     
-    revenue_query = db.query(func.sum(models.Order.total_amount)).filter(models.Order.status != "CANCELLED").scalar()
+    revenue_query = db.query(func.sum(models.Order.total_amount)).filter(models.Order.status.notin_(["CANCELLED", "RETURNED"])).scalar()
     revenue = float(revenue_query) if revenue_query is not None else 0.0
     
     status_counts_query = db.query(models.Order.status, func.count(models.Order.id)).group_by(models.Order.status).all()
@@ -34,7 +34,7 @@ def get_dashboard_stats(db: Session = Depends(get_db), current_user: dict = Depe
             func.sum(models.Order.total_amount)
         ).filter(
             cast(models.Order.created_at, Date) == target_date,
-            models.Order.status != "CANCELLED"
+            models.Order.status.notin_(["CANCELLED", "RETURNED"])
         ).first()
         
         count = day_query[0] or 0

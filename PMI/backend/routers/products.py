@@ -179,6 +179,9 @@ def list_products(
     limit: int = 10,
     db: Session = Depends(get_db)
 ):
+    # Integration contract: page starts at 1, limit is capped at 100.
+    page = max(page, 1)
+    limit = min(max(limit, 1), 100)
     query = db.query(models.Product).options(*product_load_options())
     
     if status:

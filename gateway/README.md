@@ -59,6 +59,26 @@ curl http://localhost:8080/api/pmi/products \
   -H "Authorization: Bearer $TOKEN"
 ```
 
+## Seller API key (`X-API-Key: vk_…`)
+
+Ứng dụng bên ngoài (VOMA Insights) gọi Gateway bằng API key theo seller thay cho JWT. Identity `/auth/verify` xác thực key, kiểm tra scope theo `X-Original-Method` + `X-Original-URI`, rồi trả về cùng bộ header `X-User-*`, `X-Tenant-Id`, `X-Seller-Id` như request của nhân viên. Gateway luôn lấy `X-Tenant-Id`/`X-Seller-Id` từ Identity và xoá `X-API-Key` trước khi gọi backend. Chi tiết: [`docs/api_keys.md`](../docs/api_keys.md).
+
+```bash
+KEY=vk_test_...   # tạo ở Identity → API key (chỉ hiện một lần)
+
+curl -s "http://localhost:8080/api/oms/orders?page=1&limit=100" -H "X-API-Key: $KEY"           # 200 (insights:read)
+curl -s "http://localhost:8080/api/pmi/products?page=1&limit=100" -H "X-API-Key: $KEY"         # 200 (insights:read)
+curl -s "http://localhost:8080/api/wms/inbound-shipments" -H "X-API-Key: $KEY"                 # 200 (insights:read)
+curl -s -X POST "http://localhost:8080/api/wms/inbound-shipments" -H "X-API-Key: $KEY" \
+  -H 'Content-Type: application/json' -d '{...}'                                              # 200 chỉ khi có inbound:write, nếu không 403
+curl -s -o /dev/null -w '%{http_code}\n' "http://localhost:8080/api/oms/customers" -H "X-API-Key: $KEY"  # 403 (ngoài danh sách)
+curl -s -o /dev/null -w '%{http_code}\n' "http://localhost:8080/api/oms/orders" -H "X-API-Key: $KEY" \
+  -H "X-Seller-Id: <seller khác>"                                                              # 403
+curl -s -o /dev/null -w '%{http_code}\n' "http://localhost:8080/api/oms/orders" -H "X-API-Key: vk_test_revoked..."  # 401
+```
+
+Production: base URL `https://api-identity.voma.vn` (location `/api/pmi/`, `/api/oms/`, `/api/wms/`). Các host theo dịch vụ (`api-oms.voma.vn`, `oms.voma.vn/oms-api`, …) luôn trả 403 cho API key.
+
 ## Endpoints
 
 | Path | Auth | Backend |
@@ -77,5 +97,7 @@ curl http://localhost:8080/api/pmi/products \
 ## Security
 
 - Client `X-User-*` headers are ignored and stripped at the Gateway level
-- Only headers from `/auth/verify` response are trusted and injected
+- Only headers from `/auth/verify` response are trusted and injected (incl. `X-Tenant-Id`, `X-Tenant-Code`, `X-Seller-Id`)
+- `X-API-Key` is removed before proxying to backends on authenticated routes (external `vk_` keys and the internal service token never pass the public edge)
+- Backends trust these headers, so their ports must only be reachable through the Gateway
 - `/internal/*` endpoints only accessible from Docker networks or authorized services

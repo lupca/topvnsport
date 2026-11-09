@@ -61,6 +61,8 @@ const getStatusBadgeClass = (status: string) => {
       return "bg-rose-50 text-rose-700 border-rose-200";
     case "CANCELLATION_PENDING":
       return "bg-amber-50 text-amber-700 border-amber-200";
+    case "RETURNED":
+      return "bg-orange-50 text-orange-700 border-orange-200";
     default:
       return "bg-gray-100 text-gray-600 border-gray-300";
   }
@@ -591,6 +593,7 @@ function OrdersPageContent() {
               ))}
               <option value="CANCELLATION_PENDING">CANCELLATION_PENDING</option>
               <option value="CANCELLED">CANCELLED</option>
+              <option value="RETURNED">RETURNED</option>
             </select>
 
             {/* Channel Selector */}
@@ -659,7 +662,7 @@ function OrdersPageContent() {
                   ) : (
                     orders.map((order) => {
                       const isDraft = order.status === "DRAFT";
-                      const isCancelable = !["SHIPPED", "CANCELLED", "COMPLETED"].includes(order.status);
+                      const isCancelable = !["SHIPPED", "CANCELLED", "COMPLETED", "RETURNED"].includes(order.status);
                       return (
                         <tr key={order.id} className="hover:bg-gray-50 transition-colors align-top">
                           <td className="px-6 py-4 font-bold text-gray-900">{order.order_number}</td>
@@ -1308,7 +1311,7 @@ function OrdersPageContent() {
                       </button>
                     )}
 
-                    {!["SHIPPED", "CANCELLED", "COMPLETED"].includes(currentOrder.status) && (
+                    {!["SHIPPED", "CANCELLED", "COMPLETED", "RETURNED"].includes(currentOrder.status) && (
                       <button
                         onClick={() => handleCancelOrder(currentOrder.id)}
                         className="w-full py-2 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl font-bold text-xs hover:bg-rose-100 flex items-center justify-center gap-1.5"

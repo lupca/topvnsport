@@ -1,6 +1,7 @@
 from typing import Optional
 from fastapi import Request, HTTPException, status
 import os
+import secrets
 from jose import JWTError, jwt
 
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
@@ -9,6 +10,37 @@ if not JWT_SECRET_KEY:
         raise RuntimeError("JWT_SECRET_KEY environment variable is required in production mode!")
     JWT_SECRET_KEY = "wms-dev-only-jwt-key-not-for-production"
 JWT_ALGORITHM = "HS256"
+
+# External seller API keys (``vk_…``) are verified by Identity at the gateway
+# and stripped before reaching backends; the internal token must never share
+# that namespace so the two credential types cannot be confused.
+EXTERNAL_API_KEY_PREFIX = "vk_"
+
+
+def _load_internal_service_token() -> str:
+    token = os.getenv("INTERNAL_SERVICE_TOKEN", "").strip()
+    if not token:
+        raise RuntimeError(
+            "INTERNAL_SERVICE_TOKEN environment variable is required "
+            "(shared secret for OMS/WMS/PMI service-to-service calls)"
+        )
+    if token.startswith(EXTERNAL_API_KEY_PREFIX):
+        raise RuntimeError(
+            "INTERNAL_SERVICE_TOKEN must not start with 'vk_' "
+            "(prefix reserved for external seller API keys)"
+        )
+    return token
+
+
+INTERNAL_SERVICE_TOKEN = _load_internal_service_token()
+
+
+def is_internal_service_token(value: Optional[str]) -> bool:
+    if not value or value.startswith(EXTERNAL_API_KEY_PREFIX):
+        return False
+    return secrets.compare_digest(
+        value.encode("utf-8"), INTERNAL_SERVICE_TOKEN.encode("utf-8")
+    )
 
 
 def get_current_user(request: Request) -> dict:
@@ -53,8 +85,12 @@ def get_current_user(request: Request) -> dict:
 
     # Method 3: X-API-Key fallback for internal service calls
     x_api_key = request.headers.get("X-API-Key")
-    internal_token = os.getenv("INTERNAL_SERVICE_TOKEN", "oms_wms_internal_api_key_secret_2026")
-    if x_api_key and x_api_key == internal_token:
+    if x_api_key and x_api_key.startswith(EXTERNAL_API_KEY_PREFIX):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="External API keys are only accepted through the gateway",
+        )
+    if is_internal_service_token(x_api_key):
         return {
             "user_id": "service",
             "username": "internal_service",

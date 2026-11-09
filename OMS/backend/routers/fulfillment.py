@@ -19,13 +19,16 @@ def update_fulfillment_status(id: int, fulfillment_number: str, payload: schemas
         
     if order.status == "CANCELLED":
         raise HTTPException(status_code=409, detail="Order is already cancelled")
+    if order.status == "RETURNED":
+        raise HTTPException(status_code=409, detail="Order is already returned")
         
     target_fo = next((fo for fo in order.fulfillment_orders if fo.fulfillment_number == fulfillment_number), None)
     if not target_fo:
         raise HTTPException(status_code=404, detail="Fulfillment order not found")
 
     new_status = payload.status
-    if new_status not in ALLOWED_TRANSITIONS:
+    if new_status not in ALLOWED_TRANSITIONS or new_status == "RETURNED":
+        # RETURNED is an order-level state; use POST /orders/{id}/return.
         raise HTTPException(status_code=400, detail=f"Invalid status: {new_status}")
         
     precedence = {"CANCELLED": -1, "DRAFT": 0, "CONFIRMED": 1, "PROCESSING": 2, "PICKING": 3, "PACKED": 4, "SHIPPED": 5, "COMPLETED": 6}

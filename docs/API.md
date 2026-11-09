@@ -49,7 +49,7 @@ OMS Backend hỗ trợ 3 phương thức xác thực linh hoạt:
    ```
 3. **Internal Service API Key Fallback (`X-API-Key`)**:
    ```http
-   X-API-Key: oms_wms_internal_api_key_secret_2026
+   X-API-Key: <INTERNAL_SERVICE_TOKEN>   # chỉ dùng giữa các service, Gateway xoá header này với request từ ngoài
    ```
 
 - **Protected Endpoints**: Yêu cầu xác thực (thông qua Gateway headers, JWT Bearer Token, hoặc `X-API-Key`).
@@ -209,6 +209,9 @@ Hệ thống sử dụng các mã HTTP Status tiêu chuẩn:
     "created_by": "storefront",
     "order_number": "ORD-20260728-0001",
     "verification_token": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "discount_amount": 0,
+    "seller_shipping_cost": 0,
+    "platform_fee": null,
     "items": [
       {
         "sku_code": "YNX-AX99-RED",
@@ -217,6 +220,8 @@ Hệ thống sử dụng các mã HTTP Status tiêu chuẩn:
     ]
   }
   ```
+  - `discount_amount` (≥ 0, mặc định 0): voucher/giảm giá **shop chịu**; được trừ vào tổng: `total_amount = Σ(items) + shipping_fee − discount_amount` (vượt quá → `400`).
+  - `seller_shipping_cost` (≥ 0, mặc định 0), `platform_fee` (≥ 0, tuỳ chọn): chi phí của shop, không ảnh hưởng `total_amount`.
 - **Response `201 Created`**:
   ```json
   {
@@ -230,6 +235,11 @@ Hệ thống sử dụng các mã HTTP Status tiêu chuẩn:
     "shipping_address": "123 Đường ABC, Quận 1, TP.HCM",
     "note": "Giao giờ hành chính",
     "created_by": "storefront",
+    "channel_code": "WEB",
+    "discount_amount": "0.00",
+    "seller_shipping_cost": "0.00",
+    "platform_fee": null,
+    "returned_at": null,
     "created_at": "2026-07-28T03:00:00Z",
     "updated_at": "2026-07-28T03:00:00Z",
     "items": [
@@ -249,25 +259,56 @@ Hệ thống sử dụng các mã HTTP Status tiêu chuẩn:
   ```
 
 #### `GET /orders`
-- **Description**: Lấy danh sách đơn hàng có phân trang và bộ lọc.
-- **Authentication**: Protected
+- **Description**: Lấy danh sách đơn hàng có phân trang và bộ lọc, **kèm dòng hàng (`items`)**. Chỉ trả đơn của tenant/seller đang gọi (lọc tự động theo `X-Tenant-Id`/`X-Seller-Id` do Gateway gắn). Đây cũng là endpoint VOMA Insights dùng để đồng bộ (`/api/oms/orders` qua Gateway).
+- **Authentication**: Protected (JWT/Gateway hoặc API key scope `insights:read`)
 - **Query Parameters**:
-  - `page` (int, default: 1)
-  - `limit` (int, default: 100)
-  - `status` (string, optional): Lọc theo trạng thái (`DRAFT`, `CONFIRMED`, `PROCESSING`, `PICKING`, `PACKED`, `SHIPPED`, `COMPLETED`, `CANCELLED`, `CANCELLATION_PENDING`)
+  - `page` (int, default: 1; `< 1` được coi là 1)
+  - `limit` (int, default: 100, **tối đa 100** — giá trị lớn hơn bị cắt về 100; giá trị thực tế trả lại trong `limit`)
+  - `status` (string, optional): Lọc theo trạng thái (`DRAFT`, `CONFIRMED`, `PROCESSING`, `PICKING`, `PACKED`, `SHIPPED`, `COMPLETED`, `CANCELLED`, `CANCELLATION_PENDING`, `RETURNED`)
   - `channel_id` (int, optional): Lọc theo ID kênh bán hàng
-  - `date` (string `YYYY-MM-DD`, optional): Lọc theo ngày tạo
+  - `channel_code` (string, optional): Lọc theo mã kênh (`SHOPEE`, `TIKTOK`, …)
+  - `payment_status` (string, optional)
+  - `date` (string `YYYY-MM-DD`, optional): Lọc theo đúng một ngày tạo (giữ tương thích cũ; sai định dạng thì bỏ qua)
+  - `date_from`, `date_to` (string `YYYY-MM-DD`, optional, bao gồm cả hai đầu): Lọc `created_at` (UTC) theo khoảng ngày. Sai định dạng → `422`.
+  - `updated_since` (ISO 8601 datetime, optional): Chỉ trả đơn có `updated_at >= updated_since` (đồng bộ tăng dần). Có múi giờ (`Z`, `+07:00`) sẽ được quy đổi về UTC; không có múi giờ được hiểu là UTC. Nhớ URL-encode dấu `+`. Sai định dạng → `422`.
   - `search` (string, optional): Tìm kiếm theo order_number, tên hoặc số điện thoại khách hàng
-- **Response `200 OK`**:
+- Sắp xếp: `created_at` giảm dần, rồi `id` giảm dần (ổn định khi phân trang).
+- Tiền trong endpoint danh sách được trả dạng **số JSON** (như trước đây); endpoint chi tiết (`OrderOut`) trả dạng chuỗi thập phân.
+- **Response `200 OK`** (`PaginatedOrders`):
   ```json
   {
-    "items": [...],
+    "items": [
+      {
+        "id": 10,
+        "order_number": "ORD-SHOPEE-240101ABC",
+        "status": "COMPLETED",
+        "channel_code": "SHOPEE",
+        "channel_order_id": "240101ABC",
+        "total_amount": 3530000.0,
+        "shipping_fee": 30000.0,
+        "discount_amount": 50000.0,
+        "seller_shipping_cost": 22000.0,
+        "platform_fee": 180000.0,
+        "returned_at": null,
+        "payment_status": "PAID",
+        "created_at": "2026-07-28T03:00:00",
+        "updated_at": "2026-07-30T08:15:00",
+        "customer": {"id": 1, "name": "...", "phone": "...", "created_at": "..."},
+        "channel": {"id": 3, "code": "SHOPEE", "name": "Shopee", "is_active": true},
+        "items": [
+          {"id": 15, "order_id": 10, "sku_code": "YNX-AX99-RED", "product_name": "...", "variant_name": "Đỏ / 4U",
+           "quantity": 1, "unit_price": 3500000.0, "subtotal": 3500000.0, "image_url": null}
+        ],
+        "fulfillment_orders": []
+      }
+    ],
     "total": 50,
     "page": 1,
     "pages": 1,
     "limit": 100
   }
   ```
+  - `shipping_fee`: phí ship khách trả. `discount_amount`: voucher/giảm giá shop chịu (mặc định 0). `seller_shipping_cost`: ship shop thực trả, gồm ship hoàn (mặc định 0). `platform_fee`: phí sàn thực tế, `null` nếu chưa biết. `returned_at`: thời điểm hoàn hàng, `null` nếu không hoàn. Xem [architecture_oms.md](architecture_oms.md#6-finance-fields--returned).
 
 #### `GET /orders/{id}`
 - **Description**: Xem chi tiết đơn hàng theo ID.
@@ -293,7 +334,26 @@ Hệ thống sử dụng các mã HTTP Status tiêu chuẩn:
     ]
   }
   ```
+  - Có thể kèm `discount_amount`, `seller_shipping_cost`, `platform_fee`; đổi `discount_amount`/`shipping_fee`/`items` sẽ tính lại `total_amount`.
 - **Response `200 OK`**: Trả về thông tin `OrderOut` sau khi cập nhật.
+
+#### `PATCH /orders/{id}/finance`
+- **Description**: Ghi nhận chi phí chỉ biết sau khi giao/đối soát (`seller_shipping_cost`, `platform_fee`) ở **mọi trạng thái**. Không đổi `total_amount`. Ghi sự kiện `order.finance_updated` vào `order_events`.
+- **Authentication**: Protected
+- **Request Body** (`OrderFinanceUpdate`, chỉ gửi trường cần đổi; `platform_fee: null` = chưa biết):
+  ```json
+  { "seller_shipping_cost": 22000, "platform_fee": 180000 }
+  ```
+- **Response `200 OK`**: `OrderOut`. `400` nếu body rỗng hoặc `seller_shipping_cost: null`.
+
+#### `POST /orders/{id}/return`
+- **Description**: Đánh dấu đơn đã giao (`SHIPPED`/`COMPLETED`) bị hoàn → trạng thái `RETURNED`, gán `returned_at` (mặc định thời điểm hiện tại, UTC). `return_shipping_cost` (nếu có) được **cộng** vào `seller_shipping_cost`. Ghi sự kiện `order.returned`.
+- **Authentication**: Protected
+- **Request Body** (`OrderReturnInput`, tuỳ chọn):
+  ```json
+  { "returned_at": "2026-08-02T10:00:00+07:00", "return_shipping_cost": 15000, "reason": "Sai size" }
+  ```
+- **Response `200 OK`**: `OrderOut`. `400` nếu đơn không ở `SHIPPED`/`COMPLETED`.
 
 #### `DELETE /orders/{id}`
 - **Description**: Xóa đơn hàng (Chỉ cho phép khi đơn hàng ở trạng thái `DRAFT`).
@@ -328,7 +388,7 @@ Hệ thống sử dụng các mã HTTP Status tiêu chuẩn:
 - **Response `200 OK`**: Trả về `OrderOut` với trạng thái `CANCELLED` (hoặc `CANCELLATION_PENDING` nếu có lệnh xuất kho chưa hủy thành công bên WMS).
 
 #### `PATCH /orders/{id}/status`
-- **Description**: Cập nhật trạng thái đơn hàng theo luồng chuyển dịch cho phép (`ALLOWED_TRANSITIONS`).
+- **Description**: Cập nhật trạng thái đơn hàng theo luồng chuyển dịch cho phép (`ALLOWED_TRANSITIONS`). `SHIPPED`/`COMPLETED` → `RETURNED` được phép (tự gán `returned_at`, ghi `order.returned`); `RETURNED` là trạng thái cuối.
 - **Authentication**: Protected
 - **Request Body** (`OrderStatusUpdate`):
   ```json
@@ -343,7 +403,7 @@ Hệ thống sử dụng các mã HTTP Status tiêu chuẩn:
 ### 6. Fulfillment Order Management (`/orders`)
 
 #### `PATCH /orders/{id}/fulfillments/{fulfillment_number}/status`
-- **Description**: Cập nhật trạng thái của từng lệnh xuất kho (thường do WMS callback). Tự động cập nhật trạng thái chung của đơn hàng.
+- **Description**: Cập nhật trạng thái của từng lệnh xuất kho (thường do WMS callback). Tự động cập nhật trạng thái chung của đơn hàng. Không nhận `RETURNED` (dùng `POST /orders/{id}/return`).
 - **Authentication**: Protected
 - **Request Body** (`FulfillmentStatusUpdate`):
   ```json

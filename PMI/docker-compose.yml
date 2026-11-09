@@ -55,7 +55,10 @@ services:
       - TESTING=true
       - PROMOTION_SCHEDULER_INTERVAL=1.0
       - JWT_SECRET_KEY=identity_jwt_secret_key_2026_change_me_in_prod
-      - INTERNAL_SERVICE_TOKEN=oms_wms_internal_api_key_secret_2026
+      # Dev-only shared service token (never reuse in production; code has no default).
+      - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN:-oms_wms_internal_api_key_secret_2026}
+      # Seller-membership check served by Identity (reached via gateway_network).
+      - IDENTITY_SELLER_VALIDATION_URL=${IDENTITY_SELLER_VALIDATION_URL:-http://identity-api:8000/internal/sellers/{seller_id}}
       - ALLOWED_SERVICE_KEYS=valid-service-api-key-123
     depends_on:
       db:

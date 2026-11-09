@@ -12,7 +12,7 @@ from decimal import Decimal
 from typing import List, Optional, Dict, Any
 import logging
 
-from adapters.channels.base import ChannelAdapter, NormalizedOrder
+from adapters.channels.base import ChannelAdapter, NormalizedOrder, sum_present_amounts
 
 logger = logging.getLogger("oms_backend")
 
@@ -70,6 +70,12 @@ class TikTokAdapter(ChannelAdapter):
 
         payment_info = order_data.get("payment_info", {})
         total = Decimal(str(payment_info.get("total_amount") or order_data.get("total_amount") or 0))
+        # Seller-funded discount is part of TikTok's order payment object.
+        discount = sum_present_amounts(payment_info, ["seller_discount"])
+        # TODO(insights): platform_fee and seller_shipping_cost are only known from
+        # TikTok Shop Finance statements (settlement: platform commission,
+        # transaction fee, actual/return shipping fee); fill them when that API
+        # is integrated.
 
         return NormalizedOrder(
             channel_code=self.channel_code,
@@ -81,6 +87,7 @@ class TikTokAdapter(ChannelAdapter):
             total_amount=total,
             shipping_fee=Decimal(str(payment_info.get("shipping_fee") or 0)),
             channel_metadata=order_data,
+            discount_amount=discount or Decimal("0"),
         )
 
     async def sync_order_status(

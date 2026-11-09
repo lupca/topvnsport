@@ -16,6 +16,7 @@ class OrderEvent(Enum):
     SHIPPED = "order.shipped"
     COMPLETED = "order.completed"
     CANCELLED = "order.cancelled"
+    RETURNED = "order.returned"
 
 
 class EventDispatcher:

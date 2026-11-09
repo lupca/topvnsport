@@ -7,6 +7,10 @@ from schemas.auth import LoginRequest, LoginResponse, RefreshTokenRequest, Verif
 from schemas.staff import StaffOut
 from services.auth_service import authenticate_staff, refresh_tokens, revoke_session, change_staff_password
 from utils.jwt import decode_access_token
+from utils.api_keys import looks_like_api_key
+from services.api_key_service import authenticate_api_key
+
+API_KEY_ROLE = "api_key"
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -89,7 +93,23 @@ def refresh(req: RefreshTokenRequest, request: Request, db: Session = Depends(ge
 def verify(request: Request, response: Response, db: Session = Depends(get_db)):
     """
     Internal endpoint for Nginx auth_request forwarding.
+
+    Two credential types are accepted:
+
+    * ``X-API-Key: vk_…`` – per-seller external API key. The key decides the
+      tenant *and* seller; it is restricted to the method/path allowlist of its
+      scopes (``X-Original-Method`` / ``X-Original-URI`` sent by the gateway).
+    * JWT (``Authorization: Bearer`` or ``access_token`` cookie) – staff user.
+      The client's ``X-Seller-Id`` is echoed back unchanged so the gateway can
+      always forward the seller from this response.
+
+    Any other ``X-API-Key`` value (e.g. the internal service token) is ignored
+    here: it never authenticates a gateway request.
     """
+    raw_api_key = request.headers.get("X-API-Key")
+    if looks_like_api_key(raw_api_key):
+        return _verify_api_key(request, response, db, raw_api_key)
+
     auth_header = request.headers.get("Authorization")
     token = None
     if auth_header and auth_header.startswith("Bearer "):
@@ -131,6 +151,7 @@ def verify(request: Request, response: Response, db: Session = Depends(get_db)):
     role_code = staff.role_code
     role = staff.role
     permissions = role.permissions if role else []
+    requested_seller = request.headers.get("X-Seller-Id") or None
     
     # Set headers Nginx will capture/forward
     response.headers["X-User-Id"] = str(staff_id)
@@ -139,6 +160,10 @@ def verify(request: Request, response: Response, db: Session = Depends(get_db)):
     response.headers["X-User-Permissions"] = ",".join(permissions)
     response.headers["X-Tenant-Id"] = str(staff.tenant.id)
     response.headers["X-Tenant-Code"] = staff.tenant.code
+    if requested_seller:
+        # Unchanged pass-through: seller selection for staff is validated by
+        # the backends exactly as before.
+        response.headers["X-Seller-Id"] = requested_seller
     
     return VerifyResponse(
         valid=True,
@@ -148,6 +173,46 @@ def verify(request: Request, response: Response, db: Session = Depends(get_db)):
         permissions=permissions,
         tenant_id=staff.tenant.id,
         tenant_code=staff.tenant.code,
+        seller_id=requested_seller,
+    )
+
+
+def _verify_api_key(
+    request: Request, response: Response, db: Session, raw_api_key: str
+) -> VerifyResponse:
+    if request.headers.get("Authorization"):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Chỉ được dùng một phương thức xác thực (API key hoặc JWT)",
+        )
+    api_key = authenticate_api_key(
+        db,
+        raw_api_key,
+        method=request.headers.get("X-Original-Method"),
+        original_uri=request.headers.get("X-Original-URI"),
+        requested_seller=request.headers.get("X-Seller-Id"),
+    )
+    tenant = api_key.tenant
+    # Same identity headers as a staff request, so backends need no change.
+    response.headers["X-User-Id"] = f"apikey:{api_key.id}"
+    response.headers["X-User-Username"] = f"apikey:{api_key.prefix}"
+    response.headers["X-User-Role"] = API_KEY_ROLE
+    response.headers["X-User-Permissions"] = ""
+    response.headers["X-Tenant-Id"] = str(tenant.id)
+    response.headers["X-Tenant-Code"] = tenant.code
+    response.headers["X-Seller-Id"] = str(api_key.seller_id)
+    response.headers["X-Auth-Type"] = "api_key"
+    return VerifyResponse(
+        valid=True,
+        username=f"apikey:{api_key.prefix}",
+        role=API_KEY_ROLE,
+        permissions=[],
+        tenant_id=tenant.id,
+        tenant_code=tenant.code,
+        seller_id=str(api_key.seller_id),
+        auth_type="api_key",
+        api_key_id=api_key.id,
+        scopes=list(api_key.scopes or []),
     )
 
 @router.post("/logout")

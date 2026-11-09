@@ -11,6 +11,8 @@ services:
       - JWT_SECRET_KEY=${JWT_SECRET_KEY:?JWT_SECRET_KEY is required}
       - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN:?INTERNAL_SERVICE_TOKEN is required}
       - ALLOWED_SERVICE_KEYS=${ALLOWED_SERVICE_KEYS:?ALLOWED_SERVICE_KEYS is required}
+      # Seller-membership check served by Identity (identity-api-prod is on pmi_default).
+      - IDENTITY_SELLER_VALIDATION_URL=${IDENTITY_SELLER_VALIDATION_URL:-http://identity-api-prod:8000/internal/sellers/{seller_id}}
 
   frontend:
     build:

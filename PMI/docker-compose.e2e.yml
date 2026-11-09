@@ -50,7 +50,8 @@ services:
       - MINIO_BUCKET=pim-media
       - ENV=test # Important to signal test environment
       - JWT_SECRET_KEY=super_secret_jwt_key_pmi_2026_change_me
-      - INTERNAL_SERVICE_TOKEN=oms_wms_internal_api_key_secret_2026
+      # Dev/test-only shared service token (code has no default).
+      - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN:-oms_wms_internal_api_key_secret_2026}
       - ALLOWED_SERVICE_KEYS=valid-service-api-key-123
     depends_on:
       db:

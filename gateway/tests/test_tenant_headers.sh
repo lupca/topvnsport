@@ -72,7 +72,12 @@ for host in "${protected_hosts[@]}"; do
     assert_once "$block" '        auth_request_set $auth_tenant_code $upstream_http_x_tenant_code;' "$host"
     assert_once "$block" '        proxy_set_header X-Tenant-Id $auth_tenant_id;' "$host"
     assert_once "$block" '        proxy_set_header X-Tenant-Code $auth_tenant_code;' "$host"
-    assert_once "$block" '        proxy_set_header X-Seller-Id $http_x_seller_id;' "$host"
+    assert_once "$block" '        auth_request_set $auth_seller_id $upstream_http_x_seller_id;' "$host"
+    assert_once "$block" '        proxy_set_header X-Seller-Id $auth_seller_id;' "$host"
+    assert_once "$block" '        proxy_set_header X-API-Key "";' "$host"
+    seller_passthrough="$(grep -Fxc '        proxy_set_header X-Seller-Id $http_x_seller_id;' <<<"$block" || true)"
+    [[ "$seller_passthrough" == "1" ]] ||
+        fail "$host may forward the client X-Seller-Id only to /auth_verify (found $seller_passthrough)"
 
     cors_count="$(grep -c "Access-Control-Allow-Headers.*X-Seller-Id" <<<"$block" || true)"
     [[ "$cors_count" == "1" ]] || fail "$host protected CORS must allow X-Seller-Id exactly once"
@@ -108,6 +113,8 @@ http {
             }
             add_header X-Tenant-Id "tenant-A" always;
             add_header X-Tenant-Code "tenant-a" always;
+            # Identity echoes the requested seller for JWT users.
+            add_header X-Seller-Id $http_x_seller_id always;
             return 204;
         }
     }
@@ -151,10 +158,11 @@ http {
             auth_request /auth_verify;
             auth_request_set $auth_tenant_id $upstream_http_x_tenant_id;
             auth_request_set $auth_tenant_code $upstream_http_x_tenant_code;
+            auth_request_set $auth_seller_id $upstream_http_x_seller_id;
             proxy_pass http://127.0.0.1:18081;
             proxy_set_header X-Tenant-Id $auth_tenant_id;
             proxy_set_header X-Tenant-Code $auth_tenant_code;
-            proxy_set_header X-Seller-Id $http_x_seller_id;
+            proxy_set_header X-Seller-Id $auth_seller_id;
         }
 
         location /oms/ {
@@ -165,10 +173,11 @@ http {
             auth_request /auth_verify;
             auth_request_set $auth_tenant_id $upstream_http_x_tenant_id;
             auth_request_set $auth_tenant_code $upstream_http_x_tenant_code;
+            auth_request_set $auth_seller_id $upstream_http_x_seller_id;
             proxy_pass http://127.0.0.1:18081;
             proxy_set_header X-Tenant-Id $auth_tenant_id;
             proxy_set_header X-Tenant-Code $auth_tenant_code;
-            proxy_set_header X-Seller-Id $http_x_seller_id;
+            proxy_set_header X-Seller-Id $auth_seller_id;
         }
 
         location /wms/ {
@@ -179,10 +188,11 @@ http {
             auth_request /auth_verify;
             auth_request_set $auth_tenant_id $upstream_http_x_tenant_id;
             auth_request_set $auth_tenant_code $upstream_http_x_tenant_code;
+            auth_request_set $auth_seller_id $upstream_http_x_seller_id;
             proxy_pass http://127.0.0.1:18081;
             proxy_set_header X-Tenant-Id $auth_tenant_id;
             proxy_set_header X-Tenant-Code $auth_tenant_code;
-            proxy_set_header X-Seller-Id $http_x_seller_id;
+            proxy_set_header X-Seller-Id $auth_seller_id;
         }
     }
 }

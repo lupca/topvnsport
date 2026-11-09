@@ -8,7 +8,29 @@ from jose import JWTError, jwt
 JWT_SECRET_KEY = os.environ["JWT_SECRET_KEY"]
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))  # 24 hours default
-INTERNAL_SERVICE_TOKEN = os.environ["INTERNAL_SERVICE_TOKEN"]
+
+# External seller API keys (``vk_…``) are verified by Identity at the gateway
+# and stripped before reaching backends; the internal token must never share
+# that namespace so the two credential types cannot be confused.
+EXTERNAL_API_KEY_PREFIX = "vk_"
+
+
+def _load_internal_service_token() -> str:
+    token = os.getenv("INTERNAL_SERVICE_TOKEN", "").strip()
+    if not token:
+        raise RuntimeError(
+            "INTERNAL_SERVICE_TOKEN environment variable is required "
+            "(shared secret for OMS/WMS/PMI service-to-service calls)"
+        )
+    if token.startswith(EXTERNAL_API_KEY_PREFIX):
+        raise RuntimeError(
+            "INTERNAL_SERVICE_TOKEN must not start with 'vk_' "
+            "(prefix reserved for external seller API keys)"
+        )
+    return token
+
+
+INTERNAL_SERVICE_TOKEN = _load_internal_service_token()
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """Generate a JWT bearer token signed with the secret key."""
@@ -32,6 +54,8 @@ def decode_access_token(token: str) -> Optional[dict]:
 
 def verify_service_token(api_key: str) -> bool:
     """Verify if the X-API-Key matches the system's service token."""
+    if not api_key or api_key.startswith(EXTERNAL_API_KEY_PREFIX):
+        return False
     try:
         return secrets.compare_digest(api_key, INTERNAL_SERVICE_TOKEN)
     except TypeError:

@@ -54,6 +54,10 @@ services:
       - ACCESS_TOKEN_EXPIRE_MINUTES=60
       - REFRESH_TOKEN_EXPIRE_DAYS=7
       - ENV=development
+      # Dev-only shared service token (used by /internal/sellers for PMI).
+      - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN:-oms_wms_internal_api_key_secret_2026}
+      # Prefix of newly generated seller API keys: vk_test_...
+      - API_KEY_ENV=test
     depends_on:
       identity-db:
         condition: service_healthy

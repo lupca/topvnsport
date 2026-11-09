@@ -1,13 +1,13 @@
 import math
 import logging
-from datetime import datetime, timezone
+from datetime import date as date_type, datetime, time, timedelta, timezone
 from decimal import Decimal
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import Date, cast, func
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
+from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 import models
 import schemas
@@ -27,11 +27,18 @@ ALLOWED_TRANSITIONS = {
     "PROCESSING": ["PICKING", "CANCELLED"],
     "PICKING": ["PACKED", "CANCELLED"],
     "PACKED": ["SHIPPED", "CANCELLED"],
-    "SHIPPED": ["COMPLETED"],
+    "SHIPPED": ["COMPLETED", "RETURNED"],
     "CANCELLATION_PENDING": ["CANCELLED"],
     "CANCELLED": [],
-    "COMPLETED": []
+    "COMPLETED": ["RETURNED"],
+    # Delivered order sent back by the buyer. Terminal.
+    "RETURNED": [],
 }
+
+# Statuses from which an order may be marked RETURNED.
+RETURNABLE_STATUSES = ("SHIPPED", "COMPLETED")
+
+MAX_LIST_LIMIT = 100
 
 
 def _call_api(*args, **kwargs):
@@ -44,9 +51,88 @@ def _allocate_order_items(*args, **kwargs):
     return main.allocate_order_items(*args, **kwargs)
 
 
+def _to_naive_utc(value: Optional[datetime]) -> Optional[datetime]:
+    """Order timestamps are stored as naive UTC; normalise aware inputs."""
+    if value is None or value.tzinfo is None:
+        return value
+    return value.astimezone(timezone.utc).replace(tzinfo=None)
+
+
+def _order_total(items_subtotal: Decimal, shipping_fee: Decimal, discount_amount: Decimal) -> Decimal:
+    gross = Decimal(str(items_subtotal)) + Decimal(str(shipping_fee))
+    discount = Decimal(str(discount_amount or 0))
+    if discount > gross:
+        raise HTTPException(
+            status_code=400,
+            detail="discount_amount cannot exceed items subtotal plus shipping fee",
+        )
+    return gross - discount
+
+
+def _record_order_event(db: Session, order: models.Order, event_type: str, payload: dict, created_by: Optional[str]) -> None:
+    """Append an audit row to order_events in the caller's transaction."""
+    db.add(
+        models.OrderEvent(
+            tenant_id=order.tenant_id,
+            seller_id=order.seller_id,
+            order_id=order.id,
+            order=order,
+            event_type=event_type,
+            payload={
+                "order_id": order.id,
+                "tenant_id": str(order.tenant_id),
+                "seller_id": str(order.seller_id),
+                "order_number": order.order_number,
+                **payload,
+            },
+            created_by=created_by or "system",
+        )
+    )
+
+
+def _mark_returned(
+    db: Session,
+    order: models.Order,
+    current_user: Optional[dict],
+    returned_at: Optional[datetime] = None,
+    return_shipping_cost: Optional[Decimal] = None,
+    reason: Optional[str] = None,
+) -> None:
+    old_status = order.status
+    order.status = "RETURNED"
+    if returned_at is not None or order.returned_at is None:
+        order.returned_at = _to_naive_utc(returned_at) or utcnow()
+    if return_shipping_cost:
+        order.seller_shipping_cost = Decimal(str(order.seller_shipping_cost or 0)) + return_shipping_cost
+    _record_order_event(
+        db,
+        order,
+        "order.returned",
+        {
+            "old_status": old_status,
+            "new_status": "RETURNED",
+            "returned_at": order.returned_at.isoformat(),
+            "return_shipping_cost": float(return_shipping_cost) if return_shipping_cost is not None else None,
+            "reason": reason,
+        },
+        (current_user or {}).get("username"),
+    )
+
+
 @router.post("", response_model=schemas.OrderOut, status_code=status.HTTP_201_CREATED)
 def create_order(payload: schemas.OrderCreateInput, db: Session = Depends(get_db), current_user: Optional[dict] = Depends(get_optional_user)):
     context = require_tenant_context()
+    # Finance fields are seller-side bookkeeping; a public (storefront) caller
+    # must never be able to grant itself a discount or set seller costs.
+    if current_user is None and (
+        payload.discount_amount
+        or payload.seller_shipping_cost
+        or payload.platform_fee is not None
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="discount_amount, seller_shipping_cost and platform_fee require an authenticated user",
+        )
     # 1. Validate customer
     customer = db.query(models.Customer).filter(models.Customer.id == payload.customer_id, models.Customer.is_deleted == False).first()
     if not customer:
@@ -80,7 +166,7 @@ def create_order(payload: schemas.OrderCreateInput, db: Session = Depends(get_db
             "image_url": pmi_data.get("image_url")
         })
         
-    final_total = total_amount + payload.shipping_fee
+    final_total = _order_total(total_amount, payload.shipping_fee, payload.discount_amount)
     is_storefront = channel.code == "STOREFRONT"
     norm_customer_phone = utils.phone_helper.normalize_phone(customer.phone)
 
@@ -153,6 +239,9 @@ def create_order(payload: schemas.OrderCreateInput, db: Session = Depends(get_db
                 status="DRAFT",
                 total_amount=final_total,
                 shipping_fee=payload.shipping_fee,
+                discount_amount=payload.discount_amount,
+                seller_shipping_cost=payload.seller_shipping_cost,
+                platform_fee=payload.platform_fee,
                 shipping_address=payload.shipping_address,
                 note=payload.note,
                 created_by=payload.created_by,
@@ -183,7 +272,7 @@ def create_order(payload: schemas.OrderCreateInput, db: Session = Depends(get_db
                 raise HTTPException(status_code=500, detail="Could not generate unique order number after retries")
 
 
-@router.get("")
+@router.get("", response_model=schemas.PaginatedOrders)
 def list_orders(
     page: int = 1,
     limit: int = 100,
@@ -192,9 +281,14 @@ def list_orders(
     channel_code: Optional[str] = None,
     payment_status: Optional[str] = None,
     date: Optional[str] = None,
+    date_from: Optional[date_type] = Query(None, description="YYYY-MM-DD, inclusive, on created_at (UTC)"),
+    date_to: Optional[date_type] = Query(None, description="YYYY-MM-DD, inclusive, on created_at (UTC)"),
+    updated_since: Optional[datetime] = Query(None, description="ISO 8601; returns orders with updated_at >= value"),
     search: Optional[str] = None,
     db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
-    query = db.query(models.Order).order_by(models.Order.created_at.desc())
+    # Tenant/seller scoping is applied automatically by the session listener
+    # in database.py (with_loader_criteria on TenantSellerOwned).
+    query = db.query(models.Order)
     if status:
         query = query.filter(models.Order.status == status)
     if channel_id is not None:
@@ -206,23 +300,46 @@ def list_orders(
     if date:
         try:
             target_date = datetime.strptime(date, "%Y-%m-%d").date()
-            query = query.filter(cast(models.Order.created_at, Date) == target_date)
+            # Half-open day range (same result as CAST(created_at AS DATE) on
+            # Postgres, but index-friendly and portable).
+            query = query.filter(
+                models.Order.created_at >= datetime.combine(target_date, time.min),
+                models.Order.created_at < datetime.combine(target_date + timedelta(days=1), time.min),
+            )
         except ValueError:
             pass
+    if date_from is not None:
+        query = query.filter(models.Order.created_at >= datetime.combine(date_from, time.min))
+    if date_to is not None:
+        query = query.filter(models.Order.created_at < datetime.combine(date_to + timedelta(days=1), time.min))
+    if updated_since is not None:
+        query = query.filter(models.Order.updated_at >= _to_naive_utc(updated_since))
     if search:
         query = query.join(models.Customer).filter(
             (models.Order.order_number.ilike(f"%{search}%")) |
             (models.Customer.name.ilike(f"%{search}%")) |
             (models.Customer.phone.ilike(f"%{search}%"))
         )
-        
-    total_count = query.count()
-    pages = math.ceil(total_count / limit) if limit > 0 else 0
+
+    limit = min(max(limit, 1), MAX_LIST_LIMIT)
     if page < 1:
         page = 1
+    total_count = query.count()
+    pages = math.ceil(total_count / limit)
     offset = (page - 1) * limit
-    items = query.offset(offset).limit(limit).all()
-    
+    items = (
+        query.options(
+            selectinload(models.Order.items),
+            selectinload(models.Order.customer),
+            selectinload(models.Order.channel),
+            selectinload(models.Order.fulfillment_orders),
+        )
+        .order_by(models.Order.created_at.desc(), models.Order.id.desc())
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
+
     return {
         "items": items,
         "total": total_count,
@@ -270,6 +387,13 @@ def update_order(id: int, payload: schemas.OrderUpdateInput, db: Session = Depen
         
     if payload.shipping_fee is not None:
         order.shipping_fee = payload.shipping_fee
+
+    if payload.discount_amount is not None:
+        order.discount_amount = payload.discount_amount
+    if payload.seller_shipping_cost is not None:
+        order.seller_shipping_cost = payload.seller_shipping_cost
+    if payload.platform_fee is not None:
+        order.platform_fee = payload.platform_fee
         
     if payload.items is not None:
         # Clear existing items
@@ -298,12 +422,11 @@ def update_order(id: int, payload: schemas.OrderUpdateInput, db: Session = Depen
             db.add(db_item)
             order_items.append(db_item)
             
-        shipping_fee = payload.shipping_fee if payload.shipping_fee is not None else order.shipping_fee
-        order.total_amount = subtotal_sum + shipping_fee
+        order.total_amount = _order_total(subtotal_sum, order.shipping_fee, order.discount_amount)
     else:
-        if payload.shipping_fee is not None:
+        if payload.shipping_fee is not None or payload.discount_amount is not None:
             existing_subtotal = db.query(func.sum(models.OrderItem.subtotal)).filter(models.OrderItem.order_id == order.id).scalar() or Decimal("0.00")
-            order.total_amount = Decimal(str(existing_subtotal)) + payload.shipping_fee
+            order.total_amount = _order_total(existing_subtotal, order.shipping_fee, order.discount_amount)
             
     db.commit()
     db.refresh(order)
@@ -423,7 +546,7 @@ def cancel_order(id: int, db: Session = Depends(get_db), current_user: dict = De
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
         
-    if order.status in ["SHIPPED", "CANCELLED", "COMPLETED"]:
+    if order.status in ["SHIPPED", "CANCELLED", "COMPLETED", "RETURNED"]:
         raise HTTPException(status_code=400, detail=f"Cannot cancel order in {order.status} status")
         
     has_partial_failure = False
@@ -469,8 +592,76 @@ def update_order_status(id: int, payload: schemas.OrderStatusUpdate, db: Session
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Illegal transition from {current_status} to {new_status}"
         )
-        
-    order.status = new_status
+
+    if new_status == "RETURNED" and current_status != "RETURNED":
+        _mark_returned(db, order, current_user)
+    else:
+        order.status = new_status
+    db.commit()
+    db.refresh(order)
+    return order
+
+
+@router.post("/{id}/return", response_model=schemas.OrderOut)
+def return_order(
+    id: int,
+    payload: Optional[schemas.OrderReturnInput] = Body(None),
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    """Mark a delivered (SHIPPED/COMPLETED) order as RETURNED and stamp returned_at."""
+    payload = payload or schemas.OrderReturnInput()
+    order = db.query(models.Order).filter(models.Order.id == id).with_for_update().first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    if order.status not in RETURNABLE_STATUSES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Only SHIPPED or COMPLETED orders can be returned (current: {order.status})",
+        )
+    _mark_returned(
+        db,
+        order,
+        current_user,
+        returned_at=payload.returned_at,
+        return_shipping_cost=payload.return_shipping_cost,
+        reason=payload.reason,
+    )
+    db.commit()
+    db.refresh(order)
+    return order
+
+
+@router.patch("/{id}/finance", response_model=schemas.OrderOut)
+def update_order_finance(
+    id: int,
+    payload: schemas.OrderFinanceUpdate,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    """Record costs known only after fulfilment/settlement (any status)."""
+    order = db.query(models.Order).filter(models.Order.id == id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    changes = payload.model_dump(exclude_unset=True)
+    if not changes:
+        raise HTTPException(status_code=400, detail="No finance fields provided")
+    previous = {}
+    for field, value in changes.items():
+        if field == "seller_shipping_cost" and value is None:
+            raise HTTPException(status_code=400, detail="seller_shipping_cost cannot be null")
+        previous[field] = getattr(order, field)
+        setattr(order, field, value)
+    _record_order_event(
+        db,
+        order,
+        "order.finance_updated",
+        {
+            "changes": {k: (float(v) if v is not None else None) for k, v in changes.items()},
+            "previous": {k: (float(v) if v is not None else None) for k, v in previous.items()},
+        },
+        (current_user or {}).get("username"),
+    )
     db.commit()
     db.refresh(order)
     return order

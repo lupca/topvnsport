@@ -145,7 +145,7 @@ def delete_customer(customer_id: int, db: Session = Depends(get_db), current_use
     
     active_orders_count = db.query(models.Order).filter(
         models.Order.customer_id == customer_id,
-        models.Order.status.notin_(["CANCELLED", "COMPLETED"])
+        models.Order.status.notin_(["CANCELLED", "COMPLETED", "RETURNED"])
     ).count()
 
     if active_orders_count > 0:

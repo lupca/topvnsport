@@ -70,6 +70,8 @@ class LazadaAdapter(ChannelAdapter):
 
         total = Decimal(str(order_data.get("price") or 0))
 
+        # TODO(insights): discount_amount (seller voucher), seller_shipping_cost and
+        # platform_fee come from Lazada Finance transaction details; not in this payload.
         return NormalizedOrder(
             channel_code=self.channel_code,
             channel_order_id=str(order_id),

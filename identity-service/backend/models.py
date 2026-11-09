@@ -120,3 +120,64 @@ class StaffSession(Base):
     revoked_at = Column(DateTime, nullable=True)
     
     staff = relationship("StaffAccount", back_populates="sessions")
+
+
+class ApiKey(Base):
+    """Per-seller API key used by external integrations (e.g. VOMA Insights).
+
+    Only a SHA-256 hash of the key is stored. ``prefix`` and ``last4`` let
+    admins recognise a key without ever exposing the secret again.
+    """
+
+    __tablename__ = "api_keys"
+
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String(100), nullable=False)
+    key_hash = Column(String(64), nullable=False, unique=True, index=True)
+    prefix = Column(String(32), nullable=False)
+    last4 = Column(String(4), nullable=False)
+    tenant_id = Column(
+        Uuid(as_uuid=True),
+        ForeignKey("tenants.id", ondelete="RESTRICT"),
+        nullable=False,
+        index=True,
+    )
+    seller_id = Column(
+        Uuid(as_uuid=True),
+        ForeignKey("sellers.id", ondelete="RESTRICT"),
+        nullable=False,
+        index=True,
+    )
+    scopes = Column(JSON, default=list, nullable=False)
+    created_by = Column(
+        Integer,
+        ForeignKey("staff_accounts.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+    last_used_at = Column(DateTime, nullable=True)
+    revoked_at = Column(DateTime, nullable=True)
+    expires_at = Column(DateTime, nullable=True)
+
+    tenant = relationship("Tenant")
+    seller = relationship("Seller")
+    creator = relationship("StaffAccount")
+
+    @property
+    def seller_name(self) -> str:
+        return self.seller.name if self.seller else None
+
+    @property
+    def created_by_username(self) -> str:
+        return self.creator.username if self.creator else None
+
+    def status_at(self, now: datetime.datetime) -> str:
+        if self.revoked_at is not None:
+            return "revoked"
+        if self.expires_at is not None and self.expires_at <= now:
+            return "expired"
+        return "active"
+
+    @property
+    def status(self) -> str:
+        return self.status_at(datetime.datetime.utcnow())

@@ -77,8 +77,16 @@ class Order(TenantSellerOwned, Base):
     sepay_order_id = Column(String(100), nullable=True, index=True)
     paid_at = Column(DateTime, nullable=True)
     created_by = Column(String, nullable=True)
+    # Finance fields consumed by profit/loss reporting (VOMA Insights).
+    # discount_amount: seller-funded voucher/discount (not platform-funded).
+    discount_amount = Column(Numeric(12, 2), nullable=False, default=0, server_default="0")
+    # seller_shipping_cost: shipping actually paid by the shop, incl. return shipping.
+    seller_shipping_cost = Column(Numeric(12, 2), nullable=False, default=0, server_default="0")
+    # platform_fee: actual marketplace fees once known (settlement); NULL = unknown.
+    platform_fee = Column(Numeric(12, 2), nullable=True)
+    returned_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=utcnow)
-    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, index=True)
 
     customer = relationship("Customer", back_populates="orders")
     channel = relationship("Channel", back_populates="orders")

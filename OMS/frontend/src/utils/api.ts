@@ -61,9 +61,14 @@ export interface Order {
   order_number: string;
   customer_id: number;
   channel_id: number;
-  status: 'DRAFT' | 'CONFIRMED' | 'PROCESSING' | 'PICKING' | 'PACKED' | 'SHIPPED' | 'COMPLETED' | 'CANCELLED' | 'CANCELLATION_PENDING';
+  status: 'DRAFT' | 'CONFIRMED' | 'PROCESSING' | 'PICKING' | 'PACKED' | 'SHIPPED' | 'COMPLETED' | 'CANCELLED' | 'CANCELLATION_PENDING' | 'RETURNED';
   total_amount: number;
   shipping_fee: number;
+  channel_code?: string;
+  discount_amount?: number;
+  seller_shipping_cost?: number;
+  platform_fee?: number | null;
+  returned_at?: string | null;
   shipping_address: string;
   note?: string;
   created_by?: string;

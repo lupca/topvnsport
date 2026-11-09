@@ -144,7 +144,7 @@ def delete_channel(channel_id: int, db: Session = Depends(get_db), current_user:
     
     active_orders_count = db.query(models.Order).filter(
         models.Order.channel_id == channel_id,
-        models.Order.status.notin_(["CANCELLED", "COMPLETED"])
+        models.Order.status.notin_(["CANCELLED", "COMPLETED", "RETURNED"])
     ).count()
 
     if active_orders_count > 0:

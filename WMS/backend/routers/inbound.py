@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from typing import List, Optional
 from datetime import datetime
+import uuid
 
 from database import get_db
 import models
@@ -12,7 +13,24 @@ router = APIRouter(tags=['Inbound'])
 
 @router.get("/inbound-shipments", response_model=List[schemas.InboundShipmentResponse])
 def list_inbound_shipments(db: Session = Depends(get_db)):
-    return db.query(models.InboundShipment).all()
+    # Rows are scoped to the caller's tenant/seller by the session listener in
+    # utils/tenant_context.py; items are eager-loaded to avoid N+1 queries.
+    return (
+        db.query(models.InboundShipment)
+        .options(selectinload(models.InboundShipment.items))
+        .all()
+    )
+
+
+def _generate_inbound_number(db: Session) -> str:
+    prefix = f"INB-{datetime.utcnow():%Y%m%d}-"
+    while True:
+        candidate = f"{prefix}{uuid.uuid4().hex[:6].upper()}"
+        exists = db.query(models.InboundShipment.id).filter(
+            models.InboundShipment.inbound_number == candidate
+        ).first()
+        if not exists:
+            return candidate
 
 @router.get("/inbound-shipments/{id}", response_model=schemas.InboundShipmentResponse)
 def get_inbound_shipment(id: int, db: Session = Depends(get_db)):
@@ -37,13 +55,14 @@ def create_inbound_shipment(payload: schemas.InboundShipmentCreate, db: Session 
         }
         if owned_ids != location_ids:
             raise HTTPException(status_code=400, detail="Inbound location is outside seller context")
+    inbound_number = (payload.inbound_number or "").strip() or _generate_inbound_number(db)
     # Check duplicate inbound number
-    dup = db.query(models.InboundShipment).filter(models.InboundShipment.inbound_number == payload.inbound_number).first()
+    dup = db.query(models.InboundShipment).filter(models.InboundShipment.inbound_number == inbound_number).first()
     if dup:
         raise HTTPException(status_code=400, detail="Inbound shipment already exists")
     total_amount = sum(item.expected_qty * (item.unit_cost or 0) for item in payload.items)
     shipment = models.InboundShipment(
-        inbound_number=payload.inbound_number,
+        inbound_number=inbound_number,
         warehouse_id=payload.warehouse_id,
         supplier_name=payload.supplier_name,
         status="pending",

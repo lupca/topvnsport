@@ -1,6 +1,6 @@
 from decimal import Decimal
 from typing import List, Optional
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, computed_field
 
 # Tier Variation Schemas
 class TierVariationBase(BaseModel):
@@ -35,3 +35,10 @@ class ProductVariantResponse(ProductVariantBase):
     default_cost_price: Optional[Decimal] = None
     default_tax_rate: Optional[Decimal] = None
     model_config = ConfigDict(from_attributes=True)
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def name(self) -> Optional[str]:
+        """Display name built from the tier options, e.g. "Đỏ / M" (None if no tiers)."""
+        parts = [option for option in (self.tier_1_option, self.tier_2_option) if option]
+        return " / ".join(parts) if parts else None

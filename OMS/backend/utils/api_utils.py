@@ -11,7 +11,23 @@ logger = logging.getLogger("oms_backend")
 PIM_API_URL = os.getenv("PIM_API_URL", os.getenv("PMI_URL", "http://pim-api:8000"))
 WMS_API_URL = os.getenv("WMS_API_URL", os.getenv("WMS_URL", "http://wms-api:8002"))
 DEFAULT_FULFILLMENT_WAREHOUSE_CODE = os.getenv("FULFILLMENT_WAREHOUSE_CODE", "WH-001")
-PIM_API_KEY = os.getenv("PIM_API_KEY", "oms_wms_internal_api_key_secret_2026")
+
+
+def _load_outbound_service_key() -> str:
+    """Key OMS sends as ``X-API-Key`` to PMI/WMS.
+
+    PMI/WMS compare it with their ``INTERNAL_SERVICE_TOKEN``; ``PIM_API_KEY``
+    may override it but there is no built-in default any more.
+    """
+    from utils.auth import EXTERNAL_API_KEY_PREFIX, INTERNAL_SERVICE_TOKEN
+
+    key = os.getenv("PIM_API_KEY", "").strip() or INTERNAL_SERVICE_TOKEN
+    if key.startswith(EXTERNAL_API_KEY_PREFIX):
+        raise RuntimeError("PIM_API_KEY must not start with 'vk_' (reserved for external API keys)")
+    return key
+
+
+PIM_API_KEY = _load_outbound_service_key()
 
 
 def utcnow():

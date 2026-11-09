@@ -12,7 +12,7 @@ from decimal import Decimal
 from typing import List, Optional, Dict, Any
 import logging
 
-from adapters.channels.base import ChannelAdapter, NormalizedOrder
+from adapters.channels.base import ChannelAdapter, NormalizedOrder, sum_present_amounts
 
 logger = logging.getLogger("oms_backend")
 
@@ -73,6 +73,18 @@ class ShopeeAdapter(ChannelAdapter):
         total = Decimal(str(order_data.get("total_amount") or order_data.get("escrow_amount") or 0))
         fee = Decimal(str(order_data.get("actual_shipping_fee") or 0))
 
+        # Finance fields: only Shopee's escrow detail (v2.payment.get_escrow_detail,
+        # ``order_income``) carries seller voucher / fee data. Use it when the
+        # payload includes it; plain order webhooks do not.
+        order_income = order_data.get("order_income")
+        discount = sum_present_amounts(order_income, ["voucher_from_seller", "seller_discount"])
+        platform_fee = sum_present_amounts(
+            order_income, ["commission_fee", "service_fee", "seller_transaction_fee"]
+        )
+        # TODO(insights): seller_shipping_cost should come from the escrow detail
+        # (actual_shipping_fee - buyer_paid_shipping_fee - shopee_shipping_rebate
+        # + reverse_shipping_fee) once the real Shopee API integration fetches it.
+
         return NormalizedOrder(
             channel_code=self.channel_code,
             channel_order_id=str(order_sn),
@@ -83,6 +95,8 @@ class ShopeeAdapter(ChannelAdapter):
             total_amount=total,
             shipping_fee=fee,
             channel_metadata=order_data,
+            discount_amount=discount or Decimal("0"),
+            platform_fee=platform_fee,
         )
 
     async def sync_order_status(

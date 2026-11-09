@@ -32,7 +32,7 @@ def notify_oms_status(
     target_url = f"{oms_url}/orders/{oms_order_id}/fulfillments/{fulfillment_number}/status"
     logger.info(f"Notifying OMS of status {new_status} for fulfillment {fulfillment_number} at URL: {target_url}")
     try:
-        internal_token = os.getenv("INTERNAL_SERVICE_TOKEN", "oms_wms_internal_api_key_secret_2026")
+        from utils.auth import INTERNAL_SERVICE_TOKEN as internal_token
         req = urllib.request.Request(
             target_url,
             data=json.dumps({

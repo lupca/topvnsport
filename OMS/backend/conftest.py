@@ -8,6 +8,7 @@ import os
 
 os.environ.setdefault("INTEGRITY_MODE", "development")
 os.environ.setdefault("ENV", "development")
+os.environ.setdefault("INTERNAL_SERVICE_TOKEN", "oms_wms_internal_api_key_secret_2026")
 os.environ.setdefault("DATABASE_URL", "sqlite:////tmp/oms_backend_tests.db")
 os.environ.setdefault(
     "FERNET_KEY",

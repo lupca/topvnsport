@@ -12,6 +12,7 @@ import {
   Package,
   ShoppingCart,
   Warehouse,
+  KeyRound,
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -32,6 +33,7 @@ export default function Sidebar() {
     { label: "Dashboard", href: "/dashboard", icon: Home, isExternal: false },
     { label: "Nhân sự", href: "/staff", icon: Users, isExternal: false },
     { label: "Vai trò", href: "/roles", icon: Shield, isExternal: false },
+    { label: "API key", href: "/api-keys", icon: KeyRound, isExternal: false },
     { label: "Cài đặt", href: "/settings", icon: Settings, isExternal: false },
     { type: "divider" },
     { label: "PMI System", href: pmiUrl, icon: Package, isExternal: true },

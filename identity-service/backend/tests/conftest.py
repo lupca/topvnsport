@@ -10,19 +10,30 @@ from fastapi.testclient import TestClient
 # Adjust path to import from backend/
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# Secrets are required from the environment; tests provide throwaway values.
+os.environ.setdefault("INTERNAL_SERVICE_TOKEN", "identity-test-internal-service-token")
+os.environ.setdefault("API_KEY_ENV", "test")
+
 from database import Base, get_db
 from models import Role, StaffAccount, StaffSession, Tenant
 from main import app
 from utils.password import hash_password
 from services.auth_service import hash_refresh_token
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
+# Default: in-memory SQLite. Set TEST_DATABASE_URL (e.g. together with
+# BYPASS_TESTCONTAINERS=true) to run the same suite against a real Postgres.
+SQLALCHEMY_DATABASE_URL = os.getenv("TEST_DATABASE_URL") or "sqlite:///:memory:"
 
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL,
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool
-)
+if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(
+        SQLALCHEMY_DATABASE_URL,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool
+    )
+else:
+    if "identity_db" in SQLALCHEMY_DATABASE_URL.rsplit("/", 1)[-1]:
+        raise RuntimeError("Refusing to run tests against the live identity_db database")
+    engine = create_engine(SQLALCHEMY_DATABASE_URL, pool_pre_ping=True)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 @pytest.fixture(name="db_session")

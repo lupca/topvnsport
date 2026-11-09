@@ -338,7 +338,7 @@ export default function DashboardPage() {
             <div className="space-y-4">
               {recentOrders.map((order) => {
                 const isDraft = order.status === "DRAFT";
-                const isCancelable = !["SHIPPED", "CANCELLED", "COMPLETED"].includes(order.status);
+                const isCancelable = !["SHIPPED", "CANCELLED", "COMPLETED", "RETURNED"].includes(order.status);
                 
                 return (
                   <div key={order.id} className="p-3 bg-gray-50 border border-gray-200 rounded-xl space-y-2 text-xs">

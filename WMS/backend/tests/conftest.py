@@ -1,4 +1,5 @@
 import os
+os.environ.setdefault("INTERNAL_SERVICE_TOKEN", "test-internal-token")
 import sys
 
 DB_FILE = "/tmp/test_wms_subdir.db"
@@ -20,7 +21,13 @@ def get_database_url():
 
     if "/wms_db" in pg_url:
         pg_url = pg_url.replace("/wms_db", "/wms_test_db")
-    elif not pg_url.endswith("/wms_test_db") and "postgresql" in pg_url:
+    elif (
+        not pg_url.endswith("/wms_test_db")
+        # A dedicated database whose name ends in "_test" is used verbatim
+        # (lets parallel runs use separate databases).
+        and not pg_url.rsplit("/", 1)[1].split("?", 1)[0].endswith("_test")
+        and "postgresql" in pg_url
+    ):
         parts = pg_url.rsplit('/', 1)
         pg_url = f"{parts[0]}/wms_test_db"
 

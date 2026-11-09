@@ -121,6 +121,9 @@ class InboundShipmentBase(BaseModel):
     total_amount: Optional[float] = None
 
 class InboundShipmentCreate(InboundShipmentBase):
+    # Optional for API clients (e.g. VOMA Insights purchase drafts); the server
+    # generates INB-YYYYMMDD-XXXXXX when omitted.
+    inbound_number: Optional[str] = None
     items: List[InboundItemCreate] = Field(default_factory=list)
 
 class InboundShipmentResponse(InboundShipmentBase):
